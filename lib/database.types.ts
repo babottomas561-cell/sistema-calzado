@@ -167,6 +167,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "clientes"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "interacciones_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "v_mi_ficha"
+      referencedColumns: ["id"]
     }
                   ]
                 },"marcas": {
@@ -380,6 +386,12 @@ isOneToOne: false
       columns: ["cliente_id"]
 isOneToOne: false
       referencedRelation: "clientes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pedidos_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "v_mi_ficha"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "pedidos_deposito_id_fkey"
@@ -734,6 +746,12 @@ isOneToOne: false
       referencedRelation: "clientes"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "ventas_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "v_mi_ficha"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "ventas_deposito_id_fkey"
       columns: ["deposito_id"]
 isOneToOne: false
@@ -804,6 +822,20 @@ isOneToOne: false
       referencedColumns: ["producto_id"]
     }
                   ]
+                },"v_mi_ficha": {
+                  Row: {
+                    "acepta_promos": boolean | null,"codigo": number | null,"direccion": string | null,"documento": string | null,"email": string | null,"fecha_nacimiento": string | null,"id": number | null,"localidad": string | null,"nombre": string | null,"telefono": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "acepta_promos"?: boolean | null,"codigo"?: number | null,"direccion"?: string | null,"documento"?: string | null,"email"?: string | null,"fecha_nacimiento"?: string | null,"id"?: number | null,"localidad"?: string | null,"nombre"?: string | null,"telefono"?: string | null
+                         }
+                        Update: {
+                           "acepta_promos"?: boolean | null,"codigo"?: number | null,"direccion"?: string | null,"documento"?: string | null,"email"?: string | null,"fecha_nacimiento"?: string | null,"id"?: number | null,"localidad"?: string | null,"nombre"?: string | null,"telefono"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
                 },"v_stock": {
                   Row: {
                     "categoria": string | null,"codigo": string | null,"color": string | null,"color_hex": string | null,"deposito": string | null,"deposito_id": number | null,"disponible": number | null,"marca": string | null,"nombre": string | null,"precio_compra": number | null,"precio_venta": number | null,"producto_id": number | null,"reservado": number | null,"sku": string | null,"stock": number | null,"stock_bajo": boolean | null,"stock_minimo": number | null,"talle": string | null,"talle_orden": number | null,"valor_costo": number | null,"variante_id": number | null
@@ -854,6 +886,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "clientes"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ventas_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "v_mi_ficha"
+      referencedColumns: ["id"]
     }
                   ]
                 }
@@ -864,6 +902,12 @@ isOneToOne: false
                            },
 "_mover_stock":
 { Args: { "p_cantidad": number,"p_compra"?: number,"p_deposito": number,"p_motivo"?: string,"p_tipo": string,"p_variante": number,"p_venta"?: number }; Returns: undefined
+                           },
+"_vincular_cliente":
+{ Args: { "p_usuario": unknown }; Returns: undefined
+                           },
+"actualizar_mi_ficha":
+{ Args: { "p_acepta_promos"?: boolean,"p_direccion"?: string,"p_documento"?: string,"p_fecha_nacimiento"?: string,"p_localidad"?: string,"p_nombre": string,"p_telefono"?: string }; Returns: undefined
                            },
 "ajustar_stock":
 { Args: { "p_deposito"?: number,"p_motivo": string,"p_stock_nuevo": number,"p_variante": number }; Returns: undefined
@@ -885,6 +929,9 @@ isOneToOne: false
                            },
 "es_staff":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"mi_cliente_id":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "precio_de":
 { Args: { "p_variante": number }; Returns: number

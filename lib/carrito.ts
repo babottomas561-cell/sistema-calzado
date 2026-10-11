@@ -3,7 +3,8 @@
 // Los precios que guarda son solo para mostrar: al confirmar, la base usa los precios vigentes.
 import { useEffect, useState } from "react";
 
-export type ItemCarrito = { variante_id: number; producto_id: number; nombre: string; talle: string; color: string; precio: number; cantidad: number; disponible: number };
+export type ItemCarrito = { variante_id: number; producto_id: number; nombre: string; talle: string; color: string; precio: number; cantidad: number; disponible: number;
+  imagen_url?: string | null };
 const CLAVE = "carrito";
 
 function leer(): ItemCarrito[] {
@@ -16,8 +17,11 @@ function guardar(items: ItemCarrito[]) {
 
 export function useCarrito() {
   const [items, setItems] = useState<ItemCarrito[]>([]);
+  // localStorage solo existe en el navegador: hasta leerlo no se sabe si el carrito está vacío
+  // (sin esto, un carrito lleno se ve "vacío" por un instante)
+  const [cargado, setCargado] = useState(false);
   useEffect(() => {
-    const actualizar = () => setItems(leer());
+    const actualizar = () => { setItems(leer()); setCargado(true); };
     actualizar();
     window.addEventListener(CLAVE, actualizar);
     window.addEventListener("storage", actualizar);   // otras pestañas
@@ -26,6 +30,7 @@ export function useCarrito() {
 
   return {
     items,
+    cargado,
     cantidad: items.reduce((s, i) => s + i.cantidad, 0),
     total: items.reduce((s, i) => s + i.cantidad * i.precio, 0),
     agregar: (nuevo: Omit<ItemCarrito, "cantidad">, cantidad = 1) => {

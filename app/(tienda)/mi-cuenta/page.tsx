@@ -16,9 +16,9 @@ async function salir() {
 export default async function MiCuenta() {
   const { supabase, user } = await usuarioActual();
   if (!user) redirect("/ingresar?volver=/mi-cuenta");
-  // La base solo devuelve SU ficha y SUS pedidos (Row Level Security)
+  // La base solo devuelve SU ficha (v_mi_ficha, sin lo interno del CRM) y SUS pedidos (Row Level Security)
   const [{ data: ficha }, { data: pedidos }] = await Promise.all([
-    supabase.from("clientes").select("nombre, documento, telefono, email, direccion, localidad, fecha_nacimiento, acepta_promos").eq("usuario_id", user.id).maybeSingle(),
+    supabase.from("v_mi_ficha").select("nombre, documento, telefono, email, direccion, localidad, fecha_nacimiento, acepta_promos").maybeSingle(),
     supabase.from("pedidos").select("id, comprobante, fecha, total, estado, entrega").order("fecha", { ascending: false }),
   ]);
   return (
@@ -35,7 +35,8 @@ export default async function MiCuenta() {
         ))}
         {pedidos?.length === 0 && <p className="text-texto-2">Todavía no hiciste pedidos. <Link href="/" className="text-marca">Ver el catálogo</Link></p>}
       </section>
-      {ficha && <MisDatos ficha={ficha} />}
+      {/* Las columnas de una vista llegan como posible null: se normalizan */}
+      {ficha && <MisDatos ficha={{ ...ficha, nombre: ficha.nombre ?? "", acepta_promos: ficha.acepta_promos ?? true }} />}
     </div>
   );
 }

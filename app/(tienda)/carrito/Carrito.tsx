@@ -8,7 +8,7 @@ import { confirmarPedido } from "./acciones";
 import { Footprints, Trash2 } from "lucide-react";
 
 export default function Carrito({ medios }: { medios: MedioPago[] }) {
-  const { items, total, cambiar, quitar } = useCarrito();
+  const { items, cargado, total, cambiar, quitar } = useCarrito();
   const [entrega, setEntrega] = useState("retiro");
   const [medioId, setMedioId] = useState(medios[0]?.id);
   const medio = medios.find((m) => m.id === medioId);
@@ -17,6 +17,7 @@ export default function Carrito({ medios }: { medios: MedioPago[] }) {
   // Si sale bien, la acción redirige al seguimiento del pedido (que vacía el carrito)
   const [estado, accion, cargando] = useActionState(confirmarPedido, {});
 
+  if (!cargado) return <div className="py-16" aria-busy="true" />;
   if (items.length === 0) return (
     <div className="py-16 text-center"><p className="text-lg">Tu carrito está vacío.</p><Link href="/" className="boton mt-4">Ver el catálogo</Link></div>
   );
@@ -27,7 +28,8 @@ export default function Carrito({ medios }: { medios: MedioPago[] }) {
         <h1 className="text-2xl font-bold">Tu carrito</h1>
         {items.map((i) => (
           <div key={i.variante_id} className="flex items-center gap-3 rounded-xl border border-borde bg-white p-3">
-            <div className="grid h-16 w-16 place-items-center rounded-lg bg-gray-100 text-gray-300"><Footprints size={28} /></div>
+            <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-lg bg-gray-100 text-gray-300">
+              {i.imagen_url ? <img src={i.imagen_url} alt="" className="h-full w-full object-cover" /> : <Footprints size={28} />}</div>
             <div className="flex-1"><Link href={`/producto/${i.producto_id}`} className="font-semibold hover:text-marca">{i.nombre}</Link>
               <div className="text-sm text-texto-2">Talle {i.talle} · {i.color}</div><div className="font-semibold">{pesos(i.precio)}</div></div>
             <input type="number" min={1} max={i.disponible} value={i.cantidad} onChange={(e) => cambiar(i.variante_id, Number(e.target.value))} className="campo w-16" aria-label="Cantidad" />

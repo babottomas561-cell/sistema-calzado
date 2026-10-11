@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { crearCliente } from "@/lib/supabase/server";
 import { numero, pesos } from "@/lib/formato";
+import { leerTodo } from "@/lib/informes";
 import GrillaStock, { LeyendaStock, type CeldaStock } from "@/components/GrillaStock";
 
 const FILTROS = { todo: "Todo", bajo: "Para reponer", sin: "Sin stock" } as const;
@@ -10,11 +11,16 @@ export default async function Stock({ searchParams }: { searchParams: Promise<{ 
   const { filtro: f = "todo", q = "" } = await searchParams;
   const filtro = (f in FILTROS ? f : "todo") as keyof typeof FILTROS;
   const supabase = await crearCliente();
-  let consulta = supabase.from("v_stock").select("*").order("nombre").order("color").order("talle");
-  if (filtro === "bajo") consulta = consulta.eq("stock_bajo", true);
-  if (filtro === "sin") consulta = consulta.lte("disponible", 0);
-  if (q) { const b = q.replace(/[%,()]/g, ""); consulta = consulta.or(`nombre.ilike.%${b}%,sku.ilike.${b}%`); }
-  const { data: filas, error } = await consulta;
+  // De a páginas: con muchos modelos se pasa de las 1000 filas que devuelve una consulta
+  const consulta = (desde: number, hasta: number) => {
+    let c = supabase.from("v_stock").select("*").order("nombre").order("variante_id");
+    if (filtro === "bajo") c = c.eq("stock_bajo", true);
+    if (filtro === "sin") c = c.lte("disponible", 0);
+    if (q) { const b = q.replace(/[%,()]/g, ""); c = c.or(`nombre.ilike.%${b}%,sku.ilike.${b}%`); }
+    return c.range(desde, hasta);
+  };
+  let filas: Awaited<ReturnType<typeof consulta>>["data"] = [], error: string | null = null;
+  try { filas = await leerTodo(consulta); } catch (e) { error = (e as Error).message; }
   const lista = (filas ?? []).map((v) => ({ ...v, talle: v.talle ?? "", color: v.color ?? "", stock: v.stock ?? 0,
     reservado: v.reservado ?? 0, disponible: v.disponible ?? 0, stock_minimo: v.stock_minimo ?? 0 }));
 
@@ -38,7 +44,7 @@ export default async function Stock({ searchParams }: { searchParams: Promise<{ 
         ))}
         <form className="flex w-full gap-2 md:ml-auto md:w-64"><input type="hidden" name="filtro" value={filtro} /><input name="q" defaultValue={q} placeholder="Modelo o código…" className="campo py-1.5" /></form>
       </div>
-      {error && <p className="text-error">{error.message}</p>}
+      {error && <p className="text-error">{error}</p>}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <div className="tarjeta"><div className="etiqueta">Pares</div><div className="text-xl font-bold">{numero(lista.reduce((s, v) => s + v.stock, 0))}</div></div>
         <div className="tarjeta"><div className="etiqueta">Valor a costo</div><div className="text-xl font-bold">{pesos(lista.reduce((s, v) => s + Number(v.valor_costo), 0))}</div></div>

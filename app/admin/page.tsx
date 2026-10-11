@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { crearCliente } from "@/lib/supabase/server";
 import { FilaMovil } from "@/components/ListaMovil";
+import { leerTodo } from "@/lib/informes";
 import { diaArgentina, fechaHora, inicioDe, numero, pesos } from "@/lib/formato";
 import { ChevronRight, MessageCircleMore, Plus, ShoppingBag, TriangleAlert, Trophy } from "lucide-react";
 
@@ -11,9 +12,10 @@ export default async function Inicio() {
 
   const [ventasHoy, itemsMes, stock, ultimas, pedidos, seguimientos] = await Promise.all([
     supabase.from("ventas").select("total").gte("fecha", hoy),
-    // Importes netos (con descuento y ajuste por medio de pago), los mismos que suma "Vendido hoy"
-    supabase.from("v_hechos_ventas").select("modelo, cantidad, importe_neto, margen_neto, venta_id").gte("fecha", mes),
-    supabase.from("v_stock").select("variante_id, producto_id, nombre, talle, color, stock, disponible, stock_minimo, valor_costo, stock_bajo"),
+    // Importes netos (con descuento y ajuste por medio de pago), los mismos que suma "Vendido hoy".
+    // De a páginas: un mes de ventas o el stock completo pasan enseguida las 1000 filas por consulta.
+    leerTodo((a, b) => supabase.from("v_hechos_ventas").select("id, modelo, cantidad, importe_neto, margen_neto, venta_id").gte("fecha", mes).order("id").range(a, b)),
+    leerTodo((a, b) => supabase.from("v_stock").select("variante_id, producto_id, nombre, talle, color, stock, disponible, stock_minimo, valor_costo, stock_bajo").order("variante_id").range(a, b)),
     supabase.from("ventas").select("id, comprobante, fecha, total, canal, clientes(nombre)").order("fecha", { ascending: false }).limit(5),
     supabase.from("pedidos").select("id", { count: "exact", head: true }).in("estado", ["pendiente", "confirmado", "preparado"]),
     supabase.from("interacciones").select("id", { count: "exact", head: true }).eq("hecha", false).lte("proxima_fecha", diaArgentina()),
@@ -21,12 +23,12 @@ export default async function Inicio() {
 
   const totalHoy = (ventasHoy.data ?? []).reduce((s, v) => s + Number(v.total), 0);
   // Las columnas de una vista llegan tipadas como posible null: se normalizan acá
-  const items = (itemsMes.data ?? []).map((i) => ({ ...i, nombre: i.modelo ?? "", cantidad: i.cantidad ?? 0 }));
+  const items = itemsMes.map((i) => ({ ...i, nombre: i.modelo ?? "", cantidad: i.cantidad ?? 0 }));
   const ventasMes = new Set(items.map((i) => i.venta_id)).size;
   const facturadoMes = items.reduce((s, i) => s + Number(i.importe_neto), 0);
   const paresMes = items.reduce((s, i) => s + i.cantidad, 0);
   const margenMes = items.reduce((s, i) => s + Number(i.margen_neto), 0);
-  const filasStock = (stock.data ?? []).map((v) => ({ ...v, stock: v.stock ?? 0, disponible: v.disponible ?? 0 }));
+  const filasStock = stock.map((v) => ({ ...v, stock: v.stock ?? 0, disponible: v.disponible ?? 0 }));
   const valorStock = filasStock.reduce((s, v) => s + Number(v.valor_costo), 0);
   const paresStock = filasStock.reduce((s, v) => s + v.stock, 0);
   const bajos = filasStock.filter((v) => v.stock_bajo).sort((a, b) => a.disponible - b.disponible);

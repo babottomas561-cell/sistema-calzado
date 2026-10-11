@@ -70,7 +70,9 @@ una API de Next.** Lo que ya pisamos:
 
 5. **Seguridad en la base, no en la pantalla.** Row Level Security en todas las tablas:
    - el equipo (`perfiles.rol = 'staff'`, función `es_staff()`) ve y toca todo;
-   - un cliente registrado ve **su** ficha y **sus** pedidos, nada más;
+   - un cliente registrado ve **sus** pedidos y **su** ficha, pero la ficha **no** por la tabla `clientes`
+     (tiene notas internas del CRM): la lee por `v_mi_ficha` y la cambia con `actualizar_mi_ficha()`;
+     su cuenta se vincula a una ficha del local recién cuando **confirma el email**;
    - el público (anon) solo lee `v_catalogo`, que **no tiene costos**.
    Una tabla nueva **nace con RLS activado y una política** (ver la skill `cambiar-base-de-datos`).
    Esconder un botón no es seguridad.
@@ -142,6 +144,7 @@ supabase/seed.sql      datos de ejemplo SOLO para la base local
 npm run db:start     # base local en Docker (la primera vez tarda)
 npm run db:reset     # rehace la base: migraciones + seed.sql
 npm run db:tipos     # regenera lib/database.types.ts — después de CADA cambio de esquema
+npm run db:test      # pruebas de la base (supabase/tests): ventas, compras, pedidos, fotos, seguridad
 npm run dev          # http://localhost:3000
 npm run revisar      # tsc + eslint + build: tiene que pasar antes de dar algo por terminado
 ```
@@ -152,7 +155,8 @@ Usuarios de la base **local** (los crea `seed.sql`, no existen en producción):
 ### Antes de dar un cambio por terminado
 
 1. `npm run revisar` sin errores.
-2. Si tocaste la base: `npm run db:reset` corre limpio y regeneraste los tipos.
+2. Si tocaste la base: `npm run db:reset` corre limpio, regeneraste los tipos y `npm run db:test` pasa
+   (si agregaste una regla, sumale su prueba en `supabase/tests/database/`).
 3. Probalo en el navegador como **equipo y como cliente** si toca permisos o la tienda.
 4. Si tocaste stock: el stock de cada variante tiene que seguir siendo igual a la suma de sus
    movimientos:

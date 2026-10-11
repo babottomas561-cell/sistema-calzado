@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  BookUser, Boxes, ExternalLink, House, LogOut, Menu as IconoMenu, MessageCircleMore, Package, PackagePlus,
+  BookUser, Boxes, ChartBar, ExternalLink, House, LogOut, Menu as IconoMenu, MessageCircleMore, Package, PackagePlus,
   Plus, Receipt, Settings2, ShoppingBag, Truck, Users, X, type LucideIcon,
 } from "lucide-react";
 import Logo from "@/components/Logo";
@@ -21,6 +21,7 @@ const GRUPOS: { titulo?: string; items: Item[] }[] = [
     { href: "/admin/productos", texto: "Productos", icono: Package },
     { href: "/admin/stock", texto: "Stock", icono: Boxes },
   ] },
+  { titulo: "Análisis", items: [{ href: "/admin/informes", texto: "Informes", icono: ChartBar }] },
   { titulo: "Contactos", items: [
     { href: "/admin/clientes", texto: "Clientes", icono: Users },
     { href: "/admin/seguimientos", texto: "Seguimientos", icono: MessageCircleMore },
