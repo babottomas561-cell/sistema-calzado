@@ -20,8 +20,8 @@ type Precio = { producto_id: number; proveedor_id: number; codigo_proveedor: str
 // Un modelo cargado en la factura: su costo y los pares por variante
 type Bloque = { producto_id: number; costo: number; costoEditado: boolean; pares: Record<number, number> };
 
-export default function FacturaCompra({ filas, proveedores, precios, maestros, talles, colores }: {
-  filas: Fila[]; proveedores: { id: number; nombre: string }[]; precios: Precio[]; maestros: Maestros; talles: Talle[]; colores: Color[];
+export default function FacturaCompra({ filas, proveedores, precios, maestros, talles, colores, editaPrecio }: {
+  filas: Fila[]; proveedores: { id: number; nombre: string }[]; precios: Precio[]; maestros: Maestros; talles: Talle[]; colores: Color[]; editaPrecio: boolean;
 }) {
   const router = useRouter();
   const [proveedor, setProveedor] = useState<number | "">("");
@@ -159,7 +159,7 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
             <form action={crearArticulo} className="tarjeta space-y-4 border-marca/40">
               <div className="flex items-center justify-between"><h2 className="font-semibold">Artículo nuevo</h2>
                 <button type="button" onClick={() => setCreando(false)} className="text-gray-400 hover:text-gray-700" aria-label="Cerrar"><X size={18} /></button></div>
-              <CamposProducto maestros={maestros} />
+              <CamposProducto maestros={maestros} editaPrecio={editaPrecio} />
               <ElegirTallesColores talles={talles} colores={colores} />
               {errorAlta && <p className="text-sm text-error">{errorAlta}</p>}
               <button className="boton" disabled={altaPendiente}>{altaPendiente ? "Creando…" : <><Plus size={16} /> Crear y agregar a la factura</>}</button>

@@ -75,11 +75,12 @@ Abrí http://localhost:3000. Usuarios de prueba (solo existen en tu compu):
 1. Registrate en tu tienda (`/registro`) con tu email.
 2. En Supabase → *SQL Editor*, ejecutá (con tu email):
    ```sql
-   update perfiles set rol = 'staff'
+   update perfiles set rol = 'staff', rol_id = (select id from roles where todos)
    where id = (select id from auth.users where email = 'tu@email.com');
    delete from clientes where usuario_id = (select id from auth.users where email = 'tu@email.com');
    ```
-3. Volvé a ingresar: ya entrás al panel.
+3. Volvé a ingresar: ya entrás al panel como **Administrador**. Al resto del equipo lo sumás desde
+   **Equipo** (cada uno se registra primero en la tienda) y le elegís un rol: Encargado, Cajero, Depósito…
 
 **Primeros pasos en el panel**
 

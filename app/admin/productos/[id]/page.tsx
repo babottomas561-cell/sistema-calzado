@@ -10,8 +10,10 @@ import { leerMaestros } from "@/lib/maestros";
 import { ExternalLink } from "lucide-react";
 import Volver from "@/components/Volver";
 import GrillaStock, { LeyendaStock } from "@/components/GrillaStock";
+import { exigir } from "@/lib/exigir";
 
 export default async function Producto({ params }: { params: Promise<{ id: string }> }) {
+  const { permisos } = await exigir("costos.ver");
   const { id } = await params;
   const supabase = await crearCliente();
   const [{ data: p }, { data: filas }, { data: movimientos }, maestros, { data: precios }, { data: proveedores }, { data: imagenes }] = await Promise.all([
@@ -54,7 +56,8 @@ export default async function Producto({ params }: { params: Promise<{ id: strin
 
       <Proveedores productoId={p.id} filas={(precios ?? []) as unknown as FilaProveedor[]} todos={proveedores ?? []} />
 
-      <Formularios producto={producto} variantes={vs} {...maestros} />
+      <Formularios producto={producto} variantes={vs} {...maestros} edita={permisos.includes("productos.editar")}
+        editaPrecio={permisos.includes("precios.editar")} ajusta={permisos.includes("stock.ajustar")} />
 
       <section className="tarjeta overflow-x-auto">
         <h2 className="mb-2 font-semibold">Historial de movimientos</h2>

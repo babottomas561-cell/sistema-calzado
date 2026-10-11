@@ -8,8 +8,10 @@ import NuevaInteraccion from "./NuevaInteraccion";
 import { marcarHecha } from "../acciones";
 import { Check, MessageCircle } from "lucide-react";
 import Volver from "@/components/Volver";
+import { exigir } from "@/lib/exigir";
 
 export default async function FichaCliente({ params }: { params: Promise<{ id: string }> }) {
+  await exigir("clientes.ver");
   const { id } = await params;
   const supabase = await crearCliente();
   const [{ data: c }, { data: ventas }, { data: pedidos }, { data: interacciones }, { data: items }] = await Promise.all([

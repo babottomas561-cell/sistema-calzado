@@ -69,7 +69,15 @@ una API de Next.** Lo que ya pisamos:
    de un cliente). Si agregás una FK, decidí la política a propósito y ponele índice.
 
 5. **Seguridad en la base, no en la pantalla.** Row Level Security en todas las tablas:
-   - el equipo (`perfiles.rol = 'staff'`, función `es_staff()`) ve y toca todo;
+   - el equipo (`perfiles.rol = 'staff'` + un **rol** en `perfiles.rol_id`) hace **lo que su rol permite**:
+     `tiene_permiso('ventas.registrar')`, `tiene_permiso('costos.ver')`… Los permisos son una lista fija
+     (tabla `permisos`); los **roles** (Administrador, Encargado, Cajero, Depósito…) son editables en
+     `/admin/equipo`. `es_staff()` = es del equipo con un rol activo (para lo que ve cualquiera del equipo);
+   - **los costos** (`productos.precio_compra`, `venta_items.costo_unitario`, compras, precios de
+     proveedores) solo con `costos.ver`; el resto del equipo lee `v_stock` / `v_venta_items` /
+     `v_hechos_ventas`, que devuelven el costo **vacío**. Una vista nueva con costos hace lo mismo;
+   - **la operación** (ventas, compras, stock, pedidos) se escribe **solo** por las funciones de la regla 1,
+     que son `security definer` y verifican el permiso; esas tablas no tienen políticas de escritura;
    - un cliente registrado ve **sus** pedidos y **su** ficha, pero la ficha **no** por la tabla `clientes`
      (tiene notas internas del CRM): la lee por `v_mi_ficha` y la cambia con `actualizar_mi_ficha()`;
      su cuenta se vincula a una ficha del local recién cuando **confirma el email**;
@@ -107,7 +115,7 @@ una API de Next.** Lo que ya pisamos:
 12. **Fotos: varias por producto, una principal.** Están en `producto_imagenes` (orden + `principal`, una sola
     por producto, la garantiza un índice único). `productos.imagen_url` **la mantiene la base** (trigger): es
     siempre la url de la principal, así que **no se escribe desde la app**. Los archivos van al bucket
-    `productos` de Storage (lectura pública, escritura solo `staff`); el navegador los achica y los sube
+    `productos` de Storage (lectura pública, escritura con `productos.editar`); el navegador los achica y los sube
     (`lib/supabase/navegador.ts`), y el Server Action solo registra la fila. La tienda lee `v_imagenes_tienda`.
 
 ---
@@ -116,7 +124,8 @@ una API de Next.** Lo que ya pisamos:
 
 ```
 app/(tienda)/          tienda pública: catálogo, producto, carrito, ingresar/registro, mi-cuenta
-app/admin/             panel del equipo (el layout verifica que sea staff)
+app/admin/             panel del equipo (el layout verifica que sea staff; cada página, su permiso con exigir())
+  equipo/              personas del equipo y roles con sus permisos
   productos/           alta con desplegables + talles/colores tildables; ficha con grilla talle×color
   productos/[id]/      ficha: grilla talle×color, proveedores y precios de compra, ajustes de stock
   ventas/nueva/        punto de venta (pagos mixtos con descuento/recargo por medio, descuento manual)
@@ -129,6 +138,7 @@ lib/supabase/server.ts crearCliente() tipado y usuarioActual() → { supabase, u
 lib/database.types.ts  GENERADO — no editar a mano (npm run db:tipos)
 lib/maestros.ts        lee las tablas que alimentan los desplegables
 lib/formato.ts         pesos(), porcentaje(), fecha(), inicioDe() con zona -03:00
+lib/permisos.ts       tipo Permiso y puede() (menú) · lib/exigir.ts: exigir('permiso') al principio de cada página
 lib/medios.ts          MedioPago, textoMedio(), ajusteDe() (mismo redondeo que la base)
 lib/carrito.ts         carrito en localStorage
 proxy.ts               refresca la sesión; /admin exige staff; /mi-cuenta exige login

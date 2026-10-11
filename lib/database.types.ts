@@ -133,6 +133,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "proveedores"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "compras_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
     }
                   ]
                 },"depositos": {
@@ -172,6 +178,12 @@ isOneToOne: false
       columns: ["cliente_id"]
 isOneToOne: false
       referencedRelation: "v_mi_ficha"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "interacciones_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "perfiles"
       referencedColumns: ["id"]
     }
                   ]
@@ -233,6 +245,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_stock"
       referencedColumns: ["deposito_id"]
+    },{
+      foreignKeyName: "movimientos_stock_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
     },{
       foreignKeyName: "movimientos_stock_variante_id_fkey"
       columns: ["variante_id"]
@@ -329,6 +347,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "pedidos"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pedido_estados_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
     }
                   ]
                 },"pedido_items": {
@@ -415,14 +439,34 @@ isOneToOne: false
                   ]
                 },"perfiles": {
                   Row: {
-                    "id": string,"nombre": string | null,"rol": string
+                    "id": string,"nombre": string | null,"rol": string,"rol_id": number | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "id": string,"nombre"?: string | null,"rol"?: string
+                    "id": string,"nombre"?: string | null,"rol"?: string,"rol_id"?: number | null
                   }
                   Update: {
-                    "id"?: string,"nombre"?: string | null,"rol"?: string
+                    "id"?: string,"nombre"?: string | null,"rol"?: string,"rol_id"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "perfiles_rol_id_fkey"
+      columns: ["rol_id"]
+isOneToOne: false
+      referencedRelation: "roles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"permisos": {
+                  Row: {
+                    "codigo": string,"descripcion": string | null,"grupo": string,"id": number,"nombre": string,"orden": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "codigo": string,"descripcion"?: string | null,"grupo": string,"id"?: never,"nombre": string,"orden"?: number
+                  }
+                  Update: {
+                    "codigo"?: string,"descripcion"?: string | null,"grupo"?: string,"id"?: never,"nombre"?: string,"orden"?: number
                   }
                   Relationships: [
                     
@@ -551,6 +595,20 @@ isOneToOne: false
                   }
                   Update: {
                     "codigo"?: number,"creado_en"?: string,"documento"?: string | null,"email"?: string | null,"id"?: never,"nombre"?: string,"notas"?: string | null,"telefono"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"roles": {
+                  Row: {
+                    "activo": boolean,"creado_en": string,"descripcion": string | null,"descuento_max_pct": number | null,"id": number,"nombre": string,"permisos": (string)[],"todos": boolean
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activo"?: boolean,"creado_en"?: string,"descripcion"?: string | null,"descuento_max_pct"?: number | null,"id"?: never,"nombre": string,"permisos"?: (string)[],"todos"?: boolean
+                  }
+                  Update: {
+                    "activo"?: boolean,"creado_en"?: string,"descripcion"?: string | null,"descuento_max_pct"?: number | null,"id"?: never,"nombre"?: string,"permisos"?: (string)[],"todos"?: boolean
                   }
                   Relationships: [
                     
@@ -729,14 +787,14 @@ isOneToOne: false
                   ]
                 },"ventas": {
                   Row: {
-                    "ajuste_medio_pago": number,"canal": string,"cliente_id": number | null,"comprobante": string | null,"deposito_id": number,"descuento": number,"fecha": string,"id": number,"notas": string | null,"numero": number | null,"pedido_id": number | null,"punto_venta": number,"subtotal": number,"total": number,"vendedor_id": string | null
+                    "ajuste_medio_pago": number,"canal": string,"cliente_id": number | null,"comprobante": string | null,"deposito_id": number,"descuento": number,"fecha": string,"id": number,"notas": string | null,"numero": number | null,"pedido_id": number | null,"punto_venta": number,"subtotal": number,"total": number,"usuario_id": string | null,"vendedor_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "ajuste_medio_pago"?: number,"canal"?: string,"cliente_id"?: number | null,"comprobante"?: never,"deposito_id": number,"descuento"?: number,"fecha"?: string,"id"?: never,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal": number,"total": number,"vendedor_id"?: string | null
+                    "ajuste_medio_pago"?: number,"canal"?: string,"cliente_id"?: number | null,"comprobante"?: never,"deposito_id": number,"descuento"?: number,"fecha"?: string,"id"?: never,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal": number,"total": number,"usuario_id"?: string | null,"vendedor_id"?: string | null
                   }
                   Update: {
-                    "ajuste_medio_pago"?: number,"canal"?: string,"cliente_id"?: number | null,"comprobante"?: never,"deposito_id"?: number,"descuento"?: number,"fecha"?: string,"id"?: never,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number,"vendedor_id"?: string | null
+                    "ajuste_medio_pago"?: number,"canal"?: string,"cliente_id"?: number | null,"comprobante"?: never,"deposito_id"?: number,"descuento"?: number,"fecha"?: string,"id"?: never,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number,"usuario_id"?: string | null,"vendedor_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -769,6 +827,12 @@ isOneToOne: false
 isOneToOne: true
       referencedRelation: "pedidos"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ventas_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
     }
                   ]
                 }
@@ -784,11 +848,17 @@ isOneToOne: true
                   ]
                 },"v_hechos_ventas": {
                   Row: {
-                    "anio": number | null,"articulo": string | null,"canal": string | null,"cantidad": number | null,"cliente": string | null,"cliente_codigo": number | null,"cliente_origen": string | null,"color": string | null,"comprobante": string | null,"costo": number | null,"costo_unitario": number | null,"deposito": string | null,"dia": string | null,"dia_semana": number | null,"fecha": string | null,"genero": string | null,"id": number | null,"importe": number | null,"importe_neto": number | null,"marca": string | null,"margen": number | null,"margen_neto": number | null,"mes": number | null,"modelo": string | null,"precio_unitario": number | null,"rubro": string | null,"rubro_codigo": string | null,"sku": string | null,"subrubro": string | null,"talle": string | null,"talle_orden": number | null,"venta_id": number | null,"vino_de_pedido": boolean | null
+                    "anio": number | null,"articulo": string | null,"canal": string | null,"cantidad": number | null,"cliente": string | null,"cliente_codigo": number | null,"cliente_origen": string | null,"color": string | null,"comprobante": string | null,"costo": number | null,"costo_unitario": number | null,"deposito": string | null,"dia": string | null,"dia_semana": number | null,"fecha": string | null,"genero": string | null,"id": number | null,"importe": number | null,"importe_neto": number | null,"marca": string | null,"margen": number | null,"margen_neto": number | null,"mes": number | null,"modelo": string | null,"precio_unitario": number | null,"rubro": string | null,"rubro_codigo": string | null,"sku": string | null,"subrubro": string | null,"talle": string | null,"talle_orden": number | null,"vendedor": string | null,"vendedor_id": string | null,"venta_id": number | null,"vino_de_pedido": boolean | null
                   }
                   ComputedFields: never
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "ventas_usuario_id_fkey"
+      columns: ["vendedor_id"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"v_imagenes_tienda": {
                   Row: {
@@ -903,6 +973,12 @@ isOneToOne: false
 "_mover_stock":
 { Args: { "p_cantidad": number,"p_compra"?: number,"p_deposito": number,"p_motivo"?: string,"p_tipo": string,"p_variante": number,"p_venta"?: number }; Returns: undefined
                            },
+"_queda_administrador":
+{ Args: { "p_sin": string }; Returns: boolean
+                           },
+"_registrar_venta":
+{ Args: { "p_canal": string,"p_cliente": number,"p_deposito": number,"p_descuento": number,"p_items": Json,"p_notas": string,"p_pagos": Json }; Returns: number
+                           },
 "_vincular_cliente":
 { Args: { "p_usuario": unknown }; Returns: undefined
                            },
@@ -911,6 +987,9 @@ isOneToOne: false
                            },
 "ajustar_stock":
 { Args: { "p_deposito"?: number,"p_motivo": string,"p_stock_nuevo": number,"p_variante": number }; Returns: undefined
+                           },
+"asignar_rol":
+{ Args: { "p_email": string,"p_rol": number }; Returns: string
                            },
 "buscar_color":
 { Args: { "p_nombre": string }; Returns: number
@@ -927,20 +1006,39 @@ isOneToOne: false
 "deposito_principal":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"equipo":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "desde": string,"email": string,"nombre": string,"rol": string,"rol_id": number,"usuario_id": string
+            }[]
+                           },
 "es_staff":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "mi_cliente_id":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"mi_equipo":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "descuento_max_pct": number,"permisos": (string)[],"rol": string
+            }[]
+                           },
 "precio_de":
 { Args: { "p_variante": number }; Returns: number
+                           },
+"puede_ver_venta":
+{ Args: { "p_usuario": string }; Returns: boolean
+                           },
+"quitar_del_equipo":
+{ Args: { "p_usuario": string }; Returns: undefined
                            },
 "registrar_compra":
 { Args: { "p_actualizar_costo"?: boolean,"p_comprobante_proveedor"?: string,"p_deposito"?: number,"p_fecha_comprobante"?: string,"p_items": Json,"p_notas"?: string,"p_proveedor"?: number }; Returns: number
                            },
 "registrar_venta":
 { Args: { "p_canal"?: string,"p_cliente"?: number,"p_deposito"?: number,"p_descuento"?: number,"p_items": Json,"p_notas"?: string,"p_pagos"?: Json }; Returns: number
+                           },
+"tiene_permiso":
+{ Args: { "p_permiso": string }; Returns: boolean
                            }
           }
           Enums: {

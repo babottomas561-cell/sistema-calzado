@@ -4,8 +4,10 @@ import { crearCliente } from "@/lib/supabase/server";
 import { fecha, pesos } from "@/lib/formato";
 import ListaMovil, { FilaMovil } from "@/components/ListaMovil";
 import { Plus } from "lucide-react";
+import { exigir } from "@/lib/exigir";
 
 export default async function Clientes({ searchParams }: { searchParams: Promise<{ q?: string; etiqueta?: string }> }) {
+  await exigir("clientes.ver");
   const { q = "", etiqueta = "" } = await searchParams;
   const supabase = await crearCliente();
   let consulta = supabase.from("clientes")

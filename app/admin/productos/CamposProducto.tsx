@@ -11,7 +11,8 @@ export type Maestros = { marcas: Opcion[]; categorias: Opcion[]; subcategorias: 
 type P = { codigo?: string; nombre?: string; marca_id?: number | null; categoria_id?: number | null; subcategoria_id?: number | null;
   genero?: string | null; descripcion?: string | null; precio_compra?: number; precio_venta?: number; publicado_web?: boolean };
 
-export default function CamposProducto({ p = {}, maestros }: { p?: P; maestros: Maestros }) {
+// editaPrecio: sin "Cambiar precios de venta" el campo queda bloqueado (y no se manda: la base lo rechazaría)
+export default function CamposProducto({ p = {}, maestros, editaPrecio = true }: { p?: P; maestros: Maestros; editaPrecio?: boolean }) {
   const [rubro, setRubro] = useState<number | "">(p.categoria_id ?? "");
   const subrubros = maestros.subcategorias.filter((s) => s.categoria_id === rubro);
   // Margen en vivo: cuánto se gana sobre el precio de compra (markup) y qué parte del precio es ganancia
@@ -51,7 +52,8 @@ export default function CamposProducto({ p = {}, maestros }: { p?: P; maestros: 
           </select></div>
         <div><label className="etiqueta">Precio de compra ($)</label><input name="precio_compra" type="number" min="0" step="0.01" defaultValue={p.precio_compra ?? ""} onChange={(e) => setCompra(Number(e.target.value))} className="campo" />
           <p className="mt-0.5 text-[11px] text-texto-2">El último que se pagó; cada compra lo actualiza.</p></div>
-        <div><label className="etiqueta">Precio de venta ($)</label><input name="precio_venta" type="number" min="0" step="0.01" defaultValue={p.precio_venta ?? ""} onChange={(e) => setVenta(Number(e.target.value))} className="campo" />
+        <div><label className="etiqueta">Precio de venta ($)</label><input name="precio_venta" type="number" min="0" step="0.01" defaultValue={p.precio_venta ?? ""} onChange={(e) => setVenta(Number(e.target.value))} disabled={!editaPrecio} className="campo disabled:bg-gray-50" />
+          {!editaPrecio && <p className="mt-0.5 text-[11px] text-texto-2">Lo pone quien tiene permiso para cambiar precios.</p>}
           {markup !== null && venta > 0 && <p className={`mt-0.5 text-[11px] font-semibold ${venta < compra ? "text-error" : "text-ok"}`}>
             {venta < compra ? "¡Por debajo del costo!" : `Ganás ${Math.round(markup)} % sobre la compra (${Math.round((1 - compra / venta) * 100)} % del precio)`}</p>}</div>
       </div>

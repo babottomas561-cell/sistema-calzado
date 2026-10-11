@@ -6,6 +6,7 @@ import { CreditCard, Layers, Monitor, Palette, Plus, Ruler, Store, Tag } from "l
 import { crearCliente } from "@/lib/supabase/server";
 import { porcentaje } from "@/lib/formato";
 import Editor from "./Editor";
+import { exigir } from "@/lib/exigir";
 
 const PESTANAS = [
   { clave: "rubros", texto: "Rubros", icono: Layers },
@@ -42,6 +43,7 @@ const Codigo = ({ children }: { children: React.ReactNode }) =>
   <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-600">{children}</span>;
 
 export default async function Tablas({ searchParams }: { searchParams: Promise<{ t?: string }> }) {
+  await exigir("tablas.editar");
   const { t } = await searchParams;
   const actual: Clave = PESTANAS.some((p) => p.clave === t) ? (t as Clave) : "rubros";
   const supabase = await crearCliente();

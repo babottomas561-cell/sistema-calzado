@@ -4,10 +4,13 @@ import { crearCliente } from "@/lib/supabase/server";
 import { numero, pesos } from "@/lib/formato";
 import { leerTodo } from "@/lib/informes";
 import GrillaStock, { LeyendaStock, type CeldaStock } from "@/components/GrillaStock";
+import { exigir } from "@/lib/exigir";
 
 const FILTROS = { todo: "Todo", bajo: "Para reponer", sin: "Sin stock" } as const;
 
 export default async function Stock({ searchParams }: { searchParams: Promise<{ filtro?: string; q?: string }> }) {
+  const { permisos } = await exigir("stock.ver");
+  const veCostos = permisos.includes("costos.ver");   // sin el permiso, la base devuelve el costo vacío
   const { filtro: f = "todo", q = "" } = await searchParams;
   const filtro = (f in FILTROS ? f : "todo") as keyof typeof FILTROS;
   const supabase = await crearCliente();
@@ -47,15 +50,15 @@ export default async function Stock({ searchParams }: { searchParams: Promise<{ 
       {error && <p className="text-error">{error}</p>}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <div className="tarjeta"><div className="etiqueta">Pares</div><div className="text-xl font-bold">{numero(lista.reduce((s, v) => s + v.stock, 0))}</div></div>
-        <div className="tarjeta"><div className="etiqueta">Valor a costo</div><div className="text-xl font-bold">{pesos(lista.reduce((s, v) => s + Number(v.valor_costo), 0))}</div></div>
-        <div className="tarjeta col-span-2 md:col-span-1"><div className="etiqueta">Valor a precio de venta</div><div className="text-xl font-bold">{pesos(lista.reduce((s, v) => s + v.stock * Number(v.precio_venta), 0))}</div></div>
+        {veCostos && <div className="tarjeta"><div className="etiqueta">Valor a costo</div><div className="text-xl font-bold">{pesos(lista.reduce((s, v) => s + Number(v.valor_costo), 0))}</div></div>}
+        <div className={`tarjeta ${veCostos ? "col-span-2 md:col-span-1" : ""}`}><div className="etiqueta">Valor a precio de venta</div><div className="text-xl font-bold">{pesos(lista.reduce((s, v) => s + v.stock * Number(v.precio_venta), 0))}</div></div>
       </div>
       <LeyendaStock />
       <div className="grid gap-3 lg:grid-cols-2">
         {modelos.map((m) => (
           <section key={m.id} className="tarjeta">
             <div className="mb-3 flex items-start justify-between gap-3">
-              <Link href={`/admin/productos/${m.id}`} className="min-w-0">
+              <Link href={veCostos ? `/admin/productos/${m.id}` : `/admin/stock?q=${encodeURIComponent(m.nombre ?? "")}`} className="min-w-0">
                 <div className="truncate font-semibold text-marca hover:underline">{m.nombre}</div>
                 <div className="text-xs text-texto-2"><span className="font-mono">{m.codigo}</span>{m.marca ? ` · ${m.marca}` : ""}</div>
               </Link>

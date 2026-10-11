@@ -3,8 +3,10 @@ import { crearCliente } from "@/lib/supabase/server";
 import { fecha, fechaHora, pesos } from "@/lib/formato";
 import ListaMovil, { FilaMovil } from "@/components/ListaMovil";
 import { Plus } from "lucide-react";
+import { exigir } from "@/lib/exigir";
 
 export default async function Compras() {
+  await exigir("compras.registrar");
   const supabase = await crearCliente();
   const { data: compras, error } = await supabase.from("compras")
     .select("id, comprobante, comprobante_proveedor, fecha_comprobante, fecha, total, notas, proveedores(nombre), compra_items(cantidad)").order("fecha", { ascending: false }).limit(200);

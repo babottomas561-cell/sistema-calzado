@@ -4,8 +4,10 @@ import { crearCliente } from "@/lib/supabase/server";
 import { diaArgentina, fecha } from "@/lib/formato";
 import { marcarHecha } from "../clientes/acciones";
 import { Check } from "lucide-react";
+import { exigir } from "@/lib/exigir";
 
 export default async function Seguimientos() {
+  await exigir("clientes.ver");
   const supabase = await crearCliente();
   const hoy = diaArgentina();
   const [{ data: pendientes }, { data: clientes }] = await Promise.all([

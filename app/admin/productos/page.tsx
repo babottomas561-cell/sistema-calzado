@@ -4,8 +4,10 @@ import { crearCliente } from "@/lib/supabase/server";
 import { numero, pesos } from "@/lib/formato";
 import ListaMovil, { FilaMovil } from "@/components/ListaMovil";
 import { Plus } from "lucide-react";
+import { exigir } from "@/lib/exigir";
 
 export default async function Productos({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  await exigir("costos.ver");
   const { q = "" } = await searchParams;
   const supabase = await crearCliente();
   let consulta = supabase.from("productos").select("id, codigo, nombre, genero, precio_venta, activo, publicado_web, marcas(nombre), categorias(nombre), variantes(stock(cantidad))").order("nombre");

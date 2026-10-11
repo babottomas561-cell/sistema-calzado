@@ -24,11 +24,20 @@ export async function crearCliente() {
   );
 }
 
-// El usuario logueado y su rol ("staff" = equipo, "cliente" = comprador de la tienda)
+// El usuario logueado y su rol ("staff" = equipo, "cliente" = comprador de la tienda).
+// Si es del equipo, también su rol dentro del equipo (Administrador, Cajero…), sus permisos y su
+// tope de descuento: con eso la app arma el menú; lo que se puede hacer de verdad lo controla la base.
 export async function usuarioActual() {
   const supabase = await crearCliente();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { supabase, user: null, rol: null as null | "staff" | "cliente" };
+  const sinEquipo = { rolEquipo: null as string | null, permisos: [] as string[], descuentoMax: null as number | null };
+  if (!user) return { supabase, user: null, rol: null as null | "staff" | "cliente", nombre: null, ...sinEquipo };
   const { data: perfil } = await supabase.from("perfiles").select("rol, nombre").eq("id", user.id).single();
-  return { supabase, user, rol: (perfil?.rol ?? "cliente") as "staff" | "cliente", nombre: perfil?.nombre ?? user.email };
+  const rol = (perfil?.rol ?? "cliente") as "staff" | "cliente";
+  let equipo = sinEquipo;
+  if (rol === "staff") {
+    const { data } = await supabase.rpc("mi_equipo").maybeSingle();
+    if (data) equipo = { rolEquipo: data.rol, permisos: data.permisos ?? [], descuentoMax: data.descuento_max_pct === null ? null : Number(data.descuento_max_pct) };
+  }
+  return { supabase, user, rol, nombre: perfil?.nombre ?? user.email ?? null, ...equipo };
 }

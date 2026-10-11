@@ -5,8 +5,10 @@ import { fechaHora, pesos, porcentaje } from "@/lib/formato";
 import { ESTADOS } from "@/lib/estados-pedido";
 import Acciones from "./Acciones";
 import Volver from "@/components/Volver";
+import { exigir } from "@/lib/exigir";
 
 export default async function Pedido({ params }: { params: Promise<{ id: string }> }) {
+  await exigir("pedidos.gestionar");
   const { id } = await params;
   const supabase = await crearCliente();
   const [{ data: p }, { data: items }, { data: historial }, { data: venta }] = await Promise.all([

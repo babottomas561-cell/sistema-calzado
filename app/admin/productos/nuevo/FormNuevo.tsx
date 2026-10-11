@@ -4,12 +4,12 @@ import { crearProducto } from "../acciones";
 import CamposProducto, { type Maestros } from "../CamposProducto";
 import ElegirTallesColores, { type Color, type Talle } from "../ElegirTallesColores";
 
-export default function FormNuevo({ maestros, talles, colores }: { maestros: Maestros; talles: Talle[]; colores: Color[] }) {
+export default function FormNuevo({ maestros, talles, colores, editaPrecio }: { maestros: Maestros; talles: Talle[]; colores: Color[]; editaPrecio: boolean }) {
   const [estado, accion, cargando] = useActionState(crearProducto, {});
   return (
     <form action={accion} className="max-w-2xl space-y-5">
       <h1 className="text-2xl font-bold">Nuevo producto</h1>
-      <div className="tarjeta"><CamposProducto maestros={maestros} /></div>
+      <div className="tarjeta"><CamposProducto maestros={maestros} editaPrecio={editaPrecio} /></div>
       <div className="tarjeta space-y-4">
         <div>
           <h2 className="font-semibold">Talles y colores</h2>

@@ -63,7 +63,7 @@ select is((select count(*)::int from ventas), 0, 'cliente: no ve ventas');
 select is((select count(*)::int from compras), 0, 'cliente: no ve compras');
 select is((select count(*)::int from producto_proveedores), 0, 'cliente: no ve precios de proveedores');
 select is((select count(*)::int from interacciones), 0, 'cliente: no ve el CRM');
-select throws_ok($$ select registrar_venta('[{"variante_id": 1, "cantidad": 1, "precio_unitario": 1}]') $$, 'Solo el equipo puede registrar ventas');
+select throws_ok($$ select registrar_venta('[{"variante_id": 1, "cantidad": 1, "precio_unitario": 1}]') $$, 'No tenés permiso para registrar ventas');
 select throws_like($$ insert into productos (nombre, categoria_id) values ('x', 1) $$, '%row-level security%', 'cliente: no crea productos');
 -- No puede hacerse staff
 update perfiles set rol = 'staff' where id = auth.uid();
@@ -82,11 +82,11 @@ select is((select etiquetas from clientes where usuario_id = '22222222-2222-2222
 select set_config('request.jwt.claims', '', true);   -- proceso interno (como el alta de Supabase Auth)
 update clientes set email = 'maria@ejemplo.com' where nombre = 'María González';
 insert into auth.users (instance_id, id, aud, role, email, encrypted_password, raw_user_meta_data)
-values ('00000000-0000-0000-0000-000000000000', '33333333-3333-3333-3333-333333333333', 'authenticated', 'authenticated', 'maria@ejemplo.com', '', '{"nombre":"María"}');
+values ('00000000-0000-0000-0000-000000000000', '44444444-4444-4444-4444-444444444444', 'authenticated', 'authenticated', 'maria@ejemplo.com', '', '{"nombre":"María"}');
 select is((select usuario_id from clientes where nombre = 'María González'), null, 'registrarse con un email ajeno sin confirmarlo no da acceso a esa ficha');
-select is((select rol from perfiles where id = '33333333-3333-3333-3333-333333333333'), 'cliente', 'pero ya tiene su perfil de cliente');
-update auth.users set email_confirmed_at = now() where id = '33333333-3333-3333-3333-333333333333';
-select is((select usuario_id from clientes where nombre = 'María González'), '33333333-3333-3333-3333-333333333333'::uuid, 'al confirmar el email se vincula con su ficha del local');
+select is((select rol from perfiles where id = '44444444-4444-4444-4444-444444444444'), 'cliente', 'pero ya tiene su perfil de cliente');
+update auth.users set email_confirmed_at = now() where id = '44444444-4444-4444-4444-444444444444';
+select is((select usuario_id from clientes where nombre = 'María González'), '44444444-4444-4444-4444-444444444444'::uuid, 'al confirmar el email se vincula con su ficha del local');
 
 select * from finish();
 rollback;

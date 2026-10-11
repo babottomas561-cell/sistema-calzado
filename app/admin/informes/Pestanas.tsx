@@ -3,16 +3,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Boxes, Receipt, type LucideIcon } from "lucide-react";
 
-const PESTANAS: { href: string; texto: string; icono: LucideIcon }[] = [
-  { href: "/admin/informes/ventas", texto: "Ventas", icono: Receipt },
-  { href: "/admin/informes/stock", texto: "Stock valorizado", icono: Boxes },
+const PESTANAS: { href: string; texto: string; icono: LucideIcon; permiso: string }[] = [
+  { href: "/admin/informes/ventas", texto: "Ventas", icono: Receipt, permiso: "informes.ventas" },
+  { href: "/admin/informes/stock", texto: "Stock valorizado", icono: Boxes, permiso: "informes.stock" },
 ];
 
-export default function Pestanas() {
+export default function Pestanas({ permisos }: { permisos: string[] }) {
   const ruta = usePathname();
   return (
     <nav className="flex gap-1 overflow-x-auto border-b border-borde">
-      {PESTANAS.map(({ href, texto, icono: Icono }) => {
+      {PESTANAS.filter((t) => permisos.includes(t.permiso)).map(({ href, texto, icono: Icono }) => {
         const activa = ruta.startsWith(href);
         return (
           <Link key={href} href={href} aria-current={activa ? "page" : undefined}

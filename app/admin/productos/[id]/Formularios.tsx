@@ -16,31 +16,34 @@ function Mensaje({ e }: { e: { error?: string; ok?: string } }) {
   return null;
 }
 
-export default function Formularios({ producto, variantes, maestros, talles, colores }: { producto: Producto; variantes: Variante[]; maestros: Maestros; talles: Talle[]; colores: Color[] }) {
+// edita: "Crear y editar productos" · editaPrecio: "Cambiar precios de venta" · ajusta: "Ajustar stock"
+export default function Formularios({ producto, variantes, maestros, talles, colores, edita, editaPrecio, ajusta }: {
+  producto: Producto; variantes: Variante[]; maestros: Maestros; talles: Talle[]; colores: Color[]; edita: boolean; editaPrecio: boolean; ajusta: boolean;
+}) {
   const [eDatos, aDatos, cDatos] = useActionState(actualizarProducto, {});
   const [eVar, aVar, cVar] = useActionState(agregarVariantes, {});
   const [eAj, aAj, cAj] = useActionState(ajustarStock, {});
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <form action={aDatos} className="tarjeta space-y-4 lg:row-span-2">
+      {edita && <form action={aDatos} className="tarjeta space-y-4 lg:row-span-2">
         <h2 className="font-semibold">Datos del producto</h2>
         <input type="hidden" name="id" value={producto.id} />
-        <CamposProducto p={producto} maestros={maestros} />
+        <CamposProducto p={producto} maestros={maestros} editaPrecio={editaPrecio} />
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="activo" defaultChecked={producto.activo} /> Activo (si lo desmarcás, deja de aparecer para vender)</label>
         <Mensaje e={eDatos} />
         <button className="boton" disabled={cDatos}>Guardar cambios</button>
-      </form>
+      </form>}
 
-      <form action={aVar} className="tarjeta space-y-3">
+      {edita && <form action={aVar} className="tarjeta space-y-3">
         <h2 className="font-semibold">Agregar talles o colores</h2>
         <input type="hidden" name="id" value={producto.id} />
         <ElegirTallesColores talles={talles} colores={colores} />
         <Mensaje e={eVar} />
         <button className="boton-sec" disabled={cVar}>Agregar combinaciones</button>
-      </form>
+      </form>}
 
-      <form action={aAj} className="tarjeta space-y-3">
+      {ajusta && <form action={aAj} className="tarjeta space-y-3">
         <h2 className="font-semibold">Ajustar stock</h2>
         <p className="text-xs text-texto-2">Para corregir después de contar (inventario), por rotura o pérdida. Queda registrado con el motivo.</p>
         <input type="hidden" name="producto_id" value={producto.id} />
@@ -53,7 +56,7 @@ export default function Formularios({ producto, variantes, maestros, talles, col
         </div>
         <Mensaje e={eAj} />
         <button className="boton-sec" disabled={cAj || variantes.length === 0}>Ajustar</button>
-      </form>
+      </form>}
     </div>
   );
 }

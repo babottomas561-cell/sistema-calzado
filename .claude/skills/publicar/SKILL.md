@@ -20,7 +20,7 @@ Las dos tienen que pasar limpias.
 Seguí el README, sección 2: proyecto en Supabase → `npx supabase link` → `npx supabase db push`
 → repo en GitHub → proyecto en Vercel con `NEXT_PUBLIC_SUPABASE_URL` y
 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` → *Site URL* en Supabase Auth → marcar el usuario dueño como
-`staff`.
+`staff` con el rol Administrador (README, sección 2).
 
 ## Un cambio de base de datos
 

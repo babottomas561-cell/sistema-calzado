@@ -11,7 +11,11 @@ type Item = FilaStock & { cantidad: number; precio: number };
 type Pago = { medio_pago_id: number; base: number };
 const CANALES = ["Local", "Instagram", "WhatsApp", "Web"];
 
-export default function PuntoDeVenta({ filas, clientes, medios }: { filas: FilaStock[]; clientes: { id: number; nombre: string }[]; medios: MedioPago[] }) {
+// cambiaPrecio: sin el permiso se cobra el precio de lista (la base lo fuerza igual).
+// descuentoMax: tope del descuento manual del rol, en % (null = sin tope; la base también lo controla).
+export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, descuentoMax }: {
+  filas: FilaStock[]; clientes: { id: number; nombre: string }[]; medios: MedioPago[]; cambiaPrecio: boolean; descuentoMax: number | null;
+}) {
   const [items, setItems] = useState<Item[]>([]);
   const [pagos, setPagos] = useState<Pago[]>(medios.length ? [{ medio_pago_id: medios[0].id, base: 0 }] : []);
   const [canal, setCanal] = useState("Local");
@@ -30,6 +34,8 @@ export default function PuntoDeVenta({ filas, clientes, medios }: { filas: FilaS
 
   const subtotal = items.reduce((s, i) => s + i.cantidad * i.precio, 0);
   const neto = Math.max(subtotal - descuento, 0);
+  const topeDescuento = descuentoMax === null ? null : Math.floor((subtotal * descuentoMax) / 100);
+  const pasaTope = topeDescuento !== null && descuento > topeDescuento;
   // El primer medio completa lo que no cubren los demás
   const otros = pagos.slice(1).reduce((s, p) => s + p.base, 0);
   const lineas = pagos.map((p, i) => {
@@ -70,7 +76,8 @@ export default function PuntoDeVenta({ filas, clientes, medios }: { filas: FilaS
                     <input type="number" min={1} max={i.stock} value={i.cantidad} className="campo mt-0.5 py-1.5"
                       onChange={(e) => cambiar(i.variante_id, "cantidad", Math.min(Math.max(1, Number(e.target.value)), i.stock))} /></label>
                   <label className="text-xs text-texto-2">Precio c/u
-                    <input type="number" min={0} value={i.precio} className="campo mt-0.5 py-1.5"
+                    <input type="number" min={0} value={i.precio} className="campo mt-0.5 py-1.5 disabled:bg-gray-50" disabled={!cambiaPrecio}
+                      title={cambiaPrecio ? undefined : "Precio de lista: para rebajar, usá el descuento"}
                       onChange={(e) => cambiar(i.variante_id, "precio", Math.max(0, Number(e.target.value)))} /></label>
                 </div>
               </li>
@@ -86,7 +93,9 @@ export default function PuntoDeVenta({ filas, clientes, medios }: { filas: FilaS
           <div><label className="etiqueta">Canal</label>
             <select value={canal} onChange={(e) => setCanal(e.target.value)} className="campo">{CANALES.map((c) => <option key={c}>{c}</option>)}</select></div>
           <div className="col-span-2"><label className="etiqueta">Descuento del vendedor ($)</label>
-            <input type="number" min={0} value={descuento} onChange={(e) => setDescuento(Math.max(0, Number(e.target.value)))} className="campo" /></div>
+            <input type="number" min={0} value={descuento} onChange={(e) => setDescuento(Math.max(0, Number(e.target.value)))} className={`campo ${pasaTope ? "border-error" : ""}`} />
+            {topeDescuento !== null && <p className={`mt-0.5 text-[11px] ${pasaTope ? "font-semibold text-error" : "text-texto-2"}`}>
+              Tu tope es {descuentoMax} % ({pesos(topeDescuento)}){pasaTope ? ": para más, pedíselo a un encargado" : ""}</p>}</div>
         </div>
 
         <div className="space-y-2">
@@ -125,7 +134,7 @@ export default function PuntoDeVenta({ filas, clientes, medios }: { filas: FilaS
 
         <input type="hidden" name="venta" value={venta} />
         {estado.error && <p className="text-sm text-error">{estado.error}</p>}
-        <button className="boton w-full py-3 text-base" disabled={cargando || items.length === 0 || descuento > subtotal || excedido}>
+        <button className="boton w-full py-3 text-base" disabled={cargando || items.length === 0 || descuento > subtotal || excedido || pasaTope}>
           {cargando ? "Registrando…" : "Confirmar venta"}
         </button>
       </form>

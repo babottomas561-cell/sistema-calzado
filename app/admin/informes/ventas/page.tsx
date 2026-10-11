@@ -10,8 +10,9 @@ import BotonCSV from "@/components/BotonCSV";
 import Desglose, { Agrupar, type FilaDesglose } from "../Desglose";
 import SelectorPeriodo from "../SelectorPeriodo";
 import GraficoVentas, { type Punto } from "./GraficoVentas";
+import { exigir } from "@/lib/exigir";
 
-const POR = { rubro: "Rubro", marca: "Marca", modelo: "Modelo", talle: "Talle", color: "Color", canal: "Canal", cliente: "Cliente", medio: "Medio de pago" } as const;
+const POR = { rubro: "Rubro", marca: "Marca", modelo: "Modelo", talle: "Talle", color: "Color", canal: "Canal", vendedor: "Vendedor", cliente: "Cliente", medio: "Medio de pago" } as const;
 type Por = keyof typeof POR;
 
 const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
@@ -30,6 +31,9 @@ function Variacion({ actual, anterior }: { actual: number; anterior: number }) {
 }
 
 export default async function InformeVentas({ searchParams }: { searchParams: Promise<{ periodo?: string; desde?: string; hasta?: string; por?: string }> }) {
+  const { permisos } = await exigir("informes.ventas");
+  // Sin "Ver costos" la base devuelve la ganancia vacía: no se muestra
+  const conCostos = permisos.includes("costos.ver");
   const sp = await searchParams;
   const periodo = (sp.periodo && sp.periodo in PERIODOS ? sp.periodo : "mes") as Periodo;
   const por = (sp.por && sp.por in POR ? sp.por : "modelo") as Por;
@@ -41,7 +45,7 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
   const supabase = await crearCliente();
   const [items, itemsAnt, pagos] = await Promise.all([
     leerTodo((a, b) => supabase.from("v_hechos_ventas")
-      .select("id, venta_id, dia, cantidad, importe, importe_neto, margen_neto, canal, rubro, marca, articulo, modelo, talle, talle_orden, color, cliente, cliente_codigo")
+      .select("id, venta_id, dia, cantidad, importe, importe_neto, margen_neto, canal, rubro, marca, articulo, modelo, talle, talle_orden, color, cliente, cliente_codigo, vendedor_id, vendedor")
       .gte("fecha", l.gte).lt("fecha", l.lt).order("id").range(a, b)),
     leerTodo((a, b) => supabase.from("v_hechos_ventas").select("id, venta_id, cantidad, importe_neto, margen_neto")
       .gte("fecha", la.gte).lt("fecha", la.lt).order("id").range(a, b)),
@@ -94,6 +98,7 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
         : por === "talle" ? [i.talle ?? "", i.talle ?? "", Number(i.talle_orden)]
         : por === "color" ? [i.color ?? "", i.color ?? "", 0]
         : por === "canal" ? [i.canal ?? "", i.canal ?? "—", 0]
+        : por === "vendedor" ? [i.vendedor_id ?? "", i.vendedor ?? "Sin registrar", 0]
         : [i.cliente_codigo ? String(i.cliente_codigo) : "", i.cliente ? `${i.cliente_codigo} · ${i.cliente}` : "Sin cliente (mostrador)", 0];
       sumar(k, etiqueta, orden, Number(i.importe_neto ?? 0), Number(i.margen_neto ?? 0), i.cantidad ?? 0, i.venta_id ?? 0);
     }
@@ -102,19 +107,19 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
   const totalDesglose = lista.reduce((s, [, g]) => s + g.vendido, 0);
 
   const esMedio = por === "medio";
-  const columnas = esMedio ? [POR[por], "Ventas", "Cobrado"] : [POR[por], "Pares", "Ventas", "Vendido", "Ganancia", "Margen"];
+  const columnas = esMedio ? [POR[por], "Ventas", "Cobrado"] : [POR[por], "Pares", "Ventas", "Vendido", ...(conCostos ? ["Ganancia", "Margen"] : [])];
   const filas: FilaDesglose[] = lista.map(([k, g]) => ({
     clave: k || "—", etiqueta: g.etiqueta, principal: g.vendido, principalTexto: pesos(g.vendido),
     celdas: esMedio ? [numero(g.ventas.size), pesos(g.vendido)]
-      : [numero(g.pares), numero(g.ventas.size), pesos(g.vendido), pesos(g.ganancia), `${margenPct(g.ganancia, g.vendido)} %`],
+      : [numero(g.pares), numero(g.ventas.size), pesos(g.vendido), ...(conCostos ? [pesos(g.ganancia), `${margenPct(g.ganancia, g.vendido)} %`] : [])],
     detalle: esMedio ? `${g.ventas.size} venta${g.ventas.size === 1 ? "" : "s"}`
-      : `${numero(g.pares)} pares · ${g.ventas.size} venta${g.ventas.size === 1 ? "" : "s"} · ganancia ${pesos(g.ganancia)} (${margenPct(g.ganancia, g.vendido)} %)`,
+      : `${numero(g.pares)} pares · ${g.ventas.size} venta${g.ventas.size === 1 ? "" : "s"}${conCostos ? ` · ganancia ${pesos(g.ganancia)} (${margenPct(g.ganancia, g.vendido)} %)` : ""}`,
   }));
 
   const params = periodo === "rango" ? `&periodo=rango&desde=${rango.desde}&hasta=${rango.hasta}` : `&periodo=${periodo}`;
   const kpis = [
     { titulo: "Vendido", valor: pesos(act.vendido), extra: <Variacion actual={act.vendido} anterior={ant.vendido} /> },
-    { titulo: "Ganancia bruta", valor: pesos(act.ganancia), extra: <span className="text-texto-2">{margenPct(act.ganancia, act.vendido)} % de lo vendido</span> },
+    ...(conCostos ? [{ titulo: "Ganancia bruta", valor: pesos(act.ganancia), extra: <span className="text-texto-2">{margenPct(act.ganancia, act.vendido)} % de lo vendido</span> }] : []),
     { titulo: "Ventas", valor: numero(act.ventas), extra: <Variacion actual={act.ventas} anterior={ant.ventas} /> },
     { titulo: "Pares", valor: numero(act.pares), extra: <Variacion actual={act.pares} anterior={ant.pares} /> },
     { titulo: "Ticket promedio", valor: pesos(act.ventas ? act.vendido / act.ventas : 0), extra: <span className="text-texto-2">{act.ventas ? `${(act.pares / act.ventas).toFixed(1).replace(".", ",")} pares por venta` : "—"}</span> },
@@ -139,9 +144,9 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
 
       <Desglose titulo={`Ventas por ${POR[por].toLowerCase()}`} total={totalDesglose} filas={filas} columnas={columnas}
         acciones={<BotonCSV archivo={`ventas-por-${por}-${rango.desde}-al-${rango.hasta}`}
-          columnas={esMedio ? [POR[por], "Ventas", "Cobrado"] : [POR[por], "Pares", "Ventas", "Vendido", "Ganancia", "Margen %"]}
+          columnas={esMedio ? [POR[por], "Ventas", "Cobrado"] : [POR[por], "Pares", "Ventas", "Vendido", ...(conCostos ? ["Ganancia", "Margen %"] : [])]}
           filas={lista.map(([, g]) => esMedio ? [g.etiqueta, g.ventas.size, g.vendido]
-            : [g.etiqueta, g.pares, g.ventas.size, g.vendido, g.ganancia, margenPct(g.ganancia, g.vendido)])} />} />
+            : [g.etiqueta, g.pares, g.ventas.size, g.vendido, ...(conCostos ? [g.ganancia, margenPct(g.ganancia, g.vendido)] : [])])} />} />
 
       <p className="text-xs text-texto-2">
         {esMedio ? "Lo que entró por cada medio, ya con su descuento o recargo: es lo que tiene que haber en caja o en el banco. Una venta pagada con dos medios cuenta en los dos."

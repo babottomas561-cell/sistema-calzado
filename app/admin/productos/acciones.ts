@@ -24,7 +24,8 @@ function datosProducto(f: FormData) {
     descripcion: String(f.get("descripcion") ?? "").trim() || null,
     // imagen_url no va acá: la mantiene la base (es la foto principal de producto_imagenes)
     precio_compra: num(f.get("precio_compra")),
-    precio_venta: num(f.get("precio_venta")),
+    // Si el campo no vino (bloqueado por permisos), no se toca el precio de venta
+    ...(f.has("precio_venta") ? { precio_venta: num(f.get("precio_venta")) } : {}),
     publicado_web: f.get("publicado_web") === "on",
   };
 }

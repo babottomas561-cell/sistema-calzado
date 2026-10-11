@@ -4,35 +4,42 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  BookUser, Boxes, ChartBar, ExternalLink, House, LogOut, Menu as IconoMenu, MessageCircleMore, Package, PackagePlus,
+  BookUser, Boxes, ChartBar, ExternalLink, ShieldCheck, House, LogOut, Menu as IconoMenu, MessageCircleMore, Package, PackagePlus,
   Plus, Receipt, Settings2, ShoppingBag, Truck, Users, X, type LucideIcon,
 } from "lucide-react";
 import Logo from "@/components/Logo";
+import { puede, type Permiso } from "@/lib/permisos";
 
-type Item = { href: string; texto: string; icono: LucideIcon };
+// Cada ítem aparece si el usuario tiene alguno de sus permisos (la base controla igual lo que puede hacer)
+type Item = { href: string; texto: string; icono: LucideIcon; permisos: Permiso[] };
 const GRUPOS: { titulo?: string; items: Item[] }[] = [
-  { items: [{ href: "/admin", texto: "Inicio", icono: House }] },
+  { items: [{ href: "/admin", texto: "Inicio", icono: House, permisos: [] }] },
   { titulo: "Operación", items: [
-    { href: "/admin/ventas", texto: "Ventas", icono: Receipt },
-    { href: "/admin/pedidos", texto: "Pedidos", icono: ShoppingBag },
-    { href: "/admin/compras", texto: "Compras", icono: PackagePlus },
+    { href: "/admin/ventas", texto: "Ventas", icono: Receipt, permisos: ["ventas.registrar", "ventas.ver_todas"] },
+    { href: "/admin/pedidos", texto: "Pedidos", icono: ShoppingBag, permisos: ["pedidos.gestionar"] },
+    { href: "/admin/compras", texto: "Compras", icono: PackagePlus, permisos: ["compras.registrar"] },
   ] },
   { titulo: "Catálogo", items: [
-    { href: "/admin/productos", texto: "Productos", icono: Package },
-    { href: "/admin/stock", texto: "Stock", icono: Boxes },
+    { href: "/admin/productos", texto: "Productos", icono: Package, permisos: ["costos.ver"] },
+    { href: "/admin/stock", texto: "Stock", icono: Boxes, permisos: ["stock.ver"] },
   ] },
-  { titulo: "Análisis", items: [{ href: "/admin/informes", texto: "Informes", icono: ChartBar }] },
+  { titulo: "Análisis", items: [{ href: "/admin/informes", texto: "Informes", icono: ChartBar, permisos: ["informes.ventas", "informes.stock"] }] },
   { titulo: "Contactos", items: [
-    { href: "/admin/clientes", texto: "Clientes", icono: Users },
-    { href: "/admin/seguimientos", texto: "Seguimientos", icono: MessageCircleMore },
-    { href: "/admin/proveedores", texto: "Proveedores", icono: Truck },
+    { href: "/admin/clientes", texto: "Clientes", icono: Users, permisos: ["clientes.ver"] },
+    { href: "/admin/seguimientos", texto: "Seguimientos", icono: MessageCircleMore, permisos: ["clientes.ver"] },
+    { href: "/admin/proveedores", texto: "Proveedores", icono: Truck, permisos: ["proveedores.gestionar", "compras.registrar"] },
   ] },
-  { titulo: "Configuración", items: [{ href: "/admin/tablas", texto: "Tablas", icono: Settings2 }] },
+  { titulo: "Configuración", items: [
+    { href: "/admin/tablas", texto: "Tablas", icono: Settings2, permisos: ["tablas.editar"] },
+    { href: "/admin/equipo", texto: "Equipo", icono: ShieldCheck, permisos: ["equipo.administrar"] },
+  ] },
 ];
 const TODAS = ["/admin/ventas/nueva", ...GRUPOS.flatMap((g) => g.items.map((i) => i.href))];
 
-export default function Menu({ email, salir }: { email: string; salir: () => Promise<void> }) {
+export default function Menu({ email, rolEquipo, permisos, salir }: { email: string; rolEquipo: string | null; permisos: string[]; salir: () => Promise<void> }) {
   const ruta = usePathname();
+  const grupos = GRUPOS.map((g) => ({ ...g, items: g.items.filter((i) => !i.permisos.length || puede(permisos, ...i.permisos)) })).filter((g) => g.items.length);
+  const vende = puede(permisos, "ventas.registrar");
   const [abierto, setAbierto] = useState(false);
   // Queda marcado el ítem cuya ruta coincide más largo con la actual ("/ventas/nueva" gana sobre "/ventas")
   const actual = TODAS.filter((h) => (h === "/admin" ? ruta === "/admin" : ruta === h || ruta.startsWith(h + "/")))
@@ -50,14 +57,14 @@ export default function Menu({ email, salir }: { email: string; salir: () => Pro
 
       <aside className={`${abierto ? "flex" : "hidden"} fixed inset-0 top-[57px] z-10 flex-col overflow-y-auto bg-white md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:border-r md:border-borde`}>
         <div className="hidden px-5 pb-4 pt-5 md:block"><Logo /></div>
-        <div className="px-3 pt-3 md:pt-0">
+        {vende && <div className="px-3 pt-3 md:pt-0">
           <Link href="/admin/ventas/nueva" onClick={() => setAbierto(false)}
             className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition ${actual === "/admin/ventas/nueva" ? "bg-blue-800" : "bg-marca hover:bg-blue-800"}`}>
             <Plus size={18} strokeWidth={2.4} /> Nueva venta
           </Link>
-        </div>
+        </div>}
         <nav className="flex-1 px-3 py-3">
-          {GRUPOS.map((g, i) => (
+          {grupos.map((g, i) => (
             <div key={i} className="mb-3">
               {g.titulo && <div className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">{g.titulo}</div>}
               {g.items.map(({ href, texto, icono: Icono }) => {
@@ -77,7 +84,7 @@ export default function Menu({ email, salir }: { email: string; salir: () => Pro
             <ExternalLink size={18} strokeWidth={1.8} /> Ver la tienda</a>
           <div className="flex items-center gap-3 px-3 py-2">
             <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-gray-100 text-gray-500"><BookUser size={15} /></span>
-            <span className="min-w-0 flex-1 truncate text-xs text-texto-2">{email}</span>
+            <span className="min-w-0 flex-1 text-xs text-texto-2"><span className="block truncate">{email}</span>{rolEquipo && <span className="block font-semibold text-gray-600">{rolEquipo}</span>}</span>
             <form action={salir}><button className="grid h-8 w-8 place-items-center rounded-lg text-gray-500 hover:bg-gray-100" title="Cerrar sesión" aria-label="Cerrar sesión"><LogOut size={16} /></button></form>
           </div>
         </div>

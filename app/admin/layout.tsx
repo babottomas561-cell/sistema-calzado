@@ -11,13 +11,13 @@ async function salir() {
 }
 
 export default async function LayoutAdmin({ children }: { children: React.ReactNode }) {
-  const { user, rol } = await usuarioActual();
+  const { user, rol, rolEquipo, permisos } = await usuarioActual();
   if (!user) redirect("/ingresar?volver=/admin");
   if (rol !== "staff") redirect("/mi-cuenta");
 
   return (
     <div className="md:flex">
-      <Menu email={user.email ?? ""} salir={salir} />
+      <Menu email={user.email ?? ""} rolEquipo={rolEquipo} permisos={permisos} salir={salir} />
       <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 px-4 py-5 md:px-8 md:py-8">{children}</main>
     </div>
   );

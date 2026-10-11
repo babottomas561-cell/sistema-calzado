@@ -4,10 +4,12 @@ import { crearCliente } from "@/lib/supabase/server";
 import { fechaHora, pesos } from "@/lib/formato";
 import ListaMovil, { FilaMovil } from "@/components/ListaMovil";
 import { ESTADOS } from "@/lib/estados-pedido";
+import { exigir } from "@/lib/exigir";
 
 const VISTAS = { activos: ["pendiente", "confirmado", "preparado", "enviado", "listo_retiro"], cerrados: ["entregado", "cancelado"] } as const;
 
 export default async function Pedidos({ searchParams }: { searchParams: Promise<{ ver?: string }> }) {
+  await exigir("pedidos.gestionar");
   const { ver = "activos" } = await searchParams;
   const vista = ver === "cerrados" ? "cerrados" : "activos";
   const supabase = await crearCliente();

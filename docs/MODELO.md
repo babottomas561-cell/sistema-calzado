@@ -121,6 +121,6 @@ queda en `movimientos_stock`. Siempre: `stock.cantidad = Σ movimientos`.
 
 | quién | ve |
 |---|---|
-| equipo (`perfiles.rol = 'staff'`) | todo |
+| equipo (`perfiles.rol = 'staff'` + `rol_id`) | lo que su rol permite (`tiene_permiso('…')`); los costos solo con `costos.ver` |
 | cliente registrado | su ficha, sus pedidos (con sus renglones y su seguimiento) |
 | cualquiera (sin cuenta) | `v_catalogo` (sin costos) y los `medios_pago` habilitados en la tienda |

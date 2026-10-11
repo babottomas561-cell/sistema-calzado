@@ -7,11 +7,15 @@ import { leerTodo } from "@/lib/informes";
 import { numero, pesos } from "@/lib/formato";
 import BotonCSV from "@/components/BotonCSV";
 import Desglose, { Agrupar, type FilaDesglose } from "../Desglose";
+import { exigir } from "@/lib/exigir";
 
 const POR = { rubro: "Rubro", marca: "Marca", modelo: "Modelo", talle: "Talle", color: "Color" } as const;
 type Por = keyof typeof POR;
 
 export default async function StockValorizado({ searchParams }: { searchParams: Promise<{ por?: string }> }) {
+  const { permisos } = await exigir("informes.stock");
+  // Sin "Ver costos" la base devuelve el costo vacío: se valoriza solo a precio de venta
+  const conCostos = permisos.includes("costos.ver");
   const { por: p = "rubro" } = await searchParams;
   const por = (p in POR ? p : "rubro") as Por;
   const supabase = await crearCliente();
@@ -39,30 +43,30 @@ export default async function StockValorizado({ searchParams }: { searchParams: 
     grupos.set(k, g);
   }
   // Por talle se lee en el orden de los talles; el resto, de mayor a menor plata invertida
-  const lista = [...grupos.entries()].sort(([, a], [, b]) => (por === "talle" ? a.orden - b.orden : b.costo - a.costo));
+  const lista = [...grupos.entries()].sort(([, a], [, b]) => (por === "talle" ? a.orden - b.orden : conCostos ? b.costo - a.costo : b.venta - a.venta));
 
   const tot = { pares: 0, costo: 0, venta: 0 };
   lista.forEach(([, g]) => { tot.pares += g.pares; tot.costo += g.costo; tot.venta += g.venta; });
   const margen = (costo: number, venta: number) => (venta > 0 ? Math.round(((venta - costo) / venta) * 100) : 0);
 
   // Avisos: sin costo, el valor a costo queda por debajo de la realidad; sin precio de venta, la ganancia potencial
-  const sinCosto = [...new Map(conStock.filter((v) => v.costo <= 0).map((v) => [v.producto_id, v])).values()];
+  const sinCosto = !conCostos ? [] : [...new Map(conStock.filter((v) => v.costo <= 0).map((v) => [v.producto_id, v])).values()];
   const sinPrecio = [...new Map(conStock.filter((v) => v.venta <= 0).map((v) => [v.producto_id, v])).values()];
 
   const filasDesglose: FilaDesglose[] = lista.map(([k, g]) => ({
     clave: k,
     etiqueta: g.productoId ? <Link href={`/admin/productos/${g.productoId}`} className="text-marca hover:underline">{g.etiqueta}</Link> : g.etiqueta,
-    principal: g.costo,
-    principalTexto: pesos(g.costo),
-    celdas: [numero(g.pares), pesos(g.costo), pesos(g.venta), pesos(g.venta - g.costo), `${margen(g.costo, g.venta)} %`],
-    detalle: `${numero(g.pares)} pares · a venta ${pesos(g.venta)} · margen ${margen(g.costo, g.venta)} %${por !== "modelo" ? ` · ${g.modelos.size} modelo${g.modelos.size === 1 ? "" : "s"}` : ""}`,
+    principal: conCostos ? g.costo : g.venta,
+    principalTexto: pesos(conCostos ? g.costo : g.venta),
+    celdas: conCostos ? [numero(g.pares), pesos(g.costo), pesos(g.venta), pesos(g.venta - g.costo), `${margen(g.costo, g.venta)} %`] : [numero(g.pares), pesos(g.venta)],
+    detalle: `${numero(g.pares)} pares${conCostos ? ` · a venta ${pesos(g.venta)} · margen ${margen(g.costo, g.venta)} %` : ""}${por !== "modelo" ? ` · ${g.modelos.size} modelo${g.modelos.size === 1 ? "" : "s"}` : ""}`,
   }));
 
   const kpis = [
     { titulo: "Pares en stock", valor: numero(tot.pares), detalle: `${new Set(conStock.map((v) => v.producto_id)).size} modelos` },
-    { titulo: "Valor a costo", valor: pesos(tot.costo), detalle: "lo que te costó la mercadería" },
+    ...(conCostos ? [{ titulo: "Valor a costo", valor: pesos(tot.costo), detalle: "lo que te costó la mercadería" }] : []),
     { titulo: "Valor a precio de venta", valor: pesos(tot.venta), detalle: "si vendieras todo a precio de lista" },
-    { titulo: "Ganancia potencial", valor: pesos(tot.venta - tot.costo), detalle: `${margen(tot.costo, tot.venta)} % del precio de venta` },
+    ...(conCostos ? [{ titulo: "Ganancia potencial", valor: pesos(tot.venta - tot.costo), detalle: `${margen(tot.costo, tot.venta)} % del precio de venta` }] : []),
   ];
 
   return (
@@ -87,11 +91,11 @@ export default async function StockValorizado({ searchParams }: { searchParams: 
 
       <Agrupar base="/admin/informes/stock" opciones={POR} actual={por} />
 
-      <Desglose titulo={`Stock por ${POR[por].toLowerCase()}`} total={tot.costo} filas={filasDesglose}
-        columnas={[POR[por], "Pares", "A costo", "A venta", "Ganancia potencial", "Margen"]}
+      <Desglose titulo={`Stock por ${POR[por].toLowerCase()}`} total={conCostos ? tot.costo : tot.venta} filas={filasDesglose}
+        columnas={conCostos ? [POR[por], "Pares", "A costo", "A venta", "Ganancia potencial", "Margen"] : [POR[por], "Pares", "A venta"]}
         acciones={<BotonCSV archivo={`stock-valorizado-por-${por}`}
-          columnas={[POR[por], "Pares", "Valor a costo", "Valor a venta", "Ganancia potencial", "Margen %"]}
-          filas={lista.map(([, g]) => [g.etiqueta, g.pares, g.costo, g.venta, g.venta - g.costo, margen(g.costo, g.venta)])} />} />
+          columnas={conCostos ? [POR[por], "Pares", "Valor a costo", "Valor a venta", "Ganancia potencial", "Margen %"] : [POR[por], "Pares", "Valor a venta"]}
+          filas={lista.map(([, g]) => conCostos ? [g.etiqueta, g.pares, g.costo, g.venta, g.venta - g.costo, margen(g.costo, g.venta)] : [g.etiqueta, g.pares, g.venta])} />} />
 
       <p className="text-xs text-texto-2">Stock de hoy. El costo es el último precio de compra de cada modelo; el precio de venta, el de lista (sin descuentos por medio de pago). La barra muestra la parte de la plata invertida a costo.</p>
     </div>

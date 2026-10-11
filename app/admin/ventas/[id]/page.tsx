@@ -5,14 +5,16 @@ import { crearCliente } from "@/lib/supabase/server";
 import { fechaHora, pesos, porcentaje } from "@/lib/formato";
 import { CircleCheck, Plus } from "lucide-react";
 import Volver from "@/components/Volver";
+import { exigir } from "@/lib/exigir";
 
 export default async function Venta({ params, searchParams }: {
   params: Promise<{ id: string }>; searchParams: Promise<{ nueva?: string }>;
 }) {
+  await exigir("ventas.registrar", "ventas.ver_todas");
   const [{ id }, { nueva }] = await Promise.all([params, searchParams]);
   const supabase = await crearCliente();
   const [{ data: v }, { data: items }] = await Promise.all([
-    supabase.from("ventas").select("*, clientes(id, nombre, telefono), pagos(base, ajuste_pct, ajuste, monto, cuotas, referencia, medios_pago(nombre))").eq("id", Number(id)).single(),
+    supabase.from("ventas").select("*, clientes(id, nombre, telefono), vendedor:perfiles(nombre), pagos(base, ajuste_pct, ajuste, monto, cuotas, referencia, medios_pago(nombre))").eq("id", Number(id)).single(),
     supabase.from("v_venta_items").select("id, nombre, marca, talle, color, cantidad, precio_unitario, subtotal").eq("venta_id", Number(id)),
   ]);
   if (!v) notFound();
@@ -30,7 +32,7 @@ export default async function Venta({ params, searchParams }: {
       </div>
       <div className="tarjeta space-y-4">
         <div className="flex justify-between">
-          <div><h1 className="text-xl font-bold">Venta <span className="font-mono">{v.comprobante}</span></h1><p className="text-sm text-texto-2">{fechaHora(v.fecha)}</p></div>
+          <div><h1 className="text-xl font-bold">Venta <span className="font-mono">{v.comprobante}</span></h1><p className="text-sm text-texto-2">{fechaHora(v.fecha)}{v.vendedor ? ` · vendió ${(v.vendedor as { nombre: string | null }).nombre ?? "—"}` : ""}</p></div>
           <div className="text-right text-sm"><div className="font-semibold">{v.canal}{v.pedido_id ? <> · <a href={`/admin/pedidos/${v.pedido_id}`} className="text-marca">ver pedido</a></> : null}</div>
             <div className="text-texto-2">{cliente ? <a href={`/admin/clientes/${cliente.id}`} className="text-marca">{cliente.nombre}</a> : "Sin cliente"}</div></div>
         </div>

@@ -20,18 +20,24 @@ description: Cambiar el esquema de la base (tabla, columna, función, vista o po
       trigger `_completar_codigo()` para que se genere solo.
 - [ ] FKs con nombre `<tabla_en_singular>_id`, **política de borrado explícita** (`restrict` si
       tiene historia, `cascade` solo si es parte de otra fila) y **un índice por FK**.
-- [ ] `alter table … enable row level security;` + al menos la política del equipo:
-      `create policy "equipo" on public.X for all to authenticated using (es_staff()) with check (es_staff());`
+- [ ] `alter table … enable row level security;` + políticas **por permiso** (no "el equipo hace todo"):
+      `create policy "ve X" on public.X for select to authenticated using (tiene_permiso('…'));`
+      `create policy "edita X" on public.X for all to authenticated using (tiene_permiso('…')) with check (tiene_permiso('…'));`
+      Si hace falta un permiso nuevo: insertalo en `permisos` (el Administrador lo tiene solo; a los demás
+      roles se lo da quien administra el equipo). Si la tabla tiene **costos**, la lectura va con `costos.ver`.
       Si la ve un cliente o el público, una política aparte y lo más acotada posible.
 - [ ] Textos que van a un desplegable: índice único sobre `lower(nombre)`.
 
 ## Funciones
 
-- Si mueven stock o dinero: `security invoker`, chequean `es_staff()` al principio, validan todo
+- Si mueven stock o dinero: `security definer` (las tablas de la operación no tienen políticas de escritura),
+  chequean `tiene_permiso('…')` al principio, validan todo
   y lanzan errores en castellano (`raise exception 'Stock insuficiente…'`): la app los muestra tal cual.
-- `security definer` solo si un cliente necesita hacer algo que no puede hacer directo (como
-  `crear_pedido`), y entonces valida `auth.uid()` y **no confía en precios que mande el navegador**.
-- `grant execute on function … to authenticated;` (por defecto está revocado a todos).
+- Si la usa un cliente de la tienda (como `crear_pedido`): valida `auth.uid()` y **no confía en
+  precios que mande el navegador**.
+- Una función nueva nace ejecutable por **cualquiera** (también anon): siempre
+  `revoke execute on function … from public, anon;` y `grant execute … to authenticated;`.
+  Las internas (`_algo`), revocadas también a `authenticated`.
 
 ## Después
 

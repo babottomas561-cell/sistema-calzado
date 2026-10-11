@@ -3,10 +3,12 @@ import { crearCliente } from "@/lib/supabase/server";
 import { fecha, fechaHora, pesos } from "@/lib/formato";
 import Volver from "@/components/Volver";
 import { CircleCheck } from "lucide-react";
+import { exigir } from "@/lib/exigir";
 
 export default async function Compra({ params, searchParams }: {
   params: Promise<{ id: string }>; searchParams: Promise<{ nueva?: string }>;
 }) {
+  await exigir("compras.registrar");
   const [{ id }, { nueva }] = await Promise.all([params, searchParams]);
   const supabase = await crearCliente();
   const [{ data: c }, { data: items }] = await Promise.all([
