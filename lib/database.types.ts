@@ -23,7 +23,83 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "categorias": {
+            "ajuste_precio_items": {
+                  Row: {
+                    "ajuste_id": number,"id": number,"precio_anterior": number,"precio_nuevo": number,"producto_id": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "ajuste_id": number,"id"?: never,"precio_anterior": number,"precio_nuevo": number,"producto_id": number
+                  }
+                  Update: {
+                    "ajuste_id"?: number,"id"?: never,"precio_anterior"?: number,"precio_nuevo"?: number,"producto_id"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ajuste_precio_items_ajuste_id_fkey"
+      columns: ["ajuste_id"]
+isOneToOne: false
+      referencedRelation: "ajustes_precios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ajuste_precio_items_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "productos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ajuste_precio_items_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_catalogo"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "ajuste_precio_items_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_stock"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "ajuste_precio_items_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_venta_items"
+      referencedColumns: ["producto_id"]
+    }
+                  ]
+                },"ajustes_precios": {
+                  Row: {
+                    "cantidad": number,"descripcion": string | null,"deshecho_en": string | null,"deshecho_por": string | null,"fecha": string,"id": number,"modo": string,"proveedor_id": number | null,"que": string,"redondeo": string,"usuario_id": string | null,"valor": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cantidad"?: number,"descripcion"?: string | null,"deshecho_en"?: string | null,"deshecho_por"?: string | null,"fecha"?: string,"id"?: never,"modo": string,"proveedor_id"?: number | null,"que": string,"redondeo"?: string,"usuario_id"?: string | null,"valor": number
+                  }
+                  Update: {
+                    "cantidad"?: number,"descripcion"?: string | null,"deshecho_en"?: string | null,"deshecho_por"?: string | null,"fecha"?: string,"id"?: never,"modo"?: string,"proveedor_id"?: number | null,"que"?: string,"redondeo"?: string,"usuario_id"?: string | null,"valor"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ajustes_precios_deshecho_por_fkey"
+      columns: ["deshecho_por"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ajustes_precios_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "proveedores"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ajustes_precios_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"categorias": {
                   Row: {
                     "codigo": string,"id": number,"nombre": string
                   }
@@ -985,6 +1061,11 @@ isOneToOne: false
 "actualizar_mi_ficha":
 { Args: { "p_acepta_promos"?: boolean,"p_direccion"?: string,"p_documento"?: string,"p_fecha_nacimiento"?: string,"p_localidad"?: string,"p_nombre": string,"p_telefono"?: string }; Returns: undefined
                            },
+"ajustar_precios":
+{ Args: { "p_aplicar"?: boolean,"p_descripcion"?: string,"p_modo": string,"p_productos": (number)[],"p_proveedor"?: number,"p_que": string,"p_redondeo"?: string,"p_valor": number }; Returns: {
+              "codigo": string,"nombre": string,"precio_anterior": number,"precio_nuevo": number,"producto_id": number
+            }[]
+                           },
 "ajustar_stock":
 { Args: { "p_deposito"?: number,"p_motivo": string,"p_stock_nuevo": number,"p_variante": number }; Returns: undefined
                            },
@@ -1006,6 +1087,9 @@ isOneToOne: false
 "deposito_principal":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"deshacer_ajuste_precios":
+{ Args: { "p_ajuste": number }; Returns: number
+                           },
 "equipo":
 { Args: Record<PropertyKey, never>; Returns: {
               "desde": string,"email": string,"nombre": string,"rol": string,"rol_id": number,"usuario_id": string
@@ -1021,6 +1105,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "descuento_max_pct": number,"permisos": (string)[],"rol": string
             }[]
+                           },
+"precio_ajustado":
+{ Args: { "p_actual": number,"p_costo": number,"p_modo": string,"p_redondeo": string,"p_valor": number }; Returns: number
                            },
 "precio_de":
 { Args: { "p_variante": number }; Returns: number

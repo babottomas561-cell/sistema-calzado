@@ -132,6 +132,7 @@ app/admin/             panel del equipo (el layout verifica que sea staff; cada 
   compras/nueva/       cargar factura de compra POR CURVA: cabecera, grilla talle×color por modelo,
                        un costo por modelo, control contra el total de la factura, alta rápida de artículos
   stock/  pedidos/  clientes/  seguimientos/  proveedores/
+  precios/             ajuste masivo de precios de venta y compra (ajustar_precios), historial y deshacer
   tablas/              maestros: rubros/subrubros, marcas, colores (muestra), talles (orden), medios de pago
 components/            Menu (íconos lucide), Logo, Volver, SelectorVariantes (venta), Contactos…
 lib/supabase/server.ts crearCliente() tipado y usuarioActual() → { supabase, user, rol, nombre }
