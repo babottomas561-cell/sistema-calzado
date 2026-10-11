@@ -631,14 +631,14 @@ isOneToOne: false
                   ]
                 },"productos": {
                   Row: {
-                    "activo": boolean,"categoria_id": number | null,"codigo": string,"creado_en": string,"descripcion": string | null,"genero": string | null,"id": number,"imagen_url": string | null,"marca_id": number | null,"nombre": string,"precio_compra": number,"precio_venta": number,"publicado_web": boolean,"subcategoria_id": number | null
+                    "activo": boolean,"categoria_id": number | null,"codigo": string,"creado_en": string,"descripcion": string | null,"escala": string,"genero": string | null,"id": number,"imagen_url": string | null,"marca_id": number | null,"nombre": string,"precio_compra": number,"precio_venta": number,"publicado_web": boolean,"subcategoria_id": number | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "activo"?: boolean,"categoria_id"?: number | null,"codigo": string,"creado_en"?: string,"descripcion"?: string | null,"genero"?: string | null,"id"?: never,"imagen_url"?: string | null,"marca_id"?: number | null,"nombre": string,"precio_compra"?: number,"precio_venta"?: number,"publicado_web"?: boolean,"subcategoria_id"?: number | null
+                    "activo"?: boolean,"categoria_id"?: number | null,"codigo": string,"creado_en"?: string,"descripcion"?: string | null,"escala"?: string,"genero"?: string | null,"id"?: never,"imagen_url"?: string | null,"marca_id"?: number | null,"nombre": string,"precio_compra"?: number,"precio_venta"?: number,"publicado_web"?: boolean,"subcategoria_id"?: number | null
                   }
                   Update: {
-                    "activo"?: boolean,"categoria_id"?: number | null,"codigo"?: string,"creado_en"?: string,"descripcion"?: string | null,"genero"?: string | null,"id"?: never,"imagen_url"?: string | null,"marca_id"?: number | null,"nombre"?: string,"precio_compra"?: number,"precio_venta"?: number,"publicado_web"?: boolean,"subcategoria_id"?: number | null
+                    "activo"?: boolean,"categoria_id"?: number | null,"codigo"?: string,"creado_en"?: string,"descripcion"?: string | null,"escala"?: string,"genero"?: string | null,"id"?: never,"imagen_url"?: string | null,"marca_id"?: number | null,"nombre"?: string,"precio_compra"?: number,"precio_venta"?: number,"publicado_web"?: boolean,"subcategoria_id"?: number | null
                   }
                   Relationships: [
                     {
@@ -916,7 +916,7 @@ isOneToOne: false
           Views: {
             "v_catalogo": {
                   Row: {
-                    "categoria": string | null,"color": string | null,"color_hex": string | null,"descripcion": string | null,"disponible": number | null,"genero": string | null,"imagen_url": string | null,"marca": string | null,"nombre": string | null,"precio": number | null,"producto_id": number | null,"talle": string | null,"talle_orden": number | null,"variante_id": number | null
+                    "categoria": string | null,"color": string | null,"color_hex": string | null,"descripcion": string | null,"disponible": number | null,"escala": string | null,"genero": string | null,"imagen_url": string | null,"marca": string | null,"nombre": string | null,"precio": number | null,"producto_id": number | null,"talle": string | null,"talle_orden": number | null,"variante_id": number | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -1076,7 +1076,7 @@ isOneToOne: false
 { Args: { "p_nombre": string }; Returns: number
                            },
 "buscar_talle":
-{ Args: { "p_nombre": string }; Returns: number
+{ Args: { "p_escala"?: string,"p_nombre": string }; Returns: number
                            },
 "cambiar_estado_pedido":
 { Args: { "p_comentario"?: string,"p_estado": string,"p_pagos"?: Json,"p_pedido": number }; Returns: number

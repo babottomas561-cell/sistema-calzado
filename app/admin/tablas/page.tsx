@@ -150,17 +150,21 @@ export default async function Tablas({ searchParams }: { searchParams: Promise<{
         {actual === "talles" && <>
           <Encabezado titulo="Talles" detalle="Tocá un talle para editarlo. El orden define cómo se listan (38 · 38.5 · 39).">
             <Editor tabla="talles" titulo="Nuevo talle" nuevo="Nuevo talle">
-              <div><label className="etiqueta">Talle</label><input name="nombre" required placeholder="44 · 37.5 · XL" className="campo" autoFocus /></div>
-              <p className="text-xs text-texto-2">El orden y si es de niños se calculan solos; después los podés cambiar.</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="etiqueta">Talle</label><input name="nombre" required placeholder="44 · 37.5 · XL" className="campo" autoFocus /></div>
+                <div><label className="etiqueta">Escala</label><select name="tipo" defaultValue="" className="campo">
+                  <option value="">Automática</option><option>Adulto</option><option>Niños</option><option>Bebé</option></select></div>
+              </div>
+              <p className="text-xs text-texto-2">El orden se calcula solo. Escala automática: menos de 35 es de niños. El mismo número puede existir en dos escalas (el 34 de niños y el de adulto).</p>
             </Editor>
           </Encabezado>
           <div className="space-y-5 px-5 py-4">
-            {["Adulto", "Niños"].map((tipo) => {
+            {["Adulto", "Niños", "Bebé"].map((tipo) => {
               const lista = (talles.data ?? []).filter((x) => x.tipo === tipo);
               if (!lista.length) return null;
               return (
                 <div key={tipo}>
-                  <div className="etiqueta">{tipo === "Adulto" ? "Adultos" : "Niños"}</div>
+                  <div className="etiqueta">{tipo === "Adulto" ? "Adultos" : tipo === "Niños" ? "Niños" : "Bebés"}</div>
                   <div className="flex flex-wrap gap-2">{lista.map((x) => (
                     <Editor key={`${x.id}-${x.nombre}-${x.orden}-${x.tipo}`} tabla="talles" id={x.id} titulo={`Talle ${x.nombre}`} enUso={usos(x.variantes)}
                       disparador={<span className="flex h-14 w-16 flex-col items-center justify-center rounded-lg border border-borde bg-white transition hover:border-marca hover:bg-marca-suave">
@@ -168,7 +172,7 @@ export default async function Tablas({ searchParams }: { searchParams: Promise<{
                       <div className="grid grid-cols-3 gap-3">
                         <div><label className="etiqueta">Talle</label><input name="nombre" required defaultValue={x.nombre} className="campo" /></div>
                         <div><label className="etiqueta">Orden</label><input name="orden" type="number" step="0.5" required defaultValue={x.orden} className="campo" /></div>
-                        <div><label className="etiqueta">Tipo</label><select name="tipo" defaultValue={x.tipo} className="campo"><option>Adulto</option><option>Niños</option></select></div>
+                        <div><label className="etiqueta">Escala</label><select name="tipo" defaultValue={x.tipo} className="campo"><option>Adulto</option><option>Niños</option><option>Bebé</option></select></div>
                       </div>
                     </Editor>
                   ))}</div>
@@ -219,7 +223,7 @@ function CamposMedio({ m }: { m?: Medio }) {
     <>
       <CodigoNombre codigo={m?.codigo} nombre={m?.nombre} ejemplo="Efectivo" />
       <div className="grid grid-cols-2 gap-3">
-        <div><label className="etiqueta">Tipo</label>
+        <div><label className="etiqueta">Escala</label>
           <select name="tipo" defaultValue={m?.tipo ?? "Otro"} className="campo">{TIPOS_MEDIO.map((t) => <option key={t}>{t}</option>)}</select></div>
         <div><label className="etiqueta">Cuotas</label><input name="cuotas" type="number" min="1" defaultValue={m?.cuotas ?? 1} className="campo" /></div>
       </div>

@@ -6,7 +6,9 @@ import { useState } from "react";
 export type Talle = { id: number; nombre: string; tipo: string };
 export type Color = { id: number; nombre: string; codigo: string; hex: string | null };
 
-export default function ElegirTallesColores({ talles, colores }: { talles: Talle[]; colores: Color[] }) {
+// escala: si viene, solo se ofrecen los talles de esa escala (Adulto, Niños o Bebé)
+export default function ElegirTallesColores({ talles: todos, colores, escala }: { talles: Talle[]; colores: Color[]; escala?: string }) {
+  const talles = escala ? todos.filter((t) => t.tipo === escala) : todos;
   const [tTilde, setT] = useState<number[]>([]);
   const [cTilde, setC] = useState<number[]>([]);
   // Actualización funcional: dos toques seguidos no se pisan

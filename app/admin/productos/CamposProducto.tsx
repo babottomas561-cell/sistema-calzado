@@ -9,10 +9,15 @@ export type Subrubro = Opcion & { categoria_id: number };
 export type Maestros = { marcas: Opcion[]; categorias: Opcion[]; subcategorias: Subrubro[] };
 
 type P = { codigo?: string; nombre?: string; marca_id?: number | null; categoria_id?: number | null; subcategoria_id?: number | null;
-  genero?: string | null; descripcion?: string | null; precio_compra?: number; precio_venta?: number; publicado_web?: boolean };
+  genero?: string | null; escala?: string; descripcion?: string | null; precio_compra?: number; precio_venta?: number; publicado_web?: boolean };
 
 // editaPrecio: sin "Cambiar precios de venta" el campo queda bloqueado (y no se manda: la base lo rechazaría)
-export default function CamposProducto({ p = {}, maestros, editaPrecio = true }: { p?: P; maestros: Maestros; editaPrecio?: boolean }) {
+// escala: Adulto/Niños/Bebé define qué talles puede tener (la base no deja mezclar). alCambiarEscala avisa al
+// selector de talles; bloquearEscala: el artículo ya tiene talles, no se puede cambiar.
+export const ESCALAS = ["Adulto", "Niños", "Bebé"] as const;
+export default function CamposProducto({ p = {}, maestros, editaPrecio = true, alCambiarEscala, bloquearEscala = false }: {
+  p?: P; maestros: Maestros; editaPrecio?: boolean; alCambiarEscala?: (escala: string) => void; bloquearEscala?: boolean;
+}) {
   const [rubro, setRubro] = useState<number | "">(p.categoria_id ?? "");
   const subrubros = maestros.subcategorias.filter((s) => s.categoria_id === rubro);
   // Margen en vivo: cuánto se gana sobre el precio de compra (markup) y qué parte del precio es ganancia
@@ -45,11 +50,18 @@ export default function CamposProducto({ p = {}, maestros, editaPrecio = true }:
           </select></div>
       </div>
       <p className="-mt-2 text-xs text-texto-2">¿Falta una marca, rubro o subrubro? Agregalo en <Link href="/admin/tablas" className="font-semibold text-marca">Tablas</Link>.</p>
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         <div><label className="etiqueta">Género</label>
           <select name="genero" defaultValue={p.genero ?? ""} className="campo">
             <option value="">—</option>{["Hombre", "Mujer", "Unisex", "Niños"].map((g) => <option key={g}>{g}</option>)}
           </select></div>
+        <div><label className="etiqueta">Escala de talles</label>
+          <select name="escala" defaultValue={p.escala ?? "Adulto"} disabled={bloquearEscala} onChange={(e) => alCambiarEscala?.(e.target.value)} className="campo disabled:bg-gray-50">
+            {ESCALAS.map((e) => <option key={e}>{e}</option>)}
+          </select>
+          <p className="mt-0.5 text-[11px] text-texto-2">{bloquearEscala ? "Ya tiene talles: no se puede cambiar." : "Define qué talles puede tener (no se mezclan)."}</p></div>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
         <div><label className="etiqueta">Precio de compra ($)</label><input name="precio_compra" type="number" min="0" step="0.01" defaultValue={p.precio_compra ?? ""} onChange={(e) => setCompra(Number(e.target.value))} className="campo" />
           <p className="mt-0.5 text-[11px] text-texto-2">El último que se pagó; cada compra lo actualiza.</p></div>
         <div><label className="etiqueta">Precio de venta ($)</label><input name="precio_venta" type="number" min="0" step="0.01" defaultValue={p.precio_venta ?? ""} onChange={(e) => setVenta(Number(e.target.value))} disabled={!editaPrecio} className="campo disabled:bg-gray-50" />

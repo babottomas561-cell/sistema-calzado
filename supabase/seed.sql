@@ -54,6 +54,8 @@ join marcas m on m.nombre = x.marca join categorias c on c.nombre = x.categoria;
 update productos set subcategoria_id = (select id from subcategorias where nombre = 'Running')  where nombre = 'Zapatilla Running Pro';
 update productos set subcategoria_id = (select id from subcategorias where nombre = 'Urbana')   where nombre = 'Zapatilla Urbana Classic';
 update productos set subcategoria_id = (select id from subcategorias where nombre = 'Escolar')  where nombre = 'Zapatilla Escolar';
+-- La escolar es de la escala Niños (solo acepta talles de niños)
+update productos set escala = 'Niños' where nombre = 'Zapatilla Escolar';
 update productos set subcategoria_id = (select id from subcategorias where nombre = 'Chelsea')  where nombre = 'Bota Chelsea';
 
 insert into colores (nombre, hex) values ('Negro', '#111111'), ('Blanco', '#f5f5f5'), ('Marrón', '#7b4a2a'), ('Azul', '#1d4ed8');

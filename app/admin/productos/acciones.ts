@@ -21,6 +21,8 @@ function datosProducto(f: FormData) {
     categoria_id: idONulo(f.get("categoria_id")),
     subcategoria_id: idONulo(f.get("subcategoria_id")),
     genero: String(f.get("genero") ?? "") || null,
+    // Escala de talles: si el campo no vino (bloqueado porque ya tiene talles), no se toca
+    ...(f.has("escala") ? { escala: String(f.get("escala")) } : {}),
     descripcion: String(f.get("descripcion") ?? "").trim() || null,
     // imagen_url no va acá: la mantiene la base (es la foto principal de producto_imagenes)
     precio_compra: num(f.get("precio_compra")),

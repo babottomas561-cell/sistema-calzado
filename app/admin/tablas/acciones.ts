@@ -45,9 +45,10 @@ export async function guardarMaestro(_: Estado, f: FormData): Promise<Estado> {
   if (f.get("_accion") === "borrar" && id) {
     ({ error } = await supabase.from(tabla).delete().eq("id", id));
   } else if (!id && tabla === "talles") {
-    // Talle nuevo: la base calcula el orden (38.5 entre 38 y 39; S, M, L al final) y si es de niños
+    // Talle nuevo: la base calcula el orden (38.5 entre 38 y 39; S, M, L al final); la escala, si no se elige,
+    // la deduce (menos de 35 = Niños)
     if (!texto(f, "nombre")) return { error: "Falta el talle" };
-    ({ error } = await supabase.rpc("buscar_talle", { p_nombre: texto(f, "nombre") }));
+    ({ error } = await supabase.rpc("buscar_talle", { p_nombre: texto(f, "nombre"), p_escala: texto(f, "tipo") || undefined }));
   } else {
     const fila = datos(tabla, f);
     if (!fila.nombre) return { error: "Falta el nombre" };

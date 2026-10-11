@@ -58,6 +58,13 @@ erDiagram
 Talles y colores son **tablas**, no texto: así «Negro» es uno solo, los talles se ordenan bien
 (38 < 38.5 < 39 por la columna `orden`) y la tienda puede ofrecer solo los que tienen stock.
 
+## Escalas de talles
+
+`productos.escala` (Adulto, Niños, Bebé) dice qué talles puede tener el artículo: solo los de
+`talles.tipo` igual a su escala (lo frena un trigger, y un artículo no cambia de escala si ya tiene
+talles de la otra). El nombre del talle es único **por escala**: el 34 de niños y el 34 de adulto son
+dos talles distintos. La escala es independiente del género (una juvenil puede ser Niños y llegar al 36).
+
 ## Fotos
 
 `producto_imagenes` = la galería de un modelo: `url`, `ruta` (dónde está en el bucket `productos`;

@@ -4,7 +4,7 @@ import { crearCliente } from "@/lib/supabase/server";
 import { pesos } from "@/lib/formato";
 import { Footprints } from "lucide-react";
 
-type Fila = { variante_id: number; producto_id: number; nombre: string; marca: string | null; categoria: string | null; genero: string | null;
+type Fila = { variante_id: number; producto_id: number; nombre: string; marca: string | null; categoria: string | null; genero: string | null; escala: string;
   imagen_url: string | null; talle: string; talle_orden: number; color: string; color_hex: string | null; precio: number; disponible: number };
 
 // Botón de filtro
@@ -12,7 +12,7 @@ function Chip({ activo, href, children }: { activo: boolean; href: string; child
   return <Link href={href} className={`rounded-full border px-3 py-1 text-sm ${activo ? "border-marca bg-marca text-white" : "border-borde bg-white hover:border-marca"}`}>{children}</Link>;
 }
 
-export default async function Catalogo({ searchParams }: { searchParams: Promise<{ categoria?: string; genero?: string; talle?: string; q?: string }> }) {
+export default async function Catalogo({ searchParams }: { searchParams: Promise<{ categoria?: string; genero?: string; talle?: string; escala?: string; q?: string }> }) {
   const filtros = await searchParams;
   const supabase = await crearCliente();
   const { data } = await supabase.from("v_catalogo").select("*");
@@ -21,13 +21,16 @@ export default async function Catalogo({ searchParams }: { searchParams: Promise
   // Opciones de filtro (de lo que hay publicado)
   const categorias = [...new Set(filas.map((f) => f.categoria).filter(Boolean))] as string[];
   const generos = [...new Set(filas.map((f) => f.genero).filter(Boolean))] as string[];
-  const talles = [...new Map(filas.filter((f) => f.disponible > 0).map((f) => [f.talle, f.talle_orden])).entries()].sort((a, b) => a[1] - b[1]).map(([t]) => t);
+  // Talles por escala: el 34 de niños y el de adulto son talles distintos, cada uno en su fila
+  const ESCALAS = ["Adulto", "Niños", "Bebé"];
+  const tallesPorEscala = ESCALAS.map((e) => ({ escala: e, talles: [...new Map(filas.filter((f) => f.disponible > 0 && f.escala === e)
+    .map((f) => [f.talle, f.talle_orden])).entries()].sort((a, b) => a[1] - b[1]).map(([t]) => t) })).filter((x) => x.talles.length);
 
   // Agrupar por modelo
-  const modelos = new Map<number, { id: number; nombre: string; marca: string | null; categoria: string | null; genero: string | null; imagen: string | null;
+  const modelos = new Map<number, { id: number; nombre: string; marca: string | null; categoria: string | null; genero: string | null; escala: string; imagen: string | null;
     precio: number; colores: Map<string, string | null>; talles: Map<string, number>; disponible: number }>();
   for (const f of filas) {
-    const m = modelos.get(f.producto_id) ?? { id: f.producto_id, nombre: f.nombre, marca: f.marca, categoria: f.categoria, genero: f.genero, imagen: f.imagen_url,
+    const m = modelos.get(f.producto_id) ?? { id: f.producto_id, nombre: f.nombre, marca: f.marca, categoria: f.categoria, genero: f.genero, escala: f.escala, imagen: f.imagen_url,
       precio: Number(f.precio), colores: new Map(), talles: new Map<string, number>(), disponible: 0 };
     m.precio = Math.min(m.precio, Number(f.precio));
     // En la tarjeta solo se muestran los colores y talles que hay para vender
@@ -38,7 +41,7 @@ export default async function Catalogo({ searchParams }: { searchParams: Promise
   const q = (filtros.q ?? "").toLowerCase();
   const lista = [...modelos.values()].filter((m) =>
     (!filtros.categoria || m.categoria === filtros.categoria) && (!filtros.genero || m.genero === filtros.genero) &&
-    (!filtros.talle || m.talles.has(filtros.talle)) && (!q || m.nombre.toLowerCase().includes(q) || (m.marca ?? "").toLowerCase().includes(q)));
+    (!filtros.talle || (m.talles.has(filtros.talle) && m.escala === (filtros.escala ?? "Adulto"))) && (!q || m.nombre.toLowerCase().includes(q) || (m.marca ?? "").toLowerCase().includes(q)));
 
   const link = (cambio: Record<string, string | undefined>) => {
     const p = new URLSearchParams(Object.entries({ ...filtros, ...cambio }).filter(([, v]) => v) as [string, string][]);
@@ -59,8 +62,13 @@ export default async function Catalogo({ searchParams }: { searchParams: Promise
         <div className="flex flex-wrap gap-2"><Chip activo={!filtros.categoria} href={link({ categoria: undefined })}>Todo</Chip>
           {categorias.map((c) => <Chip key={c} activo={filtros.categoria === c} href={link({ categoria: c })}>{c}</Chip>)}</div>
         <div className="flex flex-wrap gap-2">{generos.map((g) => <Chip key={g} activo={filtros.genero === g} href={link({ genero: filtros.genero === g ? undefined : g })}>{g}</Chip>)}</div>
-        <div className="flex flex-wrap items-center gap-1.5"><span className="mr-1 text-sm text-texto-2">Talle:</span>
-          {talles.map((t) => <Chip key={t} activo={filtros.talle === t} href={link({ talle: filtros.talle === t ? undefined : t })}>{t}</Chip>)}</div>
+        {tallesPorEscala.map(({ escala, talles }) => (
+          <div key={escala} className="flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 text-sm text-texto-2">{escala === "Adulto" ? "Talle" : escala === "Niños" ? "Talle niños" : "Talle bebé"}:</span>
+            {talles.map((t) => { const activo = filtros.talle === t && (filtros.escala ?? "Adulto") === escala;
+              return <Chip key={t} activo={activo} href={link(activo ? { talle: undefined, escala: undefined } : { talle: t, escala: escala === "Adulto" ? undefined : escala })}>{t}</Chip>; })}
+          </div>
+        ))}
       </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">

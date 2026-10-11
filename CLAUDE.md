@@ -118,6 +118,11 @@ una API de Next.** Lo que ya pisamos:
     `productos` de Storage (lectura pública, escritura con `productos.editar`); el navegador los achica y los sube
     (`lib/supabase/navegador.ts`), y el Server Action solo registra la fila. La tienda lee `v_imagenes_tienda`.
 
+
+13. **Escalas de talles.** Cada artículo es de una escala (`productos.escala`: Adulto, Niños, Bebé) y solo
+    acepta talles de esa escala (`talles.tipo`); lo frena un trigger. El mismo número puede existir en dos
+    escalas (el 34 de niños y el de adulto son dos talles): para buscar uno, `buscar_talle(nombre, escala)`.
+
 ---
 
 ## Dónde está cada cosa

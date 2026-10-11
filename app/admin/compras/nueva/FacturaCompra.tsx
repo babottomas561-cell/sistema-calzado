@@ -24,6 +24,7 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
   filas: Fila[]; proveedores: { id: number; nombre: string }[]; precios: Precio[]; maestros: Maestros; talles: Talle[]; colores: Color[]; editaPrecio: boolean;
 }) {
   const router = useRouter();
+  const [escalaNueva, setEscalaNueva] = useState("Adulto");   // escala del artículo que se crea en el alta rápida
   const [proveedor, setProveedor] = useState<number | "">("");
   const [comprobante, setComprobante] = useState("");
   const [fechaFactura, setFechaFactura] = useState(diaArgentina());
@@ -159,8 +160,8 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
             <form action={crearArticulo} className="tarjeta space-y-4 border-marca/40">
               <div className="flex items-center justify-between"><h2 className="font-semibold">Artículo nuevo</h2>
                 <button type="button" onClick={() => setCreando(false)} className="text-gray-400 hover:text-gray-700" aria-label="Cerrar"><X size={18} /></button></div>
-              <CamposProducto maestros={maestros} editaPrecio={editaPrecio} />
-              <ElegirTallesColores talles={talles} colores={colores} />
+              <CamposProducto maestros={maestros} editaPrecio={editaPrecio} alCambiarEscala={setEscalaNueva} />
+              <ElegirTallesColores key={escalaNueva} talles={talles} colores={colores} escala={escalaNueva} />
               {errorAlta && <p className="text-sm text-error">{errorAlta}</p>}
               <button className="boton" disabled={altaPendiente}>{altaPendiente ? "Creando…" : <><Plus size={16} /> Crear y agregar a la factura</>}</button>
             </form>

@@ -8,7 +8,7 @@ import { CircleCheck } from "lucide-react";
 
 type Variante = { id: number; talle: string; color: string; stock: number; sku: string | null };
 type Producto = { id: number; codigo: string; nombre: string; marca_id: number | null; categoria_id: number | null; subcategoria_id: number | null; genero: string | null; descripcion: string | null;
-  imagen_url: string | null; precio_compra: number; precio_venta: number; activo: boolean; publicado_web: boolean };
+  escala: string; imagen_url: string | null; precio_compra: number; precio_venta: number; activo: boolean; publicado_web: boolean };
 
 function Mensaje({ e }: { e: { error?: string; ok?: string } }) {
   if (e.error) return <p className="text-sm text-error">{e.error}</p>;
@@ -29,7 +29,7 @@ export default function Formularios({ producto, variantes, maestros, talles, col
       {edita && <form action={aDatos} className="tarjeta space-y-4 lg:row-span-2">
         <h2 className="font-semibold">Datos del producto</h2>
         <input type="hidden" name="id" value={producto.id} />
-        <CamposProducto p={producto} maestros={maestros} editaPrecio={editaPrecio} />
+        <CamposProducto p={producto} maestros={maestros} editaPrecio={editaPrecio} bloquearEscala={variantes.length > 0} />
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="activo" defaultChecked={producto.activo} /> Activo (si lo desmarcás, deja de aparecer para vender)</label>
         <Mensaje e={eDatos} />
         <button className="boton" disabled={cDatos}>Guardar cambios</button>
@@ -38,7 +38,7 @@ export default function Formularios({ producto, variantes, maestros, talles, col
       {edita && <form action={aVar} className="tarjeta space-y-3">
         <h2 className="font-semibold">Agregar talles o colores</h2>
         <input type="hidden" name="id" value={producto.id} />
-        <ElegirTallesColores talles={talles} colores={colores} />
+        <ElegirTallesColores talles={talles} colores={colores} escala={producto.escala} />
         <Mensaje e={eVar} />
         <button className="boton-sec" disabled={cVar}>Agregar combinaciones</button>
       </form>}
