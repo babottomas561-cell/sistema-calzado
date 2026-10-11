@@ -22,7 +22,7 @@ function datosProducto(f: FormData) {
     subcategoria_id: idONulo(f.get("subcategoria_id")),
     genero: String(f.get("genero") ?? "") || null,
     descripcion: String(f.get("descripcion") ?? "").trim() || null,
-    imagen_url: String(f.get("imagen_url") ?? "").trim() || null,
+    // imagen_url no va acá: la mantiene la base (es la foto principal de producto_imagenes)
     precio_compra: num(f.get("precio_compra")),
     precio_venta: num(f.get("precio_venta")),
     publicado_web: f.get("publicado_web") === "on",
@@ -131,4 +131,55 @@ export async function crearProductoRapido(f: FormData): Promise<Estado & { id?: 
   if (errVar) return { error: errVar.message };
   revalidatePath("/admin/compras/nueva");
   return { ok: "Artículo creado", id: data.id };
+}
+
+// ── Fotos del artículo (galería) ──────────────────────────────────────
+// El archivo lo sube el navegador directo a Storage (ya achicado); acá se registra en la galería.
+// Qué foto es la principal y qué pasa al borrarla lo resuelve la base (triggers de producto_imagenes).
+const BUCKET = "productos";
+
+export async function registrarImagenes(productoId: number, fotos: { url: string; ruta: string | null }[]): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.from("producto_imagenes").insert(fotos.map((f) => ({ producto_id: productoId, ...f })));
+  if (error) return { error: error.message };
+  revalidatePath(`/admin/productos/${productoId}`);
+  revalidatePath("/");
+  return { ok: fotos.length === 1 ? "Foto agregada" : `${fotos.length} fotos agregadas` };
+}
+
+export async function marcarPrincipal(productoId: number, id: number): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.from("producto_imagenes").update({ principal: true }).eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath(`/admin/productos/${productoId}`);
+  revalidatePath("/");
+  return { ok: "Foto principal cambiada" };
+}
+
+// Corre una foto un lugar a la izquierda (-1) o a la derecha (+1) en la galería
+export async function moverImagen(productoId: number, id: number, paso: -1 | 1): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { data } = await supabase.from("producto_imagenes").select("id").eq("producto_id", productoId).order("orden").order("id");
+  const lista = (data ?? []).map((i) => i.id);
+  const desde = lista.indexOf(id), hasta = desde + paso;
+  if (desde < 0 || hasta < 0 || hasta >= lista.length) return {};
+  [lista[desde], lista[hasta]] = [lista[hasta], lista[desde]];
+  // Se renumera toda la galería (1, 2, 3…) para que el orden quede siempre prolijo
+  const cambios = await Promise.all(lista.map((imgId, i) => supabase.from("producto_imagenes").update({ orden: i + 1 }).eq("id", imgId)));
+  const error = cambios.find((c) => c.error)?.error;
+  if (error) return { error: error.message };
+  revalidatePath(`/admin/productos/${productoId}`);
+  revalidatePath("/");
+  return {};
+}
+
+export async function borrarImagen(productoId: number, id: number): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.from("producto_imagenes").delete().eq("id", id).select("ruta").single();
+  if (error) return { error: error.message };
+  // Si la foto estaba en nuestro Storage, se borra también el archivo (un link externo no se toca)
+  if (data.ruta) await supabase.storage.from(BUCKET).remove([data.ruta]);
+  revalidatePath(`/admin/productos/${productoId}`);
+  revalidatePath("/");
+  return { ok: "Foto borrada" };
 }

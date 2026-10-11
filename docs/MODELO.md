@@ -58,6 +58,14 @@ erDiagram
 Talles y colores son **tablas**, no texto: así «Negro» es uno solo, los talles se ordenan bien
 (38 < 38.5 < 39 por la columna `orden`) y la tienda puede ofrecer solo los que tienen stock.
 
+## Fotos
+
+`producto_imagenes` = la galería de un modelo: `url`, `ruta` (dónde está en el bucket `productos`;
+null si es un link externo), `orden` y `principal`. La primera foto nace principal; marcar otra
+desmarca la anterior; si se borra la principal, pasa a serlo la primera que queda. Los triggers
+copian la url de la principal a `productos.imagen_url`, que es lo que usan `v_catalogo`, el carrito
+y las vistas previas. La tienda ve la galería por `v_imagenes_tienda` (solo productos publicados).
+
 ## Precios
 
 | dónde | qué es |

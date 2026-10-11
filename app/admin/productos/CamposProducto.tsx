@@ -9,7 +9,7 @@ export type Subrubro = Opcion & { categoria_id: number };
 export type Maestros = { marcas: Opcion[]; categorias: Opcion[]; subcategorias: Subrubro[] };
 
 type P = { codigo?: string; nombre?: string; marca_id?: number | null; categoria_id?: number | null; subcategoria_id?: number | null;
-  genero?: string | null; descripcion?: string | null; imagen_url?: string | null; precio_compra?: number; precio_venta?: number; publicado_web?: boolean };
+  genero?: string | null; descripcion?: string | null; precio_compra?: number; precio_venta?: number; publicado_web?: boolean };
 
 export default function CamposProducto({ p = {}, maestros }: { p?: P; maestros: Maestros }) {
   const [rubro, setRubro] = useState<number | "">(p.categoria_id ?? "");
@@ -56,7 +56,6 @@ export default function CamposProducto({ p = {}, maestros }: { p?: P; maestros: 
             {venta < compra ? "¡Por debajo del costo!" : `Ganás ${Math.round(markup)} % sobre la compra (${Math.round((1 - compra / venta) * 100)} % del precio)`}</p>}</div>
       </div>
       <div><label className="etiqueta">Descripción (se ve en la tienda)</label><textarea name="descripcion" rows={2} defaultValue={p.descripcion ?? ""} className="campo" /></div>
-      <div><label className="etiqueta">Foto (link a la imagen)</label><input name="imagen_url" type="url" defaultValue={p.imagen_url ?? ""} placeholder="https://…" className="campo" /></div>
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="publicado_web" defaultChecked={p.publicado_web ?? false} /> Publicado en la tienda online</label>
     </div>
   );

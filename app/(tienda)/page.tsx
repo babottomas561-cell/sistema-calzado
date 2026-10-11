@@ -25,13 +25,13 @@ export default async function Catalogo({ searchParams }: { searchParams: Promise
 
   // Agrupar por modelo
   const modelos = new Map<number, { id: number; nombre: string; marca: string | null; categoria: string | null; genero: string | null; imagen: string | null;
-    precio: number; colores: Map<string, string | null>; talles: Set<string>; disponible: number }>();
+    precio: number; colores: Map<string, string | null>; talles: Map<string, number>; disponible: number }>();
   for (const f of filas) {
     const m = modelos.get(f.producto_id) ?? { id: f.producto_id, nombre: f.nombre, marca: f.marca, categoria: f.categoria, genero: f.genero, imagen: f.imagen_url,
-      precio: Number(f.precio), colores: new Map(), talles: new Set<string>(), disponible: 0 };
+      precio: Number(f.precio), colores: new Map(), talles: new Map<string, number>(), disponible: 0 };
     m.precio = Math.min(m.precio, Number(f.precio));
     // En la tarjeta solo se muestran los colores y talles que hay para vender
-    if (f.disponible > 0) { m.colores.set(f.color, f.color_hex); m.talles.add(f.talle); }
+    if (f.disponible > 0) { m.colores.set(f.color, f.color_hex); m.talles.set(f.talle, f.talle_orden); }
     m.disponible += f.disponible;
     modelos.set(f.producto_id, m);
   }
@@ -74,7 +74,7 @@ export default async function Catalogo({ searchParams }: { searchParams: Promise
               <div className="font-semibold leading-tight group-hover:text-marca">{m.nombre}</div>
               <div className="font-bold">{pesos(m.precio)}</div>
               <div className="flex gap-1">{[...m.colores.entries()].map(([c, hex]) => <span key={c} title={c} className="h-3.5 w-3.5 rounded-full border border-gray-300" style={{ background: hex ?? "#ddd" }} />)}</div>
-              <div className="text-xs text-texto-2">{m.disponible > 0 ? `Talles: ${[...m.talles].join(", ")}` : "Sin stock"}</div>
+              <div className="text-xs text-texto-2">{m.disponible > 0 ? `Talles: ${[...m.talles].sort((a, b) => a[1] - b[1]).map(([t]) => t).join(", ")}` : "Sin stock"}</div>
             </div>
           </Link>
         ))}

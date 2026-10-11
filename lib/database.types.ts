@@ -415,6 +415,44 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"producto_imagenes": {
+                  Row: {
+                    "creado_en": string,"id": number,"orden": number,"principal": boolean,"producto_id": number,"ruta": string | null,"url": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "creado_en"?: string,"id"?: never,"orden"?: number,"principal"?: boolean,"producto_id": number,"ruta"?: string | null,"url": string
+                  }
+                  Update: {
+                    "creado_en"?: string,"id"?: never,"orden"?: number,"principal"?: boolean,"producto_id"?: number,"ruta"?: string | null,"url"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "producto_imagenes_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "productos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "producto_imagenes_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_catalogo"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "producto_imagenes_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_stock"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "producto_imagenes_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_venta_items"
+      referencedColumns: ["producto_id"]
+    }
+                  ]
                 },"producto_proveedores": {
                   Row: {
                     "actualizado_en": string,"bonificacion_pct": number,"codigo_proveedor": string | null,"id": number,"precio_compra": number | null,"precio_lista": number,"principal": boolean,"producto_id": number,"proveedor_id": number
@@ -733,6 +771,38 @@ isOneToOne: true
                   ComputedFields: never
                   Relationships: [
                     
+                  ]
+                },"v_imagenes_tienda": {
+                  Row: {
+                    "id": number | null,"orden": number | null,"principal": boolean | null,"producto_id": number | null,"url": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "producto_imagenes_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "productos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "producto_imagenes_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_catalogo"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "producto_imagenes_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_stock"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "producto_imagenes_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_venta_items"
+      referencedColumns: ["producto_id"]
+    }
                   ]
                 },"v_stock": {
                   Row: {

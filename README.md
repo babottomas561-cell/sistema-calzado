@@ -88,7 +88,8 @@ Abrí http://localhost:3000. Usuarios de prueba (solo existen en tu compu):
 2. **Proveedores**: dá de alta a quienes te venden.
 3. **Compras → Cargar factura de compra**: cargá tu primera factura (el stock sale de ahí). Si un
    modelo no existe, lo creás desde la misma pantalla.
-4. **Productos**: completá foto, descripción y precio de venta, y tildá *Publicado en la tienda*.
+4. **Productos**: subí las fotos (desde el celular podés sacarlas en el momento; la de la estrella es
+   la principal), completá descripción y precio de venta, y tildá *Publicado en la tienda*.
 
 ## 3. Cómo está hecho
 

@@ -102,6 +102,12 @@ una API de Next.** Lo que ya pisamos:
 11. **Íconos: `lucide-react`, nunca emojis** (menú, botones, estados). Trazo 1.8 normal / 2.2 activo,
     tamaño 15-18. El logo es `components/Logo.tsx` y el "volver" es `components/Volver.tsx`.
 
+12. **Fotos: varias por producto, una principal.** Están en `producto_imagenes` (orden + `principal`, una sola
+    por producto, la garantiza un índice único). `productos.imagen_url` **la mantiene la base** (trigger): es
+    siempre la url de la principal, así que **no se escribe desde la app**. Los archivos van al bucket
+    `productos` de Storage (lectura pública, escritura solo `staff`); el navegador los achica y los sube
+    (`lib/supabase/navegador.ts`), y el Server Action solo registra la fila. La tienda lee `v_imagenes_tienda`.
+
 ---
 
 ## Dónde está cada cosa

@@ -1,7 +1,8 @@
-// Stock completo por variante, con filtros y valorización a costo.
+// Stock por modelo (grilla talle × color), con filtros y valorización a costo.
 import Link from "next/link";
 import { crearCliente } from "@/lib/supabase/server";
 import { numero, pesos } from "@/lib/formato";
+import GrillaStock, { LeyendaStock, type CeldaStock } from "@/components/GrillaStock";
 
 const FILTROS = { todo: "Todo", bajo: "Para reponer", sin: "Sin stock" } as const;
 
@@ -14,7 +15,19 @@ export default async function Stock({ searchParams }: { searchParams: Promise<{ 
   if (filtro === "sin") consulta = consulta.lte("disponible", 0);
   if (q) { const b = q.replace(/[%,()]/g, ""); consulta = consulta.or(`nombre.ilike.%${b}%,sku.ilike.${b}%`); }
   const { data: filas, error } = await consulta;
-  const lista = (filas ?? []).map((v) => ({ ...v, stock: v.stock ?? 0, disponible: v.disponible ?? 0 }));
+  const lista = (filas ?? []).map((v) => ({ ...v, talle: v.talle ?? "", color: v.color ?? "", stock: v.stock ?? 0,
+    reservado: v.reservado ?? 0, disponible: v.disponible ?? 0, stock_minimo: v.stock_minimo ?? 0 }));
+
+  // Una tarjeta por modelo; con un filtro activo, solo las variantes que cumplen
+  const porModelo = new Map<number, { id: number; codigo: string | null; nombre: string | null; marca: string | null; pares: number; variantes: CeldaStock[] }>();
+  for (const v of lista) {
+    const id = v.producto_id ?? 0;
+    const m = porModelo.get(id) ?? { id, codigo: v.codigo, nombre: v.nombre, marca: v.marca, pares: 0, variantes: [] };
+    m.pares += v.stock;
+    m.variantes.push(v);
+    porModelo.set(id, m);
+  }
+  const modelos = [...porModelo.values()];
 
   return (
     <div className="space-y-4">
@@ -23,31 +36,29 @@ export default async function Stock({ searchParams }: { searchParams: Promise<{ 
         {Object.entries(FILTROS).map(([k, t]) => (
           <Link key={k} href={`/admin/stock?filtro=${k}${q ? `&q=${encodeURIComponent(q)}` : ""}`} className={`rounded-lg border px-3 py-1.5 text-sm ${k === filtro ? "border-marca bg-marca-suave font-semibold text-marca" : "border-borde bg-white"}`}>{t}</Link>
         ))}
-        <form className="ml-auto flex gap-2"><input type="hidden" name="filtro" value={filtro} /><input name="q" defaultValue={q} placeholder="Modelo o código…" className="campo py-1.5" /></form>
+        <form className="flex w-full gap-2 md:ml-auto md:w-64"><input type="hidden" name="filtro" value={filtro} /><input name="q" defaultValue={q} placeholder="Modelo o código…" className="campo py-1.5" /></form>
       </div>
       {error && <p className="text-error">{error.message}</p>}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <div className="tarjeta"><div className="etiqueta">Pares</div><div className="text-xl font-bold">{numero(lista.reduce((s, v) => s + v.stock, 0))}</div></div>
         <div className="tarjeta"><div className="etiqueta">Valor a costo</div><div className="text-xl font-bold">{pesos(lista.reduce((s, v) => s + Number(v.valor_costo), 0))}</div></div>
-        <div className="tarjeta"><div className="etiqueta">Valor a precio de venta</div><div className="text-xl font-bold">{pesos(lista.reduce((s, v) => s + v.stock * Number(v.precio_venta), 0))}</div></div>
+        <div className="tarjeta col-span-2 md:col-span-1"><div className="etiqueta">Valor a precio de venta</div><div className="text-xl font-bold">{pesos(lista.reduce((s, v) => s + v.stock * Number(v.precio_venta), 0))}</div></div>
       </div>
-      <div className="tarjeta overflow-x-auto p-0">
-        <table className="tabla">
-          <thead><tr><th>Modelo</th><th>Talle</th><th>Color</th><th>Código</th><th className="text-right">Stock</th><th className="text-right">Reservado</th><th className="text-right">Disponible</th><th className="text-right">Mínimo</th></tr></thead>
-          <tbody>
-            {lista.map((v) => (
-              <tr key={v.variante_id}>
-                <td><Link href={`/admin/productos/${v.producto_id}`} className="text-marca hover:underline">{v.nombre}</Link></td>
-                <td>{v.talle}</td><td>{v.color}</td><td className="text-texto-2">{v.sku ?? "—"}</td>
-                <td className="text-right">{v.stock}</td>
-                <td className="text-right text-texto-2">{v.reservado || ""}</td>
-                <td className="text-right"><span className={`chip ${v.disponible === 0 ? "bg-red-100 text-error" : v.stock_bajo ? "bg-amber-100 text-alerta" : "bg-gray-100"}`}>{v.disponible}</span></td>
-                <td className="text-right text-texto-2">{v.stock_minimo}</td>
-              </tr>
-            ))}
-            {lista.length === 0 && <tr><td colSpan={8} className="py-8 text-center text-texto-2">Nada para mostrar.</td></tr>}
-          </tbody>
-        </table>
+      <LeyendaStock />
+      <div className="grid gap-3 lg:grid-cols-2">
+        {modelos.map((m) => (
+          <section key={m.id} className="tarjeta">
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <Link href={`/admin/productos/${m.id}`} className="min-w-0">
+                <div className="truncate font-semibold text-marca hover:underline">{m.nombre}</div>
+                <div className="text-xs text-texto-2"><span className="font-mono">{m.codigo}</span>{m.marca ? ` · ${m.marca}` : ""}</div>
+              </Link>
+              <div className="shrink-0 text-right"><div className="font-bold">{numero(m.pares)}</div><div className="text-xs text-texto-2">pares</div></div>
+            </div>
+            <GrillaStock variantes={m.variantes} />
+          </section>
+        ))}
+        {modelos.length === 0 && <p className="tarjeta col-span-full py-8 text-center text-texto-2">Nada para mostrar.</p>}
       </div>
     </div>
   );

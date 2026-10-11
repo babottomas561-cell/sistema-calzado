@@ -17,6 +17,7 @@ export default function FormNuevo({ maestros, talles, colores }: { maestros: Mae
         </div>
         <ElegirTallesColores talles={talles} colores={colores} />
       </div>
+      <p className="text-sm text-texto-2">Las fotos se agregan en la ficha del producto, apenas lo creás.</p>
       {estado.error && <p className="text-sm text-error">{estado.error}</p>}
       <button className="boton" disabled={cargando}>{cargando ? "Guardando…" : "Crear producto"}</button>
     </form>

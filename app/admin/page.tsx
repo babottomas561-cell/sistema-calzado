@@ -1,8 +1,9 @@
 // Inicio: cómo viene el negocio hoy y en el mes.
 import Link from "next/link";
 import { crearCliente } from "@/lib/supabase/server";
+import { FilaMovil } from "@/components/ListaMovil";
 import { diaArgentina, fechaHora, inicioDe, numero, pesos } from "@/lib/formato";
-import { ChevronRight, MessageCircleMore, Plus, ShoppingBag, TriangleAlert } from "lucide-react";
+import { ChevronRight, MessageCircleMore, Plus, ShoppingBag, TriangleAlert, Trophy } from "lucide-react";
 
 export default async function Inicio() {
   const supabase = await crearCliente();
@@ -10,7 +11,8 @@ export default async function Inicio() {
 
   const [ventasHoy, itemsMes, stock, ultimas, pedidos, seguimientos] = await Promise.all([
     supabase.from("ventas").select("total").gte("fecha", hoy),
-    supabase.from("v_venta_items").select("nombre, cantidad, subtotal, margen, venta_id").gte("fecha", mes),
+    // Importes netos (con descuento y ajuste por medio de pago), los mismos que suma "Vendido hoy"
+    supabase.from("v_hechos_ventas").select("modelo, cantidad, importe_neto, margen_neto, venta_id").gte("fecha", mes),
     supabase.from("v_stock").select("variante_id, producto_id, nombre, talle, color, stock, disponible, stock_minimo, valor_costo, stock_bajo"),
     supabase.from("ventas").select("id, comprobante, fecha, total, canal, clientes(nombre)").order("fecha", { ascending: false }).limit(5),
     supabase.from("pedidos").select("id", { count: "exact", head: true }).in("estado", ["pendiente", "confirmado", "preparado"]),
@@ -19,11 +21,11 @@ export default async function Inicio() {
 
   const totalHoy = (ventasHoy.data ?? []).reduce((s, v) => s + Number(v.total), 0);
   // Las columnas de una vista llegan tipadas como posible null: se normalizan acá
-  const items = (itemsMes.data ?? []).map((i) => ({ ...i, nombre: i.nombre ?? "", cantidad: i.cantidad ?? 0 }));
+  const items = (itemsMes.data ?? []).map((i) => ({ ...i, nombre: i.modelo ?? "", cantidad: i.cantidad ?? 0 }));
   const ventasMes = new Set(items.map((i) => i.venta_id)).size;
-  const facturadoMes = items.reduce((s, i) => s + Number(i.subtotal), 0);
+  const facturadoMes = items.reduce((s, i) => s + Number(i.importe_neto), 0);
   const paresMes = items.reduce((s, i) => s + i.cantidad, 0);
-  const margenMes = items.reduce((s, i) => s + Number(i.margen), 0);
+  const margenMes = items.reduce((s, i) => s + Number(i.margen_neto), 0);
   const filasStock = (stock.data ?? []).map((v) => ({ ...v, stock: v.stock ?? 0, disponible: v.disponible ?? 0 }));
   const valorStock = filasStock.reduce((s, v) => s + Number(v.valor_costo), 0);
   const paresStock = filasStock.reduce((s, v) => s + v.stock, 0);
@@ -82,7 +84,7 @@ export default async function Inicio() {
         </section>
 
         <section className="tarjeta">
-          <h2 className="mb-3 font-semibold">🏆 Más vendidos del mes</h2>
+          <h2 className="mb-3 flex items-center gap-2 font-semibold"><Trophy size={17} className="text-marca" /> Más vendidos del mes</h2>
           {top.length === 0 ? <p className="text-sm text-texto-2">Todavía no hay ventas este mes.</p> : (
             <ul className="space-y-2 text-sm">
               {top.map(([nombre, pares]) => (
@@ -99,7 +101,13 @@ export default async function Inicio() {
       <section className="tarjeta overflow-x-auto">
         <div className="mb-2 flex items-center justify-between"><h2 className="font-semibold">Últimas ventas</h2>
           <Link href="/admin/ventas" className="inline-flex items-center gap-1 text-sm font-semibold text-marca">Ver todas <ChevronRight size={15} /></Link></div>
-        <table className="tabla">
+        <div className="-mx-4 -mb-4 divide-y divide-gray-100 border-t border-gray-100 md:hidden">
+          {(ultimas.data ?? []).map((v) => (
+            <FilaMovil key={v.id} href={`/admin/ventas/${v.id}`} titulo={(v.clientes as unknown as { nombre: string } | null)?.nombre ?? "Sin cliente"}
+              detalle={<>{fechaHora(v.fecha)} · {v.canal}</>} valor={<span className="font-bold">{pesos(v.total)}</span>} />
+          ))}
+        </div>
+        <table className="tabla hidden md:table">
           <thead><tr><th>Comprobante</th><th>Fecha</th><th>Cliente</th><th>Canal</th><th className="text-right">Total</th></tr></thead>
           <tbody>
             {(ultimas.data ?? []).map((v) => (
