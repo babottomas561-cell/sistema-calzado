@@ -137,6 +137,7 @@ app/admin/             panel del equipo (el layout verifica que sea staff; cada 
   compras/nueva/       cargar factura de compra POR CURVA: cabecera, grilla talle×color por modelo,
                        un costo por modelo, control contra el total de la factura, alta rápida de artículos
   stock/  pedidos/  clientes/  seguimientos/  proveedores/
+  reposicion/          pedido sugerido por talle según el ritmo de venta (reposicion_sugerida), copiable a WhatsApp
   precios/             ajuste masivo de precios de venta y compra (ajustar_precios), historial y deshacer
   tablas/              maestros: rubros/subrubros, marcas, colores (muestra), talles (orden), medios de pago
 components/            Menu (íconos lucide), Logo, Volver, SelectorVariantes (venta), Contactos…

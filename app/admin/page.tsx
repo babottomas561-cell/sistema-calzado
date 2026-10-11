@@ -98,7 +98,10 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
               ))}
             </ul>
           )}
-          {bajos.length > 8 && <Link href="/admin/stock?filtro=bajo" className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-marca">Ver los {bajos.length} <ChevronRight size={15} /></Link>}
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+            {bajos.length > 8 && <Link href="/admin/stock?filtro=bajo" className="inline-flex items-center gap-1 text-sm font-semibold text-marca">Ver los {bajos.length} <ChevronRight size={15} /></Link>}
+            <Link href="/admin/reposicion" className="inline-flex items-center gap-1 text-sm font-semibold text-marca">Pedido sugerido <ChevronRight size={15} /></Link>
+          </div>
         </section>}
 
         {todas && <section className="tarjeta">

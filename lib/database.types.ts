@@ -1124,6 +1124,11 @@ isOneToOne: false
 "registrar_venta":
 { Args: { "p_canal"?: string,"p_cliente"?: number,"p_deposito"?: number,"p_descuento"?: number,"p_items": Json,"p_notas"?: string,"p_pagos"?: Json }; Returns: number
                            },
+"reposicion_sugerida":
+{ Args: { "p_dias_cobertura"?: number,"p_dias_ventas"?: number }; Returns: {
+              "codigo": string,"color": string,"color_hex": string,"costo_unitario": number,"disponible": number,"marca": string,"nombre": string,"producto_id": number,"proveedor": string,"proveedor_id": number,"sugerido": number,"talle": string,"talle_orden": number,"variante_id": number,"vendidos": number
+            }[]
+                           },
 "tiene_permiso":
 { Args: { "p_permiso": string }; Returns: boolean
                            }
