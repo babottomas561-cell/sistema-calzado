@@ -5,6 +5,7 @@ import { ArrowRight, ArrowUpRight, Asterisk, Clock, MapPin, MessageCircle } from
 import { enlaceFiltro, type Contenido, type Seccion } from "@/lib/inicio";
 import TarjetaProducto, { type Modelo } from "../TarjetaProducto";
 import Carrusel from "./Carrusel";
+import Medio from "./Medio";
 
 export type ModeloInicio = Modelo & { genero: string | null; linea: string | null; creado: string };
 export type Contacto = { whatsapp: string | null; direccion_retiro: string | null; horario: string | null; instagram: string | null };
@@ -42,7 +43,7 @@ function Encabezado({ s, oscuro = false }: { s: Seccion; oscuro?: boolean }) {
     <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3" data-revelar>
       <div className="max-w-2xl space-y-3">
         {s.titulo && <h2 className={h2}>{s.titulo}</h2>}
-        {s.bajada && <p className={`text-lg ${oscuro ? "text-white/75" : "text-texto-2"}`}>{s.bajada}</p>}
+        {s.bajada && <p className={`serif text-[1.45rem] italic leading-snug ${oscuro ? "text-white/75" : "text-texto-2"}`}>{s.bajada}</p>}
       </div>
       {s.boton_texto && s.boton_enlace && (
         <Link href={s.boton_enlace} className="group inline-flex min-h-11 shrink-0 items-center gap-1.5 font-bold underline decoration-2 underline-offset-[6px]">
@@ -53,8 +54,10 @@ function Encabezado({ s, oscuro = false }: { s: Seccion; oscuro?: boolean }) {
 }
 
 // ── Portada ───────────────────────────────────────────────────────────
+// "foto" (campaña): foto o video de borde a borde, debajo de la cabecera transparente, con el nombre de la
+// tienda gigante arriba y la frase en serif abajo (como Reformation, Zara o Aimé Leon Dore).
 // "columnas": el texto a la izquierda y tres columnas de fotos del catálogo que suben y bajan solas
-// (en el celular, dos tiras que corren de costado). "foto": una foto propia a pantalla completa.
+// (en el celular, dos tiras que corren de costado). Es también lo que se ve si la campaña no tiene foto.
 export function Portada({ s, fotos, tienda }: { s: Seccion<"portada">; fotos: ModeloInicio[]; tienda: string }) {
   const titulo = s.titulo || tienda;
   const botones = (claro: boolean) => (
@@ -70,14 +73,20 @@ export function Portada({ s, fotos, tienda }: { s: Seccion<"portada">; fotos: Mo
 
   if (s.contenido.estilo === "foto" && s.imagen_url) {
     return (
-      <section className="sangrado relative -mt-5 grid min-h-[calc(100svh-4rem)] items-end overflow-hidden bg-marca text-white">
-        <img src={s.imagen_url} alt="" fetchPriority="high" className="acerca absolute inset-0 h-full w-full object-cover object-[50%_25%]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/5" aria-hidden />
-        <div className="relative mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 pt-32 sm:px-6 md:pb-16">
-          {antetitulo}
-          <TituloAnimado texto={titulo} className={`max-w-[16ch] text-[clamp(3rem,10vw,8.5rem)] ${titular}`} />
-          {s.bajada && <p className="entra max-w-lg text-lg text-white/85" style={{ "--d": "0.4s" } as React.CSSProperties}>{s.bajada}</p>}
-          {botones(true)}
+      // Sube debajo de la cabecera (4rem) y del margen de arriba de la página (1.25rem)
+      <section className="sangrado relative -mt-[5.25rem] grid min-h-[100svh] overflow-hidden bg-marca text-white">
+        <Medio url={s.imagen_url} prioridad className="acerca absolute inset-0 h-full w-full object-cover object-[50%_25%]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/5 to-black/70" aria-hidden />
+        <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 pb-24 pt-24 sm:px-6 sm:pb-16">
+          {s.contenido.marca_gigante && (
+            <p aria-hidden className="entra select-none break-words text-[clamp(3.6rem,15.5vw,15rem)] font-extrabold leading-[0.8] tracking-[-0.06em]" style={{ "--d": "0.1s" } as React.CSSProperties}>{tienda}</p>
+          )}
+          <div className="mt-auto space-y-5">
+            {antetitulo}
+            <TituloAnimado texto={titulo} className="serif max-w-[18ch] text-[clamp(2.5rem,6.5vw,5.6rem)] italic leading-[0.95]" />
+            {s.bajada && <p className="entra max-w-lg text-lg text-white/85" style={{ "--d": "0.4s" } as React.CSSProperties}>{s.bajada}</p>}
+            {botones(true)}
+          </div>
         </div>
       </section>
     );
@@ -97,7 +106,7 @@ export function Portada({ s, fotos, tienda }: { s: Seccion<"portada">; fotos: Mo
       <div className="space-y-7">
         {antetitulo}
         <TituloAnimado texto={titulo} className={`text-[clamp(3rem,9vw,7rem)] ${titular}`} />
-        {s.bajada && <p className="entra max-w-md text-lg text-texto-2" style={{ "--d": "0.4s" } as React.CSSProperties}>{s.bajada}</p>}
+        {s.bajada && <p className="serif entra max-w-md text-[1.6rem] italic leading-snug text-texto-2" style={{ "--d": "0.4s" } as React.CSSProperties}>{s.bajada}</p>}
         {botones(false)}
       </div>
 
@@ -143,29 +152,32 @@ export function Cinta({ s, marcas }: { s: Seccion<"cinta">; marcas: string[] }) 
 }
 
 // ── Accesos ───────────────────────────────────────────────────────────
+// Estilo moda (Jacquemus, Jazmín Chebar): fotos pegadas de borde a borde y una etiqueta chica
+// subrayada abajo. En el celular van de a dos; si son impares, la primera ocupa todo el ancho.
 export function Accesos({ s, tarjetas }: { s: Seccion<"accesos">; tarjetas: (Contenido["accesos"]["tarjetas"][number] & { foto: string | null })[] }) {
   if (!tarjetas.length) return null;
   const cols = tarjetas.length >= 4 ? "md:grid-cols-4" : tarjetas.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3";
+  const impar = tarjetas.length % 2 === 1;
   return (
     <section className="space-y-8">
       <Encabezado s={s} />
-      {/* Celular: se deslizan de costado. Compu: grilla */}
-      <div className={`tira max-md:sangrado flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 sm:px-6 md:grid md:gap-5 md:overflow-visible md:px-0 ${cols}`}>
-        {tarjetas.map((t, i) => (
-          <Link key={t.titulo} href={enlaceFiltro(t.filtro)} data-revelar="foto" style={{ "--i": i } as React.CSSProperties}
-            className="group relative block aspect-[3/4] w-[78%] shrink-0 snap-start scroll-ml-4 overflow-hidden rounded-sm bg-marca sm:w-[45%] md:w-auto">
-            {t.foto && <img src={t.foto} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-[1.2s] ease-out group-hover:scale-[1.06] motion-reduce:transition-none" />}
-            <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden />
-            <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5 text-white md:p-6">
-              <span>
-                <span className={`block text-[clamp(1.8rem,3.4vw,2.8rem)] ${titular}`}>{t.titulo}</span>
-                {t.bajada && <span className="mt-1.5 block text-[0.95rem] text-white/85">{t.bajada}</span>}
+      <div className={`sangrado grid grid-cols-2 gap-0.5 ${cols}`}>
+        {tarjetas.map((t, i) => {
+          const ancha = impar && i === 0;
+          return (
+            <Link key={t.titulo} href={enlaceFiltro(t.filtro)} className={`group block ${ancha ? "col-span-2 md:col-span-1" : ""}`} data-revelar="foto" style={{ "--i": i } as React.CSSProperties}>
+              <span className={`relative block overflow-hidden bg-marca-suave ${ancha ? "aspect-[4/3] md:aspect-[3/4]" : "aspect-[3/4]"}`}>
+                {t.foto
+                  ? <img src={t.foto} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-[1.2s] ease-out group-hover:scale-[1.04] motion-reduce:transition-none" />
+                  : <span className={`absolute inset-0 grid place-items-center bg-marca px-4 text-center text-[clamp(1.8rem,4vw,3rem)] text-white ${titular}`}>{t.titulo}</span>}
               </span>
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white text-marca transition-transform duration-300 group-hover:rotate-45 motion-reduce:transition-none" aria-hidden>
-                <ArrowUpRight size={22} /></span>
-            </span>
-          </Link>
-        ))}
+              <span className="block px-3 pb-1 pt-3 text-center">
+                <span className="text-[0.95rem] font-bold underline decoration-1 underline-offset-[6px] group-hover:decoration-2">{t.titulo}</span>
+                {t.bajada && <span className="serif mt-0.5 block text-lg italic text-texto-2">{t.bajada}</span>}
+              </span>
+            </Link>
+          );
+        })}
       </div>
     </section>
   );
@@ -193,7 +205,7 @@ export function Promociones({ s, promos }: { s: Seccion<"promociones">; promos: 
   return (
     <section aria-label="Promociones" className="sangrado overflow-hidden bg-acento py-12 text-white md:py-16">
       <div className="mx-auto mb-8 flex max-w-7xl flex-wrap items-end justify-between gap-4 px-4 sm:px-6" data-revelar>
-        <p className="text-sm font-bold uppercase tracking-[0.12em]">{s.titulo ?? "Promociones"}</p>
+        <p className="serif text-[1.8rem] italic leading-none">{s.titulo ?? "Promociones"}</p>
         {s.boton_texto && s.boton_enlace && <Boton href={s.boton_enlace} variante="blanco">{s.boton_texto} <Flecha /></Boton>}
       </div>
       <div className="pausa-hover" aria-hidden>
@@ -216,12 +228,33 @@ export function Banner({ s }: { s: Seccion<"banner"> }) {
   const centro = s.contenido.alineacion === "centro";
   return (
     <section className="sangrado relative grid min-h-[80svh] items-end overflow-hidden bg-marca text-white">
-      <img src={s.imagen_url} alt="" loading="lazy" decoding="async" className="paralaje absolute inset-0 h-full w-full object-cover object-[50%_25%]" />
+      <Medio url={s.imagen_url} className="paralaje absolute inset-0 h-full w-full object-cover object-[50%_25%]" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" aria-hidden />
       <div className={`relative mx-auto w-full max-w-7xl space-y-5 px-4 py-14 sm:px-6 md:py-20 ${centro ? "text-center" : ""}`} data-revelar>
         {s.titulo && <h2 className={`${centro ? "mx-auto" : ""} max-w-[18ch] text-[clamp(2.4rem,7vw,6rem)] ${titular}`}>{s.titulo}</h2>}
         {s.bajada && <p className={`${centro ? "mx-auto" : ""} max-w-lg text-lg text-white/85`}>{s.bajada}</p>}
         {s.boton_texto && s.boton_enlace && <div className={centro ? "flex justify-center" : ""}><Boton href={s.boton_enlace} variante="blanco">{s.boton_texto} <Flecha /></Boton></div>}
+      </div>
+    </section>
+  );
+}
+
+// ── Editorial 50/50 ───────────────────────────────────────────────────
+// Una foto grande de un lado y el texto de la colección del otro (Reformation «What's the occasion»).
+export function Editorial({ s }: { s: Seccion<"editorial"> }) {
+  if (!s.imagen_url) return null;
+  const { lado, fondo, antetitulo } = s.contenido;
+  const colores = { claro: "bg-marca-suave text-marca", oscuro: "bg-marca text-white", acento: "bg-acento text-white" }[fondo];
+  return (
+    <section className={`sangrado grid overflow-hidden md:grid-cols-2 ${colores}`}>
+      <div className={`relative aspect-[4/5] overflow-hidden md:aspect-auto md:min-h-[88svh] ${lado === "derecha" ? "md:order-2" : ""}`}>
+        <Medio url={s.imagen_url} className="paralaje absolute inset-0 h-full w-full object-cover object-[50%_25%]" />
+      </div>
+      <div className="flex flex-col justify-center gap-6 px-6 py-14 sm:px-10 md:px-14 lg:px-24" data-revelar>
+        {antetitulo && <p className="text-sm font-bold uppercase tracking-[0.14em] opacity-75">{antetitulo}</p>}
+        {s.titulo && <h2 className="serif max-w-[14ch] text-[clamp(2.8rem,5.5vw,5.4rem)] italic leading-[0.95]">{s.titulo}</h2>}
+        {s.bajada && <p className="max-w-md text-lg opacity-80">{s.bajada}</p>}
+        {s.boton_texto && s.boton_enlace && <div><Boton href={s.boton_enlace} variante={fondo === "claro" ? "lleno" : "blanco"}>{s.boton_texto} <Flecha /></Boton></div>}
       </div>
     </section>
   );

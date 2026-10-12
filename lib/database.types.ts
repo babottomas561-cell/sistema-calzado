@@ -225,14 +225,14 @@ isOneToOne: false
                   ]
                 },"configuracion_tienda": {
                   Row: {
-                    "aviso": string | null,"aviso_enlace": string | null,"dias_retiro": number,"direccion_retiro": string | null,"horario": string | null,"id": number,"instagram": string | null,"nombre": string,"unica": boolean,"whatsapp": string | null
+                    "aviso_enlace": string | null,"avisos": (string)[],"dias_retiro": number,"direccion_retiro": string | null,"horario": string | null,"id": number,"instagram": string | null,"nombre": string,"unica": boolean,"whatsapp": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "aviso"?: string | null,"aviso_enlace"?: string | null,"dias_retiro"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_retiro"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
                   }
                   Update: {
-                    "aviso"?: string | null,"aviso_enlace"?: string | null,"dias_retiro"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_retiro"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
                   }
                   Relationships: [
                     
@@ -1329,7 +1329,10 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "_cancelar_pedido":
+            "_avisos_cortos":
+{ Args: { "p": (string)[] }; Returns: boolean
+                           },
+"_cancelar_pedido":
 { Args: { "p_comentario": string,"p_motivo": string,"p_pedido": number,"p_por": string }; Returns: undefined
                            },
 "_codigo_corto":

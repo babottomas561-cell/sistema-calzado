@@ -129,10 +129,11 @@ una API de Next.** Lo que ya pisamos:
     totales en informes y stock (`v_hechos_ventas`, `v_stock`, `v_catalogo` traen `linea`). La ropa
     suma `productos.temporada` y `productos.material` (opcionales). Nada de «calzado» escrito a mano en las pantallas.
 15. **La portada la arma el dueño.** La landing (`/`) son las `inicio_secciones` que se editan en
-    `/admin/tienda` (permiso `tienda.editar`); los datos de la tienda (nombre, aviso, Instagram, WhatsApp, local)
+    `/admin/tienda` (permiso `tienda.editar`); los datos de la tienda (nombre, avisos que rotan, Instagram, WhatsApp, local, días de retiro)
     están en `configuracion_tienda`, en la misma pantalla. Un tipo de sección nuevo se suma en el `check` de la
     tabla, en `lib/inicio.ts` (tipo, `INFO_TIPO`, `leerContenido`, `NUEVA`), en `app/(tienda)/inicio/Secciones.tsx`
-    y en el editor. El movimiento es **CSS** (bloque «PORTADA» de `globals.css`), siempre dentro de
+    y en el editor. Si la portada es una campaña (`estilo: foto`), la cabecera flota transparente encima
+    (`app/(tienda)/marco/Cabecera.tsx`). Tipografía: Bricolage (titulares) + Instrument Serif (`.serif`, frases). El movimiento es **CSS** (bloque «PORTADA» de `globals.css`), siempre dentro de
     `prefers-reduced-motion: no-preference` y sin esconder contenido si el navegador no lo soporta.
 
 ---

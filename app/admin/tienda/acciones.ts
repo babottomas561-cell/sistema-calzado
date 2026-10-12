@@ -28,7 +28,7 @@ export async function guardarSeccion(_: Estado, f: FormData): Promise<Estado> {
   if (boton_enlace && !enlaceValido(boton_enlace)) return { error: "El link del botón tiene que empezar con / (una página de la tienda) o con https://" };
   const imagen_url = texto(f, "imagen_url", 500) || null;
   const imagen_ruta = imagen_url ? texto(f, "imagen_ruta", 300) || null : null;
-  if (tipo === "banner" && !imagen_url) return { error: "El banner necesita una foto" };
+  if ((tipo === "banner" || tipo === "editorial") && !imagen_url) return { error: `${tipo === "banner" ? "El banner" : "El bloque editorial"} necesita una foto` };
 
   const { error } = await supabase.from("inicio_secciones").update({
     titulo: texto(f, "titulo", 120) || null, bajada: texto(f, "bajada", 300) || null,
@@ -50,7 +50,7 @@ export async function crearSeccion(tipo: string): Promise<Estado> {
   const { error } = await supabase.from("inicio_secciones").insert({
     tipo, orden: (ultima?.orden ?? 0) + 10, titulo: base.titulo, bajada: base.bajada ?? null,
     boton_texto: base.boton_texto ?? null, boton_enlace: base.boton_enlace ?? null, contenido: base.contenido,
-    visible: tipo !== "banner",   // el banner arranca apagado hasta que tenga foto
+    visible: tipo !== "banner" && tipo !== "editorial",   // arrancan apagados hasta que tengan foto
   });
   if (error) return { error: error.message };
   refrescar();
@@ -80,7 +80,7 @@ export async function mostrarSeccion(id: number, visible: boolean): Promise<Esta
   const supabase = await crearCliente();
   if (visible) {
     const { data } = await supabase.from("inicio_secciones").select("tipo, imagen_url").eq("id", id).single();
-    if (data?.tipo === "banner" && !data.imagen_url) return { error: "Primero ponele una foto al banner" };
+    if ((data?.tipo === "banner" || data?.tipo === "editorial") && !data.imagen_url) return { error: "Primero ponele una foto" };
   }
   const { error } = await supabase.from("inicio_secciones").update({ visible }).eq("id", id);
   if (error) return { error: error.message };
@@ -109,9 +109,13 @@ export async function guardarTienda(_: Estado, f: FormData): Promise<Estado> {
   if (aviso_enlace && !enlaceValido(aviso_enlace)) return { error: "El link del aviso tiene que empezar con / o con https://" };
   const dias_retiro = Math.round(Number(f.get("dias_retiro")));
   if (!(dias_retiro >= 1 && dias_retiro <= 90)) return { error: "Los días para retirar van de 1 a 90" };
+  // Avisos: uno por renglón, hasta 5 (rotan en la barra de arriba)
+  const avisos = String(f.get("avisos") ?? "").split("\n").map((a) => a.trim()).filter(Boolean);
+  if (avisos.length > 5) return { error: "Hasta 5 avisos (uno por renglón)" };
+  if (avisos.some((a) => a.length > 120)) return { error: "Cada aviso puede tener hasta 120 letras" };
   const { error } = await supabase.from("configuracion_tienda").update({
     dias_retiro, nombre: texto(f, "nombre") || "Mi Tienda", whatsapp: whatsapp || null, instagram: instagram || null,
-    aviso: texto(f, "aviso", 120) || null, aviso_enlace: aviso_enlace || null,
+    avisos, aviso_enlace: aviso_enlace || null,
     direccion_retiro: texto(f, "direccion_retiro") || null, horario: texto(f, "horario") || null,
   }).eq("unica", true);
   if (error) return { error: error.message };

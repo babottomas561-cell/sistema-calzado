@@ -4,7 +4,7 @@
 import { crearCliente } from "@/lib/supabase/server";
 import { datosTienda } from "@/lib/tienda";
 import { leerContenido, type Filtro, type Seccion, type Tipo } from "@/lib/inicio";
-import { Accesos, Banner, Cinta, Local, Pasos, Portada, Promociones, Vidriera, type ModeloInicio } from "./inicio/Secciones";
+import { Accesos, Banner, Cinta, Editorial, Local, Pasos, Portada, Promociones, Vidriera, type ModeloInicio } from "./inicio/Secciones";
 
 type Fila = { producto_id: number; nombre: string; marca: string | null; categoria: string | null; genero: string | null; linea: string | null;
   imagen_url: string | null; color: string; color_hex: string | null; precio: number; disponible: number; creado_en: string };
@@ -74,6 +74,7 @@ export default async function Landing() {
       }
       case "promociones": return <Promociones key={s.id} s={s as Seccion<"promociones">} promos={promosUnicas} />;
       case "banner": return <Banner key={s.id} s={s as Seccion<"banner">} />;
+      case "editorial": return <Editorial key={s.id} s={s as Seccion<"editorial">} />;
       case "pasos": return <Pasos key={s.id} s={s as Seccion<"pasos">} />;
       case "local": return <Local key={s.id} s={s as Seccion<"local">} contacto={contacto} tienda={tienda.nombre} />;
     }

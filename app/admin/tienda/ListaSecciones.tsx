@@ -14,7 +14,7 @@ function resumen(s: Seccion) {
     case "cinta": return [...(c.frases as string[]), ...(c.marcas ? ["+ marcas"] : [])].join(" · ");
     case "accesos": return (c.tarjetas as { titulo: string }[]).map((t) => t.titulo).join(" · ");
     case "pasos": return (c.pasos as { titulo: string }[]).map((t) => t.titulo).join(" → ");
-    case "banner": return s.imagen_url ? s.bajada ?? "" : "Falta la foto";
+    case "banner": case "editorial": return s.imagen_url ? s.bajada ?? "" : "Falta la foto";
     default: return s.bajada ?? "";
   }
 }

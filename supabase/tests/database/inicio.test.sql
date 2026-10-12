@@ -11,13 +11,17 @@ create function prueba.como_cliente() returns void language sql as $$
 create function prueba.rol_equipo(p_rol text) returns void language sql security definer set search_path = public as $$
   update perfiles set rol_id = (select id from roles where nombre = p_rol) where id = '11111111-1111-1111-1111-111111111111' $$;
 grant execute on all functions in schema prueba to anon, authenticated;
-select plan(14);
+select plan(17);
 
 -- La migración deja la portada de siempre armada en secciones
 select is((select array_agg(tipo order by orden) from inicio_secciones),
   array['portada', 'cinta', 'accesos', 'productos', 'promociones', 'pasos', 'local'], 'la portada nace con sus siete secciones en orden');
 select throws_ok($$ insert into inicio_secciones (tipo) values ('carrusel_3d') $$, '23514', null, 'un tipo de sección desconocido no entra');
 select throws_ok($$ update inicio_secciones set boton_enlace = 'javascript:alert(1)' where tipo = 'portada' $$, '23514', null, 'el link del botón solo puede ser interno, ancla o http(s)');
+select lives_ok($$ insert into inicio_secciones (tipo, orden, visible) values ('editorial', 99, false) $$, 'acepta el bloque editorial');
+delete from inicio_secciones where tipo = 'editorial';
+select throws_ok($$ update configuracion_tienda set avisos = array['1','2','3','4','5','6'] $$, '23514', null, 'hasta 5 avisos');
+select throws_ok($$ update configuracion_tienda set avisos = array[repeat('x', 121)] $$, '23514', null, 'cada aviso, hasta 120 letras');
 update inicio_secciones set visible = false where tipo = 'pasos';
 
 -- Público: solo las prendidas, y no escribe nada
@@ -55,10 +59,10 @@ set local role authenticated;
 select prueba.como_equipo();
 select is((select count(*)::int from inicio_secciones), 7, 'administrador: ve también la oculta');
 update inicio_secciones set titulo = 'Nueva temporada' where tipo = 'portada';
-update configuracion_tienda set aviso = 'Envío gratis', instagram = 'mitienda';
+update configuracion_tienda set avisos = array['Envío gratis', '6 cuotas'], instagram = 'mitienda';
 reset role;
 select is((select titulo from inicio_secciones where tipo = 'portada'), 'Nueva temporada', 'administrador: edita una sección');
-select is((select aviso || ' @' || instagram from configuracion_tienda), 'Envío gratis @mitienda', 'administrador: edita aviso e Instagram');
+select is((select array_to_string(avisos, ' · ') || ' @' || instagram from configuracion_tienda), 'Envío gratis · 6 cuotas @mitienda', 'administrador: edita avisos e Instagram');
 
 select * from finish();
 rollback;

@@ -1,5 +1,5 @@
 // Tienda online: cómo se ve la portada (secciones en orden, cada una editable) y los datos de la
-// tienda (nombre, aviso, Instagram, WhatsApp, local). Lo ve quien tiene el permiso "Tienda online".
+// tienda (nombre, avisos, Instagram, WhatsApp, local). Lo ve quien tiene el permiso "Tienda online".
 import { ExternalLink } from "lucide-react";
 import { crearCliente } from "@/lib/supabase/server";
 import { exigir } from "@/lib/exigir";
@@ -12,7 +12,7 @@ export default async function TiendaOnline() {
   const supabase = await crearCliente();
   const [{ data: secciones }, { data: tienda }, { data: catalogo }] = await Promise.all([
     supabase.from("inicio_secciones").select("id, tipo, orden, visible, titulo, bajada, boton_texto, boton_enlace, imagen_url, imagen_ruta, contenido").order("orden").order("id"),
-    supabase.from("configuracion_tienda").select("nombre, aviso, aviso_enlace, instagram, whatsapp, direccion_retiro, horario, dias_retiro").single(),
+    supabase.from("configuracion_tienda").select("nombre, avisos, aviso_enlace, instagram, whatsapp, direccion_retiro, horario, dias_retiro").single(),
     supabase.from("v_catalogo").select("producto_id, nombre, marca, categoria, genero, linea, imagen_url"),
   ]);
   const lista = (secciones ?? []).map((s) => ({ ...s, tipo: s.tipo as Tipo, contenido: leerContenido(s.tipo as Tipo, s.contenido) })) as Seccion[];
@@ -40,7 +40,7 @@ export default async function TiendaOnline() {
 
       <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
         <div className="border-b border-borde px-5 py-4"><h2 className="font-semibold">Datos de la tienda</h2>
-          <p className="text-sm text-texto-2">Nombre, aviso, redes y lo que ve el cliente al hacer un pedido.</p></div>
+          <p className="text-sm text-texto-2">Nombre, avisos, redes y lo que ve el cliente al hacer un pedido.</p></div>
         {tienda && <FormTienda tienda={tienda} />}
       </section>
     </div>

@@ -126,3 +126,9 @@ body { background: var(--color-fondo); color: #111827; }
 @keyframes destapa { from { clip-path: inset(18% 0 0 0); opacity: 0.4; transform: translateY(24px); } to { clip-path: inset(0); opacity: 1; transform: none; } }
 @keyframes paralaje { from { transform: translateY(-12%) scale(1.15); } to { transform: translateY(12%) scale(1.15); } }
 @keyframes numero { from { opacity: 0; transform: translateY(40%) scale(0.85); } to { opacity: 1; transform: none; } }
+
+/* Serif editorial de la tienda (Instrument Serif): frases y títulos de colección */
+.tienda .serif { font-family: var(--font-serif), Georgia, "Times New Roman", serif; font-weight: 400; letter-spacing: -0.01em; }
+/* Cabecera transparente sobre la campaña: los hover pasan a un velo blanco (el gris claro no se vería) */
+.tienda header[data-transparente] :is(a, button):hover { background: rgb(255 255 255 / 0.16); }
+.tienda header[data-sin-marca] .marca-cabecera { opacity: 0; pointer-events: none; }

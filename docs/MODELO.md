@@ -84,13 +84,13 @@ y las vistas previas. La tienda ve la galería por `v_imagenes_tienda` (solo pro
 ## Portada de la tienda (landing)
 
 La página de inicio (`/`) se arma con `inicio_secciones`: cada fila es una sección con su `tipo`
-(`portada`, `cinta`, `accesos`, `productos`, `promociones`, `banner`, `pasos`, `local`), su `orden`,
-`visible`, textos (`titulo`, `bajada`, `boton_texto`, `boton_enlace`), una foto opcional (`imagen_url`,
-`imagen_ruta` en el bucket público `tienda`) y lo propio del tipo en `contenido` (jsonb: tarjetas de
+(`portada`, `cinta`, `accesos`, `productos`, `promociones`, `banner`, `editorial`, `pasos`, `local`), su `orden`,
+`visible`, textos (`titulo`, `bajada`, `boton_texto`, `boton_enlace`), una foto o un video opcional (`imagen_url`,
+`imagen_ruta` en el bucket público `tienda`; video mp4/webm hasta 50 MB en portada y banner) y lo propio del tipo en `contenido` (jsonb: tarjetas de
 accesos, pasos, frases de la cinta, criterio de la vidriera…). La forma de `contenido` la valida
 `lib/inicio.ts` (`leerContenido`), que nunca falla: lo que no cuadra vuelve a un valor por defecto.
 Se edita en `/admin/tienda` con el permiso `tienda.editar`, igual que `configuracion_tienda` (nombre,
-aviso de arriba, Instagram, WhatsApp, dirección y horario). La vidriera «más vendidos» usa
+`avisos` de arriba —hasta 5, rotan—, Instagram, WhatsApp, dirección y horario). La vidriera «más vendidos» usa
 `mas_vendidos_tienda()`: devuelve solo el orden de los artículos publicados, no cantidades ni montos.
 
 ## Precios

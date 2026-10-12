@@ -6,7 +6,7 @@ import { useActionState, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Check, ImagePlus, LoaderCircle, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { crearClienteNavegador } from "@/lib/supabase/navegador";
 import { achicarFoto } from "@/lib/fotos";
-import { CRITERIOS, ESTILOS_PORTADA, INFO_TIPO, type Contenido, type Filtro, type Seccion, type Tarjeta, type Tipo } from "@/lib/inicio";
+import { CRITERIOS, ESTILOS_PORTADA, FONDOS, INFO_TIPO, esVideo, type Contenido, type Filtro, type Seccion, type Tarjeta, type Tipo } from "@/lib/inicio";
 import { guardarSeccion, type Estado } from "./acciones";
 
 export type Opciones = { generos: string[]; lineas: string[]; rubros: string[]; productos: { id: number; nombre: string; marca: string | null; imagen: string | null }[] };
@@ -15,16 +15,20 @@ export type Opciones = { generos: string[]; lineas: string[]; rubros: string[]; 
 const aValor = (f: Filtro) => Object.entries(f).map(([k, v]) => `${k}:${v}`)[0] ?? "";
 const aFiltro = (v: string): Filtro => { const [k, ...r] = v.split(":"); return k && r.length ? { [k]: r.join(":") } : {}; };
 
-// Sube una foto al bucket "tienda" y devuelve su url pública y su ruta
+// Sube una foto (achicada) o un video (tal cual, hasta 50 MB) al bucket "tienda" y devuelve su url y su ruta
+const MAX_VIDEO = 50 * 1024 * 1024;
 async function subirFoto(archivo: File, lado: number) {
   const supabase = crearClienteNavegador();
-  const ruta = `${new Date().getFullYear()}/${crypto.randomUUID()}.jpg`;
-  const { error } = await supabase.storage.from("tienda").upload(ruta, await achicarFoto(archivo, lado), { contentType: "image/jpeg" });
+  const video = archivo.type === "video/mp4" || archivo.type === "video/webm";
+  if (archivo.type.startsWith("video/") && !video) throw new Error("el video tiene que ser MP4 o WebM (en el iPhone: Ajustes → Cámara → Formatos → Más compatible)");
+  if (video && archivo.size > MAX_VIDEO) throw new Error(`el video pesa ${Math.round(archivo.size / 1048576)} MB y el tope es 50 MB. Recortalo o bajale la calidad`);
+  const ruta = `${new Date().getFullYear()}/${crypto.randomUUID()}.${video ? archivo.type.split("/")[1] : "jpg"}`;
+  const { error } = await supabase.storage.from("tienda").upload(ruta, video ? archivo : await achicarFoto(archivo, lado), { contentType: video ? archivo.type : "image/jpeg" });
   if (error) throw error;
   return { ruta, url: supabase.storage.from("tienda").getPublicUrl(ruta).data.publicUrl };
 }
 
-function CampoFoto({ url, onCambio, lado = 2400, alto = "aspect-[16/9]", ayuda }: { url: string | null; onCambio: (f: { url: string; ruta: string } | null) => void; lado?: number; alto?: string; ayuda?: string }) {
+function CampoFoto({ url, onCambio, lado = 2400, alto = "aspect-[16/9]", ayuda, conVideo = false }: { url: string | null; onCambio: (f: { url: string; ruta: string } | null) => void; lado?: number; alto?: string; ayuda?: string; conVideo?: boolean }) {
   const entrada = useRef<HTMLInputElement>(null);
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,14 +43,16 @@ function CampoFoto({ url, onCambio, lado = 2400, alto = "aspect-[16/9]", ayuda }
     <div className="space-y-1.5">
       <button type="button" onClick={() => entrada.current?.click()} disabled={subiendo}
         className={`group relative grid w-full place-items-center overflow-hidden rounded-xl border-2 border-dashed border-borde bg-gray-50 text-sm text-texto-2 hover:border-marca ${alto}`}>
-        {url && <img src={url} alt="" className="absolute inset-0 h-full w-full object-cover" />}
+        {url && (esVideo(url)
+          ? <video src={url} muted loop autoPlay playsInline className="absolute inset-0 h-full w-full object-cover" />
+          : <img src={url} alt="" className="absolute inset-0 h-full w-full object-cover" />)}
         <span className={`relative flex items-center gap-2 rounded-lg px-3 py-2 font-semibold ${url ? "bg-white/90 text-gray-800 opacity-0 shadow group-hover:opacity-100 group-focus-visible:opacity-100" : ""}`}>
-          {subiendo ? <LoaderCircle size={17} className="animate-spin" /> : <ImagePlus size={17} />}{subiendo ? "Subiendo…" : url ? "Cambiar foto" : "Elegir o sacar una foto"}</span>
+          {subiendo ? <LoaderCircle size={17} className="animate-spin" /> : <ImagePlus size={17} />}{subiendo ? "Subiendo…" : url ? (conVideo ? "Cambiar foto o video" : "Cambiar foto") : conVideo ? "Elegir una foto o un video" : "Elegir o sacar una foto"}</span>
       </button>
-      <input ref={entrada} type="file" accept="image/*" hidden onChange={(e) => elegir(e.target.files)} />
+      <input ref={entrada} type="file" accept={conVideo ? "image/*,video/mp4,video/webm" : "image/*"} hidden onChange={(e) => elegir(e.target.files)} />
       <div className="flex items-center justify-between gap-2">
         <p className="text-[11px] text-texto-2">{ayuda}</p>
-        {url && <button type="button" onClick={() => onCambio(null)} className="shrink-0 text-xs font-semibold text-error hover:underline">Quitar foto</button>}
+        {url && <button type="button" onClick={() => onCambio(null)} className="shrink-0 text-xs font-semibold text-error hover:underline">Quitar</button>}
       </div>
       {error && <p className="text-sm text-error">{error}</p>}
     </div>
@@ -87,8 +93,8 @@ export default function EditorSeccion({ s, opciones }: { s: Seccion; opciones: O
   const info = INFO_TIPO[s.tipo];
   // Qué campos comunes usa cada tipo
   const usa = {
-    titulo: s.tipo !== "cinta", bajada: ["portada", "banner", "local", "accesos", "productos"].includes(s.tipo),
-    boton: !["cinta", "pasos"].includes(s.tipo), foto: s.tipo === "banner" || (s.tipo === "portada" && (c as Contenido["portada"]).estilo === "foto"),
+    titulo: s.tipo !== "cinta", bajada: ["portada", "banner", "editorial", "local", "accesos", "productos"].includes(s.tipo),
+    boton: !["cinta", "pasos"].includes(s.tipo), foto: s.tipo === "banner" || s.tipo === "editorial" || (s.tipo === "portada" && (c as Contenido["portada"]).estilo === "foto"),
   };
 
   const destinos = (
@@ -108,7 +114,9 @@ export default function EditorSeccion({ s, opciones }: { s: Seccion; opciones: O
             <label key={k} className={`flex cursor-pointer items-center gap-2 rounded-xl border p-3 text-sm ${p.estilo === k ? "border-marca bg-marca-suave font-semibold text-marca" : "border-borde"}`}>
               <input type="radio" className="sr-only" checked={p.estilo === k} onChange={() => setC({ ...p, estilo: k })} />{p.estilo === k && <Check size={15} />}{t}</label>
           ))}</div>
-          {p.estilo === "columnas" && <p className="mt-1 text-[11px] text-texto-2">Usa las fotos de los productos publicados con stock: cambian solas con el catálogo.</p>}</div>
+          {p.estilo === "columnas" && <p className="mt-1 text-[11px] text-texto-2">Usa las fotos de los productos publicados con stock: cambian solas con el catálogo.</p>}
+          {p.estilo === "foto" && <p className="mt-1 text-[11px] text-texto-2">Sin foto o video subido, se ve la de columnas. La cabecera queda transparente encima.</p>}</div>
+        {p.estilo === "foto" && <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={p.marca_gigante} onChange={(e) => setC({ ...p, marca_gigante: e.target.checked })} /> Nombre de la tienda gigante arriba de la foto</label>}
         <div><label className="etiqueta">Texto chico arriba del título (opcional)</label>
           <input value={p.antetitulo ?? ""} onChange={(e) => setC({ ...p, antetitulo: e.target.value })} maxLength={60} placeholder="Nueva temporada · Primavera 2026" className="campo" /></div>
       </>; }
@@ -163,6 +171,18 @@ export default function EditorSeccion({ s, opciones }: { s: Seccion; opciones: O
           <select value={p.alineacion} onChange={(e) => setC({ ...p, alineacion: e.target.value as "izquierda" | "centro" })} className="campo">
             <option value="izquierda">Abajo a la izquierda</option><option value="centro">Centrado</option></select></div>
       ); }
+      case "editorial": { const p = c as Contenido["editorial"]; return <>
+        <div><label className="etiqueta">Texto chico arriba del título (opcional)</label>
+          <input value={p.antetitulo ?? ""} onChange={(e) => setC({ ...p, antetitulo: e.target.value })} maxLength={60} placeholder="La edición de la semana" className="campo" /></div>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className="etiqueta">Foto</label>
+            <select value={p.lado} onChange={(e) => setC({ ...p, lado: e.target.value as "izquierda" | "derecha" })} className="campo">
+              <option value="izquierda">A la izquierda</option><option value="derecha">A la derecha</option></select></div>
+          <div><label className="etiqueta">Fondo del texto</label>
+            <select value={p.fondo} onChange={(e) => setC({ ...p, fondo: e.target.value as keyof typeof FONDOS })} className="campo">
+              {Object.entries(FONDOS).map(([k, t]) => <option key={k} value={k}>{t}</option>)}</select></div>
+        </div>
+      </>; }
       case "pasos": { const p = c as Contenido["pasos"]; return (
         <div><label className="etiqueta">Pasos</label>
           <Lista items={p.pasos} setItems={(pasos) => setC({ ...p, pasos })} nuevo={() => ({ titulo: "", texto: "" })} max={6} agregar="Agregar paso"
@@ -191,8 +211,9 @@ export default function EditorSeccion({ s, opciones }: { s: Seccion; opciones: O
           <input type="hidden" name="imagen_url" value={usa.foto ? foto?.url ?? "" : ""} />
           <input type="hidden" name="imagen_ruta" value={usa.foto ? foto?.ruta ?? "" : ""} />
           <div className="space-y-4 overflow-y-auto px-5 py-4">
-            {usa.foto && <CampoFoto url={foto?.url ?? null} onCambio={setFoto} alto={s.tipo === "portada" ? "aspect-[4/3]" : "aspect-[16/9]"}
-              ayuda="Mejor horizontal y con espacio libre abajo a la izquierda (ahí va el texto)." />}
+            {usa.foto && <CampoFoto url={foto?.url ?? null} onCambio={setFoto} conVideo={s.tipo !== "editorial"}
+              alto={s.tipo === "editorial" ? "aspect-[4/5] max-h-72" : s.tipo === "portada" ? "aspect-[4/3]" : "aspect-[16/9]"}
+              ayuda={s.tipo === "editorial" ? "Mejor vertical: ocupa media pantalla en la compu." : "Foto horizontal o video corto (MP4, hasta 50 MB). El texto va abajo a la izquierda."} />}
             {usa.titulo && <div><label className="etiqueta">{s.tipo === "portada" ? "Título grande" : "Título"}</label>
               <input name="titulo" defaultValue={s.titulo ?? ""} maxLength={120} className="campo" placeholder={s.tipo === "portada" ? "Elegí lo que más te gusta" : ""} /></div>}
             {usa.bajada && <div><label className="etiqueta">Bajada (opcional)</label>
