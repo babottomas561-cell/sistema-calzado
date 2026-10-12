@@ -74,10 +74,10 @@ select results_eq(format($$ select * from prueba.fallado(%s) $$, (select id from
 select is((select tipo from movimientos_stock where variante_id = (select id from prueba.ids where nombre = 'rp38') order by id desc limit 1), 'devolucion_proveedor', 'con su movimiento de devolución al proveedor');
 select ok(prueba.cierra_stock(), 'al final, el stock sigue cerrando');
 
--- ── Permisos y costos: la cajera ve la bandeja sin costos y no la toca ──
-select prueba.rol_equipo('Cajero');
-select is((select count(*)::int from fallados), 0, 'cajera: no lee la tabla (tiene costos)');
-select is((select count(*) filter (where costo_unitario is null)::int from v_fallados), (select count(*)::int from v_fallados), 'cajera: ve la bandeja con el costo vacío');
+-- ── Permisos y costos: la vendedora ve la bandeja sin costos y no la toca ──
+select prueba.rol_equipo('Vendedor');
+select is((select count(*)::int from fallados), 0, 'vendedora: no lee la tabla (tiene costos)');
+select is((select count(*) filter (where costo_unitario is null)::int from v_fallados), (select count(*)::int from v_fallados), 'vendedora: ve la bandeja con el costo vacío');
 select throws_ok(format($$ select mover_a_fallados(%s, 1, 'Mancha') $$, (select id from prueba.ids where nombre = 'rp38')), 'No tenés permiso para mover stock a fallados');
 
 select * from finish();

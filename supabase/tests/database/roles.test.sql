@@ -1,4 +1,4 @@
--- Roles del equipo: qué puede y qué no puede hacer una cajera, y las protecciones del equipo.
+-- Roles del equipo: qué puede y qué no puede hacer una vendedora, y las protecciones del equipo.
 begin;
 -- ── Ayudas de prueba (viven solo dentro de esta transacción) ──
 -- security definer: leen todo aunque la prueba esté actuando como un cliente sin permisos
@@ -21,65 +21,65 @@ grant execute on all functions in schema prueba to anon, authenticated;
 -- Para guardar ids entre pasos
 create table prueba.ids (nombre text primary key, id bigint);
 grant all on prueba.ids to anon, authenticated;
--- La cajera de prueba (la crea seed.sql con el rol Cajero)
-create function prueba.como_cajera() returns void language sql as $$
+-- La vendedora de prueba (la crea seed.sql con el rol Vendedor)
+create function prueba.como_vendedora() returns void language sql as $$
   select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}', true) $$;
-grant execute on function prueba.como_cajera to authenticated;
+grant execute on function prueba.como_vendedora to authenticated;
 select plan(26);
 
 insert into prueba.ids values ('urbana40n', prueba.variante('Zapatilla Urbana Classic', '40', 'Negro'));
 
--- ── Como la cajera ──
+-- ── Como la vendedora ──
 set local role authenticated;
-select prueba.como_cajera();
-select ok(tiene_permiso('ventas.registrar'), 'cajera: puede vender');
-select ok(not tiene_permiso('costos.ver'), 'cajera: no ve costos');
+select prueba.como_vendedora();
+select ok(tiene_permiso('ventas.registrar'), 'vendedora: puede vender');
+select ok(not tiene_permiso('costos.ver'), 'vendedora: no ve costos');
 
 -- Costos: ni la tabla ni las vistas
-select is((select count(*)::int from productos), 0, 'cajera: no lee la tabla productos (tiene costos)');
-select ok((select count(*) from v_stock) > 0, 'cajera: ve el stock por v_stock');
-select is((select count(*)::int from v_stock where precio_compra is not null or valor_costo is not null), 0, 'cajera: v_stock sin costos');
-select is((select count(*)::int from producto_proveedores), 0, 'cajera: no ve precios de proveedores');
-select is((select count(*)::int from compras), 0, 'cajera: no ve compras');
-select is((select count(*)::int from v_hechos_ventas), 0, 'cajera: no ve informes de ventas');
+select is((select count(*)::int from productos), 0, 'vendedora: no lee la tabla productos (tiene costos)');
+select ok((select count(*) from v_stock) > 0, 'vendedora: ve el stock por v_stock');
+select is((select count(*)::int from v_stock where precio_compra is not null or valor_costo is not null), 0, 'vendedora: v_stock sin costos');
+select is((select count(*)::int from producto_proveedores), 0, 'vendedora: no ve precios de proveedores');
+select is((select count(*)::int from compras), 0, 'vendedora: no ve compras');
+select is((select count(*)::int from v_hechos_ventas), 0, 'vendedora: no ve informes de ventas');
 
 -- Ventas: solo las suyas
-select is((select count(*)::int from ventas), 0, 'cajera: no ve las ventas de otros');
+select is((select count(*)::int from ventas), 0, 'vendedora: no ve las ventas de otros');
 insert into prueba.ids select 'v_caj', registrar_venta(
   format('[{"variante_id": %s, "cantidad": 1, "precio_unitario": 1}]', (select id from prueba.ids where nombre = 'urbana40n'))::jsonb,
   format('[{"medio_pago_id": %s}]', prueba.medio('DEB'))::jsonb);
-select is((select count(*)::int from ventas), 1, 'cajera: ve la venta que hizo');
+select is((select count(*)::int from ventas), 1, 'vendedora: ve la venta que hizo');
 select is((select subtotal from ventas where id = (select id from prueba.ids where nombre = 'v_caj')), 79000.00::numeric(12,2),
-  'cajera: el precio que manda el navegador no cuenta (cobra el de lista)');
+  'vendedora: el precio que manda el navegador no cuenta (cobra el de lista)');
 select is((select usuario_id from ventas where id = (select id from prueba.ids where nombre = 'v_caj')), '33333333-3333-3333-3333-333333333333'::uuid,
   'la venta queda a su nombre');
-select is((select costo_unitario from v_venta_items where venta_id = (select id from prueba.ids where nombre = 'v_caj')), null, 'cajera: el detalle de su venta sin costo');
+select is((select costo_unitario from v_venta_items where venta_id = (select id from prueba.ids where nombre = 'v_caj')), null, 'vendedora: el detalle de su venta sin costo');
 
--- Tope de descuento del rol Cajero: 10 %
+-- Tope de descuento del rol Vendedor: 10 %
 select lives_ok(format($$ select registrar_venta('[{"variante_id": %s, "cantidad": 1}]', '[]', null, 7900) $$, (select id from prueba.ids where nombre = 'urbana40n')),
-  'cajera: descuento del 10 % permitido');
+  'vendedora: descuento del 10 % permitido');
 select throws_like(format($$ select registrar_venta('[{"variante_id": %s, "cantidad": 1}]', '[]', null, 8000) $$, (select id from prueba.ids where nombre = 'urbana40n')),
-  'Tu descuento máximo es del 10 %', 'cajera: más del 10 % no');
+  'Tu descuento máximo es del 10 %', 'vendedora: más del 10 % no');
 
 -- Lo que no puede hacer
 select throws_ok(format($$ select ajustar_stock(%s, 50, 'me sumo stock') $$, (select id from prueba.ids where nombre = 'urbana40n')), 'No tenés permiso para ajustar stock');
 select throws_ok(format($$ select registrar_compra('[{"variante_id": %s, "cantidad": 50, "costo_unitario": 1}]') $$, (select id from prueba.ids where nombre = 'urbana40n')),
   'No tenés permiso para registrar compras');
-select throws_like(format($$ select _mover_stock(%s, 1, 50, 'ajuste') $$, (select id from prueba.ids where nombre = 'urbana40n')), '%permission denied%', 'cajera: no llama a _mover_stock');
+select throws_like(format($$ select _mover_stock(%s, 1, 50, 'ajuste') $$, (select id from prueba.ids where nombre = 'urbana40n')), '%permission denied%', 'vendedora: no llama a _mover_stock');
 update stock set cantidad = 999 where variante_id = (select id from prueba.ids where nombre = 'urbana40n');
-select isnt(prueba.stock((select id from prueba.ids where nombre = 'urbana40n')), 999, 'cajera: no puede escribir stock directo');
+select isnt(prueba.stock((select id from prueba.ids where nombre = 'urbana40n')), 999, 'vendedora: no puede escribir stock directo');
 update perfiles set rol_id = (select id from roles where todos) where id = auth.uid();
-select is((select r.nombre from perfiles p join roles r on r.id = p.rol_id where p.id = '33333333-3333-3333-3333-333333333333'), 'Cajero', 'cajera: no se puede hacer administradora');
-select throws_ok($$ select asignar_rol('cajero@demo.local', 1) $$, 'No tenés permiso para administrar el equipo');
-update roles set descuento_max_pct = 100 where nombre = 'Cajero';
-select is((select descuento_max_pct from roles where nombre = 'Cajero'), 10.00::numeric(5,2), 'cajera: no puede subirse el tope de descuento');
+select is((select r.nombre from perfiles p join roles r on r.id = p.rol_id where p.id = '33333333-3333-3333-3333-333333333333'), 'Vendedor', 'vendedora: no se puede hacer administradora');
+select throws_ok($$ select asignar_rol('vendedor@demo.local', 1) $$, 'No tenés permiso para administrar el equipo');
+update roles set descuento_max_pct = 100 where nombre = 'Vendedor';
+select is((select descuento_max_pct from roles where nombre = 'Vendedor'), 10.00::numeric(5,2), 'vendedora: no puede subirse el tope de descuento');
 
 -- ── Como el administrador ──
 select prueba.como_equipo();
 select throws_ok($$ select quitar_del_equipo('11111111-1111-1111-1111-111111111111') $$, 'No te podés sacar a vos mismo del equipo');
-select throws_ok($$ select asignar_rol('admin@demo.local', (select id from roles where nombre = 'Cajero')) $$, 'Tiene que quedar al menos un Administrador');
+select throws_ok($$ select asignar_rol('admin@demo.local', (select id from roles where nombre = 'Vendedor')) $$, 'Tiene que quedar al menos un Administrador');
 select throws_ok($$ delete from roles where todos $$, 'El rol Administrador no se puede borrar');
-select throws_ok($$ update roles set permisos = '{ventas.volar}' where nombre = 'Cajero' $$, 'El permiso "ventas.volar" no existe');
+select throws_ok($$ update roles set permisos = '{ventas.volar}' where nombre = 'Vendedor' $$, 'El permiso "ventas.volar" no existe');
 
 select * from finish();
 rollback;

@@ -24,9 +24,9 @@ select pg_temp.crear_usuario('22222222-2222-2222-2222-222222222222', 'cliente@de
 
 -- El trigger los creó como clientes: el admin pasa a ser del equipo y no necesita ficha de cliente
 update perfiles set rol = 'staff', rol_id = (select id from roles where todos) where id = '11111111-1111-1111-1111-111111111111';
--- Una cajera para probar los permisos (ve stock y vende, no ve costos)
-select pg_temp.crear_usuario('33333333-3333-3333-3333-333333333333', 'cajero@demo.local', 'Caro (cajera)');
-update perfiles set rol = 'staff', rol_id = (select id from roles where nombre = 'Cajero') where id = '33333333-3333-3333-3333-333333333333';
+-- Una vendedora para probar los permisos (ve stock y vende, no ve costos)
+select pg_temp.crear_usuario('33333333-3333-3333-3333-333333333333', 'vendedor@demo.local', 'Caro (vendedora)');
+update perfiles set rol = 'staff', rol_id = (select id from roles where nombre = 'Vendedor') where id = '33333333-3333-3333-3333-333333333333';
 delete from clientes where usuario_id = '33333333-3333-3333-3333-333333333333';
 delete from clientes where usuario_id = '11111111-1111-1111-1111-111111111111';
 

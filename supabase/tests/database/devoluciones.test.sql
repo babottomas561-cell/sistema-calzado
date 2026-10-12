@@ -88,15 +88,15 @@ select throws_ok(format($$ select registrar_devolucion(%s, prueba.items(%s, 1), 
 select registrar_devolucion((select id from prueba.ids where nombre = 'vd'), prueba.items((select id from prueba.ids where nombre = 'vd'), 1), 'talle', null, prueba.cliente('Juan Pérez'));
 select is(prueba.saldo(prueba.cliente('Juan Pérez')), 71100.00, 'el saldo queda a nombre del cliente que se eligió');
 
--- ── E. Fuera de plazo: la cajera no, el encargado sí ──
+-- ── E. Fuera de plazo: la vendedora no, el encargado sí ──
 insert into prueba.ids select 've', prueba.vender('39', 'Negro', 1, 'EFE', prueba.cliente('María González'));
 reset role;
 update ventas set fecha = now() - interval '40 days' where id = (select id from prueba.ids where nombre = 've');
 set local role authenticated;
 select prueba.como_equipo();
-select prueba.rol_equipo('Cajero');
+select prueba.rol_equipo('Vendedor');
 select throws_like(format($$ select registrar_devolucion(%s, prueba.items(%s, 1), 'talle') $$, (select id from prueba.ids where nombre = 've'), (select id from prueba.ids where nombre = 've')),
-  'Pasó el plazo de cambios%', 'pasado el plazo, la cajera no puede');
+  'Pasó el plazo de cambios%', 'pasado el plazo, la vendedora no puede');
 select prueba.rol_equipo('Encargado');
 insert into prueba.ids select 'de', registrar_devolucion((select id from prueba.ids where nombre = 've'), prueba.items((select id from prueba.ids where nombre = 've'), 1), 'talle');
 select is((select fuera_de_plazo from devoluciones where id = (select id from prueba.ids where nombre = 'de')), true, 'el encargado sí, y queda marcada fuera de plazo');

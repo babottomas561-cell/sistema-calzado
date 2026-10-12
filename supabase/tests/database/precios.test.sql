@@ -21,9 +21,9 @@ grant execute on all functions in schema prueba to anon, authenticated;
 -- Para guardar ids entre pasos
 create table prueba.ids (nombre text primary key, id bigint);
 grant all on prueba.ids to anon, authenticated;
-create function prueba.como_cajera() returns void language sql as $$
+create function prueba.como_vendedora() returns void language sql as $$
   select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}', true) $$;
-grant execute on function prueba.como_cajera to authenticated;
+grant execute on function prueba.como_vendedora to authenticated;
 create function prueba.precio(p_nombre text) returns numeric language sql stable security definer set search_path = public as $$
   select precio_venta from productos where nombre = p_nombre $$;
 grant execute on function prueba.precio to authenticated;
@@ -64,11 +64,11 @@ select ajustar_precios('compra', array(select id from productos), 'porcentaje', 
 select results_eq($$ select precio_lista, precio_compra from producto_proveedores where producto_id = (select id from prueba.ids where nombre = 'running') and proveedor_id = (select id from prueba.ids where nombre = 'norte') $$,
   $$ values (61600.00::numeric(12,2), 55440.00::numeric(12,2)) $$, 'compra: sube la lista y el neto respeta la bonificación');
 
--- Permisos: la cajera no cambia precios
+-- Permisos: la vendedora no cambia precios
 set local role authenticated;
-select prueba.como_cajera();
+select prueba.como_vendedora();
 select throws_ok($$ select * from ajustar_precios('venta', array[1::bigint], 'porcentaje', 50) $$, 'No tenés permiso para cambiar precios de venta');
-select is((select count(*)::int from ajustes_precios), 0, 'cajera: no ve el historial de precios');
+select is((select count(*)::int from ajustes_precios), 0, 'vendedora: no ve el historial de precios');
 
 select * from finish();
 rollback;

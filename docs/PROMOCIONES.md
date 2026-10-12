@@ -80,7 +80,7 @@ Permiso nuevo: `promociones.gestionar` (Administrador y Encargado). Pantalla en 
 | Carrito | renglón "Promo 2×1: −$X" calculado por `cotizar()`; aviso "Te falta 1 par para el 2×1" |
 | Mensaje de WhatsApp | cada par con su precio final y la promoción aplicada |
 | Presupuesto / pedido | la promoción y su descuento, con la fecha hasta la que se respeta |
-| Punto de venta | se aplica sola al agregar los pares; la cajera la ve pero no la puede sacar |
+| Punto de venta | se aplica sola al agregar los pares; la vendedora la ve pero no la puede sacar |
 | Informes | "Ventas por promoción": pares, vendido y **cuánto se resignó** (suma de `descuento_promo`) |
 
 ## Devoluciones con promoción

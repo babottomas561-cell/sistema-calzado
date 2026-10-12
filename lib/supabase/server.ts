@@ -25,7 +25,7 @@ export async function crearCliente() {
 }
 
 // El usuario logueado y su rol ("staff" = equipo, "cliente" = comprador de la tienda).
-// Si es del equipo, también su rol dentro del equipo (Administrador, Cajero…), sus permisos y su
+// Si es del equipo, también su rol dentro del equipo (Administrador, Vendedor…), sus permisos y su
 // tope de descuento: con eso la app arma el menú; lo que se puede hacer de verdad lo controla la base.
 export async function usuarioActual() {
   const supabase = await crearCliente();

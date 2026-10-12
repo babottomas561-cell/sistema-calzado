@@ -18,7 +18,7 @@ type Fila = { producto_id: number; codigo: string; nombre: string; marca: string
   talle_orden: number; color: string; color_hex: string | null; vendidos: number; disponible: number; sugerido: number; costo_unitario: number | null };
 
 export default async function Reposicion({ searchParams }: { searchParams: Promise<{ dias?: string; cobertura?: string; proveedor?: string; marca?: string }> }) {
-  const { supabase } = await exigir("compras.registrar", "stock.ver");
+  const { supabase } = await exigir("compras.registrar");   // muestra lo que vende todo el negocio: es para comprar
   const sp = await searchParams;
   const dias = VENTAS.includes(Number(sp.dias) as never) ? Number(sp.dias) : 60;
   const cobertura = COBERTURA.includes(Number(sp.cobertura) as never) ? Number(sp.cobertura) : 30;

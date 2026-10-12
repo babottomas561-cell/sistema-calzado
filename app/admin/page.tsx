@@ -1,4 +1,4 @@
-// Inicio: cómo viene el negocio hoy y en el mes. Cada bloque aparece según el rol: la cajera ve lo
+// Inicio: cómo viene el negocio hoy y en el mes. Cada bloque aparece según el rol: la vendedora ve lo
 // que vendió ella; quien ve todas las ventas, el negocio entero; la ganancia, solo quien ve costos.
 import Link from "next/link";
 import { usuarioActual } from "@/lib/supabase/server";

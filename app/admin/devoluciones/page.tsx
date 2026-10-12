@@ -1,23 +1,28 @@
-// Devoluciones del período: cuántas, cuánto saldo dejaron, por qué y en qué talles (si un modelo vuelve
-// mucho «por talle», conviene avisarlo en la ficha: «calza chico»).
+// Cambios y devoluciones: arriba, buscar la venta (por ticket o cliente) para hacer un cambio o una devolución;
+// abajo, las del período: cuántas, cuánto saldo dejaron, por qué y en qué talles (si un modelo vuelve mucho
+// «por talle», conviene avisarlo en la ficha: «calza chico»). Un vendedor ve solo las que hizo él.
 import Link from "next/link";
 import { crearCliente } from "@/lib/supabase/server";
 import { fechaHora, inicioDe, pesos } from "@/lib/formato";
 import { exigir } from "@/lib/exigir";
 import { MOTIVOS_DEVOLUCION } from "@/lib/devoluciones";
 import ListaMovil, { FilaMovil } from "@/components/ListaMovil";
+import { puede } from "@/lib/permisos";
+import BuscarVenta from "./BuscarVenta";
 
 const PERIODOS = { mes: "Este mes", todo: "Todo" } as const;
 
-export default async function Devoluciones({ searchParams }: { searchParams: Promise<{ periodo?: string }> }) {
-  await exigir("ventas.registrar", "ventas.ver_todas");
-  const { periodo: p = "mes" } = await searchParams;
+export default async function Devoluciones({ searchParams }: { searchParams: Promise<{ periodo?: string; buscar?: string }> }) {
+  const { permisos } = await exigir("ventas.registrar", "ventas.ver_todas");
+  const { periodo: p = "mes", buscar = "" } = await searchParams;
+  const todas = puede(permisos, "ventas.ver_todas", "informes.ventas");
   const periodo = (p in PERIODOS ? p : "mes") as keyof typeof PERIODOS;
   const supabase = await crearCliente();
   let c = supabase.from("devoluciones").select("id, comprobante, fecha, motivo, total, fuera_de_plazo, clientes(nombre), ventas!devoluciones_venta_id_fkey(comprobante), devolucion_items(cantidad, estado, venta_items(variantes(talles(nombre), productos(id, nombre))))")
     .order("fecha", { ascending: false }).limit(500);
   if (periodo === "mes") c = c.gte("fecha", inicioDe("mes"));
-  const { data } = await c;
+  const [{ data }, encontradas] = await Promise.all([c,
+    buscar.trim() && puede(permisos, "ventas.registrar") ? supabase.rpc("ventas_para_cambio", { p_buscar: buscar }) : Promise.resolve({ data: [], error: null })]);
   type Dev = { id: number; comprobante: string; fecha: string; motivo: string; total: number; fuera_de_plazo: boolean; clientes: { nombre: string } | null;
     ventas: { comprobante: string } | null; devolucion_items: { cantidad: number; estado: string; venta_items: { variantes: { talles: { nombre: string }; productos: { id: number; nombre: string } } } }[] };
   const lista = (data ?? []) as unknown as Dev[];
@@ -38,15 +43,16 @@ export default async function Devoluciones({ searchParams }: { searchParams: Pro
 
   return (
     <div className="space-y-4">
-      <div><h1 className="text-2xl font-bold">Devoluciones</h1>
-        <p className="text-sm text-texto-2">Cada devolución deja saldo a favor y resta en los informes el día en que se hace. Se hacen desde la venta.</p></div>
+      <div><h1 className="text-2xl font-bold">Cambios y devoluciones</h1>
+        <p className="text-sm text-texto-2">Cada devolución deja saldo a favor y resta en los informes el día en que se hace.{todas ? "" : " Abajo ves las que hiciste vos."}</p></div>
+      {puede(permisos, "ventas.registrar") && <BuscarVenta buscar={buscar} resultados={(encontradas.data ?? []) as never} error={encontradas.error?.message} />}
       <div className="flex gap-2">
         {Object.entries(PERIODOS).map(([k, t]) => (
           <Link key={k} href={`/admin/devoluciones?periodo=${k}`} className={`rounded-lg border px-3 py-1.5 text-sm ${k === periodo ? "border-marca bg-marca-suave font-semibold text-marca" : "border-borde bg-white"}`}>{t}</Link>
         ))}
       </div>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="tarjeta"><div className="etiqueta">Devoluciones</div><div className="text-2xl font-bold">{lista.length}</div>
+        <div className="tarjeta"><div className="etiqueta">{todas ? "Devoluciones" : "Tus devoluciones"}</div><div className="text-2xl font-bold">{lista.length}</div>
           <div className="text-xs text-texto-2">{lista.reduce((s, d) => s + unidades(d), 0)} unidades</div></div>
         <div className="tarjeta"><div className="etiqueta">Saldo a favor dado</div><div className="text-2xl font-bold">{pesos(total)}</div></div>
         <div className="tarjeta"><div className="etiqueta">Volvieron fallados</div><div className="text-2xl font-bold">{fallados}</div>
@@ -71,7 +77,7 @@ export default async function Devoluciones({ searchParams }: { searchParams: Pro
       <ListaMovil vacio={lista.length === 0 && "No hay devoluciones en este período."}>
         {lista.map((d) => (
           <FilaMovil key={d.id} href={`/admin/devoluciones/${d.id}`} titulo={d.clientes?.nombre ?? "—"}
-            detalle={<>{fechaHora(d.fecha)} · <span className="font-mono">{d.comprobante}</span> · venta {d.ventas?.comprobante}</>}
+            detalle={<>{fechaHora(d.fecha)} · <span className="font-mono">{d.comprobante}</span>{d.ventas?.comprobante ? ` · venta ${d.ventas.comprobante}` : ""}</>}
             extra={<><span className="chip bg-gray-100">{MOTIVOS_DEVOLUCION[d.motivo]}</span>{d.fuera_de_plazo && <span className="chip bg-amber-100 text-alerta">fuera de plazo</span>}</>}
             valor={<><div className="font-bold">{pesos(d.total)}</div><div className="text-xs text-texto-2">{unidades(d)} u.</div></>} />
         ))}
@@ -82,7 +88,7 @@ export default async function Devoluciones({ searchParams }: { searchParams: Pro
           <tbody>
             {lista.map((d) => (
               <tr key={d.id}><td><Link href={`/admin/devoluciones/${d.id}`} className="font-mono font-semibold text-marca">{d.comprobante}</Link></td>
-                <td>{fechaHora(d.fecha)}</td><td>{d.clientes?.nombre}</td><td className="font-mono text-texto-2">{d.ventas?.comprobante}</td>
+                <td>{fechaHora(d.fecha)}</td><td>{d.clientes?.nombre}</td><td className="font-mono text-texto-2">{d.ventas?.comprobante ?? "—"}</td>
                 <td>{MOTIVOS_DEVOLUCION[d.motivo]}{d.fuera_de_plazo && <span className="chip ml-1 bg-amber-100 text-alerta">fuera de plazo</span>}</td>
                 <td className="text-right">{unidades(d)}</td><td className="text-right font-semibold">{pesos(d.total)}</td></tr>
             ))}

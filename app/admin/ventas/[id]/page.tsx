@@ -42,8 +42,9 @@ export default async function Venta({ params, searchParams }: {
       {nueva && <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-semibold text-ok"><CircleCheck size={18} /> Venta registrada. El stock ya se descontó.</div>}
       {cambio && <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-semibold text-ok"><CircleCheck size={18} /> Cambio hecho: entró lo que trajo y salió lo que se llevó.</div>}
       {deCambio && <p className="rounded-lg bg-marca-suave px-3 py-2 text-sm text-marca"><ArrowLeftRight size={16} className="mr-1.5 inline align-[-3px]" />
-        Es un cambio: devolución <Link href={`/admin/devoluciones/${deCambio.id}`} className="font-mono font-semibold">{deCambio.comprobante}</Link> de la venta{" "}
-        <Link href={`/admin/ventas/${deCambio.venta_id}`} className="font-mono font-semibold">{(deCambio.ventas as unknown as { comprobante: string } | null)?.comprobante}</Link></p>}
+        Es un cambio: devolución <Link href={`/admin/devoluciones/${deCambio.id}`} className="font-mono font-semibold">{deCambio.comprobante}</Link>
+        {(deCambio.ventas as unknown as { comprobante: string } | null)?.comprobante && <> de la venta{" "}
+          <Link href={`/admin/ventas/${deCambio.venta_id}`} className="font-mono font-semibold">{(deCambio.ventas as unknown as { comprobante: string }).comprobante}</Link></>}</p>}
       <div className="flex items-center justify-between gap-2">
         <Volver href="/admin/ventas">Ventas</Volver>
         <Link href="/admin/ventas/nueva" className="boton-sec"><Plus size={16} /> Otra venta</Link>

@@ -57,9 +57,9 @@ select prueba.como_equipo();
 select throws_ok(format($$ select anular_venta(%s, 'error_carga') $$, (select id from prueba.ids where nombre = 'ayer')),
   'Solo se puede anular una venta del día. Para una de otro día, hacé una devolución');
 
--- ── Permisos: la cajera no, el encargado sí ──
+-- ── Permisos: la vendedora no, el encargado sí ──
 insert into prueba.ids select 'v2', prueba.vender(1);
-select prueba.rol_equipo('Cajero');
+select prueba.rol_equipo('Vendedor');
 select throws_ok(format($$ select anular_venta(%s, 'duplicada') $$, (select id from prueba.ids where nombre = 'v2')), 'No tenés permiso para anular ventas');
 select prueba.rol_equipo('Encargado');
 select lives_ok(format($$ select anular_venta(%s, 'duplicada') $$, (select id from prueba.ids where nombre = 'v2')), 'el encargado sí puede');

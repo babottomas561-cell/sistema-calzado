@@ -49,7 +49,7 @@ export default function Personas({ personas, roles, yo }: { personas: Persona[];
         <p className="text-xs text-texto-2">Primero tiene que crear su cuenta en la tienda (Registrate) y confirmar el email. Después lo sumás acá con ese email.</p>
         <div className="flex flex-wrap gap-2">
           <input name="email" type="email" required placeholder="email@ejemplo.com" className="campo min-w-0 flex-1" />
-          <select name="rol_id" defaultValue={activos.find((r) => r.nombre === "Cajero")?.id ?? activos[0]?.id} className="campo w-auto">
+          <select name="rol_id" defaultValue={activos.find((r) => r.nombre === "Vendedor")?.id ?? activos[0]?.id} className="campo w-auto">
             {activos.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
           </select>
           <button className="boton" disabled={cAlta}>Sumar</button>

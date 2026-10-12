@@ -1856,6 +1856,12 @@ isOneToOne: false
                            },
 "vencer_saldos":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"venta_para_cambio":
+{ Args: { "p_venta": number }; Returns: Json
+                           },
+"ventas_para_cambio":
+{ Args: { "p_buscar": string }; Returns: Json
                            }
           }
           Enums: {

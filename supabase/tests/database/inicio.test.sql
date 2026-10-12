@@ -45,8 +45,8 @@ reset role;
 select is((select count(*)::int from inicio_secciones where titulo = 'hackeado') + (select count(*)::int from configuracion_tienda where nombre = 'hackeado'), 0,
   'cliente: no cambia secciones ni datos de la tienda');
 
--- Equipo sin "Tienda online" (Cajero): no edita
-select prueba.rol_equipo('Cajero');
+-- Equipo sin "Tienda online" (Vendedor): no edita
+select prueba.rol_equipo('Vendedor');
 set local role authenticated;
 select prueba.como_equipo();
 update inicio_secciones set titulo = 'cajero' where tipo = 'portada';

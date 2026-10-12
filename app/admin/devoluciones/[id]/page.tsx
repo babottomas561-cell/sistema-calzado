@@ -18,21 +18,22 @@ export default async function ComprobanteDevolucion({ params, searchParams }: { 
     supabase.from("v_creditos").select("monto, restante, vence").eq("devolucion_id", Number(id)).maybeSingle(),
   ]);
   if (!d) notFound();
-  const venta = d.ventas as { id: number; comprobante: string; fecha: string };
+  // La venta original puede no estar a la vista (la hizo otro vendedor): se muestra sin link
+  const venta = d.ventas as { id: number; comprobante: string; fecha: string } | null;
   const cliente = d.clientes as { id: number; nombre: string };
   type Item = { id: number; cantidad: number; estado: string; monto: number; venta_items: { precio_unitario: number; variantes: { talles: { nombre: string }; colores: { nombre: string }; productos: { nombre: string } } } };
 
   return (
     <div className="mx-auto max-w-xl space-y-4">
       {nueva && <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-semibold text-ok"><CircleCheck size={18} /> Devolución registrada. El stock ya volvió.</div>}
-      <Volver href={`/admin/ventas/${venta.id}`}>Venta {venta.comprobante}</Volver>
+      {venta ? <Volver href={`/admin/ventas/${venta.id}`}>Venta {venta.comprobante}</Volver> : <Volver href="/admin/devoluciones">Cambios y devoluciones</Volver>}
       <div className="tarjeta space-y-4">
         <div className="flex justify-between gap-3">
           <div><p className="text-xs font-semibold uppercase tracking-wide text-texto-2">Comprobante de devolución</p>
             <h1 className="text-xl font-bold"><span className="font-mono">{d.comprobante}</span></h1>
             <p className="text-sm text-texto-2">{fechaHora(d.fecha)}{(d.hizo as { nombre: string | null } | null)?.nombre ? ` · la hizo ${(d.hizo as { nombre: string }).nombre}` : ""}</p></div>
           <div className="text-right text-sm"><Link href={`/admin/clientes/${cliente.id}`} className="font-semibold text-marca">{cliente.nombre}</Link>
-            <div className="text-texto-2">de la venta <Link href={`/admin/ventas/${venta.id}`} className="font-mono text-marca">{venta.comprobante}</Link></div></div>
+            {venta && <div className="text-texto-2">de la venta <Link href={`/admin/ventas/${venta.id}`} className="font-mono text-marca">{venta.comprobante}</Link></div>}</div>
         </div>
         {d.venta_cambio_id && <p className="rounded-lg bg-marca-suave px-3 py-2 text-sm text-marca">Fue un cambio: se llevó lo de la <Link href={`/admin/ventas/${d.venta_cambio_id}`} className="font-semibold underline">venta del cambio</Link>.</p>}
         <p className="text-sm"><b>{MOTIVOS_DEVOLUCION[d.motivo]}</b>{d.comentario ? ` · «${d.comentario}»` : ""}

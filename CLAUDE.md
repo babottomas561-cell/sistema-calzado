@@ -48,6 +48,7 @@ una API de Next.** Lo que ya pisamos:
    | `mover_a_fallados(p_variante, p_cantidad, p_motivo)` · `resolver_fallado(p_fallado, p_salida, p_cantidad, p_proveedor, p_nota)` | aparta lo roto en «Fallados» (no se vende) y lo resuelve: `arreglado` (vuelve), `proveedor` (crédito a su costo) o `baja` (pérdida). Permiso `stock.ajustar` |
    | `registrar_devolucion(p_venta, p_items, p_motivo, p_comentario, p_cliente)` · `cotizar_devolucion(p_venta, p_items)` | deja **saldo a favor** (nunca efectivo): lo pagado de verdad (promo recalculada con las de esa venta, descuentos sí, recargo de cuotas no), en `dias_cambio`; lo bueno vuelve al Local y lo fallado a Fallados. El saldo (`saldos_cliente`) se usa con el medio «Saldo a favor» (un trigger lo consume) y vence a los `dias_saldo` |
    | `registrar_cambio(p_venta, p_devuelve, p_lleva, p_pagos, p_motivo, p_comentario, p_cliente)` · `cotizar_cambio(…, p_medio)` | devolución + venta nueva en UNA operación: lo del mismo artículo (otro talle/color) vale lo que trae aunque haya subido; lo demás, precio y promos de hoy; se paga con el saldo y la diferencia con otro medio (o queda saldo) |
+   | `ventas_para_cambio(p_buscar)` · `venta_para_cambio(p_venta)` | buscar (ticket, cliente, teléfono) y leer una venta para un cambio o devolución **aunque la haya hecho otro vendedor**, sin abrirle las ventas ajenas (sin montos ni costos) |
    | `cancelar_mi_pedido(p_pedido, p_motivo, p_comentario)` | el cliente cancela el suyo mientras esté pendiente o confirmado. Los *listo para retirar* vencen solos a los `dias_retiro` (pg_cron, `vencer_pedidos_sin_retirar()`) |
 
    Se llaman con `supabase.rpc("registrar_venta", { p_items: [...], ... })`. Los parámetros
@@ -77,9 +78,11 @@ una API de Next.** Lo que ya pisamos:
    de un cliente). Si agregás una FK, decidí la política a propósito y ponele índice.
 
 5. **Seguridad en la base, no en la pantalla.** Row Level Security en todas las tablas:
-   - el equipo (`perfiles.rol = 'staff'` + un **rol** en `perfiles.rol_id`) hace **lo que su rol permite**:
+   - el equipo (el dueño y su familia: `perfiles.rol = 'staff'` + un **rol** en `perfiles.rol_id`) hace **lo que su rol permite**.
+     El **Vendedor** vende, hace cambios y devoluciones en plazo, atiende pedidos y clientes y ve el stock; NO ve costos,
+     informes, reposición ni lo que venden los demás, NO cambia precios ni anula, descuento hasta 10 %:
      `tiene_permiso('ventas.registrar')`, `tiene_permiso('costos.ver')`… Los permisos son una lista fija
-     (tabla `permisos`); los **roles** (Administrador, Encargado, Cajero, Depósito…) son editables en
+     (tabla `permisos`); los **roles** (Administrador, Encargado, Vendedor; Depósito desactivado) son editables en
      `/admin/equipo`. `es_staff()` = es del equipo con un rol activo (para lo que ve cualquiera del equipo);
    - **los costos** (`productos.precio_compra`, `venta_items.costo_unitario`, compras, precios de
      proveedores) solo con `costos.ver`; el resto del equipo lee `v_stock` / `v_venta_items` /
@@ -192,7 +195,8 @@ npm run revisar      # tsc + eslint + build: tiene que pasar antes de dar algo p
 ```
 
 Usuarios de la base **local** (los crea `seed.sql`, no existen en producción):
-`admin@demo.local` (equipo) y `cliente@demo.local` (cliente), contraseña `demo1234`.
+`admin@demo.local` (equipo, Administrador), `vendedor@demo.local` (equipo, rol Vendedor: sin costos, sin precios,
+sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo1234`.
 
 ### Antes de dar un cambio por terminado
 
