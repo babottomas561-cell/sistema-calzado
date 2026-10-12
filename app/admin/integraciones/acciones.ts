@@ -38,19 +38,25 @@ export async function guardarAutomatizaciones(_: Estado, f: FormData): Promise<E
   if (wa_plantilla_estado && !/^[a-z0-9_]+$/.test(wa_plantilla_estado)) return { error: "El nombre de la plantilla solo lleva minúsculas, números y guion bajo" };
   if (!/^[a-z]{2}(_[A-Z]{2})?$/.test(wa_idioma_plantilla)) return { error: "El idioma de la plantilla tiene que tener un formato como es_AR" };
   if (wa_notificaciones_pedidos && !wa_plantilla_estado) return { error: "Para activar los avisos, cargá primero el nombre de la plantilla aprobada por Meta" };
-  const ia_modelo = (texto(f, "ia_modelo_otro", 60) || texto(f, "ia_modelo", 60)).toLowerCase();
-  if (!/^[a-z0-9][a-z0-9.\-]{2,60}$/.test(ia_modelo)) return { error: "El modelo se escribe como lo nombra Google, por ejemplo gemini-2.5-flash" };
-  const ia_precio_entrada = Number(f.get("ia_precio_entrada") || 0), ia_precio_salida = Number(f.get("ia_precio_salida") || 0);
-  if (!(ia_precio_entrada >= 0 && ia_precio_salida >= 0)) return { error: "Los precios de la IA no pueden ser negativos" };
+  const ia_modelo = texto(f, "ia_modelo", 60);
+  const ia_plan = f.get("ia_plan") === "pago" ? "pago" : "gratis";
   const supabase = await crearCliente();
   const { error } = await supabase.from("configuracion_tienda")
-    .update({ wa_bot_activo, wa_notificaciones_pedidos, wa_plantilla_estado, wa_idioma_plantilla, ia_modelo }).eq("unica", true);
+    .update({ wa_bot_activo, wa_notificaciones_pedidos, wa_plantilla_estado, wa_idioma_plantilla, ia_modelo, ia_plan }).eq("unica", true);
   if (error) return { error: error.message };
-  // Los precios van con Gastos (permiso gastos.gestionar): si no lo tiene, no se tocan
-  if (f.has("ia_precio_entrada")) {
-    const r = await supabase.from("configuracion_gastos").update({ ia_precio_entrada, ia_precio_salida }).eq("id", true);
-    if (r.error) return { error: r.error.message };
-  }
+  // Precio y límite gratis del modelo elegido (vacío = sin dato). Si cambia el precio, queda la fecha de hoy.
+  const num = (k: string) => { const v = String(f.get(k) ?? "").trim().replace(",", "."); return v === "" ? null : Number(v); };
+  const [entrada, salida, limite] = [num("precio_entrada"), num("precio_salida"), num("limite_diario_gratis")];
+  if ([entrada, salida].some((v) => v !== null && !(v >= 0))) return { error: "Los precios no pueden ser negativos" };
+  if (limite !== null && !(Number.isInteger(limite) && limite > 0)) return { error: "El límite gratis es una cantidad de consultas por día (un número entero)" };
+  const { data: antes } = await supabase.from("ia_modelos").select("precio_entrada, precio_salida").eq("id", ia_modelo).single();
+  const valor = (v: number | null) => (v === null ? null : Number(v));
+  const cambioPrecio = antes && (valor(antes.precio_entrada) !== entrada || valor(antes.precio_salida) !== salida);
+  const r = await supabase.from("ia_modelos").update({
+    precio_entrada: entrada, precio_salida: salida, limite_diario_gratis: limite,
+    ...(cambioPrecio ? { verificado: new Date().toISOString().slice(0, 10), nuevo: false } : {}),
+  }).eq("id", ia_modelo);
+  if (r.error) return { error: r.error.message };
   revalidatePath("/admin/integraciones");
   return { ok: "Bot y avisos guardados" };
 }
@@ -62,4 +68,13 @@ export async function probarGemini(): Promise<Estado> {
   if (error) return { error: error.message };
   revalidatePath("/admin/integraciones");
   return { ok: "Consultando a Gemini… en unos segundos actualizá la página para ver el resultado" };
+}
+
+// Pregunta ya a Google qué modelos hay (si no, lo hace solo cada mañana). La respuesta se procesa al abrir la pantalla.
+export async function buscarModelos(): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("ia_revisar_modelos", { p_pedir: true });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones");
+  return { ok: "Consultando a Google… en unos segundos actualizá la página" };
 }

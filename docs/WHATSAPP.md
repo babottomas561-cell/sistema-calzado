@@ -107,7 +107,7 @@ exige una **plantilla aprobada**.
    - Ejemplos que pide Meta: {{1}} = Juan, {{2}} = 0001-00000015, {{3}} = listo para retirar.
 4. **Enviar a revisión**. Tarda de minutos a un día.
 5. Cuando diga **Activa / Aprobada**: en el panel, **Bot, avisos e IA** → Plantilla `estado_pedido`, Idioma `es_AR`
-   → tildá **Avisos de pedidos** → **Guardar bot y avisos**.
+   → tildá **Avisos de pedidos** → **Guardar bot, avisos e IA**.
 
 Desde ahí, el aviso sale solo cuando el pedido pasa a confirmado, listo, en camino, entregado o cancelado
 (lo cambie quien lo cambie, o si vence solo). El cliente tiene que tener el teléfono cargado en su ficha.
@@ -117,14 +117,24 @@ Desde ahí, el aviso sale solo cuando el pedido pasa a confirmado, listo, en cam
 1. Entrá a **aistudio.google.com** con una cuenta de Google (conviene la del negocio).
 2. **Get API key → Crear clave de API** (elegí o creá un proyecto) → copiala (empieza con `AIza…`).
 3. En el panel, **Conexiones** → **Clave de Gemini** → pegala → **Guardar conexiones**.
-4. En **Bot, avisos e IA**:
-   - **Modelo**: dejá *Gemini 2.5 Flash* (rápido y barato). Si Google lo retira, elegí otro o escribí el nombre
-     nuevo en «Otro» (la lista está en ai.google.dev/gemini-api/docs/models).
-   - **Precios**: con el plan gratis, dejalos en 0. Si activás la facturación en Google, cargá los US$ por millón de
-     tokens del modelo (están en ai.google.dev/pricing).
-   - Tildá **Bot de WhatsApp** → **Guardar bot y avisos**.
+4. En **Bot, avisos e IA → Inteligencia artificial**:
+   - **Modelo**: dejá *Gemini 2.5 Flash* (rápido y barato). Al lado de cada uno se ve su precio por millón de tokens.
+     La lista se revisa sola cada mañana: si Google saca un modelo nuevo aparece «(nuevo)», y si retira el que usás,
+     el panel avisa en rojo para que elijas otro. «Buscar ahora» la revisa en el momento.
+   - **Precios**: vienen cargados los oficiales, con la fecha en que se verificaron. Google no los publica de forma
+     automática, así que si un precio tiene más de 2 meses o el modelo es nuevo, el panel lo marca en naranja para
+     que lo confirmes en ai.google.dev/gemini-api/docs/pricing.
+   - **Consultas gratis por día**: Google no lo publica; lo ves en **aistudio.google.com → tu proyecto → Límites de
+     frecuencia** (la columna RPD, «solicitudes por día», del modelo elegido). Copiá ese número en el panel.
+   - **Plan**: *Gratis* mientras no actives la facturación en Google (no se gasta nada; el panel muestra cuánto
+     costaría). *Pago* cuando la actives: cada respuesta suma su costo a Gastos → Inteligencia artificial.
+   - Tildá **Bot de WhatsApp** → **Guardar bot, avisos e IA**.
 5. **Probar Gemini**: a los pocos segundos, actualizá la página. Tiene que decir **Funciona**; si no, muestra el error
    de Google.
+6. **Uso de la IA**: ahí ves las consultas de hoy contra el límite gratis (la barra se pone naranja al 70 % y roja al
+   90 %), los tokens del mes, cuánto costaría (o cuánto se gastó, con el plan pago) y el promedio por respuesta.
+   El día de Google se reinicia a la medianoche de California (04:00 o 05:00 en Argentina). Si se pasa el tope, Google
+   deja de contestar hasta esa hora y el bot manda el mensaje fijo.
 
 Sin la clave de Gemini, el bot igual contesta: manda un mensaje fijo («Recibimos tu mensaje, te respondemos en
 breve») y la charla sigue a mano desde el WhatsApp del local.
@@ -138,7 +148,7 @@ breve») y la charla sigue a mano desde el WhatsApp del local.
 | Lo que contesta el bot dentro de las 24 h de que el cliente escribió | gratis | — |
 | Avisos de pedidos (plantilla de utilidad) | ~US$ 0,026 cada uno | Gastos → WhatsApp (Meta), solo |
 | Promociones (plantilla de marketing) | ~US$ 0,06 cada una | Gastos → WhatsApp (Meta), solo |
-| Gemini, plan gratis | US$ 0 (con límite de consultas por día) | se cuenta en Integraciones |
+| Gemini, plan gratis | US$ 0 (con límite de consultas por día) | Integraciones → Uso de la IA (y cuánto costaría) |
 | Gemini, plan pago | según el modelo y los tokens | Gastos → Inteligencia artificial, solo |
 
 Los precios de Meta son aproximados para Argentina; si Meta los cambia, se corrigen en la base
@@ -154,5 +164,6 @@ Los precios de Meta son aproximados para Argentina; si Meta los cambia, se corri
 | «Template name does not exist» | El nombre de la plantilla no coincide o todavía no está aprobada; revisá también el idioma (es_AR). |
 | Los mensajes llegan pero el bot no contesta | ¿Está tildado **Bot de WhatsApp**? ¿Te suscribiste a **messages** (Parte 7)? ¿Está cargada la clave secreta? |
 | El bot contesta siempre el mensaje fijo | Falta la clave de Gemini o es inválida: usá **Probar Gemini**. |
-| Probar Gemini da «model not found» | Ese modelo ya no existe: elegí otro en Modelo. |
+| Probar Gemini da «model not found» | Ese modelo ya no existe: tocá «Buscar ahora» y elegí otro en Modelo. |
+| El bot dejó de contestar con IA a la tarde | Se pasó el límite gratis del día: mirá Uso de la IA. Vuelve solo a la medianoche de California. |
 | Los avisos no salen | Avisos tildados, plantilla aprobada con su nombre en el panel, y el cliente con teléfono en su ficha. |

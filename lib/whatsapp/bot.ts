@@ -216,8 +216,8 @@ Reglas clave:
 5. Si no sabés algo o el cliente pide hablar con un humano o coordinar algo especial, decile amablemente que el equipo del local le va a responder a la brevedad.`;
 
 // Lo que contesta el bot y cuánto usó de la IA (para registrarlo como gasto)
-export type RespuestaBot = { texto: string; tokensEntrada: number; tokensSalida: number };
-const sinIA = (texto: string): RespuestaBot => ({ texto, tokensEntrada: 0, tokensSalida: 0 });
+export type RespuestaBot = { texto: string; tokensEntrada: number; tokensSalida: number; consultas: number };
+const sinIA = (texto: string): RespuestaBot => ({ texto, tokensEntrada: 0, tokensSalida: 0, consultas: 0 });
 
 // La clave de Gemini y el modelo los entrega la base (wa_recibir) solo con un aviso de Meta firmado y el bot activo
 export async function procesarMensajeConIA(mensajeUsuario: string, telefonoRemitente: string, apiKey: string | null, modelo: string): Promise<RespuestaBot> {
@@ -225,9 +225,10 @@ export async function procesarMensajeConIA(mensajeUsuario: string, telefonoRemit
     console.warn("[Bot WhatsApp] Sin clave de Gemini cargada en el panel. Respuesta por defecto.");
     return sinIA("¡Hola! Gracias por comunicarte con nuestro local. Recibimos tu mensaje y un miembro de nuestro equipo te va a responder en breve.");
   }
-  let tokensEntrada = 0, tokensSalida = 0;
+  let tokensEntrada = 0, tokensSalida = 0, consultas = 0;   // consultas: cuentan contra el límite gratis del día
   // La clave va en un encabezado (no en la URL, que puede quedar en registros)
   const preguntar = async (contents: Array<Record<string, unknown>>) => {
+    consultas++;
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
@@ -264,9 +265,9 @@ export async function procesarMensajeConIA(mensajeUsuario: string, telefonoRemit
     }
 
     const textoRespuesta = candidate?.parts?.find((p: { text?: string }) => p.text)?.text;
-    return { texto: textoRespuesta || "¡Hola! Gracias por escribirnos. ¿En qué te podemos ayudar?", tokensEntrada, tokensSalida };
+    return { texto: textoRespuesta || "¡Hola! Gracias por escribirnos. ¿En qué te podemos ayudar?", tokensEntrada, tokensSalida, consultas };
   } catch (err) {
     console.error("[Bot WhatsApp] Error al invocar Gemini:", err);
-    return { texto: "¡Hola! Recibimos tu consulta. En un momento te respondemos desde el local.", tokensEntrada, tokensSalida };
+    return { texto: "¡Hola! Recibimos tu consulta. En un momento te respondemos desde el local.", tokensEntrada, tokensSalida, consultas };
   }
 }

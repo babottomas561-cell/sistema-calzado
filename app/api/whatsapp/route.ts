@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
           const r2 = await procesarMensajeConIA(m.texto, m.de, r.gemini_api_key ?? null, r.ia_modelo ?? "gemini-2.5-flash");
           if (r2.texto) await supabase.rpc("wa_responder", { p_payload: cuerpo, p_firma: firma, p_para: m.de, p_texto: r2.texto });
           // Lo que usó de la IA queda registrado (y, con precio cargado, como gasto)
-          if (r2.tokensEntrada || r2.tokensSalida)
-            await supabase.rpc("ia_registrar_uso", { p_payload: cuerpo, p_firma: firma, p_tokens_entrada: r2.tokensEntrada, p_tokens_salida: r2.tokensSalida });
+          if (r2.consultas)
+            await supabase.rpc("ia_registrar_uso", { p_payload: cuerpo, p_firma: firma, p_tokens_entrada: r2.tokensEntrada, p_tokens_salida: r2.tokensSalida, p_consultas: r2.consultas });
         } catch (e) {
           console.error("[Webhook WhatsApp] Error contestando:", e);
         }

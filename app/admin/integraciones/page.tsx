@@ -6,17 +6,19 @@ import { BookOpen } from "lucide-react";
 import { crearCliente } from "@/lib/supabase/server";
 import { exigir } from "@/lib/exigir";
 import Conexiones, { type EstadoConexiones } from "./Conexiones";
-import Automatizaciones, { type Config, type EstadoIA, type PreciosIA } from "./Automatizaciones";
+import Automatizaciones, { type Config, type EstadoIA, type Modelo } from "./Automatizaciones";
+import { diaArgentina } from "@/lib/formato";
 
 export default async function Integraciones() {
   await exigir("tienda.editar");
   const supabase = await crearCliente();
-  const [{ data: estado }, { data: envios }, { data: config }, { data: precios }] = await Promise.all([
+  // Si Google ya contestó la lista de modelos (revisión diaria o «Buscar ahora»), se procesa al abrir
+  await supabase.rpc("ia_revisar_modelos", { p_pedir: false });
+  const [{ data: estado }, { data: envios }, { data: config }, { data: modelos }] = await Promise.all([
     supabase.rpc("estado_integraciones"),
     supabase.rpc("wa_envios_recientes", { p_limite: 10 }),
-    supabase.from("configuracion_tienda").select("wa_bot_activo, wa_notificaciones_pedidos, wa_plantilla_estado, wa_idioma_plantilla, ia_modelo").single(),
-    // Sin permiso de Gastos la base no devuelve la fila: los precios no se muestran
-    supabase.from("configuracion_gastos").select("ia_precio_entrada, ia_precio_salida").maybeSingle(),
+    supabase.from("configuracion_tienda").select("wa_bot_activo, wa_notificaciones_pedidos, wa_plantilla_estado, wa_idioma_plantilla, ia_modelo, ia_plan").single(),
+    supabase.from("ia_modelos").select("id, nombre, precio_entrada, precio_salida, tiene_gratis, limite_diario_gratis, nota, verificado, disponible, nuevo").order("disponible", { ascending: false }).order("orden").order("id"),
   ]);
   // La dirección que se pega en Meta (la de producción; en local, la de esta compu)
   const webhook = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}/api/whatsapp` : "http://localhost:3000/api/whatsapp";
@@ -33,8 +35,8 @@ export default async function Integraciones() {
       <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
         <div className="border-b border-borde px-5 py-4"><h2 className="font-semibold">Bot, avisos e IA</h2>
           <p className="text-sm text-texto-2">Qué hace el sistema con esas conexiones.</p></div>
-        {config && estado && <Automatizaciones config={config as Config} ia={estado as unknown as EstadoIA}
-          precios={precios ? { ia_precio_entrada: Number(precios.ia_precio_entrada), ia_precio_salida: Number(precios.ia_precio_salida) } as PreciosIA : null} />}
+        {config && estado && <Automatizaciones config={config as Config} ia={estado as unknown as EstadoIA} hoy={diaArgentina()}
+          modelos={(modelos ?? []).map((m) => ({ ...m, precio_entrada: m.precio_entrada == null ? null : Number(m.precio_entrada), precio_salida: m.precio_salida == null ? null : Number(m.precio_salida) })) as Modelo[]} />}
       </section>
     </div>
   );

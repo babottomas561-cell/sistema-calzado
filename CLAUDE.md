@@ -156,7 +156,10 @@ una API de Next.** Lo que ya pisamos:
     Lo que cobra Meta se suma solo a `gastos` (`whatsapp_cobros`, una vez por mensaje). El bot, los avisos, la plantilla y
     el **modelo de Gemini** (`configuracion_tienda.ia_modelo`) se eligen en la misma pantalla; «Probar Gemini» (`ia_probar()`)
     consulta desde la base. Cada respuesta del bot registra sus tokens (`ia_registrar_uso()`, solo con el aviso firmado) y,
-    con precio por millón cargado (`configuracion_gastos.ia_precio_*`), suma a Gastos → Inteligencia artificial.
+    los modelos y sus precios oficiales están en `ia_modelos` (con fecha de verificación y límite gratis por día,
+    que se copia de AI Studio). Con `configuracion_tienda.ia_plan = 'pago'` suma a Gastos → Inteligencia artificial; con
+    'gratis' solo calcula cuánto costaría. La lista de modelos se revisa sola cada mañana (pg_cron + models.list de Google:
+    suma los nuevos sin precio, marca los retirados); los precios NO se bajan solos (Google no los publica por API).
     La guía paso a paso es `docs/WHATSAPP.md` y se ve en el panel (`/admin/integraciones/guia`).
 17. **Gastos** (`/admin/gastos`, permiso `gastos.gestionar`): a mano, fijos por mes (`gastos_fijos`, los genera
     `_generar_gastos_fijos()` con pg_cron) y automáticos (`_sumar_gasto_automatico()`, no se tocan a mano). En dólares
