@@ -9,7 +9,7 @@ export default async function NuevaVenta() {
   const supabase = await crearCliente();
   const [filas, { data: clientes }, { data: medios }, { data: saldos }] = await Promise.all([
     // De a páginas: con muchos modelos se pasa de las 1000 filas por consulta
-    leerTodo((a, b) => supabase.from("v_stock").select("variante_id, producto_id, nombre, marca, talle, talle_orden, color, sku, disponible, precio_venta, precio_compra").order("variante_id").range(a, b)),
+    leerTodo((a, b) => supabase.from("v_stock").select("variante_id, producto_id, nombre, marca, talle, talle_orden, color, sku, codigo_barras, disponible, precio_venta, precio_compra").order("variante_id").range(a, b)),
     supabase.from("clientes").select("id, nombre").order("nombre"),
     supabase.from("medios_pago").select("id, nombre, ajuste_pct, cuotas, es_saldo").eq("activo", true).eq("en_mostrador", true).order("orden"),
     supabase.from("v_saldo_clientes").select("cliente_id, disponible"),

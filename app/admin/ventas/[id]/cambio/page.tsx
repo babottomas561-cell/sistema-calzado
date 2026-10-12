@@ -16,7 +16,7 @@ export default async function Cambio({ params }: { params: Promise<{ id: string 
   const [{ data }, filas, { data: medios }, { data: config }] = await Promise.all([
     // Por la base (venta_para_cambio): funciona aunque la venta la haya hecho otro vendedor
     supabase.rpc("venta_para_cambio", { p_venta: Number(id) }),
-    leerTodo((a, b) => supabase.from("v_stock").select("variante_id, producto_id, nombre, marca, talle, talle_orden, color, sku, disponible, precio_venta, precio_compra").order("variante_id").range(a, b)),
+    leerTodo((a, b) => supabase.from("v_stock").select("variante_id, producto_id, nombre, marca, talle, talle_orden, color, sku, codigo_barras, disponible, precio_venta, precio_compra").order("variante_id").range(a, b)),
     supabase.from("medios_pago").select("id, nombre, ajuste_pct, cuotas").eq("activo", true).eq("en_mostrador", true).eq("es_saldo", false).order("orden"),
     supabase.from("configuracion_tienda").select("dias_cambio").single(),
   ]);

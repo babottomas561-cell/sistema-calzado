@@ -218,3 +218,15 @@ Funciones: `publicar_documento()`, `legales_completos()`, `documentos_pendientes
 Funciones: `guardar_instagram()` (verifica que sea cuenta profesional), `instagram_sincronizar()`, `instagram_mostrar()`,
 `instagram_desconectar()`, `estado_instagram()`. Internas: `_instagram_get()`, `_instagram_sincronizar()`, `_instagram_renovar()`,
 `_instagram_tarea()` (pg_cron cada 3 horas).
+
+
+## Códigos de barras, etiquetas e impresión
+
+| tabla / columna | para qué |
+|---|---|
+| `variantes.codigo_barras` | el código de barras de cada talle y color (opcional, único sin mirar mayúsculas). `v_stock` lo trae al final |
+| `plantillas_etiqueta` | tamaño, columnas y filas, márgenes y contenido de cada etiqueta, en rollo o en hoja A4/Carta. Vienen 8 con las medidas más comunes |
+| `configuracion_impresion` | una sola fila: la plantilla que se propone al imprimir (`etiqueta_plantilla_id`) |
+
+Funciones: `generar_codigos_barras(p_variantes)` (códigos propios, EAN-13 que empieza en 200). Internas: `_gs1_digito()`, `_gs1_valido()`, `_variante_codigo_barras()` (trigger),
+`_plantilla_etiqueta_valida()` (que la grilla entre en la hoja). Ver la regla 24 de CLAUDE.md.

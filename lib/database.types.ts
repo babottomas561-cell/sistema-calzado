@@ -321,6 +321,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"configuracion_impresion": {
+                  Row: {
+                    "actualizado_en": string,"actualizado_por": string | null,"etiqueta_plantilla_id": number | null,"unica": boolean
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"etiqueta_plantilla_id"?: number | null,"unica"?: boolean
+                  }
+                  Update: {
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"etiqueta_plantilla_id"?: number | null,"unica"?: boolean
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "configuracion_impresion_etiqueta_plantilla_id_fkey"
+      columns: ["etiqueta_plantilla_id"]
+isOneToOne: false
+      referencedRelation: "plantillas_etiqueta"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"configuracion_tienda": {
                   Row: {
                     "aviso_enlace": string | null,"avisos": (string)[],"color_marca": string | null,"dias_cambio": number,"dias_retiro": number,"dias_saldo": number,"direccion_retiro": string | null,"envio_requiere_pago": boolean,"horario": string | null,"ia_modelo": string,"ia_plan": string,"icono_ruta": string | null,"icono_url": string | null,"id": number,"instagram": string | null,"logo_oscuro_ruta": string | null,"logo_oscuro_url": string | null,"logo_ruta": string | null,"logo_url": string | null,"mp_cuotas_max": number,"mp_modo": string,"nombre": string,"unica": boolean,"wa_bot_activo": boolean,"wa_idioma_plantilla": string,"wa_notificaciones_pedidos": boolean,"wa_plantilla_estado": string | null,"whatsapp": string | null
@@ -1171,6 +1191,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"plantillas_etiqueta": {
+                  Row: {
+                    "activa": boolean,"alto_codigo_mm": number,"alto_mm": number,"ancho_mm": number,"columnas": number,"creado_en": string,"filas": number,"id": number,"margen_izquierdo_mm": number,"margen_superior_mm": number,"mostrar_codigo": boolean,"mostrar_marca": boolean,"mostrar_nombre": boolean,"mostrar_precio": boolean,"mostrar_talle_color": boolean,"mostrar_tienda": boolean,"nombre": string,"orden": number,"pagina": string | null,"separacion_h_mm": number,"separacion_v_mm": number,"tamano_precio": number,"tamano_texto": number,"tipo": string,"tipo_codigo": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activa"?: boolean,"alto_codigo_mm"?: number,"alto_mm": number,"ancho_mm": number,"columnas"?: number,"creado_en"?: string,"filas"?: number,"id"?: never,"margen_izquierdo_mm"?: number,"margen_superior_mm"?: number,"mostrar_codigo"?: boolean,"mostrar_marca"?: boolean,"mostrar_nombre"?: boolean,"mostrar_precio"?: boolean,"mostrar_talle_color"?: boolean,"mostrar_tienda"?: boolean,"nombre": string,"orden"?: number,"pagina"?: string | null,"separacion_h_mm"?: number,"separacion_v_mm"?: number,"tamano_precio"?: number,"tamano_texto"?: number,"tipo": string,"tipo_codigo"?: string
+                  }
+                  Update: {
+                    "activa"?: boolean,"alto_codigo_mm"?: number,"alto_mm"?: number,"ancho_mm"?: number,"columnas"?: number,"creado_en"?: string,"filas"?: number,"id"?: never,"margen_izquierdo_mm"?: number,"margen_superior_mm"?: number,"mostrar_codigo"?: boolean,"mostrar_marca"?: boolean,"mostrar_nombre"?: boolean,"mostrar_precio"?: boolean,"mostrar_talle_color"?: boolean,"mostrar_tienda"?: boolean,"nombre"?: string,"orden"?: number,"pagina"?: string | null,"separacion_h_mm"?: number,"separacion_v_mm"?: number,"tamano_precio"?: number,"tamano_texto"?: number,"tipo"?: string,"tipo_codigo"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"presupuesto_items": {
                   Row: {
                     "cantidad": number,"descuento_promo": number,"id": number,"precio_unitario": number,"presupuesto_id": number,"promocion_id": number | null,"variante_id": number
@@ -1667,14 +1701,14 @@ isOneToOne: false
                   ]
                 },"variantes": {
                   Row: {
-                    "color_id": number,"id": number,"precio_venta": number | null,"producto_id": number,"sku": string | null,"stock_minimo": number,"talle_id": number
+                    "codigo_barras": string | null,"color_id": number,"id": number,"precio_venta": number | null,"producto_id": number,"sku": string | null,"stock_minimo": number,"talle_id": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "color_id": number,"id"?: never,"precio_venta"?: number | null,"producto_id": number,"sku"?: string | null,"stock_minimo"?: number,"talle_id": number
+                    "codigo_barras"?: string | null,"color_id": number,"id"?: never,"precio_venta"?: number | null,"producto_id": number,"sku"?: string | null,"stock_minimo"?: number,"talle_id": number
                   }
                   Update: {
-                    "color_id"?: number,"id"?: never,"precio_venta"?: number | null,"producto_id"?: number,"sku"?: string | null,"stock_minimo"?: number,"talle_id"?: number
+                    "codigo_barras"?: string | null,"color_id"?: number,"id"?: never,"precio_venta"?: number | null,"producto_id"?: number,"sku"?: string | null,"stock_minimo"?: number,"talle_id"?: number
                   }
                   Relationships: [
                     {
@@ -2124,7 +2158,7 @@ isOneToOne: false
                   ]
                 },"v_stock": {
                   Row: {
-                    "categoria": string | null,"codigo": string | null,"color": string | null,"color_hex": string | null,"deposito": string | null,"deposito_id": number | null,"disponible": number | null,"escala": string | null,"genero": string | null,"linea": string | null,"marca": string | null,"nombre": string | null,"precio_compra": number | null,"precio_venta": number | null,"producto_id": number | null,"reservado": number | null,"sku": string | null,"stock": number | null,"stock_bajo": boolean | null,"stock_minimo": number | null,"talle": string | null,"talle_orden": number | null,"temporada": string | null,"valor_costo": number | null,"variante_id": number | null
+                    "categoria": string | null,"codigo": string | null,"codigo_barras": string | null,"color": string | null,"color_hex": string | null,"deposito": string | null,"deposito_id": number | null,"disponible": number | null,"escala": string | null,"genero": string | null,"linea": string | null,"marca": string | null,"nombre": string | null,"precio_compra": number | null,"precio_venta": number | null,"producto_id": number | null,"reservado": number | null,"sku": string | null,"stock": number | null,"stock_bajo": boolean | null,"stock_minimo": number | null,"talle": string | null,"talle_orden": number | null,"temporada": string | null,"valor_costo": number | null,"variante_id": number | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -2230,6 +2264,12 @@ isOneToOne: false
                            },
 "_generar_gastos_fijos":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"_gs1_digito":
+{ Args: { "p_cuerpo": string }; Returns: number
+                           },
+"_gs1_valido":
+{ Args: { "p_codigo": string }; Returns: boolean
                            },
 "_hoy_ar":
 { Args: Record<PropertyKey, never>; Returns: string
@@ -2462,6 +2502,9 @@ isOneToOne: false
                            },
 "etiqueta_promocion":
 { Args: { "p_lleva": number,"p_paga": number,"p_pct": number,"p_tipo": string }; Returns: string
+                           },
+"generar_codigos_barras":
+{ Args: { "p_variantes": (number)[] }; Returns: number
                            },
 "generar_gastos_fijos":
 { Args: Record<PropertyKey, never>; Returns: number

@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { crearCliente } from "@/lib/supabase/server";
 import { fecha, fechaHora, pesos } from "@/lib/formato";
 import Volver from "@/components/Volver";
-import { CircleAlert, CircleCheck } from "lucide-react";
+import Link from "next/link";
+import { CircleAlert, CircleCheck, ScanBarcode } from "lucide-react";
 import { AplicarCredito } from "../Credito";
 import { exigir } from "@/lib/exigir";
 
@@ -22,7 +23,9 @@ export default async function Compra({ params, searchParams }: {
   const saldo = Number(cred?.saldo ?? 0), aPagar = Number(c.total) - Number(c.credito_aplicado);
   return (
     <div className="mx-auto max-w-xl space-y-4">
-      {nueva && <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-semibold text-ok"><CircleCheck size={18} /> Compra registrada. El stock ya se sumó y se actualizaron los precios de compra.</div>}
+      {nueva && <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-semibold text-ok">
+        <span className="flex items-center gap-2"><CircleCheck size={18} /> Compra registrada. El stock ya se sumó y se actualizaron los precios de compra.</span>
+        <Link href={`/admin/etiquetas?compra=${c.id}`} className="boton"><ScanBarcode size={16} strokeWidth={1.8} /> Imprimir etiquetas de lo que entró</Link></div>}
       {credito_error && <p className="flex gap-2 rounded-lg bg-amber-50 p-3 text-sm text-alerta"><CircleAlert size={18} className="shrink-0" /> La compra se cargó, pero no se pudo descontar el crédito: {credito_error}</p>}
       <Volver href="/admin/compras">Compras</Volver>
       <div className="tarjeta space-y-3">
@@ -43,6 +46,7 @@ export default async function Compra({ params, searchParams }: {
         {Number(c.credito_aplicado) > 0 && <>
           <div className="flex justify-between text-sm text-ok"><span>Crédito a favor con el proveedor</span><span>−{pesos(c.credito_aplicado)}</span></div>
           <div className="flex justify-between font-bold"><span>A pagar</span><span>{pesos(aPagar)}</span></div></>}
+        <Link href={`/admin/etiquetas?compra=${c.id}`} className="boton-sec w-full"><ScanBarcode size={16} strokeWidth={1.8} /> Imprimir etiquetas de lo que entró</Link>
         {saldo > 0 && aPagar > 0 && <AplicarCredito compra={c.id} saldo={saldo} maximo={Math.min(saldo, aPagar)} />}
       </div>
     </div>

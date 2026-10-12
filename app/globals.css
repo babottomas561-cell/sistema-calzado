@@ -138,3 +138,13 @@ body { background: var(--color-fondo); color: #111827; }
 .logo-oscuro { display: none; }
 .tienda header[data-transparente] .logo-claro:not(:only-child) { display: none; }
 .tienda header[data-transparente] .logo-oscuro { display: block; }
+
+/* ── Impresión (etiquetas y comprobantes) ─────────────────────────────────
+   Cada página impresa es un .pagina-impresa del tamaño exacto del papel: en pantalla se ve achicada (zoom) y con sombra;
+   al imprimir va a tamaño real, sin sombra y con un salto de página entre una y otra. Los colores salen tal cual (negro de verdad en las barras). */
+@media print {
+  html, body { background: #fff !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .pagina-impresa { zoom: 1 !important; margin: 0 !important; box-shadow: none !important; border: 0 !important; break-after: page; page-break-after: always; }
+  .pagina-impresa:last-child { break-after: auto; page-break-after: auto; }
+}

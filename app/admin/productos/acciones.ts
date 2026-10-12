@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { crearCliente } from "@/lib/supabase/server";
+import { normalizarCodigo } from "@/lib/codigos";
 
 export type Estado = { error?: string; ok?: string };
 
@@ -187,4 +188,24 @@ export async function borrarImagen(productoId: number, id: number): Promise<Esta
   revalidatePath(`/admin/productos/${productoId}`);
   revalidatePath("/");
   return { ok: "Foto borrada" };
+}
+
+// ── Códigos de barras de las variantes (cada talle y color tiene el suyo) ──
+// La base valida el formato, el dígito verificador y que no se repita; acá se traduce el error.
+export async function guardarCodigoBarras(varianteId: number, codigo: string): Promise<{ error?: string; codigo?: string | null }> {
+  const supabase = await crearCliente();
+  const limpio = normalizarCodigo(codigo);
+  const { data, error } = await supabase.from("variantes").update({ codigo_barras: limpio || null }).eq("id", varianteId).select("codigo_barras").maybeSingle();
+  if (error) return { error: error.message };
+  if (!data) return { error: "No tenés permiso para cambiar códigos de barras" };   // las políticas no dejaron tocar la fila
+  return { codigo: data.codigo_barras };
+}
+
+// Códigos propios (EAN-13 que empieza en 200) para las variantes que no tienen: devuelve cómo quedó cada una
+export async function generarCodigosBarras(ids: number[]): Promise<{ error?: string; cantidad?: number; codigos?: Record<number, string> }> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("generar_codigos_barras", { p_variantes: ids });
+  if (error) return { error: error.message };
+  const { data: filas } = await supabase.from("variantes").select("id, codigo_barras").in("id", ids);
+  return { cantidad: data as number, codigos: Object.fromEntries((filas ?? []).flatMap((f) => (f.codigo_barras ? [[f.id, f.codigo_barras]] : []))) };
 }

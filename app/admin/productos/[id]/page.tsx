@@ -6,6 +6,7 @@ import { fechaHora } from "@/lib/formato";
 import Formularios from "./Formularios";
 import Fotos from "./Fotos";
 import Proveedores, { type FilaProveedor } from "./Proveedores";
+import CodigosBarras from "./CodigosBarras";
 import { leerMaestros } from "@/lib/maestros";
 import { ExternalLink } from "lucide-react";
 import Volver from "@/components/Volver";
@@ -22,7 +23,7 @@ export default async function Producto({ params }: { params: Promise<{ id: strin
   const supabase = await crearCliente();
   const [{ data: p }, { data: filas }, { data: movimientos }, maestros, { data: precios }, { data: proveedores }, { data: imagenes }, { data: fallados }] = await Promise.all([
     supabase.from("productos").select("*, marcas(nombre), categorias(nombre), subcategorias(nombre)").eq("id", Number(id)).single(),
-    supabase.from("v_stock").select("variante_id, talle, talle_orden, color, color_hex, sku, stock, reservado, disponible, stock_minimo").eq("producto_id", Number(id)),
+    supabase.from("v_stock").select("variante_id, talle, talle_orden, color, color_hex, sku, codigo_barras, stock, reservado, disponible, stock_minimo").eq("producto_id", Number(id)),
     supabase.from("movimientos_stock").select("id, fecha, tipo, cantidad, motivo, venta_id, compra_id, ventas(comprobante), compras(comprobante), depositos(nombre, vendible), variantes!inner(producto_id, talles(nombre), colores(nombre))")
       .eq("variantes.producto_id", Number(id)).order("fecha", { ascending: false }).limit(30),
     leerMaestros(),
@@ -60,6 +61,8 @@ export default async function Producto({ params }: { params: Promise<{ id: strin
         <LeyendaStock />
         <p className="text-xs text-texto-2">Para sumar stock, registrá una <Link href="/admin/compras/nueva" className="text-marca">compra</Link>.</p>
       </section>
+
+      <CodigosBarras productoId={p.id} variantes={vs.map((v) => ({ id: v.id, talle: v.talle, talle_orden: v.talle_orden, color: v.color, sku: v.sku, codigo_barras: v.codigo_barras }))} edita={permisos.includes("productos.editar")} />
 
       <Proveedores productoId={p.id} filas={(precios ?? []) as unknown as FilaProveedor[]} todos={proveedores ?? []} />
 

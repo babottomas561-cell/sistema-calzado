@@ -5,9 +5,11 @@
 //  3. Aparece la grilla talle × color: se escriben las unidades de cada uno. Un solo costo por modelo,
 //     propuesto con el precio de ese proveedor.
 //  4. Si el modelo no existe, se crea ahí mismo y se sigue cargando.
-import { useMemo, useState, useTransition, useActionState } from "react";
+import { useMemo, useRef, useState, useTransition, useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { CircleAlert, CircleCheck, Eraser, PackagePlus, Plus, Search, Trash2, X } from "lucide-react";
+import { Camera, CircleAlert, CircleCheck, Eraser, PackagePlus, Plus, Search, Trash2, X } from "lucide-react";
+import EscanerCamara, { type Aviso } from "@/components/EscanerCamara";
+import { claveDeBusqueda, normalizarCodigo, pareceCodigoLeido } from "@/lib/codigos";
 import { diaArgentina, pesos } from "@/lib/formato";
 import CamposProducto, { type Maestros } from "../../productos/CamposProducto";
 import ElegirTallesColores, { type Color, type Talle } from "../../productos/ElegirTallesColores";
@@ -15,7 +17,7 @@ import { crearProductoRapido } from "../../productos/acciones";
 import { registrarCompra } from "../acciones";
 
 type Fila = { variante_id: number; producto_id: number; codigo: string; nombre: string; marca: string | null; talle: string; talle_orden: number;
-  color: string; color_hex: string | null; sku: string | null; stock: number; precio_compra: number };
+  color: string; color_hex: string | null; sku: string | null; codigo_barras: string | null; stock: number; precio_compra: number };
 type Precio = { producto_id: number; proveedor_id: number; codigo_proveedor: string | null; precio_compra: number };
 // Un modelo cargado en la factura: su costo y los pares por variante
 type Bloque = { producto_id: number; costo: number; costoEditado: boolean; pares: Record<number, number> };
@@ -76,6 +78,30 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
   const ponerPares = (productoId: number, varianteId: number, n: number) =>
     cambiarBloque(productoId, (b) => ({ ...b, pares: { ...b.pares, [varianteId]: Math.max(0, Math.floor(n) || 0) } }));
 
+  // Código de barras (lector o cámara): suma UNA unidad de esa variante a su modelo. Sirve para contar la mercadería que llega.
+  const porCodigo = useMemo(() => {
+    const m = new Map<string, Fila>();
+    for (const f of filas) { if (f.sku) m.set(claveDeBusqueda(f.sku), f); if (f.codigo_barras) m.set(claveDeBusqueda(f.codigo_barras), f); }
+    return m;
+  }, [filas]);
+  const [camara, setCamara] = useState(false);
+  const [aviso, setAviso] = useState<Aviso>(null);
+  const avisoPendiente = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const avisar = (a: NonNullable<Aviso>) => {
+    setAviso(a);
+    if (avisoPendiente.current) clearTimeout(avisoPendiente.current);
+    avisoPendiente.current = setTimeout(() => setAviso(null), 3500);
+  };
+  const sumarPorCodigo = (texto: string): boolean => {
+    const f = porCodigo.get(claveDeBusqueda(texto));
+    if (!f) { avisar({ tipo: "error", texto: `No encontramos ningún producto con el código ${normalizarCodigo(texto)}` }); return false; }
+    const sumar = (b: Bloque): Bloque => ({ ...b, pares: { ...b.pares, [f.variante_id]: (b.pares[f.variante_id] ?? 0) + 1 } });
+    setBloques((bs) => bs.some((b) => b.producto_id === f.producto_id) ? bs.map((b) => (b.producto_id === f.producto_id ? sumar(b) : b))
+      : [sumar({ producto_id: f.producto_id, costo: costoSugerido(f.producto_id, proveedor), costoEditado: false, pares: {} }), ...bs]);
+    avisar({ tipo: "ok", texto: `${f.nombre} · talle ${f.talle} · ${f.color}: +1` });
+    return true;
+  };
+
   // Al cambiar de proveedor se re-proponen los costos que no se tocaron a mano
   const elegirProveedor = (valor: number | "") => {
     setProveedor(valor);
@@ -134,11 +160,23 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-4">
           {/* 2. Buscar el modelo */}
-          <div className="relative">
+          <div className="flex gap-2"><div className="relative flex-1">
             <Search size={17} className="pointer-events-none absolute left-3 top-3 text-gray-400" />
-            <input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} autoFocus className="campo pl-9"
-              placeholder={proveedor ? "Modelo, marca, código o código del proveedor…" : "Modelo, marca o código…"}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (resultados[0]) agregarBloque(resultados[0].id); } }} />
+            <input value={busqueda} autoFocus className="campo pl-9" aria-label="Buscar modelo, marca o código de barras"
+              placeholder={proveedor ? "Modelo, marca, código, código del proveedor o escaneá…" : "Modelo, marca, código o escaneá…"}
+              onChange={(e) => {
+                const v = e.target.value;
+                // Un lector que no manda Enter: un código completo que existe se suma solo
+                if (pareceCodigoLeido(normalizarCodigo(v)) && porCodigo.has(claveDeBusqueda(v))) { sumarPorCodigo(v); setBusqueda(""); return; }
+                setBusqueda(v);
+              }}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return;
+                e.preventDefault();
+                const t = normalizarCodigo(busqueda);
+                if (porCodigo.has(claveDeBusqueda(t)) || pareceCodigoLeido(t)) { sumarPorCodigo(t); setBusqueda(""); return; }
+                if (resultados[0]) agregarBloque(resultados[0].id);
+              }} />
             {busqueda && (
               <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-borde bg-white shadow-lg">
                 {resultados.map((m) => {
@@ -158,6 +196,10 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
               </div>
             )}
           </div>
+          <button type="button" onClick={() => { setAviso(null); setCamara(true); }} className="boton-sec shrink-0 px-3" aria-label="Escanear con la cámara" title="Escanear con la cámara"><Camera size={18} strokeWidth={1.8} /></button></div>
+          {aviso && !camara && <p role="status" className={`flex items-start gap-1.5 text-sm ${aviso.tipo === "ok" ? "text-ok" : "text-error"}`}>
+            {aviso.tipo === "ok" ? <CircleCheck size={16} className="mt-0.5 shrink-0" /> : <CircleAlert size={16} className="mt-0.5 shrink-0" />}<span>{aviso.texto}</span></p>}
+          {camara && <EscanerCamara aviso={aviso} titulo="Escaneá lo que llega" alLeer={(c) => { sumarPorCodigo(c); }} alCerrar={() => setCamara(false)} />}
           {!creando && <button type="button" onClick={() => setCreando(true)} className="inline-flex items-center gap-1.5 text-sm font-semibold text-marca"><PackagePlus size={16} /> Artículo nuevo</button>}
 
           {/* 4. Alta rápida */}

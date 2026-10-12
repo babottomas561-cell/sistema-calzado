@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   BadgePercent, KeyRound, BookUser, Boxes, ChartBar, ExternalLink, FileText, PackageSearch, ShieldCheck, Tags, House, LogOut, Menu as IconoMenu, MessageCircleMore, Package, PackagePlus,
-  PackageX, Plug, Plus, Receipt, Scale, Wallet, Undo2, Settings2, ShoppingBag, Store, Truck, Users, X, type LucideIcon,
+  PackageX, Plug, Plus, Printer, Receipt, ScanBarcode, Scale, Wallet, Undo2, Settings2, ShoppingBag, Store, Truck, Users, X, type LucideIcon,
 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { puede, type Permiso } from "@/lib/permisos";
@@ -25,6 +25,7 @@ const GRUPOS: { titulo?: string; items: Item[] }[] = [
   { titulo: "Catálogo", items: [
     { href: "/admin/productos", texto: "Productos", icono: Package, permisos: ["costos.ver"] },
     { href: "/admin/stock", texto: "Stock", icono: Boxes, permisos: ["stock.ver"] },
+    { href: "/admin/etiquetas", texto: "Etiquetas", icono: ScanBarcode, permisos: ["stock.ver", "productos.editar"] },
     { href: "/admin/precios", texto: "Precios", icono: Tags, permisos: ["precios.editar", "proveedores.gestionar"] },
     { href: "/admin/promociones", texto: "Promociones", icono: BadgePercent, permisos: ["promociones.gestionar"] },
     { href: "/admin/fallados", texto: "Fallados", icono: PackageX, permisos: ["stock.ver"] },
@@ -43,6 +44,7 @@ const GRUPOS: { titulo?: string; items: Item[] }[] = [
     { href: "/admin/tienda", texto: "Tienda online", icono: Store, permisos: ["tienda.editar"] },
     { href: "/admin/integraciones", texto: "Integraciones", icono: Plug, permisos: ["tienda.editar"] },
     { href: "/admin/tablas", texto: "Tablas", icono: Settings2, permisos: ["tablas.editar"] },
+    { href: "/admin/impresion", texto: "Impresión", icono: Printer, permisos: ["tablas.editar"] },
     { href: "/admin/equipo", texto: "Equipo", icono: ShieldCheck, permisos: ["equipo.administrar"] },
   ] },
 ];
@@ -60,14 +62,14 @@ export default function Menu({ version, logo, nombre, email, rolEquipo, permisos
   return (
     <>
       {/* Barra superior en el celular */}
-      <div className="sticky top-0 z-20 flex items-center justify-between border-b border-borde bg-white/95 px-4 py-2.5 backdrop-blur md:hidden">
+      <div className="sticky top-0 z-20 flex items-center justify-between border-b border-borde bg-white/95 px-4 py-2.5 backdrop-blur md:hidden print:hidden">
         <Logo nombre={nombre} imagen={logo} />
         <button onClick={() => setAbierto(!abierto)} className="grid h-9 w-9 place-items-center rounded-lg border border-borde" aria-label="Menú">
           {abierto ? <X size={18} /> : <IconoMenu size={18} />}
         </button>
       </div>
 
-      <aside className={`${abierto ? "flex" : "hidden"} fixed inset-0 top-[57px] z-10 flex-col overflow-y-auto bg-white md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:border-r md:border-borde`}>
+      <aside className={`${abierto ? "flex" : "hidden"} fixed inset-0 top-[57px] z-10 flex-col overflow-y-auto bg-white md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:border-r md:border-borde print:!hidden`}>
         <div className="hidden px-5 pb-4 pt-5 md:block"><Logo nombre={nombre} imagen={logo} /></div>
         {vende && <div className="px-3 pt-3 md:pt-0">
           <Link href="/admin/ventas/nueva" onClick={() => setAbierto(false)}

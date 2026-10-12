@@ -1,5 +1,6 @@
 // Stock por modelo (grilla talle × color), con filtros y valorización a costo.
 import Link from "next/link";
+import { ScanBarcode } from "lucide-react";
 import { crearCliente } from "@/lib/supabase/server";
 import { numero, pesos } from "@/lib/formato";
 import { leerTodo } from "@/lib/informes";
@@ -19,7 +20,7 @@ export default async function Stock({ searchParams }: { searchParams: Promise<{ 
     let c = supabase.from("v_stock").select("*").order("nombre").order("variante_id");
     if (filtro === "bajo") c = c.eq("stock_bajo", true);
     if (filtro === "sin") c = c.lte("disponible", 0);
-    if (q) { const b = q.replace(/[%,()]/g, ""); c = c.or(`nombre.ilike.%${b}%,sku.ilike.${b}%`); }
+    if (q) { const b = q.replace(/[%,()]/g, ""); c = c.or(`nombre.ilike.%${b}%,sku.ilike.${b}%,codigo_barras.ilike.${b}%`); }
     return c.range(desde, hasta);
   };
   let filas: Awaited<ReturnType<typeof consulta>>["data"] = [], error: string | null = null;
@@ -40,7 +41,10 @@ export default async function Stock({ searchParams }: { searchParams: Promise<{ 
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Stock</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">Stock</h1>
+        {modelos.length > 0 && <Link href={`/admin/etiquetas?productos=${modelos.slice(0, 800).map((m) => m.id).join(",")}`} className="boton-sec"><ScanBarcode size={16} strokeWidth={1.8} /> Etiquetas de esta lista ({modelos.length})</Link>}
+      </div>
       <div className="flex flex-wrap items-center gap-2">
         {Object.entries(FILTROS).map(([k, t]) => (
           <Link key={k} href={`/admin/stock?filtro=${k}${q ? `&q=${encodeURIComponent(q)}` : ""}`} className={`rounded-lg border px-3 py-1.5 text-sm ${k === filtro ? "border-marca bg-marca-suave font-semibold text-marca" : "border-borde bg-white"}`}>{t}</Link>
@@ -62,7 +66,7 @@ export default async function Stock({ searchParams }: { searchParams: Promise<{ 
                 <div className="truncate font-semibold text-marca hover:underline">{m.nombre}</div>
                 <div className="text-xs text-texto-2"><span className="font-mono">{m.codigo}</span>{m.marca ? ` · ${m.marca}` : ""}</div>
               </Link>
-              <div className="shrink-0 text-right"><div className="font-bold">{numero(m.pares)}</div><div className="text-xs text-texto-2">pares</div></div>
+              <div className="shrink-0 text-right"><div className="font-bold">{numero(m.pares)}</div><div className="text-xs text-texto-2">unidades</div></div>
             </div>
             <GrillaStock variantes={m.variantes} />
           </section>

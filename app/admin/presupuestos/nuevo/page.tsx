@@ -8,7 +8,7 @@ export default async function NuevoPresupuesto() {
   const { permisos, descuentoMax } = await exigir("ventas.registrar");
   const supabase = await crearCliente();
   const [filas, { data: clientes }, { data: medios }] = await Promise.all([
-    leerTodo((a, b) => supabase.from("v_stock").select("variante_id, producto_id, nombre, marca, talle, talle_orden, color, sku, disponible, precio_venta, precio_compra").order("variante_id").range(a, b)),
+    leerTodo((a, b) => supabase.from("v_stock").select("variante_id, producto_id, nombre, marca, talle, talle_orden, color, sku, codigo_barras, disponible, precio_venta, precio_compra").order("variante_id").range(a, b)),
     supabase.from("clientes").select("id, nombre").order("nombre"),
     supabase.from("medios_pago").select("id, nombre, ajuste_pct, cuotas").eq("activo", true).eq("en_mostrador", true).order("orden"),
   ]);

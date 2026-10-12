@@ -244,6 +244,19 @@ una API de Next.** Lo que ya pisamos:
     de verdad (botón «Comprobar en internet»), `lib/dns-guias.ts` trae los pasos por proveedor; NIC.ar solo delega, no tiene zona DNS. `vercel.json` fija la región
     de las funciones en `gru1` (São Paulo), cerca de la base.
 
+24. **Códigos de barras, etiquetas e impresión** (`/admin/etiquetas`, `/admin/impresion`): el código es **por variante** (`variantes.codigo_barras`, opcional y único; el `sku`
+    sigue siendo el código interno legible). La base valida el formato y el dígito verificador GS1 de los de 8/12/13/14 cifras y que no se repita
+    (`_variante_codigo_barras`); lo que no trae código recibe uno propio: EAN-13 que empieza en 200, el rango de uso interno de GS1
+    (`generar_codigos_barras()`, `productos.editar`). `lib/codigos.ts` es el mismo criterio del lado de la app y compara lo que lee un lector (un UPC-A es
+    el EAN-13 con un 0 adelante). Venta, presupuesto, cambio y compra reconocen el código escrito, de un lector (con o sin Enter) o de la cámara
+    (`components/EscanerCamara.tsx`: BarcodeDetector nativo y ZXing de respaldo, cargado recién al abrirlo); `SelectorVariantes` arma un mapa código → variante con TODAS las
+    filas (así avisa «sin stock»). Las etiquetas salen de **plantillas** (`plantillas_etiqueta`: rollo o hoja A4/Carta, tamaño, columnas y filas, márgenes, qué lleva): cada
+    local imprime con lo que tiene, y `configuracion_impresion` guarda la que se propone. Se imprime desde el navegador: cada página es un `.pagina-impresa` del tamaño
+    exacto del papel y `@page` lo fija (`lib/etiquetas.ts`: `paginar`, `cssDePagina`); el menú y los controles llevan `print:hidden`. Un **lote** se arma desde una compra, la
+    lista de Productos (selección múltiple), Stock o «Agregar en bloque» (artículos completos, una compra, un filtro). Las hojas dejan margen: las impresoras comunes no
+    imprimen pegado al borde. Desde la web no se puede elegir la impresora ni imprimir sin el cuadro del navegador. **Verificar la impresión generando un PDF con Chrome
+    headless** (`--headless=new` + `Page.printToPDF`), no solo mirando la pantalla.
+
 ---
 
 ## Dónde está cada cosa

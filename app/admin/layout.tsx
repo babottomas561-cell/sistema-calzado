@@ -18,9 +18,9 @@ export default async function LayoutAdmin({ children }: { children: React.ReactN
   if (rol !== "staff") redirect("/mi-cuenta");
 
   return (
-    <div className="md:flex">
+    <div className="md:flex print:block">
       <Menu version={versionSistema()} logo={tienda.logo_url} nombre={tienda.nombre} email={user.email ?? ""} rolEquipo={rolEquipo} permisos={permisos} salir={salir} />
-      <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 px-4 py-5 md:px-8 md:py-8">{children}</main>
+      <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 px-4 py-5 md:px-8 md:py-8 print:m-0 print:max-w-none print:p-0">{children}</main>
     </div>
   );
 }
