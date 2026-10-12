@@ -4,6 +4,7 @@
 import { revalidatePath } from "next/cache";
 import { crearCliente } from "@/lib/supabase/server";
 import { leerMonto } from "@/lib/formato";
+import { diagnosticar, type Diagnostico, type Registro } from "@/lib/dns";
 
 type Estado = { error?: string; ok?: string };
 const texto = (f: FormData, campo: string, max = 200) => String(f.get(campo) ?? "").trim().slice(0, max);
@@ -273,4 +274,13 @@ export async function mostrarPublicacion(id: number, visible: boolean): Promise<
   if (error) return { error: error.message };
   revalidatePath("/admin/integraciones/instagram"); revalidatePath("/", "layout");
   return { ok: visible ? "Se muestra en la tienda" : "Oculta de la tienda" };
+}
+
+// Dominio: qué ve internet hoy para ese dominio, registro por registro. Solo el Administrador (la tabla `dominios` solo se le abre a él).
+export async function diagnosticarDominio(id: number): Promise<{ error?: string; diagnostico?: Diagnostico }> {
+  const supabase = await crearCliente();
+  const { data: d } = await supabase.from("dominios").select("nombre, registros").eq("id", id).maybeSingle();
+  if (!d) return { error: "No se encontró el dominio" };
+  const registros = (Array.isArray(d.registros) ? d.registros : []) as Registro[];
+  return { diagnostico: await diagnosticar(d.nombre, registros) };
 }

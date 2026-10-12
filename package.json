@@ -12,7 +12,9 @@
     "db:tipos": "supabase gen types typescript --local > lib/database.types.ts",
     "db:test": "supabase test db",
     "db:stop": "supabase stop",
-    "revisar": "tsc --noEmit && eslint && next build"
+    "revisar": "tsc --noEmit && eslint && npm run test:unidades && next build",
+    "instalaciones": "node scripts/instalaciones.mjs",
+    "test:unidades": "NODE_NO_WARNINGS=1 node --test lib/*.test.ts scripts/*.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

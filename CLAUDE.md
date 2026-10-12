@@ -233,6 +233,17 @@ una API de Next.** Lo que ya pisamos:
     de marcas: usar `components/IconoInstagram.tsx`. Recibir DMs o publicar desde el panel quedan pendientes (Meta no deja claro si el
     acceso estándar alcanza para mensajes de público: probarlo antes de prometerlo).
 
+23. **Instalaciones y versiones.** Cada cliente tiene SU instalación (su Supabase y su Vercel) con el mismo código; la fuente es este repositorio,
+    sin copias por cliente (regla 18). Una **versión** es una etiqueta de Git `vAAAA.MM.DD`; el **piloto** (`instalaciones/mi-calzado.json`, `canal: main`) se
+    despliega solo desde `main` y es donde se prueba; los **clientes** (`canal: manual`) solo cambian con `npm run instalaciones -- actualizar` (primero las
+    migraciones, después el código). `scripts/instalaciones.mjs` hace `alta` (base + sitio + dueño como Administrador + ficha), `actualizar`, `etiquetar`,
+    `estado` y `lista`; todo lo que cambia algo admite `--dry-run`. Las fichas de `instalaciones/` **no llevan secretos**. Una migración nueva tiene que dejar
+    andando al código de la versión anterior (agregar, no sacar ni renombrar de golpe): los clientes pueden quedar atrás. La versión instalada se ve abajo del menú
+    del panel (`lib/version.ts`, `NEXT_PUBLIC_VERSION`). El alta guarda los tokens del instalador en `integraciones` de cada base (para que el dueño configure su
+    dominio y su correo sin tocar Vercel ni Supabase): ver «Seguridad» en `docs/INSTALACIONES.md`. Skill: `alta-de-cliente`. Dominio: `lib/dns.ts` consulta el DNS
+    de verdad (botón «Comprobar en internet»), `lib/dns-guias.ts` trae los pasos por proveedor; NIC.ar solo delega, no tiene zona DNS. `vercel.json` fija la región
+    de las funciones en `gru1` (São Paulo), cerca de la base.
+
 ---
 
 ## Dónde está cada cosa
@@ -282,7 +293,9 @@ npm run db:reset     # rehace la base: migraciones + seed.sql
 npm run db:tipos     # regenera lib/database.types.ts — después de CADA cambio de esquema
 npm run db:test      # pruebas de la base (supabase/tests): ventas, compras, pedidos, fotos, portada, seguridad
 npm run dev          # http://localhost:3000
-npm run revisar      # tsc + eslint + build: tiene que pasar antes de dar algo por terminado
+npm run test:unidades   # pruebas de lib/*.test.ts y scripts/*.test.mjs (Node ejecuta TypeScript directo)
+npm run instalaciones -- ayuda   # alta, actualización y estado de los clientes (docs/INSTALACIONES.md)
+npm run revisar      # tsc + eslint + pruebas unitarias + build: tiene que pasar antes de dar algo por terminado
 ```
 
 Usuarios de la base **local** (los crea `seed.sql`, no existen en producción):

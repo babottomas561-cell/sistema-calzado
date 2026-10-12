@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  BadgePercent, BookUser, Boxes, ChartBar, ExternalLink, FileText, PackageSearch, ShieldCheck, Tags, House, LogOut, Menu as IconoMenu, MessageCircleMore, Package, PackagePlus,
+  BadgePercent, KeyRound, BookUser, Boxes, ChartBar, ExternalLink, FileText, PackageSearch, ShieldCheck, Tags, House, LogOut, Menu as IconoMenu, MessageCircleMore, Package, PackagePlus,
   PackageX, Plug, Plus, Receipt, Scale, Wallet, Undo2, Settings2, ShoppingBag, Store, Truck, Users, X, type LucideIcon,
 } from "lucide-react";
 import Logo from "@/components/Logo";
@@ -48,7 +48,7 @@ const GRUPOS: { titulo?: string; items: Item[] }[] = [
 ];
 const TODAS = ["/admin/ventas/nueva", ...GRUPOS.flatMap((g) => g.items.map((i) => i.href))];
 
-export default function Menu({ logo, nombre, email, rolEquipo, permisos, salir }: { logo?: string | null; nombre: string; email: string; rolEquipo: string | null; permisos: string[]; salir: () => Promise<void> }) {
+export default function Menu({ version, logo, nombre, email, rolEquipo, permisos, salir }: { version?: string; logo?: string | null; nombre: string; email: string; rolEquipo: string | null; permisos: string[]; salir: () => Promise<void> }) {
   const ruta = usePathname();
   const grupos = GRUPOS.map((g) => ({ ...g, items: g.items.filter((i) => !i.permisos.length || puede(permisos, ...i.permisos)) })).filter((g) => g.items.length);
   const vende = puede(permisos, "ventas.registrar");
@@ -94,11 +94,14 @@ export default function Menu({ logo, nombre, email, rolEquipo, permisos, salir }
         <div className="border-t border-borde px-3 py-3 text-sm">
           <a href="/" target="_blank" className="flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-600 hover:bg-gray-100">
             <ExternalLink size={18} strokeWidth={1.8} /> Ver la tienda</a>
+          <Link href="/nueva-clave" onClick={() => setAbierto(false)} className="flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-600 hover:bg-gray-100">
+            <KeyRound size={18} strokeWidth={1.8} /> Cambiar contraseña</Link>
           <div className="flex items-center gap-3 px-3 py-2">
             <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-gray-100 text-gray-500"><BookUser size={15} /></span>
             <span className="min-w-0 flex-1 text-xs text-texto-2"><span className="block truncate">{email}</span>{rolEquipo && <span className="block font-semibold text-gray-600">{rolEquipo}</span>}</span>
             <form action={salir}><button className="grid h-8 w-8 place-items-center rounded-lg text-gray-500 hover:bg-gray-100" title="Cerrar sesión" aria-label="Cerrar sesión"><LogOut size={16} /></button></form>
           </div>
+          {version && <p className="px-3 pt-1 text-[11px] text-gray-400">Versión {version}</p>}
         </div>
       </aside>
     </>

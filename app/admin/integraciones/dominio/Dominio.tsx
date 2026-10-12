@@ -4,7 +4,9 @@
 import { useActionState, useState } from "react";
 import { Check, CircleAlert, CircleCheck, Copy, Globe, RefreshCw } from "lucide-react";
 import { fechaHora } from "@/lib/formato";
+import { nombreCorto } from "@/lib/dns-guias";
 import { accionDominio, agregarDominio, guardarHosting } from "../acciones";
+import DiagnosticoDns from "./DiagnosticoDns";
 
 export type Dom = { id: number; nombre: string; principal: boolean; verificado: boolean; configurado: boolean;
   registros: { tipo: string; nombre: string; valor: string }[]; error: string | null; revisado_en: string | null };
@@ -37,17 +39,19 @@ function Tarjeta({ d }: { d: Dom }) {
       </div>
       {!d.configurado && d.registros.length > 0 && (
         <div className="rounded-lg bg-gray-50 p-3 text-sm">
-          <p className="mb-2 text-xs text-texto-2">Cargá esto donde compraste el dominio (en NIC.ar: Mis dominios → el dominio → Delegar / Zona DNS). Puede tardar de minutos a unas horas en verse.</p>
+          <p className="mb-2 text-xs text-texto-2">Cargá esto donde está la zona DNS de tu dominio (no hace falta que sea donde lo compraste: en NIC.ar, por ejemplo, solo se delega). Puede tardar de minutos a unas horas en verse.</p>
           <div className="-mx-1 overflow-x-auto px-1"><table className="tabla text-xs">
             <thead><tr><th>Tipo</th><th>Nombre</th><th>Valor</th></tr></thead>
             <tbody>{d.registros.map((r, i) => (
               <tr key={i}><td className="font-semibold">{r.tipo}</td>
-                <td><span className="inline-flex items-center gap-1 font-mono">{r.nombre}<Copiar texto={r.nombre} /></span></td>
+                <td><span className="inline-flex items-center gap-1 font-mono">{nombreCorto(r.nombre, d.nombre)}<Copiar texto={nombreCorto(r.nombre, d.nombre)} /></span>
+                  {nombreCorto(r.nombre, d.nombre) !== r.nombre && nombreCorto(r.nombre, d.nombre) !== "@" && <span className="block text-[10px] text-texto-2">Si te pide el nombre completo: <span className="font-mono">{r.nombre}</span></span>}</td>
                 <td><span className="inline-flex items-center gap-1 break-all font-mono">{r.valor}<Copiar texto={r.valor} /></span></td></tr>
             ))}</tbody>
           </table></div>
         </div>
       )}
+      {!d.configurado && <DiagnosticoDns id={d.id} dominio={d.nombre} verificado={d.verificado} />}
       {d.error && <p className="flex items-center gap-1 text-xs text-error"><CircleAlert size={13} /> {d.error}</p>}
       <form action={accion} className="flex flex-wrap items-center gap-2">
         <input type="hidden" name="id" value={d.id} />

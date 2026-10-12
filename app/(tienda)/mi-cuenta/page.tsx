@@ -30,7 +30,7 @@ export default async function MiCuenta({ searchParams }: { searchParams: Promise
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
       <section className="space-y-3">
         <div className="flex items-center justify-between"><h1 className="text-3xl font-extrabold tracking-[-0.035em]">Hola, {ficha?.nombre?.split(" ")[0] ?? "!"}</h1>
-          <form action={salir}><button className="text-sm font-semibold text-marca">Cerrar sesión</button></form></div>
+          <div className="flex items-center gap-4 text-sm font-semibold text-marca"><Link href="/nueva-clave">Cambiar contraseña</Link><form action={salir}><button>Cerrar sesión</button></form></div></div>
         {(confirmado || clave) && (
           <p className="flex items-center gap-2 rounded-sm border border-borde bg-green-50 p-3 text-sm text-ok" role="status">
             <CircleCheck size={18} /> {confirmado ? "¡Email confirmado! Tu cuenta ya está lista." : "Listo: cambiaste tu contraseña."}</p>

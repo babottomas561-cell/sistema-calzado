@@ -92,6 +92,9 @@ Abrí http://localhost:3000. Usuarios de prueba (solo existen en tu compu):
 4. **Productos**: subí las fotos (desde el celular podés sacarlas en el momento; la de la estrella es
    la principal), completá descripción y precio de venta, y tildá *Publicado en la tienda*.
 
+**Más de un cliente**: cada local tiene su propia base y su propio sitio con el mismo código. Alta, actualizaciones por versión y
+costos: [docs/INSTALACIONES.md](docs/INSTALACIONES.md).
+
 ## 3. Cómo está hecho
 
 - [docs/MODELO.md](docs/MODELO.md) — las tablas, cómo se relacionan y por qué.

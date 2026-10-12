@@ -1,0 +1,15 @@
+{
+  "slug": "mi-calzado",
+  "nombre": "Mi Calzado",
+  "estado": "activa",
+  "canal": "main",
+  "supabase": { "ref": "tziumvrdrityurjzpqst", "region": "sa-east-1" },
+  "vercel": { "proyecto": "sistema-calzado", "equipo": "demotuc" },
+  "url": "https://sistema-calzado.vercel.app",
+  "dominio": null,
+  "version": "main",
+  "migracion": "20261013300000",
+  "alta": "2026-10-11",
+  "actualizada": "2026-10-13",
+  "notas": "Piloto: se despliega solo desde Git (rama main). Es donde se prueba cada versión antes de etiquetarla y llevarla a los clientes."
+}

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Menu from "@/components/Menu";
 import { crearCliente, usuarioActual } from "@/lib/supabase/server";
 import { datosTienda } from "@/lib/tienda";
+import { versionSistema } from "@/lib/version";
 
 async function salir() {
   "use server";
@@ -18,7 +19,7 @@ export default async function LayoutAdmin({ children }: { children: React.ReactN
 
   return (
     <div className="md:flex">
-      <Menu logo={tienda.logo_url} nombre={tienda.nombre} email={user.email ?? ""} rolEquipo={rolEquipo} permisos={permisos} salir={salir} />
+      <Menu version={versionSistema()} logo={tienda.logo_url} nombre={tienda.nombre} email={user.email ?? ""} rolEquipo={rolEquipo} permisos={permisos} salir={salir} />
       <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 px-4 py-5 md:px-8 md:py-8">{children}</main>
     </div>
   );

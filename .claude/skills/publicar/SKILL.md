@@ -35,6 +35,13 @@ Seguí el README, sección 2: proyecto en Supabase → `npx supabase link` → `
 3. Recién después, subir el código (push a GitHub → Vercel publica solo). Al revés, la app nueva
    buscaría columnas que todavía no existen.
 
+## Con varios clientes
+
+Lo de arriba publica el **piloto** (`mi-calzado`: `main` se despliega solo y se le hace `db push`). Los **clientes** no se tocan
+así: una vez probado en el piloto, se etiqueta una versión y se lleva a cada uno de a uno con la skill `alta-de-cliente`
+(`npm run instalaciones -- etiquetar` / `actualizar`). Una migración nueva tiene que dejar andando al código de la versión
+anterior, porque los clientes pueden quedar atrás un tiempo.
+
 ## Nunca
 
 - Subir `.env.local` ni poner claves en el código. La app usa solo la *publishable key*; la
