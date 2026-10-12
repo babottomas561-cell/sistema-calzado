@@ -6,6 +6,6 @@ import { crearCliente } from "@/lib/supabase/server";
 export const datosTienda = cache(async () => {
   const supabase = await crearCliente();
   const { data } = await supabase.from("configuracion_tienda")
-    .select("nombre, avisos, aviso_enlace, instagram, whatsapp, direccion_retiro, horario").single();
-  return data ?? { nombre: "Mi Tienda", avisos: [] as string[], aviso_enlace: null, instagram: null, whatsapp: null, direccion_retiro: null, horario: null };
+    .select("nombre, avisos, aviso_enlace, instagram, whatsapp, direccion_retiro, horario, icono_url").single();
+  return data ?? { nombre: "Mi Tienda", avisos: [] as string[], aviso_enlace: null, instagram: null, whatsapp: null, direccion_retiro: null, horario: null, icono_url: null as string | null };
 });

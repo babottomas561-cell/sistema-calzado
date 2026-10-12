@@ -126,3 +126,16 @@ export async function guardarTienda(_: Estado, f: FormData): Promise<Estado> {
   refrescar();
   return { ok: "Datos de la tienda guardados" };
 }
+
+// El ícono de la pestaña: lo sube el navegador al bucket «tienda» (ya achicado a 256×256 PNG); acá se guarda y se
+// borra el anterior. Sin url = volver a la inicial de la tienda.
+export async function guardarIcono(url: string | null, ruta: string | null): Promise<Estado> {
+  const supabase = await crearCliente();
+  if (url && !url.startsWith("https://") && !url.startsWith("http://127.0.0.1") && !url.startsWith("http://localhost")) return { error: "La imagen no es válida" };
+  const { data: antes } = await supabase.from("configuracion_tienda").select("icono_ruta").single();
+  const { error } = await supabase.from("configuracion_tienda").update({ icono_url: url, icono_ruta: ruta }).eq("unica", true);
+  if (error) return { error: error.message };
+  if (antes?.icono_ruta && antes.icono_ruta !== ruta) await borrarFoto(supabase, antes.icono_ruta);
+  refrescar();
+  return { ok: url ? "Ícono guardado (en la pestaña se ve al recargar)" : "Volvió a la inicial de la tienda" };
+}
