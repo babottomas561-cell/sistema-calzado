@@ -4,6 +4,7 @@ import { crearCliente } from "@/lib/supabase/server";
 import { fecha, fechaHora, pesos, porcentaje } from "@/lib/formato";
 import { CANCELADO_POR, ESTADOS, MOTIVOS_CANCELACION } from "@/lib/estados-pedido";
 import Envio from "./Envio";
+import Pago from "./Pago";
 import Acciones from "./Acciones";
 import Volver from "@/components/Volver";
 import { exigir } from "@/lib/exigir";
@@ -22,9 +23,10 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
     supabase.rpc("retirar_hasta", { p_pedido: Number(id) }),
   ]);
   const { data: medios } = await supabase.from("medios_pago").select("id, nombre, ajuste_pct, cuotas").eq("activo", true).order("orden");
-  const [{ data: envio }, { data: tienda }] = await Promise.all([
+  const [{ data: envio }, { data: tienda }, { data: pagosManuales }] = await Promise.all([
     supabase.from("envios").select("proveedor, costo_real, seguimiento, notas").eq("pedido_id", Number(id)).maybeSingle(),
-    supabase.from("configuracion_tienda").select("direccion_retiro").single(),
+    supabase.from("configuracion_tienda").select("direccion_retiro, envio_requiere_pago").single(),
+    supabase.from("pedido_pagos").select("id, fecha, monto, referencia").eq("pedido_id", Number(id)).order("id"),
   ]);
   const { data: pagosOnline } = await supabase.from("pagos_online").select("id, pago_externo, estado, monto, comision, cuotas, medio, creado_en").eq("pedido_id", Number(id)).order("id");
   if (!p) notFound();
@@ -91,6 +93,8 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
               {p.notas && <div><b>Notas:</b> {p.notas}</div>}
             </div>
           </section>
+          <Pago pedido={p.id} aPagar={Number(p.total) + Number(p.costo_envio)} pagadoOnline={p.pagado_online} abierto={!["entregado", "cancelado"].includes(p.estado)}
+            exigeParaEnviar={p.entrega === "envio" && !!tienda?.envio_requiere_pago} pagos={(pagosManuales ?? []).map((x) => ({ ...x, monto: Number(x.monto) }))} />
           {p.entrega === "envio" && <Envio local={tienda?.direccion_retiro ?? null} d={{ pedido: p.id, comprobante: p.comprobante ?? "", cliente: c.nombre, telefono: c.telefono,
             direccion: p.direccion_envio, zona: (p.zonas_envio as unknown as { nombre: string } | null)?.nombre ?? null, cobrado: Number(p.costo_envio),
             envio: envio ? { ...envio, costo_real: envio.costo_real == null ? null : Number(envio.costo_real) } : null }} />}

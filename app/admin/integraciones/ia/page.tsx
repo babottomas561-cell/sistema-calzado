@@ -3,6 +3,7 @@ import { crearCliente } from "@/lib/supabase/server";
 import { exigir } from "@/lib/exigir";
 import { diaArgentina } from "@/lib/formato";
 import Encabezado from "../Encabezado";
+import Manual from "../Manual";
 import IA, { type ConfigIA, type EstadoIA, type Modelo } from "../IA";
 
 export default async function InteligenciaArtificial() {
@@ -18,12 +19,13 @@ export default async function InteligenciaArtificial() {
   ]);
   return (
     <div className="max-w-4xl space-y-6">
-      <Encabezado titulo="Inteligencia artificial" guia="#parte-11"
+      <Encabezado titulo="Inteligencia artificial"
         texto="Gemini, de Google, le da al bot de WhatsApp la capacidad de contestar con el stock, los precios y el estado de los pedidos. Es opcional: sin la clave, el bot contesta un mensaje fijo." />
       <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
         {estado && config && <IA config={config as ConfigIA} ia={estado as unknown as EstadoIA} hoy={diaArgentina()}
           modelos={(modelos ?? []).map((m) => ({ ...m, precio_entrada: m.precio_entrada == null ? null : Number(m.precio_entrada), precio_salida: m.precio_salida == null ? null : Number(m.precio_salida) })) as Modelo[]} />}
       </section>
+      <Manual nombre="ia" abierto={!(estado as { gemini?: string | null } | null)?.gemini} />
     </div>
   );
 }

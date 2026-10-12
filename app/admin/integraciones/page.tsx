@@ -1,8 +1,8 @@
 // Integraciones: la portada. Una tarjeta por servicio externo con su estado y el botón para configurarlo; cada uno
-// tiene su pantalla (whatsapp/, ia/, mercadopago/, envios/) y su parte de la guía paso a paso (guia/).
+// tiene su pantalla (whatsapp/, ia/, mercadopago/, envios/) con su manual paso a paso adentro (docs/integraciones/).
 // Lo ve quien tiene el permiso «Tienda online».
 import Link from "next/link";
-import { BookOpen, ChevronRight, CreditCard, MessageCircle, Sparkles, Truck, type LucideIcon } from "lucide-react";
+import { ChevronRight, CreditCard, MessageCircle, Sparkles, Truck, type LucideIcon } from "lucide-react";
 import { crearCliente } from "@/lib/supabase/server";
 import { exigir } from "@/lib/exigir";
 
@@ -42,9 +42,8 @@ export default async function Integraciones() {
     <div className="max-w-5xl space-y-5">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Integraciones</h1>
-        <p className="text-sm text-texto-2">Los servicios de afuera que usa el sistema. Entrá a cada uno para configurarlo: los pasos están en orden y cada pantalla tiene su parte de la guía.
+        <p className="text-sm text-texto-2">Los servicios de afuera que usa el sistema. Entrá a cada uno para configurarlo: cada pantalla tiene su manual paso a paso.
           Las claves quedan guardadas en la base y nadie las puede volver a leer.</p>
-        <Link href="/admin/integraciones/guia" className="inline-flex items-center gap-1.5 text-sm font-semibold text-marca"><BookOpen size={15} strokeWidth={1.8} /> Guía completa, paso a paso</Link>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Tarjeta href="/admin/integraciones/whatsapp" icono={MessageCircle} titulo="WhatsApp"

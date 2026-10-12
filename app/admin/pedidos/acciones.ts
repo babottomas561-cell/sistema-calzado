@@ -38,3 +38,16 @@ export async function registrarEnvio(_: Estado, f: FormData): Promise<Estado> {
   revalidatePath("/admin/pedidos", "layout");
   return { ok: "Envío anotado" };
 }
+
+// Un pago recibido a mano (transferencia, efectivo en el local…): constancia para poder enviarlo
+export async function registrarPago(_: Estado, f: FormData): Promise<Estado> {
+  const monto = leerMonto(String(f.get("monto") ?? ""));
+  if (!(monto && monto > 0)) return { error: "Poné el monto que pagó" };
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("registrar_pago_pedido", {
+    p_pedido: Number(f.get("pedido_id")), p_monto: monto, p_referencia: String(f.get("referencia") ?? "").trim() || undefined,
+  });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/pedidos", "layout");
+  return { ok: "Pago registrado" };
+}

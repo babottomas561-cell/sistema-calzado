@@ -5,8 +5,8 @@ const nextConfig: NextConfig = {
   // Modelo clásico: cada página se arma al pedirla (todo depende del usuario logueado).
   // Ver CLAUDE.md antes de activar cacheComponents.
   cacheComponents: false,
-  // La guía de integraciones se lee de docs/ al abrirla: que el archivo viaje con el deploy
-  outputFileTracingIncludes: { "/admin/integraciones/guia": ["./docs/INTEGRACIONES.md"] },
+  // Los manuales de las integraciones se leen de docs/integraciones/ al abrir cada pantalla: que el archivo viaje con el deploy
+  outputFileTracingIncludes: { "/admin/integraciones/*": ["./docs/integraciones/*.md"] },
   turbopack: {
     rules: {
       "*.css": {

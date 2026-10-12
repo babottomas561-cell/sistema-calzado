@@ -171,7 +171,7 @@ una API de Next.** Lo que ya pisamos:
     `crear_pedido(…, p_zona)`. El envío va APARTE de la venta (no toca `total` ni la venta al entregar); el cliente paga
     total + envío (también por Mercado Pago). `envios` (uno por pedido con envío): proveedor, `costo_real` y seguimiento
     con `registrar_envio()` → Gastos → Envíos; el Resultado suma `v_envios_cobrados`.
-    La guía paso a paso es `docs/INTEGRACIONES.md` y se ve en el panel (`/admin/integraciones/guia`).
+    Cada integración tiene su manual paso a paso en `docs/integraciones/<servicio>.md`, que se ve adentro de su pantalla.
 17. **Gastos** (`/admin/gastos`, permiso `gastos.gestionar`): a mano, fijos por mes (`gastos_fijos`, los genera
     `_generar_gastos_fijos()` con pg_cron) y automáticos (`_sumar_gasto_automatico()`, no se tocan a mano). En dólares
     guardan **una copia** de la cotización. Informes → Resultado: ventas − costo − fallados de baja − gastos = neta.
@@ -197,7 +197,8 @@ app/admin/             panel del equipo (el layout verifica que sea staff; cada 
   precios/             ajuste masivo de precios de venta y compra (ajustar_precios), historial y deshacer
   tienda/              tienda online: secciones de la portada (orden, ocultar, editar, fotos) y datos de la tienda
   integraciones/       portada con una tarjeta por servicio; whatsapp/ (claves, webhook, bot y avisos), ia/ (Gemini: clave,
-                       modelo, plan, uso), mercadopago/, envios/ (zonas) y guia/ (lee docs/INTEGRACIONES.md, con #parte-N)
+                       modelo, plan, uso), mercadopago/, envios/ (zonas, cobrar antes de
+                       enviar, Uber Direct y Andreani); cada una con su manual (Manual.tsx lee docs/integraciones/)
   tablas/              maestros: rubros/subrubros, marcas, colores (muestra), talles (orden), medios de pago
 components/            Menu (íconos lucide), Logo, Volver, SelectorVariantes (venta), Contactos…
 lib/supabase/server.ts crearCliente() tipado y usuarioActual() → { supabase, user, rol, nombre }

@@ -2,6 +2,7 @@
 import { crearCliente } from "@/lib/supabase/server";
 import { exigir } from "@/lib/exigir";
 import Encabezado from "../Encabezado";
+import Manual from "../Manual";
 import Conexiones, { type EstadoConexiones } from "../Conexiones";
 import BotYAvisos, { type ConfigBot } from "../BotYAvisos";
 import { sitio } from "../sitio";
@@ -16,7 +17,7 @@ export default async function WhatsApp() {
   ]);
   return (
     <div className="max-w-4xl space-y-6">
-      <Encabezado titulo="WhatsApp" guia="#parte-1"
+      <Encabezado titulo="WhatsApp"
         texto="Recibir y contestar los mensajes de los clientes con el número del local, y avisarles solos cómo va su pedido. Se conecta con la API oficial de Meta." />
       <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
         <div className="border-b border-borde px-5 py-4"><h2 className="font-semibold">Conexión con Meta</h2>
@@ -28,6 +29,7 @@ export default async function WhatsApp() {
           <p className="text-sm text-texto-2">Qué hace el sistema con la conexión. El bot usa la IA si está configurada (Integraciones → Inteligencia artificial).</p></div>
         {config && <BotYAvisos config={config as ConfigBot} />}
       </section>
+      <Manual nombre="whatsapp" abierto={!(estado as { meta_lista?: boolean } | null)?.meta_lista} />
     </div>
   );
 }

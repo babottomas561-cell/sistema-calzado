@@ -152,3 +152,35 @@ export async function activarZona(f: FormData) {
   await supabase.from("zonas_envio").update({ activo: f.get("activo") === "1" }).eq("id", Number(f.get("id")));
   revalidatePath("/admin/integraciones", "layout"); revalidatePath("/carrito");
 }
+
+// Envíos: ¿hay que pagar antes de que salga? (prendido por defecto; apagado permite pago contra entrega)
+export async function guardarReglaEnvio(_: Estado, f: FormData): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.from("configuracion_tienda").update({ envio_requiere_pago: f.get("envio_requiere_pago") !== null }).eq("unica", true);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  return { ok: "Guardado" };
+}
+
+// ── Uber Direct y Andreani: credenciales (se guardan en la base, no se leen) y su prueba ─────
+export async function guardarCredencialesEnvio(_: Estado, f: FormData): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("guardar_envios_credenciales", {
+    p_uber_customer_id: texto(f, "uber_customer_id", 100), p_uber_client_id: texto(f, "uber_client_id", 200),
+    p_uber_client_secret: texto(f, "uber_client_secret", 300), p_andreani_usuario: texto(f, "andreani_usuario", 100),
+    p_andreani_clave: texto(f, "andreani_clave", 200), p_andreani_cliente: texto(f, "andreani_cliente", 50),
+    p_andreani_contrato: texto(f, "andreani_contrato", 50), p_quitar: f.getAll("quitar").map(String),
+  });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  return { ok: "Guardado" };
+}
+
+export async function probarServicioEnvio(_: Estado, f: FormData): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc(f.get("servicio") === "andreani" ? "probar_andreani" : "probar_uber");
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  const r = data as { ok: boolean; error?: string };
+  return r.ok ? { ok: "Conectado" } : { error: r.error ?? "No conecta" };
+}
