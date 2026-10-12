@@ -104,6 +104,12 @@ isOneToOne: false
       referencedRelation: "proveedores"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "ajustes_precios_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "v_credito_proveedores"
+      referencedColumns: ["proveedor_id"]
+    },{
       foreignKeyName: "ajustes_precios_usuario_id_fkey"
       columns: ["usuario_id"]
 isOneToOne: false
@@ -193,14 +199,14 @@ isOneToOne: false
                   ]
                 },"compras": {
                   Row: {
-                    "comprobante": string | null,"comprobante_proveedor": string | null,"deposito_id": number,"fecha": string,"fecha_comprobante": string | null,"id": number,"notas": string | null,"numero": number | null,"proveedor_id": number | null,"punto_venta": number,"total": number,"usuario_id": string | null
+                    "comprobante": string | null,"comprobante_proveedor": string | null,"credito_aplicado": number,"deposito_id": number,"fecha": string,"fecha_comprobante": string | null,"id": number,"notas": string | null,"numero": number | null,"proveedor_id": number | null,"punto_venta": number,"total": number,"usuario_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "comprobante"?: never,"comprobante_proveedor"?: string | null,"deposito_id": number,"fecha"?: string,"fecha_comprobante"?: string | null,"id"?: never,"notas"?: string | null,"numero"?: number | null,"proveedor_id"?: number | null,"punto_venta"?: number,"total": number,"usuario_id"?: string | null
+                    "comprobante"?: never,"comprobante_proveedor"?: string | null,"credito_aplicado"?: number,"deposito_id": number,"fecha"?: string,"fecha_comprobante"?: string | null,"id"?: never,"notas"?: string | null,"numero"?: number | null,"proveedor_id"?: number | null,"punto_venta"?: number,"total": number,"usuario_id"?: string | null
                   }
                   Update: {
-                    "comprobante"?: never,"comprobante_proveedor"?: string | null,"deposito_id"?: number,"fecha"?: string,"fecha_comprobante"?: string | null,"id"?: never,"notas"?: string | null,"numero"?: number | null,"proveedor_id"?: number | null,"punto_venta"?: number,"total"?: number,"usuario_id"?: string | null
+                    "comprobante"?: never,"comprobante_proveedor"?: string | null,"credito_aplicado"?: number,"deposito_id"?: number,"fecha"?: string,"fecha_comprobante"?: string | null,"id"?: never,"notas"?: string | null,"numero"?: number | null,"proveedor_id"?: number | null,"punto_venta"?: number,"total"?: number,"usuario_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -222,6 +228,12 @@ isOneToOne: false
       referencedRelation: "proveedores"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "compras_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "v_credito_proveedores"
+      referencedColumns: ["proveedor_id"]
+    },{
       foreignKeyName: "compras_usuario_id_fkey"
       columns: ["usuario_id"]
 isOneToOne: false
@@ -242,6 +254,56 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"creditos_proveedor": {
+                  Row: {
+                    "compra_id": number | null,"fallado_id": number | null,"fecha": string,"id": number,"monto": number,"nota": string | null,"proveedor_id": number,"tipo": string,"usuario_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "compra_id"?: number | null,"fallado_id"?: number | null,"fecha"?: string,"id"?: never,"monto": number,"nota"?: string | null,"proveedor_id": number,"tipo": string,"usuario_id"?: string | null
+                  }
+                  Update: {
+                    "compra_id"?: number | null,"fallado_id"?: number | null,"fecha"?: string,"id"?: never,"monto"?: number,"nota"?: string | null,"proveedor_id"?: number,"tipo"?: string,"usuario_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "creditos_proveedor_compra_id_fkey"
+      columns: ["compra_id"]
+isOneToOne: false
+      referencedRelation: "compras"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "creditos_proveedor_fallado_id_fkey"
+      columns: ["fallado_id"]
+isOneToOne: true
+      referencedRelation: "fallados"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "creditos_proveedor_fallado_id_fkey"
+      columns: ["fallado_id"]
+isOneToOne: true
+      referencedRelation: "v_fallados"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "creditos_proveedor_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "proveedores"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "creditos_proveedor_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "v_credito_proveedores"
+      referencedColumns: ["proveedor_id"]
+    },{
+      foreignKeyName: "creditos_proveedor_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"depositos": {
                   Row: {
@@ -363,6 +425,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "proveedores"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fallados_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "v_credito_proveedores"
+      referencedColumns: ["proveedor_id"]
     },{
       foreignKeyName: "fallados_resuelto_por_fkey"
       columns: ["resuelto_por"]
@@ -917,6 +985,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "proveedores"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "producto_proveedores_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "v_credito_proveedores"
+      referencedColumns: ["proveedor_id"]
     }
                   ]
                 },"productos": {
@@ -1386,6 +1460,14 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"v_credito_proveedores": {
+                  Row: {
+                    "a_favor": number | null,"nombre": string | null,"proveedor_id": number | null,"saldo": number | null,"ultimo": string | null,"usado": number | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
                 },"v_creditos": {
                   Row: {
                     "cliente_id": number | null,"devolucion": string | null,"devolucion_id": number | null,"fecha": string | null,"id": number | null,"monto": number | null,"restante": number | null,"vence": string | null
@@ -1425,6 +1507,12 @@ isOneToOne: false
       referencedRelation: "proveedores"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "fallados_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "v_credito_proveedores"
+      referencedColumns: ["proveedor_id"]
+    },{
       foreignKeyName: "fallados_variante_id_fkey"
       columns: ["variante_id"]
 isOneToOne: false
@@ -1454,6 +1542,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "proveedores"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "producto_proveedores_proveedor_id_fkey"
+      columns: ["proveedor_principal_id"]
+isOneToOne: false
+      referencedRelation: "v_credito_proveedores"
+      referencedColumns: ["proveedor_id"]
     }
                   ]
                 },"v_hechos_ventas": {
@@ -1718,11 +1812,17 @@ isOneToOne: false
               "cantidad": number,"costo_unitario": number,"estado": string,"monto": number,"producto_id": number,"variante_id": number,"venta_item_id": number
             }[]
                            },
+"_saldo_proveedor":
+{ Args: { "p_proveedor": number }; Returns: number
+                           },
 "_vincular_cliente":
 { Args: { "p_usuario": unknown }; Returns: undefined
                            },
 "actualizar_mi_ficha":
 { Args: { "p_acepta_promos"?: boolean,"p_direccion"?: string,"p_documento"?: string,"p_fecha_nacimiento"?: string,"p_localidad"?: string,"p_nombre": string,"p_telefono"?: string }; Returns: undefined
+                           },
+"ajustar_credito_proveedor":
+{ Args: { "p_monto": number,"p_nota": string,"p_proveedor": number }; Returns: undefined
                            },
 "ajustar_precios":
 { Args: { "p_aplicar"?: boolean,"p_descripcion"?: string,"p_modo": string,"p_productos": (number)[],"p_proveedor"?: number,"p_que": string,"p_redondeo"?: string,"p_valor": number }; Returns: {
@@ -1737,6 +1837,9 @@ isOneToOne: false
                            },
 "anular_venta":
 { Args: { "p_comentario"?: string,"p_motivo": string,"p_venta": number }; Returns: undefined
+                           },
+"aplicar_credito_proveedor":
+{ Args: { "p_compra": number,"p_monto": number }; Returns: number
                            },
 "asignar_rol":
 { Args: { "p_email": string,"p_rol": number }; Returns: string

@@ -46,6 +46,7 @@ una API de Next.** Lo que ya pisamos:
    | `cambiar_estado_pedido(p_pedido, p_estado, p_comentario, p_pagos, p_motivo)` | `entregado` → se convierte en venta (respeta el % prometido); `cancelado` (motivo obligatorio) → libera la reserva |
    | `anular_venta(p_venta, p_motivo, p_comentario)` | solo el mismo día y con `ventas.anular`: vuelve el stock (movimiento `anulacion`), la venta queda anulada y deja de contar; su pedido vuelve a estar listo (o se cancela si el cliente se arrepintió) y su presupuesto, vigente. Las pantallas y vistas que suman ventas filtran `anulada_en is null` |
    | `mover_a_fallados(p_variante, p_cantidad, p_motivo)` · `resolver_fallado(p_fallado, p_salida, p_cantidad, p_proveedor, p_nota)` | aparta lo roto en «Fallados» (no se vende) y lo resuelve: `arreglado` (vuelve), `proveedor` (crédito a su costo) o `baja` (pérdida). Permiso `stock.ajustar` |
+   | `aplicar_credito_proveedor(p_compra, p_monto)` · `ajustar_credito_proveedor(p_proveedor, p_monto, p_nota)` | el **crédito con el proveedor** (`creditos_proveedor`, saldo en `v_credito_proveedores`): nace al devolverle un fallado (a su costo), se descuenta de una factura **suya** (`compras.credito_aplicado`; el costo de lo que llega no cambia) y se ajusta a mano con nota (nota de crédito, no lo reconoció). Nunca queda negativo. Lo ve y lo usa quien carga compras o ve costos; el ajuste, `proveedores.gestionar` + `costos.ver` |
    | `registrar_devolucion(p_venta, p_items, p_motivo, p_comentario, p_cliente)` · `cotizar_devolucion(p_venta, p_items)` | deja **saldo a favor** (nunca efectivo): lo pagado de verdad (promo recalculada con las de esa venta, descuentos sí, recargo de cuotas no), en `dias_cambio`; lo bueno vuelve al Local y lo fallado a Fallados. El saldo (`saldos_cliente`) se usa con el medio «Saldo a favor» (un trigger lo consume) y vence a los `dias_saldo` |
    | `registrar_cambio(p_venta, p_devuelve, p_lleva, p_pagos, p_motivo, p_comentario, p_cliente)` · `cotizar_cambio(…, p_medio)` | devolución + venta nueva en UNA operación: lo del mismo artículo (otro talle/color) vale lo que trae aunque haya subido; lo demás, precio y promos de hoy; se paga con el saldo y la diferencia con otro medio (o queda saldo) |
    | `ventas_para_cambio(p_buscar)` · `venta_para_cambio(p_venta)` | buscar (ticket, cliente, teléfono) y leer una venta para un cambio o devolución **aunque la haya hecho otro vendedor**, sin abrirle las ventas ajenas (sin montos ni costos) |
@@ -159,7 +160,8 @@ app/admin/             panel del equipo (el layout verifica que sea staff; cada 
   ventas/nueva/        punto de venta (pagos mixtos con descuento/recargo por medio, descuento manual)
   compras/nueva/       cargar factura de compra POR CURVA: cabecera, grilla talle×color por modelo,
                        un costo por modelo, control contra el total de la factura, alta rápida de artículos
-  stock/  pedidos/  clientes/  seguimientos/  proveedores/
+  stock/  pedidos/  clientes/  seguimientos/
+  proveedores/         contactos y el crédito con cada uno (movimientos, ajuste con nota)
   devoluciones/        devoluciones (comprobante DEV, saldo a favor) y su desglose por motivo y talle; se hacen desde la venta
   fallados/            bandeja de fallados: lo apartado por roto, y su salida (arreglado, al proveedor, baja)
   reposicion/          pedido sugerido por talle según el ritmo de venta (reposicion_sugerida), copiable a WhatsApp

@@ -26,7 +26,7 @@ export default async function MiCuenta() {
   ]);
   const saldo = (saldos ?? []).reduce((s, c) => s + Number(c.restante), 0);
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
       <section className="space-y-3">
         <div className="flex items-center justify-between"><h1 className="text-3xl font-extrabold tracking-[-0.035em]">Hola, {ficha?.nombre?.split(" ")[0] ?? "!"}</h1>
           <form action={salir}><button className="text-sm font-semibold text-marca">Cerrar sesión</button></form></div>

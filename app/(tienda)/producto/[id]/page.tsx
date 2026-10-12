@@ -26,7 +26,7 @@ export default async function Producto({ params }: { params: Promise<{ id: strin
         {p.categoria && <><Link href={`/tienda?categoria=${encodeURIComponent(p.categoria)}#catalogo`} className="inline-flex min-h-11 items-center hover:text-marca">{p.categoria}</Link><ChevronRight size={14} /></>}
         <span className="font-semibold text-marca">{p.nombre}</span>
       </nav>
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-14">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-14">
         <Galeria fotos={fotos} nombre={p.nombre ?? ""} />
         <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
           <div className="space-y-2">

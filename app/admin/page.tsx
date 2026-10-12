@@ -88,7 +88,7 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {veStock && <section className="tarjeta">
           <h2 className="mb-3 flex items-center gap-2 font-semibold"><TriangleAlert size={17} className="text-alerta" /> Para reponer <span className="text-sm font-normal text-texto-2">({bajos.length})</span></h2>
           {bajos.length === 0 ? <p className="text-sm text-texto-2">Nada por debajo del mínimo.</p> : (

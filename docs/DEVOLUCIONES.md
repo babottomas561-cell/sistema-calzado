@@ -190,4 +190,7 @@ Así el dueño ve en un lugar cuánto tiene «parado» en fallados y qué provee
 3. **HECHO (2026-10-12):** depósitos vendibles + bandeja de fallados (migración `fallados`, pantalla `/admin/fallados`).
 4. **HECHO (2026-10-12):** devolución con saldo a favor, plazo y vencimiento configurables (migración `devoluciones`). El motor de promociones se partió en `_crear_unidades` + `_aplicar_promociones` para recalcular con las promos de la venta.
 5. **HECHO (2026-10-12):** cambio en una sola operación, desde la venta (migración `cambios`, pantalla `/admin/ventas/[id]/cambio`).
+   **HECHO (2026-10-12):** crédito con proveedores (migración `credito_proveedores`): devolverle un fallado deja
+   crédito a su costo; al cargar una factura suya se propone descontarlo (o después, desde la compra); en
+   Proveedores se ven los movimientos y se ajusta con nota (nota de crédito, no lo reconoció).
 6. Con la caja diaria: recibos (y, si el contador lo confirma, el reintegro por arrepentimiento online).

@@ -36,7 +36,7 @@ export default function Carrito({ medios, conWhatsApp }: { medios: MedioPago[]; 
   );
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
       <section className="space-y-4">
         <h1 className="text-3xl font-extrabold tracking-[-0.035em]">Tu carrito <span className="text-xl font-semibold text-texto-2">({items.reduce((s, i) => s + i.cantidad, 0)})</span></h1>
         <ul className="divide-y divide-borde border-y border-borde">

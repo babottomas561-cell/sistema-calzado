@@ -157,6 +157,13 @@ calcula por la fecha. Se escribe solo por esas funciones (permiso `ventas.regist
 Los depósitos tienen `vendible`: «Local» vende, «Fallados» no (un trigger frena ahí ventas, compras, ajustes y
 reservas). `v_stock` y `v_catalogo` cuentan solo los que venden. `fallados` guarda cada tanda apartada (motivo, costo
 de ese momento, origen) hasta su salida: `arreglado`, `proveedor` (crédito a su costo) o `baja` (pérdida).
+
+**Crédito con proveedores.** `creditos_proveedor` es un libro de movimientos por proveedor (como
+`saldos_cliente`): `devolucion` (+, lo genera `resolver_fallado` con el costo del fallado; `fallado_id` único),
+`descuento` (−, `aplicar_credito_proveedor` sobre una compra suya) y `ajuste` (±, con nota obligatoria). El saldo
+es la suma y nunca queda negativo (se bloquea el proveedor con `FOR UPDATE`). En la compra, `credito_aplicado`
+(entre 0 y el `total`, lo valida un `check`): lo que se le paga es `total − credito_aplicado`; el costo de los
+renglones no cambia. `v_credito_proveedores` (saldo, a favor, usado) solo para `compras.registrar` o `costos.ver`.
 Tipos de movimiento: `venta`, `compra`, `ajuste`, `anulacion`, `transferencia`, `devolucion_proveedor`, `baja`.
 
 `stock(variante, depósito)` tiene `cantidad` y `reservado` (comprometido en pedidos web).

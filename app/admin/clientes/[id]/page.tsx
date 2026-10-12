@@ -61,7 +61,7 @@ export default async function FichaCliente({ params }: { params: Promise<{ id: s
         </section>
       )}
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <div className="space-y-5">
           <section className="tarjeta space-y-3">
             <h2 className="font-semibold">Seguimientos</h2>
@@ -86,15 +86,15 @@ export default async function FichaCliente({ params }: { params: Promise<{ id: s
 
           <section className="tarjeta">
             <h2 className="mb-2 font-semibold">Compras</h2>
-            <table className="tabla"><tbody>
+            <div className="-mx-4 overflow-x-auto px-4"><table className="tabla"><tbody>
               {(ventas ?? []).map((v) => <tr key={v.id}><td><Link href={`/admin/ventas/${v.id}`} className="font-mono text-marca">{v.comprobante}</Link></td><td>{fecha(v.fecha)}</td><td>{v.canal}</td><td className="text-right font-semibold">{pesos(v.total)}</td></tr>)}
               {ventas?.length === 0 && <tr><td className="text-texto-2">Todavía no compró.</td></tr>}
-            </tbody></table>
+            </tbody></table></div>
             {(pedidos ?? []).length > 0 && <>
               <h3 className="mb-1 mt-4 text-sm font-semibold">Pedidos</h3>
-              <table className="tabla"><tbody>
+              <div className="-mx-4 overflow-x-auto px-4"><table className="tabla"><tbody>
                 {(pedidos ?? []).map((p) => <tr key={p.id}><td><Link href={`/admin/pedidos/${p.id}`} className="font-mono text-marca">Pedido {p.comprobante}</Link></td><td>{fecha(p.fecha)}</td><td>{p.estado.replace("_", " ")}</td><td className="text-right">{pesos(p.total)}</td></tr>)}
-              </tbody></table></>}
+              </tbody></table></div></>}
           </section>
         </div>
         <div><h2 className="mb-2 font-semibold">Datos</h2><FichaForm c={c} /></div>

@@ -58,7 +58,7 @@ export default function FormPresupuesto({ filas, clientes, medios, cambiaPrecio,
   });
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1fr_400px]">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_400px]">
       <section className="space-y-3">
         <h1 className="text-2xl font-bold">Nuevo presupuesto</h1>
         <p className="text-sm text-texto-2">No descuenta ni reserva stock. Los precios y las promociones quedan congelados hasta el vencimiento.</p>

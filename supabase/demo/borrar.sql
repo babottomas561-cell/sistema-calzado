@@ -15,6 +15,9 @@ delete from presupuesto_items; delete from presupuestos;
 delete from pedido_estados; delete from pedido_items;
 update ventas set pedido_id = null where pedido_id is not null;
 delete from pedidos;
+-- Devoluciones, saldo a favor, fallados y el crédito con proveedores (apuntan a ventas y compras)
+delete from creditos_proveedor; delete from saldos_cliente;
+delete from devolucion_items; delete from devoluciones; delete from fallados;
 delete from movimientos_stock;
 delete from pagos; delete from venta_items; delete from ventas;
 delete from compra_items; delete from compras;

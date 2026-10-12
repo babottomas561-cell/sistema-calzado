@@ -20,8 +20,9 @@ type Precio = { producto_id: number; proveedor_id: number; codigo_proveedor: str
 // Un modelo cargado en la factura: su costo y los pares por variante
 type Bloque = { producto_id: number; costo: number; costoEditado: boolean; pares: Record<number, number> };
 
-export default function FacturaCompra({ filas, proveedores, precios, maestros, talles, colores, editaPrecio }: {
+export default function FacturaCompra({ filas, proveedores, precios, maestros, talles, colores, editaPrecio, creditos }: {
   filas: Fila[]; proveedores: { id: number; nombre: string }[]; precios: Precio[]; maestros: Maestros; talles: Talle[]; colores: Color[]; editaPrecio: boolean;
+  creditos: Record<number, number>;   // crédito a favor con cada proveedor (fallados devueltos)
 }) {
   const router = useRouter();
   const [escalaNueva, setEscalaNueva] = useState("Adulto");   // escala del artículo que se crea en el alta rápida
@@ -86,12 +87,16 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
   const totalPares = bloques.reduce((s, b) => s + paresDe(b), 0);
   const totalCargado = bloques.reduce((s, b) => s + paresDe(b) * b.costo, 0);
   const diferencia = totalFactura === "" ? null : Number(totalFactura) - totalCargado;
+  // Crédito con este proveedor: se propone descontarlo (hasta el total de la factura)
+  const [usarCredito, setUsarCredito] = useState(true);
+  const creditoDisponible = proveedor ? creditos[proveedor] ?? 0 : 0;
+  const credito = usarCredito ? Math.min(creditoDisponible, totalCargado) : 0;
 
   const compra = JSON.stringify({
     items: bloques.flatMap((b) => Object.entries(b.pares).filter(([, n]) => n > 0)
       .map(([variante_id, cantidad]) => ({ variante_id: Number(variante_id), cantidad, costo_unitario: b.costo }))),
     proveedor_id: proveedor || null, notas, actualizar_costo: actualizarCosto,
-    comprobante_proveedor: comprobante, fecha_comprobante: fechaFactura || null,
+    comprobante_proveedor: comprobante, fecha_comprobante: fechaFactura || null, credito,
   });
 
   // Alta rápida: crea el artículo, recarga los datos y lo deja agregado a la factura
@@ -126,7 +131,7 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
             onChange={(e) => setTotalFactura(e.target.value === "" ? "" : Number(e.target.value))} className="campo" /></div>
       </section>
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-4">
           {/* 2. Buscar el modelo */}
           <div className="relative">
@@ -243,6 +248,13 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
             ? <p className="flex items-center gap-1.5 rounded-lg bg-green-50 p-2 text-sm font-semibold text-ok"><CircleCheck size={16} /> Coincide con la factura</p>
             : <p className="flex items-start gap-1.5 rounded-lg bg-amber-50 p-2 text-sm text-alerta"><CircleAlert size={16} className="mt-0.5 shrink-0" />
                 {diferencia > 0 ? `Faltan ${pesos(diferencia)}` : `Sobran ${pesos(-diferencia)}`} para llegar a la factura. Revisá cantidades y costos (¿IVA, flete o un descuento?).</p>)}
+          {creditoDisponible > 0 && (
+            <div className="space-y-1 rounded-lg bg-green-50 p-2.5 text-sm">
+              <label className="flex items-start gap-2"><input type="checkbox" checked={usarCredito} onChange={(e) => setUsarCredito(e.target.checked)} className="mt-1" />
+                <span>Tenés <b>{pesos(creditoDisponible)}</b> de crédito a favor con este proveedor. Descontarlo de esta factura.</span></label>
+              {credito > 0 && <div className="flex justify-between pl-6 font-semibold text-ok"><span>A pagar</span><span>{pesos(totalCargado - credito)}</span></div>}
+            </div>
+          )}
           <div><label className="etiqueta">Notas</label><input value={notas} onChange={(e) => setNotas(e.target.value)} className="campo" /></div>
           <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={actualizarCosto} onChange={(e) => setActualizarCosto(e.target.checked)} className="mt-1" />
             <span>Actualizar el precio de compra{proveedor ? " (del artículo y de este proveedor)" : " de los artículos"}</span></label>

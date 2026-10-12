@@ -18,6 +18,32 @@ export async function registrarCompra(_: Estado, f: FormData): Promise<Estado> {
     p_fecha_comprobante: compra.fecha_comprobante || undefined,
   });
   if (error) return { error: error.message };
+  // El crédito con el proveedor se descuenta aparte (la base controla saldo y total). Si falla, la compra
+  // ya quedó cargada: se avisa y se puede descontar desde su detalle.
+  let aviso = "";
+  if (Number(compra.credito) > 0) {
+    const r = await supabase.rpc("aplicar_credito_proveedor", { p_compra: id, p_monto: Number(compra.credito) });
+    if (r.error) aviso = `&credito_error=${encodeURIComponent(r.error.message)}`;
+  }
   revalidatePath("/", "layout");
-  redirect(`/admin/compras/${id}?nueva=1`);
+  redirect(`/admin/compras/${id}?nueva=1${aviso}`);
+}
+
+// Descontar crédito del proveedor de una factura ya cargada
+export async function aplicarCredito(_: { error?: string; ok?: string }, f: FormData): Promise<{ error?: string; ok?: string }> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("aplicar_credito_proveedor", { p_compra: Number(f.get("compra_id")), p_monto: Number(f.get("monto")) });
+  if (error) return { error: error.message };
+  revalidatePath("/admin", "layout");
+  return { ok: "Crédito descontado" };
+}
+
+// Ajustar a mano el crédito con un proveedor (con nota)
+export async function ajustarCredito(_: { error?: string; ok?: string }, f: FormData): Promise<{ error?: string; ok?: string }> {
+  const monto = Number(f.get("monto")) * (f.get("signo") === "menos" ? -1 : 1);
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("ajustar_credito_proveedor", { p_proveedor: Number(f.get("proveedor_id")), p_monto: monto, p_nota: String(f.get("nota") ?? "") });
+  if (error) return { error: error.message };
+  revalidatePath("/admin", "layout");
+  return { ok: "Crédito ajustado" };
 }

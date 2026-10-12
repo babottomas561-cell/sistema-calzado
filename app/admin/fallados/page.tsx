@@ -23,11 +23,13 @@ export default async function Fallados({ searchParams }: { searchParams: Promise
   const resuelve = puede(permisos, "stock.ajustar");
   const supabase = await crearCliente();
   const columnas = "id, fecha, producto_id, codigo, nombre, marca, imagen_url, talle, color, cantidad, origen, venta_id, venta_comprobante, motivo, estado, nota, proveedor, proveedor_principal_id, proveedor_principal, resuelto_en, resuelto_por, cargado_por, valor_costo";
-  const [{ data: pendientes }, { data: hechos }, { data: proveedores }] = await Promise.all([
+  const [{ data: pendientes }, { data: hechos }, { data: proveedores }, { data: creditos }] = await Promise.all([
     supabase.from("v_fallados").select(columnas).eq("estado", "pendiente").order("fecha", { ascending: false }),
     supabase.from("v_fallados").select(columnas).neq("estado", "pendiente").order("resuelto_en", { ascending: false }).limit(200),
     resuelve ? supabase.from("proveedores").select("id, nombre").order("nombre") : Promise.resolve({ data: [] }),
+    conCostos ? supabase.from("v_credito_proveedores").select("saldo") : Promise.resolve({ data: [] }),
   ]);
+  const creditoSinUsar = (creditos ?? []).reduce((s, c) => s + Number(c.saldo ?? 0), 0);
   const pend = pendientes ?? [], res = hechos ?? [];
   const unidades = pend.reduce((s, f) => s + (f.cantidad ?? 0), 0);
   const valor = pend.reduce((s, f) => s + Number(f.valor_costo ?? 0), 0);
@@ -53,9 +55,9 @@ export default async function Fallados({ searchParams }: { searchParams: Promise
           <div className="text-xs text-texto-2">{unidades === 1 ? "unidad" : "unidades"} en {pend.length} {pend.length === 1 ? "tanda" : "tandas"}</div></div>
         {conCostos && <div className="tarjeta"><div className="etiqueta">Parado a costo</div><div className="text-2xl font-bold">{pesos(valor)}</div>
           <div className="text-xs text-texto-2">lo que costó lo que está en fallados</div></div>}
-        {conCostos && <div className="tarjeta"><div className="etiqueta">Reclamado a proveedores</div>
-          <div className="text-2xl font-bold">{pesos([...porProveedor.values()].reduce((s, g) => s + g.valor, 0))}</div>
-          <div className="text-xs text-texto-2">crédito a descontar de sus facturas</div></div>}
+        {conCostos && <div className="tarjeta"><div className="etiqueta">Crédito con proveedores</div>
+          <div className="text-2xl font-bold">{pesos(creditoSinUsar)}</div>
+          <div className="text-xs text-texto-2">sin usar · se descuenta al cargar su factura · <Link href="/admin/proveedores" className="text-marca">ver</Link></div></div>}
         {conCostos && <div className="tarjeta"><div className="etiqueta">Pérdidas del mes</div><div className="text-2xl font-bold">{pesos(perdidaMes)}</div>
           <div className="text-xs text-texto-2">{bajasMes.reduce((s, f) => s + (f.cantidad ?? 0), 0)} dadas de baja</div></div>}
       </div>

@@ -35,10 +35,10 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
       )}
       {hasta && <p className="rounded-lg bg-indigo-50 px-3 py-2 text-sm text-indigo-800">Se guarda hasta el <b>{fecha(hasta)}</b>. Si no lo retiran, se cancela solo y el stock vuelve a la venta.</p>}
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-4">
           <section className="tarjeta">
-            <table className="tabla">
+            <div className="-mx-4 overflow-x-auto px-4"><table className="tabla">
               <thead><tr><th>Producto</th><th className="text-right">Cant.</th><th className="text-right">Precio</th><th className="text-right">Subtotal</th></tr></thead>
               <tbody>{(items ?? []).map((i) => {
                 const v = i.variantes as unknown as { talles: { nombre: string }; colores: { nombre: string }; productos: { nombre: string } };
@@ -47,7 +47,7 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
                   {promo > 0 && <div className="text-xs font-semibold text-ok">{(i.promociones as { nombre: string } | null)?.nombre ?? "Promo"}: −{pesos(promo)}</div>}</td>
                   <td className="text-right">{i.cantidad}</td><td className="text-right">{pesos(i.precio_unitario)}</td><td className="text-right">{pesos(i.cantidad * Number(i.precio_unitario) - promo)}</td></tr>;
               })}</tbody>
-            </table>
+            </table></div>
             <div className="mt-2 space-y-1 text-sm">
               {(Number(p.ajuste_medio_pago) !== 0 || Number(p.descuento_promociones) > 0) && <div className="flex justify-between text-texto-2"><span>Subtotal</span><span>{pesos(p.subtotal)}</span></div>}
               {Number(p.descuento_promociones) > 0 && <div className="flex justify-between text-ok"><span>Promociones</span><span>−{pesos(p.descuento_promociones)}</span></div>}

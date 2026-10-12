@@ -27,7 +27,7 @@ export default function Formularios({ producto, variantes, maestros, talles, col
   const [eFa, aFa, cFa] = useActionState(moverAFallados, {});
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       {edita && <form action={aDatos} className="tarjeta space-y-4 lg:row-span-2">
         <h2 className="font-semibold">Datos del producto</h2>
         <input type="hidden" name="id" value={producto.id} />

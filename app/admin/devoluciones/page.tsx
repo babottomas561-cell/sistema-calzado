@@ -60,7 +60,7 @@ export default async function Devoluciones({ searchParams }: { searchParams: Pro
         <div className="tarjeta"><div className="etiqueta">Fuera de plazo</div><div className="text-2xl font-bold">{lista.filter((d) => d.fuera_de_plazo).length}</div></div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <section className="tarjeta"><h2 className="mb-2 font-semibold">Por qué vuelven</h2>
           {porMotivo.size === 0 ? <p className="text-sm text-texto-2">Sin devoluciones en este período.</p> :
             <ul className="space-y-1.5 text-sm">{[...porMotivo.entries()].sort((a, b) => b[1] - a[1]).map(([m, n]) => (

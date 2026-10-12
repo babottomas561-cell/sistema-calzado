@@ -54,7 +54,7 @@ export default async function Stock({ searchParams }: { searchParams: Promise<{ 
         <div className={`tarjeta ${veCostos ? "col-span-2 md:col-span-1" : ""}`}><div className="etiqueta">Valor a precio de venta</div><div className="text-xl font-bold">{pesos(lista.reduce((s, v) => s + v.stock * Number(v.precio_venta), 0))}</div></div>
       </div>
       <LeyendaStock />
-      <div className="grid gap-3 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         {modelos.map((m) => (
           <section key={m.id} className="tarjeta">
             <div className="mb-3 flex items-start justify-between gap-3">
