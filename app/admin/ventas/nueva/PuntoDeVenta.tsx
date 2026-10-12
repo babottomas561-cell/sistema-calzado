@@ -14,7 +14,7 @@ const CANALES = ["Local", "Instagram", "WhatsApp", "Web"];
 // cambiaPrecio: sin el permiso se cobra el precio de lista (la base lo fuerza igual).
 // descuentoMax: tope del descuento manual del rol, en % (null = sin tope; la base también lo controla).
 export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, descuentoMax }: {
-  filas: FilaStock[]; clientes: { id: number; nombre: string }[]; medios: MedioPago[]; cambiaPrecio: boolean; descuentoMax: number | null;
+  filas: FilaStock[]; clientes: { id: number; nombre: string; saldo: number }[]; medios: (MedioPago & { es_saldo?: boolean })[]; cambiaPrecio: boolean; descuentoMax: number | null;
 }) {
   const [items, setItems] = useState<Item[]>([]);
   const [pagos, setPagos] = useState<Pago[]>(medios.length ? [{ medio_pago_id: medios[0].id, base: 0 }] : []);
@@ -23,6 +23,8 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
   const [descuento, setDescuento] = useState(0);
   const [estado, accion, cargando] = useActionState(registrarVenta, {});
   const medio = (id: number) => medios.find((m) => m.id === id)!;
+  const saldoCliente = clientes.find((c) => String(c.id) === cliente)?.saldo ?? 0;
+  const usaSaldo = pagos.some((p) => medios.find((m) => m.id === p.medio_pago_id)?.es_saldo);
 
   const agregar = (f: FilaStock) => setItems((prev) => {
     const ya = prev.find((i) => i.variante_id === f.variante_id);
@@ -105,8 +107,10 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
         <div className="grid grid-cols-2 gap-3">
           <div><label className="etiqueta">Cliente</label>
             <select value={cliente} onChange={(e) => setCliente(e.target.value)} className="campo">
-              <option value="">Sin cliente</option>{clientes.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-            </select></div>
+              <option value="">Sin cliente</option>{clientes.map((c) => <option key={c.id} value={c.id}>{c.nombre}{c.saldo > 0 ? ` · saldo ${pesos(c.saldo)}` : ""}</option>)}
+            </select>
+            {saldoCliente > 0 && <p className="mt-0.5 text-[11px] font-semibold text-ok">Tiene {pesos(saldoCliente)} de saldo a favor: cobralo con «Saldo a favor».</p>}
+            {usaSaldo && !cliente && <p className="mt-0.5 text-[11px] font-semibold text-error">Para cobrar con saldo a favor, elegí el cliente.</p>}</div>
           <div><label className="etiqueta">Canal</label>
             <select value={canal} onChange={(e) => setCanal(e.target.value)} className="campo">{CANALES.map((c) => <option key={c}>{c}</option>)}</select></div>
           <div className="col-span-2"><label className="etiqueta">Descuento del vendedor ($)</label>

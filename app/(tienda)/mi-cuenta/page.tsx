@@ -2,7 +2,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { crearCliente, usuarioActual } from "@/lib/supabase/server";
-import { fecha, pesos } from "@/lib/formato";
+import { Wallet } from "lucide-react";
+import { dia, fecha, pesos } from "@/lib/formato";
 import { ESTADOS } from "@/lib/estados-pedido";
 import MisDatos from "./MisDatos";
 
@@ -17,15 +18,25 @@ export default async function MiCuenta() {
   const { supabase, user } = await usuarioActual();
   if (!user) redirect("/ingresar?volver=/mi-cuenta");
   // La base solo devuelve SU ficha (v_mi_ficha, sin lo interno del CRM) y SUS pedidos (Row Level Security)
-  const [{ data: ficha }, { data: pedidos }] = await Promise.all([
+  const [{ data: ficha }, { data: pedidos }, { data: saldos }] = await Promise.all([
     supabase.from("v_mi_ficha").select("nombre, documento, telefono, email, direccion, localidad, fecha_nacimiento, acepta_promos").maybeSingle(),
     supabase.from("pedidos").select("id, comprobante, fecha, total, estado, entrega").order("fecha", { ascending: false }),
+    // Su saldo a favor (de devoluciones), con lo que vence antes primero
+    supabase.from("v_mi_saldo").select("id, restante, vence").order("vence"),
   ]);
+  const saldo = (saldos ?? []).reduce((s, c) => s + Number(c.restante), 0);
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
       <section className="space-y-3">
         <div className="flex items-center justify-between"><h1 className="text-3xl font-extrabold tracking-[-0.035em]">Hola, {ficha?.nombre?.split(" ")[0] ?? "!"}</h1>
           <form action={salir}><button className="text-sm font-semibold text-marca">Cerrar sesión</button></form></div>
+        {saldo > 0 && (
+          <div className="flex items-start gap-3 rounded-sm border border-borde bg-marca-suave p-4">
+            <Wallet size={22} className="mt-0.5 shrink-0" />
+            <div><p>Tenés <b className="text-lg">{pesos(saldo)}</b> de saldo a favor para tu próxima compra en el local.</p>
+              <p className="text-sm text-texto-2">{(saldos ?? []).map((c) => `${pesos(c.restante)} hasta el ${dia(c.vence)}`).join(" · ")}</p></div>
+          </div>
+        )}
         <h2 className="font-semibold">Mis pedidos</h2>
         {(pedidos ?? []).map((p) => (
           <Link key={p.id} href={`/mi-cuenta/pedidos/${p.id}`} className="flex items-center justify-between rounded-sm border border-borde bg-white p-4 hover:border-marca">

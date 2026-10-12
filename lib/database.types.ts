@@ -231,14 +231,14 @@ isOneToOne: false
                   ]
                 },"configuracion_tienda": {
                   Row: {
-                    "aviso_enlace": string | null,"avisos": (string)[],"dias_retiro": number,"direccion_retiro": string | null,"horario": string | null,"id": number,"instagram": string | null,"nombre": string,"unica": boolean,"whatsapp": string | null
+                    "aviso_enlace": string | null,"avisos": (string)[],"dias_cambio": number,"dias_retiro": number,"dias_saldo": number,"direccion_retiro": string | null,"horario": string | null,"id": number,"instagram": string | null,"nombre": string,"unica": boolean,"whatsapp": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_retiro"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
                   }
                   Update: {
-                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_retiro"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
                   }
                   Relationships: [
                     
@@ -256,6 +256,76 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"devolucion_items": {
+                  Row: {
+                    "cantidad": number,"devolucion_id": number,"estado": string,"id": number,"monto": number,"venta_item_id": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cantidad": number,"devolucion_id": number,"estado"?: string,"id"?: never,"monto": number,"venta_item_id": number
+                  }
+                  Update: {
+                    "cantidad"?: number,"devolucion_id"?: number,"estado"?: string,"id"?: never,"monto"?: number,"venta_item_id"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "devolucion_items_devolucion_id_fkey"
+      columns: ["devolucion_id"]
+isOneToOne: false
+      referencedRelation: "devoluciones"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "devolucion_items_venta_item_id_fkey"
+      columns: ["venta_item_id"]
+isOneToOne: false
+      referencedRelation: "v_venta_items"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "devolucion_items_venta_item_id_fkey"
+      columns: ["venta_item_id"]
+isOneToOne: false
+      referencedRelation: "venta_items"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"devoluciones": {
+                  Row: {
+                    "bruto": number,"cliente_id": number,"comentario": string | null,"comprobante": string | null,"fecha": string,"fuera_de_plazo": boolean,"id": number,"motivo": string,"numero": number | null,"punto_venta": number,"total": number,"usuario_id": string | null,"venta_id": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "bruto": number,"cliente_id": number,"comentario"?: string | null,"comprobante"?: never,"fecha"?: string,"fuera_de_plazo"?: boolean,"id"?: never,"motivo": string,"numero"?: number | null,"punto_venta"?: number,"total": number,"usuario_id"?: string | null,"venta_id": number
+                  }
+                  Update: {
+                    "bruto"?: number,"cliente_id"?: number,"comentario"?: string | null,"comprobante"?: never,"fecha"?: string,"fuera_de_plazo"?: boolean,"id"?: never,"motivo"?: string,"numero"?: number | null,"punto_venta"?: number,"total"?: number,"usuario_id"?: string | null,"venta_id"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "devoluciones_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "clientes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "devoluciones_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "v_mi_ficha"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "devoluciones_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "devoluciones_venta_id_fkey"
+      columns: ["venta_id"]
+isOneToOne: false
+      referencedRelation: "ventas"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"fallados": {
                   Row: {
@@ -317,12 +387,6 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "variantes"
       referencedColumns: ["id"]
-    },{
-      foreignKeyName: "fallados_venta_id_fkey"
-      columns: ["venta_id"]
-isOneToOne: false
-      referencedRelation: "v_hechos_ventas"
-      referencedColumns: ["venta_id"]
     },{
       foreignKeyName: "fallados_venta_id_fkey"
       columns: ["venta_id"]
@@ -393,14 +457,14 @@ isOneToOne: false
                   ]
                 },"medios_pago": {
                   Row: {
-                    "activo": boolean,"ajuste_pct": number,"codigo": string,"cuotas": number,"en_mostrador": boolean,"en_tienda": boolean,"id": number,"nombre": string,"orden": number,"tipo": string
+                    "activo": boolean,"ajuste_pct": number,"codigo": string,"cuotas": number,"en_mostrador": boolean,"en_tienda": boolean,"es_saldo": boolean,"id": number,"nombre": string,"orden": number,"tipo": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "activo"?: boolean,"ajuste_pct"?: number,"codigo": string,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"id"?: never,"nombre": string,"orden"?: number,"tipo": string
+                    "activo"?: boolean,"ajuste_pct"?: number,"codigo": string,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre": string,"orden"?: number,"tipo": string
                   }
                   Update: {
-                    "activo"?: boolean,"ajuste_pct"?: number,"codigo"?: string,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"id"?: never,"nombre"?: string,"orden"?: number,"tipo"?: string
+                    "activo"?: boolean,"ajuste_pct"?: number,"codigo"?: string,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre"?: string,"orden"?: number,"tipo"?: string
                   }
                   Relationships: [
                     
@@ -463,12 +527,6 @@ isOneToOne: false
       foreignKeyName: "movimientos_stock_venta_id_fkey"
       columns: ["venta_id"]
 isOneToOne: false
-      referencedRelation: "v_hechos_ventas"
-      referencedColumns: ["venta_id"]
-    },{
-      foreignKeyName: "movimientos_stock_venta_id_fkey"
-      columns: ["venta_id"]
-isOneToOne: false
       referencedRelation: "ventas"
       referencedColumns: ["id"]
     }
@@ -505,12 +563,6 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "medios_pago"
       referencedColumns: ["id"]
-    },{
-      foreignKeyName: "pagos_venta_id_fkey"
-      columns: ["venta_id"]
-isOneToOne: false
-      referencedRelation: "v_hechos_ventas"
-      referencedColumns: ["venta_id"]
     },{
       foreignKeyName: "pagos_venta_id_fkey"
       columns: ["venta_id"]
@@ -747,12 +799,6 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "perfiles"
       referencedColumns: ["id"]
-    },{
-      foreignKeyName: "presupuestos_venta_id_fkey"
-      columns: ["venta_id"]
-isOneToOne: true
-      referencedRelation: "v_hechos_ventas"
-      referencedColumns: ["venta_id"]
     },{
       foreignKeyName: "presupuestos_venta_id_fkey"
       columns: ["venta_id"]
@@ -1021,6 +1067,68 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"saldos_cliente": {
+                  Row: {
+                    "cliente_id": number,"credito_id": number | null,"devolucion_id": number | null,"fecha": string,"id": number,"monto": number,"tipo": string,"usuario_id": string | null,"vence": string | null,"venta_id": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cliente_id": number,"credito_id"?: number | null,"devolucion_id"?: number | null,"fecha"?: string,"id"?: never,"monto": number,"tipo": string,"usuario_id"?: string | null,"vence"?: string | null,"venta_id"?: number | null
+                  }
+                  Update: {
+                    "cliente_id"?: number,"credito_id"?: number | null,"devolucion_id"?: number | null,"fecha"?: string,"id"?: never,"monto"?: number,"tipo"?: string,"usuario_id"?: string | null,"vence"?: string | null,"venta_id"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "saldos_cliente_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "clientes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "saldos_cliente_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "v_mi_ficha"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "saldos_cliente_credito_id_fkey"
+      columns: ["credito_id"]
+isOneToOne: false
+      referencedRelation: "saldos_cliente"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "saldos_cliente_credito_id_fkey"
+      columns: ["credito_id"]
+isOneToOne: false
+      referencedRelation: "v_creditos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "saldos_cliente_credito_id_fkey"
+      columns: ["credito_id"]
+isOneToOne: false
+      referencedRelation: "v_mi_saldo"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "saldos_cliente_devolucion_id_fkey"
+      columns: ["devolucion_id"]
+isOneToOne: false
+      referencedRelation: "devoluciones"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "saldos_cliente_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "saldos_cliente_venta_id_fkey"
+      columns: ["venta_id"]
+isOneToOne: false
+      referencedRelation: "ventas"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"stock": {
                   Row: {
                     "cantidad": number,"deposito_id": number,"reservado": number,"variante_id": number
@@ -1201,12 +1309,6 @@ isOneToOne: false
       foreignKeyName: "venta_items_venta_id_fkey"
       columns: ["venta_id"]
 isOneToOne: false
-      referencedRelation: "v_hechos_ventas"
-      referencedColumns: ["venta_id"]
-    },{
-      foreignKeyName: "venta_items_venta_id_fkey"
-      columns: ["venta_id"]
-isOneToOne: false
       referencedRelation: "ventas"
       referencedColumns: ["id"]
     }
@@ -1278,6 +1380,32 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"v_creditos": {
+                  Row: {
+                    "cliente_id": number | null,"devolucion": string | null,"devolucion_id": number | null,"fecha": string | null,"id": number | null,"monto": number | null,"restante": number | null,"vence": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "saldos_cliente_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "clientes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "saldos_cliente_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "v_mi_ficha"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "saldos_cliente_devolucion_id_fkey"
+      columns: ["devolucion_id"]
+isOneToOne: false
+      referencedRelation: "devoluciones"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"v_fallados": {
                   Row: {
                     "cantidad": number | null,"cargado_por": string | null,"codigo": string | null,"color": string | null,"color_hex": string | null,"costo_unitario": number | null,"estado": string | null,"fecha": string | null,"id": number | null,"imagen_url": string | null,"marca": string | null,"motivo": string | null,"nombre": string | null,"nota": string | null,"origen": string | null,"producto_id": number | null,"proveedor": string | null,"proveedor_id": number | null,"proveedor_principal": string | null,"proveedor_principal_id": number | null,"resuelto_en": string | null,"resuelto_por": string | null,"sku": string | null,"talle": string | null,"talle_orden": number | null,"valor_costo": number | null,"variante_id": number | null,"venta_comprobante": string | null,"venta_id": number | null
@@ -1312,12 +1440,6 @@ isOneToOne: false
       foreignKeyName: "fallados_venta_id_fkey"
       columns: ["venta_id"]
 isOneToOne: false
-      referencedRelation: "v_hechos_ventas"
-      referencedColumns: ["venta_id"]
-    },{
-      foreignKeyName: "fallados_venta_id_fkey"
-      columns: ["venta_id"]
-isOneToOne: false
       referencedRelation: "ventas"
       referencedColumns: ["id"]
     },{
@@ -1330,23 +1452,11 @@ isOneToOne: false
                   ]
                 },"v_hechos_ventas": {
                   Row: {
-                    "anio": number | null,"articulo": string | null,"canal": string | null,"cantidad": number | null,"cliente": string | null,"cliente_codigo": number | null,"cliente_origen": string | null,"color": string | null,"comprobante": string | null,"costo": number | null,"costo_unitario": number | null,"deposito": string | null,"descuento_promo": number | null,"dia": string | null,"dia_semana": number | null,"escala": string | null,"fecha": string | null,"genero": string | null,"id": number | null,"importe": number | null,"importe_neto": number | null,"linea": string | null,"marca": string | null,"margen": number | null,"margen_neto": number | null,"material": string | null,"mes": number | null,"modelo": string | null,"precio_unitario": number | null,"promocion": string | null,"promocion_id": number | null,"rubro": string | null,"rubro_codigo": string | null,"sku": string | null,"subrubro": string | null,"talle": string | null,"talle_orden": number | null,"temporada": string | null,"vendedor": string | null,"vendedor_id": string | null,"venta_id": number | null,"vino_de_pedido": boolean | null
+                    "anio": number | null,"articulo": string | null,"canal": string | null,"cantidad": number | null,"cliente": string | null,"cliente_codigo": number | null,"cliente_origen": string | null,"color": string | null,"comprobante": string | null,"costo": number | null,"costo_unitario": number | null,"deposito": string | null,"descuento_promo": number | null,"devolucion_id": number | null,"dia": string | null,"dia_semana": number | null,"es_devolucion": boolean | null,"escala": string | null,"fecha": string | null,"genero": string | null,"id": number | null,"importe": number | null,"importe_neto": number | null,"linea": string | null,"marca": string | null,"margen": number | null,"margen_neto": number | null,"material": string | null,"mes": number | null,"modelo": string | null,"precio_unitario": number | null,"promocion": string | null,"promocion_id": number | null,"rubro": string | null,"rubro_codigo": string | null,"sku": string | null,"subrubro": string | null,"talle": string | null,"talle_orden": number | null,"temporada": string | null,"vendedor": string | null,"vendedor_id": string | null,"venta_id": number | null,"vino_de_pedido": boolean | null
                   }
                   ComputedFields: never
                   Relationships: [
-                    {
-      foreignKeyName: "venta_items_promocion_id_fkey"
-      columns: ["promocion_id"]
-isOneToOne: false
-      referencedRelation: "promociones"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "ventas_usuario_id_fkey"
-      columns: ["vendedor_id"]
-isOneToOne: false
-      referencedRelation: "perfiles"
-      referencedColumns: ["id"]
-    }
+                    
                   ]
                 },"v_imagenes_tienda": {
                   Row: {
@@ -1406,6 +1516,14 @@ isOneToOne: false
                         Relationships: [
                     
                   ]
+                },"v_mi_saldo": {
+                  Row: {
+                    "devolucion": string | null,"fecha": string | null,"id": number | null,"restante": number | null,"vence": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
                 },"v_mis_pedido_items": {
                   Row: {
                     "cantidad": number | null,"color": string | null,"descuento_promo": number | null,"id": number | null,"modelo": string | null,"pedido_id": number | null,"precio_unitario": number | null,"promocion": string | null,"talle": string | null
@@ -1427,6 +1545,26 @@ isOneToOne: false
                   ComputedFields: never
                   Relationships: [
                     
+                  ]
+                },"v_saldo_clientes": {
+                  Row: {
+                    "cliente_id": number | null,"disponible": number | null,"proximo_vencimiento": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "saldos_cliente_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "clientes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "saldos_cliente_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "v_mi_ficha"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"v_stock": {
                   Row: {
@@ -1470,12 +1608,6 @@ isOneToOne: false
       foreignKeyName: "venta_items_venta_id_fkey"
       columns: ["venta_id"]
 isOneToOne: false
-      referencedRelation: "v_hechos_ventas"
-      referencedColumns: ["venta_id"]
-    },{
-      foreignKeyName: "venta_items_venta_id_fkey"
-      columns: ["venta_id"]
-isOneToOne: false
       referencedRelation: "ventas"
       referencedColumns: ["id"]
     },{
@@ -1495,8 +1627,16 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "_avisos_cortos":
+            "_aplicar_promociones":
+{ Args: { "p_promos": (number)[] }; Returns: undefined
+                           },
+"_avisos_cortos":
 { Args: { "p": (string)[] }; Returns: boolean
+                           },
+"_calcular_devolucion":
+{ Args: { "p_items": Json,"p_venta": number }; Returns: {
+              "bruto": number,"total": number
+            }[]
                            },
 "_cancelar_pedido":
 { Args: { "p_comentario": string,"p_motivo": string,"p_pedido": number,"p_por": string }; Returns: undefined
@@ -1509,6 +1649,14 @@ isOneToOne: false
               "acumula": boolean,"cantidad": number,"descuento_promo": number,"precio_unitario": number,"producto_id": number,"promocion_id": number,"variante_id": number
             }[]
                            },
+"_crear_unidades":
+{ Args: { "p_items": Json }; Returns: undefined
+                           },
+"_creditos":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "cliente_id": number,"id": number,"restante": number,"vence": string
+            }[]
+                           },
 "_en_promocion":
 { Args: { "p_producto": number,"p_promocion": number }; Returns: boolean
                            },
@@ -1517,6 +1665,9 @@ isOneToOne: false
                            },
 "_mover_stock":
 { Args: { "p_cantidad": number,"p_compra"?: number,"p_deposito": number,"p_motivo"?: string,"p_tipo": string,"p_variante": number,"p_venta"?: number }; Returns: undefined
+                           },
+"_pagado_con_promos":
+{ Args: { "p_items": Json,"p_promos": (number)[] }; Returns: number
                            },
 "_promociones_vigentes":
 { Args: { "p_canal": string }; Returns: {
@@ -1594,6 +1745,9 @@ isOneToOne: false
 "cotizar":
 { Args: { "p_canal"?: string,"p_items": Json,"p_medio_pago"?: number }; Returns: Json
                            },
+"cotizar_devolucion":
+{ Args: { "p_items": Json,"p_venta": number }; Returns: Json
+                           },
 "crear_pedido":
 { Args: { "p_canal"?: string,"p_cliente"?: number,"p_direccion"?: string,"p_entrega"?: string,"p_items": Json,"p_medio_pago"?: number,"p_notas"?: string }; Returns: number
                            },
@@ -1654,6 +1808,9 @@ isOneToOne: false
 "registrar_compra":
 { Args: { "p_actualizar_costo"?: boolean,"p_comprobante_proveedor"?: string,"p_deposito"?: number,"p_fecha_comprobante"?: string,"p_items": Json,"p_notas"?: string,"p_proveedor"?: number }; Returns: number
                            },
+"registrar_devolucion":
+{ Args: { "p_cliente"?: number,"p_comentario"?: string,"p_items": Json,"p_motivo": string,"p_venta": number }; Returns: number
+                           },
 "registrar_venta":
 { Args: { "p_canal"?: string,"p_cliente"?: number,"p_deposito"?: number,"p_descuento"?: number,"p_items": Json,"p_notas"?: string,"p_pagos"?: Json }; Returns: number
                            },
@@ -1668,10 +1825,16 @@ isOneToOne: false
 "retirar_hasta":
 { Args: { "p_pedido": number }; Returns: string
                            },
+"saldo_disponible":
+{ Args: { "p_cliente": number }; Returns: number
+                           },
 "tiene_permiso":
 { Args: { "p_permiso": string }; Returns: boolean
                            },
 "vencer_pedidos_sin_retirar":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"vencer_saldos":
 { Args: Record<PropertyKey, never>; Returns: number
                            }
           }

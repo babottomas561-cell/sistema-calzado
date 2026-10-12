@@ -188,6 +188,6 @@ Así el dueño ve en un lugar cuánto tiene «parado» en fallados y qué provee
 1. **HECHO (2026-10-12):** motivo de cancelación + el cliente cancela desde Mi cuenta (con confirmación) + vencimiento de pedidos sin retirar (migración `cancelacion_de_pedidos`).
 2. **HECHO (2026-10-12):** anular venta del día (migración `anular_ventas`, permiso `ventas.anular` para Administrador y Encargado).
 3. **HECHO (2026-10-12):** depósitos vendibles + bandeja de fallados (migración `fallados`, pantalla `/admin/fallados`).
-4. Devolución con saldo a favor (necesita `saldos_cliente`) y plazo configurable.
+4. **HECHO (2026-10-12):** devolución con saldo a favor, plazo y vencimiento configurables (migración `devoluciones`). El motor de promociones se partió en `_crear_unidades` + `_aplicar_promociones` para recalcular con las promos de la venta.
 5. Cambio en una sola operación desde el punto de venta.
 6. Con la caja diaria: recibos (y, si el contador lo confirma, el reintegro por arrepentimiento online).

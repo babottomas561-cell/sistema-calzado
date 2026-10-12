@@ -46,6 +46,7 @@ una API de Next.** Lo que ya pisamos:
    | `cambiar_estado_pedido(p_pedido, p_estado, p_comentario, p_pagos, p_motivo)` | `entregado` → se convierte en venta (respeta el % prometido); `cancelado` (motivo obligatorio) → libera la reserva |
    | `anular_venta(p_venta, p_motivo, p_comentario)` | solo el mismo día y con `ventas.anular`: vuelve el stock (movimiento `anulacion`), la venta queda anulada y deja de contar; su pedido vuelve a estar listo (o se cancela si el cliente se arrepintió) y su presupuesto, vigente. Las pantallas y vistas que suman ventas filtran `anulada_en is null` |
    | `mover_a_fallados(p_variante, p_cantidad, p_motivo)` · `resolver_fallado(p_fallado, p_salida, p_cantidad, p_proveedor, p_nota)` | aparta lo roto en «Fallados» (no se vende) y lo resuelve: `arreglado` (vuelve), `proveedor` (crédito a su costo) o `baja` (pérdida). Permiso `stock.ajustar` |
+   | `registrar_devolucion(p_venta, p_items, p_motivo, p_comentario, p_cliente)` · `cotizar_devolucion(p_venta, p_items)` | deja **saldo a favor** (nunca efectivo): lo pagado de verdad (promo recalculada con las de esa venta, descuentos sí, recargo de cuotas no), en `dias_cambio`; lo bueno vuelve al Local y lo fallado a Fallados. El saldo (`saldos_cliente`) se usa con el medio «Saldo a favor» (un trigger lo consume) y vence a los `dias_saldo` |
    | `cancelar_mi_pedido(p_pedido, p_motivo, p_comentario)` | el cliente cancela el suyo mientras esté pendiente o confirmado. Los *listo para retirar* vencen solos a los `dias_retiro` (pg_cron, `vencer_pedidos_sin_retirar()`) |
 
    Se llaman con `supabase.rpc("registrar_venta", { p_items: [...], ... })`. Los parámetros
@@ -155,6 +156,7 @@ app/admin/             panel del equipo (el layout verifica que sea staff; cada 
   compras/nueva/       cargar factura de compra POR CURVA: cabecera, grilla talle×color por modelo,
                        un costo por modelo, control contra el total de la factura, alta rápida de artículos
   stock/  pedidos/  clientes/  seguimientos/  proveedores/
+  devoluciones/        devoluciones (comprobante DEV, saldo a favor) y su desglose por motivo y talle; se hacen desde la venta
   fallados/            bandeja de fallados: lo apartado por roto, y su salida (arreglado, al proveedor, baja)
   reposicion/          pedido sugerido por talle según el ritmo de venta (reposicion_sugerida), copiable a WhatsApp
   precios/             ajuste masivo de precios de venta y compra (ajustar_precios), historial y deshacer

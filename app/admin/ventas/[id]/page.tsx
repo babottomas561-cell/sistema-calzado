@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { crearCliente } from "@/lib/supabase/server";
 import { fechaHora, pesos, porcentaje } from "@/lib/formato";
-import { Ban, CircleCheck, Plus } from "lucide-react";
+import { Ban, CircleCheck, Plus, Undo2 } from "lucide-react";
+import { MOTIVOS_DEVOLUCION } from "@/lib/devoluciones";
 import Volver from "@/components/Volver";
 import { exigir } from "@/lib/exigir";
 import { puede } from "@/lib/permisos";
@@ -16,17 +17,22 @@ export default async function Venta({ params, searchParams }: {
   const { permisos } = await exigir("ventas.registrar", "ventas.ver_todas");
   const [{ id }, { nueva }] = await Promise.all([params, searchParams]);
   const supabase = await crearCliente();
-  const [{ data: v }, { data: items }, { data: presupuesto }] = await Promise.all([
+  const [{ data: v }, { data: items }, { data: presupuesto }, { data: devoluciones }] = await Promise.all([
     supabase.from("ventas").select("*, clientes(id, nombre, telefono), vendedor:perfiles!ventas_usuario_id_fkey(nombre), anulo:perfiles!ventas_anulada_por_fkey(nombre), pagos(base, ajuste_pct, ajuste, monto, cuotas, referencia, medios_pago(nombre))").eq("id", Number(id)).single(),
     supabase.from("v_venta_items").select("id, nombre, marca, talle, color, cantidad, precio_unitario, descuento_promo, promocion, subtotal").eq("venta_id", Number(id)),
     supabase.from("presupuestos").select("id, comprobante").eq("venta_id", Number(id)).maybeSingle(),
+    supabase.from("devoluciones").select("id, comprobante, fecha, motivo, total, devolucion_items(cantidad)").eq("venta_id", Number(id)).order("fecha"),
   ]);
   if (!v) notFound();
   const cliente = v.clientes as { id: number; nombre: string; telefono: string | null } | null;
   const pagos = v.pagos as unknown as { base: number; ajuste_pct: number; ajuste: number; monto: number; cuotas: number; referencia: string | null; medios_pago: { nombre: string } }[];
   const cobrado = pagos.reduce((s, p) => s + Number(p.base), 0);
   const anulada = !!v.anulada_en;
-  const puedeAnular = !anulada && esDeHoy(v.fecha) && puede(permisos, "ventas.anular");
+  const devs = devoluciones ?? [];
+  const devueltas = devs.reduce((s, d) => s + (d.devolucion_items as { cantidad: number }[]).reduce((t, i) => t + i.cantidad, 0), 0);
+  const vendidas = (items ?? []).reduce((s, i) => s + (i.cantidad ?? 0), 0);
+  const puedeAnular = !anulada && devs.length === 0 && esDeHoy(v.fecha) && puede(permisos, "ventas.anular");
+  const puedeDevolver = !anulada && devueltas < vendidas && puede(permisos, "ventas.registrar");
   const saldo = Number(v.subtotal) - Number(v.descuento) - Number(v.descuento_promociones) - cobrado;   // lo que no se cobró (cuenta corriente)
 
   return (
@@ -35,6 +41,7 @@ export default async function Venta({ params, searchParams }: {
       <div className="flex items-center justify-between">
         <Volver href="/admin/ventas">Ventas</Volver>
         <div className="flex items-center gap-1">
+          {puedeDevolver && <Link href={`/admin/ventas/${v.id}/devolucion`} className="inline-flex items-center gap-1.5 rounded-lg px-2 py-2 text-sm font-semibold text-marca hover:bg-marca-suave"><Undo2 size={16} /> Devolución</Link>}
           {puedeAnular && <AnularVenta venta={v.id} comprobante={v.comprobante ?? ""} dePedido={!!v.pedido_id} dePresupuesto={!!presupuesto} />}
           <Link href="/admin/ventas/nueva" className="boton-sec"><Plus size={16} /> Otra venta</Link>
         </div>
@@ -79,6 +86,17 @@ export default async function Venta({ params, searchParams }: {
           {saldo > 0.01 && <div className="flex justify-between rounded-lg bg-amber-50 px-2 py-1 font-semibold text-alerta"><span>Saldo sin cobrar</span><span>{pesos(saldo)}</span></div>}
         </div>
       </div>
+      {devs.length > 0 && (
+        <section className="tarjeta space-y-2">
+          <h2 className="flex items-center gap-2 font-semibold"><Undo2 size={17} /> Devoluciones <span className="text-sm font-normal text-texto-2">({devueltas} de {vendidas} unidades)</span></h2>
+          <ul className="divide-y divide-gray-100 text-sm">{devs.map((d) => (
+            <li key={d.id} className="flex items-center justify-between gap-3 py-2">
+              <span><Link href={`/admin/devoluciones/${d.id}`} className="font-mono font-semibold text-marca">{d.comprobante}</Link>
+                <span className="text-texto-2"> · {fechaHora(d.fecha)} · {MOTIVOS_DEVOLUCION[d.motivo]}</span></span>
+              <span className="shrink-0 font-semibold">{pesos(d.total)} <span className="text-xs font-normal text-texto-2">de saldo</span></span></li>
+          ))}</ul>
+        </section>
+      )}
     </div>
   );
 }

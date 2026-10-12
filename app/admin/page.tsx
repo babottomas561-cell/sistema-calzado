@@ -20,7 +20,7 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
   const hoy = inicioDe("hoy"), mes = inicioDe("mes");
 
   // La base ya filtra: sin "ver todas", ventas devuelve solo las propias
-  const [ventasHoy, ventasMes, itemsMes, stock, ultimas, pedidos, seguimientos] = await Promise.all([
+  const [ventasHoy, ventasMes, itemsMes, stock, ultimas, pedidos, seguimientos, devHoy, devMes] = await Promise.all([
     supabase.from("ventas").select("total").gte("fecha", hoy).is("anulada_en", null),
     supabase.from("ventas").select("total").gte("fecha", mes).is("anulada_en", null),
     // Importes netos (con descuento y ajuste por medio de pago), los mismos que suma "Vendido hoy".
@@ -30,15 +30,18 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
     supabase.from("ventas").select("id, comprobante, fecha, total, canal, clientes(nombre)").is("anulada_en", null).order("fecha", { ascending: false }).limit(5),
     puede(permisos, "pedidos.gestionar") ? supabase.from("pedidos").select("id", { count: "exact", head: true }).in("estado", ["pendiente", "confirmado", "preparado"]) : vacio,
     puede(permisos, "clientes.ver") ? supabase.from("interacciones").select("id", { count: "exact", head: true }).eq("hecha", false).lte("proxima_fecha", diaArgentina()) : vacio,
+    // Las devoluciones restan el día que se hacen
+    supabase.from("devoluciones").select("total").gte("fecha", hoy),
+    supabase.from("devoluciones").select("total").gte("fecha", mes),
   ]);
 
   const suma = (l: { total: number }[] | null) => (l ?? []).reduce((s, v) => s + Number(v.total), 0);
-  const totalHoy = suma(ventasHoy.data);
+  const totalHoy = suma(ventasHoy.data) - suma(devHoy.data);
   // Las columnas de una vista llegan tipadas como posible null: se normalizan acá
   const items = itemsMes.map((i) => ({ ...i, nombre: i.modelo ?? "", cantidad: i.cantidad ?? 0 }));
   const paresMes = items.reduce((s, i) => s + i.cantidad, 0);
   const margenMes = items.reduce((s, i) => s + Number(i.margen_neto), 0);
-  const facturadoMes = todas ? items.reduce((s, i) => s + Number(i.importe_neto), 0) : suma(ventasMes.data);
+  const facturadoMes = todas ? items.reduce((s, i) => s + Number(i.importe_neto), 0) : suma(ventasMes.data) - suma(devMes.data);
   const filasStock = stock.map((v) => ({ ...v, stock: v.stock ?? 0, disponible: v.disponible ?? 0 }));
   const valorStock = filasStock.reduce((s, v) => s + Number(v.valor_costo), 0);
   const paresStock = filasStock.reduce((s, v) => s + v.stock, 0);

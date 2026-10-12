@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { crearCliente } from "@/lib/supabase/server";
-import { fecha, fechaHora, pesos } from "@/lib/formato";
+import { dia, fecha, fechaHora, pesos } from "@/lib/formato";
 import FichaForm from "../FichaForm";
 import NuevaInteraccion from "./NuevaInteraccion";
 import { marcarHecha } from "../acciones";
@@ -14,13 +14,16 @@ export default async function FichaCliente({ params }: { params: Promise<{ id: s
   await exigir("clientes.ver");
   const { id } = await params;
   const supabase = await crearCliente();
-  const [{ data: c }, { data: ventas }, { data: pedidos }, { data: interacciones }, { data: items }] = await Promise.all([
+  const [{ data: c }, { data: ventas }, { data: pedidos }, { data: interacciones }, { data: items }, { data: creditos }] = await Promise.all([
     supabase.from("clientes").select("*").eq("id", Number(id)).single(),
     supabase.from("ventas").select("id, comprobante, fecha, total, canal").eq("cliente_id", Number(id)).is("anulada_en", null).order("fecha", { ascending: false }),
     supabase.from("pedidos").select("id, comprobante, fecha, total, estado").eq("cliente_id", Number(id)).order("fecha", { ascending: false }),
     supabase.from("interacciones").select("*").eq("cliente_id", Number(id)).order("fecha", { ascending: false }),
     supabase.from("v_venta_items").select("nombre, talle, cantidad").eq("cliente_id", Number(id)).eq("anulada", false),
+    supabase.from("v_creditos").select("id, fecha, monto, restante, vence, devolucion, devolucion_id").eq("cliente_id", Number(id)).order("fecha", { ascending: false }),
   ]);
+  const hoyAR = new Date().toLocaleDateString("en-CA", { timeZone: "America/Argentina/Buenos_Aires" });
+  const saldo = (creditos ?? []).filter((x) => (x.vence ?? "") >= hoyAR).reduce((s, x) => s + Number(x.restante), 0);
   if (!c) notFound();
 
   const total = (ventas ?? []).reduce((s, v) => s + Number(v.total), 0);
@@ -46,6 +49,17 @@ export default async function FichaCliente({ params }: { params: Promise<{ id: s
         <div className="tarjeta"><div className="etiqueta">Ticket promedio</div><div className="text-xl font-bold">{compras ? pesos(total / compras) : "—"}</div></div>
         <div className="tarjeta"><div className="etiqueta">Talle habitual</div><div className="text-xl font-bold">{talleHabitual ?? "—"}</div></div>
       </div>
+      {(creditos ?? []).length > 0 && (
+        <section className="tarjeta space-y-2">
+          <div className="flex items-baseline justify-between"><h2 className="font-semibold">Saldo a favor</h2><span className="text-xl font-bold text-ok">{pesos(saldo)}</span></div>
+          <ul className="divide-y divide-gray-100 text-sm">{(creditos ?? []).map((x) => {
+            const vencido = (x.vence ?? "") < hoyAR;
+            return <li key={x.id} className={`flex justify-between gap-3 py-2 ${vencido || Number(x.restante) <= 0 ? "text-texto-2" : ""}`}>
+              <span>Devolución <Link href={`/admin/devoluciones/${x.devolucion_id}`} className="font-mono text-marca">{x.devolucion}</Link> · {pesos(x.monto)}</span>
+              <span className="text-right">{Number(x.restante) <= 0 ? "usado" : vencido ? `venció el ${dia(x.vence)}` : <>quedan <b>{pesos(x.restante)}</b> · vence {dia(x.vence)}</>}</span></li>;
+          })}</ul>
+        </section>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="space-y-5">

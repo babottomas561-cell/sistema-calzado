@@ -56,7 +56,7 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
   ]);
 
   const resumen = (lista: { venta_id: number | null; cantidad: number | null; importe_neto: number | null; margen_neto: number | null }[]) => {
-    const r = { vendido: 0, ganancia: 0, unidades: 0, ventas: new Set(lista.map((i) => i.venta_id)).size };
+    const r = { vendido: 0, ganancia: 0, unidades: 0, ventas: new Set(lista.map((i) => i.venta_id).filter(Boolean)).size };
     lista.forEach((i) => { r.vendido += Number(i.importe_neto ?? 0); r.ganancia += Number(i.margen_neto ?? 0); r.unidades += i.cantidad ?? 0; });
     return r;
   };
@@ -76,7 +76,7 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
   for (const i of items) {
     const p = puntos.get(porMes ? (i.dia ?? "").slice(0, 7) : i.dia ?? "");
     if (!p) continue;
-    p.total += Number(i.importe_neto ?? 0); p.unidades += i.cantidad ?? 0; p.ids.add(i.venta_id ?? 0); p.ventas = p.ids.size;
+    p.total += Number(i.importe_neto ?? 0); p.unidades += i.cantidad ?? 0; if (i.venta_id) p.ids.add(i.venta_id); p.ventas = p.ids.size;
   }
 
   // ── Desglose ──
@@ -84,7 +84,7 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
   const grupos = new Map<string, Grupo>();
   const sumar = (k: string, etiqueta: string, orden: number, vendido: number, ganancia: number, unidades: number, venta: number) => {
     const g = grupos.get(k) ?? { etiqueta, orden, vendido: 0, ganancia: 0, unidades: 0, ventas: new Set<number>() };
-    g.vendido += vendido; g.ganancia += ganancia; g.unidades += unidades; g.ventas.add(venta);
+    g.vendido += vendido; g.ganancia += ganancia; g.unidades += unidades; if (venta) g.ventas.add(venta);   // las devoluciones (venta 0) restan pero no son ventas
     grupos.set(k, g);
   };
   if (por === "medio") {

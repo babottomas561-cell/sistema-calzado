@@ -5,7 +5,7 @@ import { useActionState } from "react";
 import { CircleCheck } from "lucide-react";
 import { guardarTienda } from "./acciones";
 
-type Tienda = { nombre: string; avisos: string[]; aviso_enlace: string | null; instagram: string | null; whatsapp: string | null; direccion_retiro: string | null; horario: string | null; dias_retiro: number };
+type Tienda = { nombre: string; avisos: string[]; aviso_enlace: string | null; instagram: string | null; whatsapp: string | null; direccion_retiro: string | null; horario: string | null; dias_retiro: number; dias_cambio: number; dias_saldo: number };
 
 export default function FormTienda({ tienda }: { tienda: Tienda }) {
   const [estado, accion, cargando] = useActionState(guardarTienda, {});
@@ -27,6 +27,12 @@ export default function FormTienda({ tienda }: { tienda: Tienda }) {
       <div><label className="etiqueta">Días que se guarda un pedido para retirar</label>
         <input name="dias_retiro" type="number" min={1} max={90} defaultValue={tienda.dias_retiro} className="campo" />
         <p className="mt-0.5 text-[11px] text-texto-2">Si no lo retiran en ese plazo, se cancela solo y el stock vuelve a la venta. El cliente ve la fecha.</p></div>
+      <div><label className="etiqueta">Plazo para cambios y devoluciones (días)</label>
+        <input name="dias_cambio" type="number" min={1} max={365} defaultValue={tienda.dias_cambio} className="campo" />
+        <p className="mt-0.5 text-[11px] text-texto-2">Desde la compra. Pasado el plazo, solo el encargado puede aceptar una devolución.</p></div>
+      <div><label className="etiqueta">Vencimiento del saldo a favor (días)</label>
+        <input name="dias_saldo" type="number" min={7} max={730} defaultValue={tienda.dias_saldo} className="campo" />
+        <p className="mt-0.5 text-[11px] text-texto-2">Desde la devolución. Cambiarlo no toca los saldos que ya se dieron.</p></div>
       <div className="sm:col-span-2"><label className="etiqueta">Dirección para retirar</label><input name="direccion_retiro" defaultValue={tienda.direccion_retiro ?? ""} placeholder="Av. Mate de Luna 1234, San Miguel de Tucumán" className="campo" /></div>
       <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
         <button className="boton" disabled={cargando}>Guardar</button>

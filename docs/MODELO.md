@@ -144,6 +144,7 @@ con `FOR UPDATE`): `0001-00000123`. Las compras guardan además el número y la 
 | **Presupuesto** | `presupuestos` + `presupuesto_items` | lo que se ofrece y a qué precio; congela precios y promociones hasta `valido_hasta` | no |
 | **Pedido** (web) | `pedidos` | un presupuesto que el cliente confirmó desde la tienda | reserva |
 | **Comprobante de venta** | `ventas` | lo que se entregó y se cobró | descuenta |
+| **Devolución** | `devoluciones` + `devolucion_items` | lo que vuelve de una venta (`DEV 0001-…`); deja saldo a favor en `saldos_cliente` | devuelve (lo fallado, a Fallados) |
 | **Recibo** | (pendiente) | constancia de cada cobro, para saldos y pagos parciales | no |
 
 `crear_presupuesto` arma el presupuesto con el mismo motor que la caja (`_renglones_cotizados`);

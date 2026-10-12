@@ -63,7 +63,7 @@ export default async function Tablas({ searchParams }: { searchParams: Promise<{
     supabase.from("marcas").select("id, codigo, nombre, productos(count)").order("nombre"),
     supabase.from("colores").select("id, codigo, nombre, hex, variantes(count)").order("nombre"),
     supabase.from("talles").select("id, nombre, orden, tipo, variantes(count)").order("orden"),
-    supabase.from("medios_pago").select("id, codigo, nombre, tipo, ajuste_pct, cuotas, en_mostrador, en_tienda, activo, orden, pagos(count)").order("orden"),
+    supabase.from("medios_pago").select("id, codigo, nombre, tipo, ajuste_pct, cuotas, en_mostrador, en_tienda, activo, orden, pagos(count)").eq("es_saldo", false).order("orden"),   // «Saldo a favor» es automático
   ]);
   const cantidades: Record<Clave, number> = { rubros: rubros.data?.length ?? 0, marcas: marcas.data?.length ?? 0,
     colores: colores.data?.length ?? 0, talles: talles.data?.length ?? 0, medios: medios.data?.length ?? 0 };

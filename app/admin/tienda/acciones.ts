@@ -109,12 +109,15 @@ export async function guardarTienda(_: Estado, f: FormData): Promise<Estado> {
   if (aviso_enlace && !enlaceValido(aviso_enlace)) return { error: "El link del aviso tiene que empezar con / o con https://" };
   const dias_retiro = Math.round(Number(f.get("dias_retiro")));
   if (!(dias_retiro >= 1 && dias_retiro <= 90)) return { error: "Los días para retirar van de 1 a 90" };
+  const dias_cambio = Math.round(Number(f.get("dias_cambio"))), dias_saldo = Math.round(Number(f.get("dias_saldo")));
+  if (!(dias_cambio >= 1 && dias_cambio <= 365)) return { error: "El plazo de cambios va de 1 a 365 días" };
+  if (!(dias_saldo >= 7 && dias_saldo <= 730)) return { error: "El vencimiento del saldo va de 7 a 730 días" };
   // Avisos: uno por renglón, hasta 5 (rotan en la barra de arriba)
   const avisos = String(f.get("avisos") ?? "").split("\n").map((a) => a.trim()).filter(Boolean);
   if (avisos.length > 5) return { error: "Hasta 5 avisos (uno por renglón)" };
   if (avisos.some((a) => a.length > 120)) return { error: "Cada aviso puede tener hasta 120 letras" };
   const { error } = await supabase.from("configuracion_tienda").update({
-    dias_retiro, nombre: texto(f, "nombre") || "Mi Tienda", whatsapp: whatsapp || null, instagram: instagram || null,
+    dias_retiro, dias_cambio, dias_saldo, nombre: texto(f, "nombre") || "Mi Tienda", whatsapp: whatsapp || null, instagram: instagram || null,
     avisos, aviso_enlace: aviso_enlace || null,
     direccion_retiro: texto(f, "direccion_retiro") || null, horario: texto(f, "horario") || null,
   }).eq("unica", true);

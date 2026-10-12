@@ -12,7 +12,7 @@ export default async function TiendaOnline() {
   const supabase = await crearCliente();
   const [{ data: secciones }, { data: tienda }, { data: catalogo }] = await Promise.all([
     supabase.from("inicio_secciones").select("id, tipo, orden, visible, titulo, bajada, boton_texto, boton_enlace, imagen_url, imagen_ruta, contenido").order("orden").order("id"),
-    supabase.from("configuracion_tienda").select("nombre, avisos, aviso_enlace, instagram, whatsapp, direccion_retiro, horario, dias_retiro").single(),
+    supabase.from("configuracion_tienda").select("nombre, avisos, aviso_enlace, instagram, whatsapp, direccion_retiro, horario, dias_retiro, dias_cambio, dias_saldo").single(),
     supabase.from("v_catalogo").select("producto_id, nombre, marca, categoria, genero, linea, imagen_url"),
   ]);
   const lista = (secciones ?? []).map((s) => ({ ...s, tipo: s.tipo as Tipo, contenido: leerContenido(s.tipo as Tipo, s.contenido) })) as Seccion[];

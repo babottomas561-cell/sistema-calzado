@@ -32,3 +32,7 @@ export function diaArgentina(masDias = 0) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires" })
     .format(new Date(Date.now() + masDias * 86_400_000));
 }
+
+// Una fecha SIN hora de la base ("2027-04-10", columnas date): se muestra tal cual, sin pasar por la zona
+// horaria (new Date() la tomaría como medianoche UTC, que en Argentina es el día anterior).
+export const dia = (d: string | null | undefined) => (d ? d.slice(0, 10).split("-").reverse().join("/") : "");
