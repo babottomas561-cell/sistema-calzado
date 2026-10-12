@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { crearCliente } from "@/lib/supabase/server";
+import { leerMonto } from "@/lib/formato";
 
 export type Estado = { error?: string; ok?: string };
 
@@ -22,4 +23,18 @@ export async function cambiarEstado(_: Estado, f: FormData): Promise<Estado> {
   if (error) return { error: error.message };
   revalidatePath("/", "layout");
   return { ok: estado === "entregado" ? "Entregado: la venta quedó registrada" : estado === "cancelado" ? "Cancelado: el stock volvió a estar a la venta" : "Estado actualizado" };
+}
+
+// Cómo salió el envío: con qué (Uber, cadete…), lo que costó (va a Gastos → Envíos) y el seguimiento (lo ve el cliente)
+export async function registrarEnvio(_: Estado, f: FormData): Promise<Estado> {
+  const costo = leerMonto(String(f.get("costo_real") ?? ""));
+  if (costo !== null && !(costo >= 0)) return { error: "El costo tiene que ser un número" };
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("registrar_envio", {
+    p_pedido: Number(f.get("pedido_id")), p_proveedor: String(f.get("proveedor") || "uber"), p_costo_real: costo ?? undefined,
+    p_seguimiento: String(f.get("seguimiento") ?? "").trim() || undefined, p_notas: String(f.get("notas") ?? "").trim() || undefined,
+  });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/pedidos", "layout");
+  return { ok: "Envío anotado" };
 }

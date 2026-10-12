@@ -36,3 +36,13 @@ export function diaArgentina(masDias = 0) {
 // Una fecha SIN hora de la base ("2027-04-10", columnas date): se muestra tal cual, sin pasar por la zona
 // horaria (new Date() la tomaría como medianoche UTC, que en Argentina es el día anterior).
 export const dia = (d: string | null | undefined) => (d ? d.slice(0, 10).split("-").reverse().join("/") : "");
+
+// Un monto escrito a mano: «3.800», «3800,50», «3800.50», «$ 3.800» → número (vacío → null; algo que no es número → NaN).
+// Con coma, la coma es el decimal y los puntos son de miles; sin coma, un punto seguido de 3 cifras es de miles.
+export function leerMonto(texto: string): number | null {
+  const t = texto.replace(/[\s$]/g, "");
+  if (!t) return null;
+  if (t.includes(",")) return Number(t.replace(/\./g, "").replace(",", "."));
+  if (/^\d{1,3}(\.\d{3})+$/.test(t)) return Number(t.replace(/\./g, ""));
+  return Number(t);
+}

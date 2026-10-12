@@ -7,10 +7,16 @@ import { ajusteDe, type MedioPago } from "@/lib/medios";
 import { confirmarPedido, cotizarCarrito, type Cotizacion } from "./acciones";
 import { BadgePercent, CreditCard, Minus, Plus, Shirt, MessageCircle, Trash2 } from "lucide-react";
 
-// mpId: el medio «Mercado Pago» cuando la tienda cobra online (si no, null): elegirlo lleva a pagar
-export default function Carrito({ medios, conWhatsApp, mpId }: { medios: MedioPago[]; conWhatsApp: boolean; mpId: number | null }) {
+export type ZonaEnvio = { id: number; nombre: string; descripcion: string | null; precio: number | null };
+
+// mpId: el medio «Mercado Pago» cuando la tienda cobra online (si no, null): elegirlo lleva a pagar.
+// zonas: las zonas de envío del local (el precio lo vuelve a poner la base al crear el pedido)
+export default function Carrito({ medios, conWhatsApp, mpId, zonas }: { medios: MedioPago[]; conWhatsApp: boolean; mpId: number | null; zonas: ZonaEnvio[] }) {
   const { items, cargado, total, cambiar, quitar } = useCarrito();
   const [entrega, setEntrega] = useState("retiro");
+  const [zonaId, setZonaId] = useState<number | null>(null);
+  const zona = entrega === "envio" ? zonas.find((z) => z.id === zonaId) : undefined;
+  const envio = zona?.precio ?? 0;
   const [medioId, setMedioId] = useState(medios[0]?.id);
   const medio = medios.find((m) => m.id === medioId);
   const online = mpId !== null && medioId === mpId;
@@ -79,6 +85,15 @@ export default function Carrito({ medios, conWhatsApp, mpId }: { medios: MedioPa
             <label key={v} className={`flex min-h-12 cursor-pointer items-center justify-center rounded-sm border px-3 text-center text-sm ${entrega === v ? "border-marca bg-marca font-semibold text-white" : "border-gray-300 hover:border-marca"}`}>
               <input type="radio" name="entrega" value={v} checked={entrega === v} onChange={() => setEntrega(v)} className="sr-only" />{t}</label>
           ))}</div></div>
+        {entrega === "envio" && zonas.length > 0 && (
+          <div><label className="etiqueta" htmlFor="zona_id">Zona</label>
+            <select id="zona_id" name="zona_id" required value={zonaId ?? ""} onChange={(e) => setZonaId(Number(e.target.value) || null)} className="campo">
+              <option value="" disabled>Elegí tu zona</option>
+              {zonas.map((z) => <option key={z.id} value={z.id}>{z.nombre} · {z.precio == null ? "a coordinar" : z.precio === 0 ? "gratis" : pesos(z.precio)}</option>)}
+            </select>
+            {zona?.descripcion && <p className="mt-0.5 text-xs text-texto-2">{zona.descripcion}</p>}
+            {zona && zona.precio == null && <p className="mt-0.5 text-xs text-texto-2">El costo del envío lo coordinamos con vos después del pedido.</p>}</div>
+        )}
         {entrega === "envio" && <div><label className="etiqueta">Dirección de envío</label><input name="direccion" required className="campo" placeholder="Calle, número, ciudad" /></div>}
         <div><div className="etiqueta">Forma de pago</div>
           <div className="space-y-2">{medios.map((m) => (
@@ -94,7 +109,8 @@ export default function Carrito({ medios, conWhatsApp, mpId }: { medios: MedioPa
           {promos > 0 && <div className="flex justify-between text-ok"><dt>Promociones</dt><dd>−{pesos(promos)}</dd></div>}
           {ajuste !== 0 && <div className={`flex justify-between ${ajuste < 0 ? "text-ok" : "text-alerta"}`}><dt>{ajuste < 0 ? "Descuento" : "Recargo"} pagando con {medio?.nombre}</dt>
             <dd>{ajuste < 0 ? "−" : "+"}{pesos(Math.abs(ajuste))}</dd></div>}
-          <div className="flex items-baseline justify-between"><dt className="font-semibold">Total</dt><dd className="text-3xl font-extrabold tracking-[-0.03em]">{pesos(totalFinal)}</dd></div>
+          {envio > 0 && <div className="flex justify-between text-texto-2"><dt>Envío ({zona?.nombre})</dt><dd>+{pesos(envio)}</dd></div>}
+          <div className="flex items-baseline justify-between"><dt className="font-semibold">Total</dt><dd className="text-3xl font-extrabold tracking-[-0.03em]">{pesos(totalFinal + envio)}</dd></div>
         </dl>
         {estado.error && <p className="text-sm text-error">{estado.error}{estado.necesitaIngresar && <> <Link href="/ingresar?volver=/carrito" className="font-semibold text-marca">Ingresar</Link> o <Link href="/registro?volver=/carrito" className="font-semibold text-marca">crear una cuenta</Link></>}</p>}
         {online && <input type="hidden" name="pagar_online" value="1" />}

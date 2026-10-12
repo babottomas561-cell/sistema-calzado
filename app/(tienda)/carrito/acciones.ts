@@ -14,6 +14,8 @@ export async function confirmarPedido(_: Estado, f: FormData): Promise<Estado> {
     p_items: items.map((i) => ({ variante_id: i.variante_id, cantidad: i.cantidad })),
     p_entrega: String(f.get("entrega")), p_direccion: String(f.get("direccion") ?? "").trim() || undefined,
     p_medio_pago: Number(f.get("medio_pago_id")), p_notas: String(f.get("notas") ?? "").trim() || undefined,
+    // Solo la zona: su precio lo pone la base
+    p_zona: f.get("entrega") === "envio" && Number(f.get("zona_id")) ? Number(f.get("zona_id")) : undefined,
   });
   if (error) return { error: error.message };
   // Con Mercado Pago: la base arma el cobro (con el total que ella calculó) y se va a pagar

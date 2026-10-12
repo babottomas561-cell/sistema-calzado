@@ -1,6 +1,6 @@
-# Integraciones paso a paso: WhatsApp (Meta), IA (Gemini) y Mercado Pago
+# Integraciones paso a paso: WhatsApp, IA (Gemini), Mercado Pago y envíos
 
-Todo se configura desde el panel, en **Configuración → Integraciones**. No hace falta tocar Vercel ni código.
+Todo se configura desde el panel, en **Configuración → Integraciones**: una pantalla por servicio (WhatsApp, Inteligencia artificial, Mercado Pago y Envíos). No hace falta tocar Vercel ni código.
 Las claves quedan guardadas en la base y **nadie las puede volver a leer** (ni desde el panel): solo se ve si están
 cargadas y sus últimos 4 caracteres. Para cambiar una, se pega la nueva encima.
 
@@ -65,7 +65,7 @@ El token que aparece en «Configuración de la API» es **temporal (vence en 24 
 
 ## Parte 6 — En el panel: cargar todo
 
-1. **Configuración → Integraciones → Conexiones**, punto **2**: pegá
+1. **Configuración → Integraciones → WhatsApp**, punto **2**: pegá
    - ID del número de teléfono,
    - ID de la cuenta de WhatsApp Business,
    - Token de acceso (el permanente),
@@ -106,8 +106,8 @@ exige una **plantilla aprobada**.
    > Hola {{1}}, tu pedido {{2}} está {{3}}. Cualquier consulta, respondé este mensaje. ¡Gracias por tu compra!
    - Ejemplos que pide Meta: {{1}} = Juan, {{2}} = 0001-00000015, {{3}} = listo para retirar.
 4. **Enviar a revisión**. Tarda de minutos a un día.
-5. Cuando diga **Activa / Aprobada**: en el panel, **Bot, avisos e IA** → Plantilla `estado_pedido`, Idioma `es_AR`
-   → tildá **Avisos de pedidos** → **Guardar bot, avisos e IA**.
+5. Cuando diga **Activa / Aprobada**: en el panel, **Integraciones → WhatsApp → Bot y avisos** → Plantilla `estado_pedido`, Idioma `es_AR`
+   → tildá **Avisos de pedidos** → **Guardar bot y avisos**.
 
 Desde ahí, el aviso sale solo cuando el pedido pasa a confirmado, listo, en camino, entregado o cancelado
 (lo cambie quien lo cambie, o si vence solo). El cliente tiene que tener el teléfono cargado en su ficha.
@@ -116,8 +116,8 @@ Desde ahí, el aviso sale solo cuando el pedido pasa a confirmado, listo, en cam
 
 1. Entrá a **aistudio.google.com** con una cuenta de Google (conviene la del negocio).
 2. **Get API key → Crear clave de API** (elegí o creá un proyecto) → copiala (empieza con `AIza…`).
-3. En el panel, **Conexiones** → **Clave de Gemini** → pegala → **Guardar conexiones**.
-4. En **Bot, avisos e IA → Inteligencia artificial**:
+3. En el panel, **Integraciones → Inteligencia artificial** → **1. La clave** → pegala → **Guardar clave**.
+4. En la misma pantalla, **3. Modelo, precio y plan**:
    - **Modelo**: dejá *Gemini 2.5 Flash* (rápido y barato). Al lado de cada uno se ve su precio por millón de tokens.
      La lista se revisa sola cada mañana: si Google saca un modelo nuevo aparece «(nuevo)», y si retira el que usás,
      el panel avisa en rojo para que elijas otro. «Buscar ahora» la revisa en el momento.
@@ -128,8 +128,8 @@ Desde ahí, el aviso sale solo cuando el pedido pasa a confirmado, listo, en cam
      frecuencia** (la columna RPD, «solicitudes por día», del modelo elegido). Copiá ese número en el panel.
    - **Plan**: *Gratis* mientras no actives la facturación en Google (no se gasta nada; el panel muestra cuánto
      costaría). *Pago* cuando la actives: cada respuesta suma su costo a Gastos → Inteligencia artificial.
-   - Tildá **Bot de WhatsApp** → **Guardar bot, avisos e IA**.
-5. **Probar Gemini**: a los pocos segundos, actualizá la página. Tiene que decir **Funciona**; si no, muestra el error
+   - **Guardar modelo y plan**. Después, en **Integraciones → WhatsApp → Bot y avisos**, tildá **Bot de WhatsApp** → **Guardar bot y avisos**.
+5. **2. Probala → Probar Gemini**: a los pocos segundos, actualizá la página. Tiene que decir **Funciona**; si no, muestra el error
    de Google.
 6. **Uso de la IA**: ahí ves las consultas de hoy contra el límite gratis (la barra se pone naranja al 70 % y roja al
    90 %), los tokens del mes, cuánto costaría (o cuánto se gastó, con el plan pago) y el promedio por respuesta.
@@ -177,6 +177,24 @@ bancos**. Si el pago no se completó, el pedido sigue reservado y el cliente lo 
 comprador; cargá en el panel el Access Token de **prueba** (el panel avisa «cuenta de PRUEBA») y pagá con las tarjetas
 de prueba de Mercado Pago. Cuando todo ande, cambiá al Access Token de producción.
 
+## Parte 13 — Envíos en Tucumán (Uber)
+
+1. **Integraciones → Envíos → 1. Zonas de envío**: cargá cada zona con lo que paga el cliente (por ejemplo
+   «Centro» $ 2.500, «Yerba Buena» $ 4.000). En «qué abarca» poné los barrios, para que el cliente elija bien.
+   Sin precio queda «a coordinar» (por ejemplo, «Interior»). Mientras no haya ninguna zona, el envío se coordina.
+2. En la tienda, al elegir **Envío a domicilio**, el cliente elige su zona y ve el envío sumado al total. Si paga con
+   Mercado Pago, paga productos + envío. El precio lo pone la base (no el navegador).
+3. Para mandarlo: **Pedidos → el pedido → tarjeta Envío**:
+   - **Copiar datos para Uber** (pedido, dirección del local, nombre, teléfono y dirección del cliente) y **Abrir Uber**.
+   - En Uber elegí **Envíos** (moto o auto según el paquete; en auto hasta 20 kg), pegá los datos y pedilo.
+   - Volvé al pedido y anotá **lo que costó** y el **link de seguimiento** → **Anotar envío**. El cliente ve el
+     seguimiento en su pedido, y el costo va solo a **Gastos → Envíos**.
+4. El **Resultado** del mes muestra los envíos cobrados a los clientes contra lo que costaron.
+
+**Automático (cuando haya acceso):** con **Uber Direct** (cuenta de empresa en direct.uber.com, que Uber tiene que
+habilitar en Argentina) el Uber se pide solo cuando el pedido está listo. Con **Andreani** (cuenta comercial) se
+cotiza y despacha al interior. Los dos se suman en Integraciones → Envíos cuando el local tenga las credenciales.
+
 ---
 
 ## Costos
@@ -188,6 +206,7 @@ de prueba de Mercado Pago. Cuando todo ande, cambiá al Access Token de producci
 | Promociones (plantilla de marketing) | ~US$ 0,06 cada una | Gastos → WhatsApp (Meta), solo |
 | Gemini, plan gratis | US$ 0 (con límite de consultas por día) | Integraciones → Uso de la IA (y cuánto costaría) |
 | Gemini, plan pago | según el modelo y los tokens | Gastos → Inteligencia artificial, solo |
+| Envíos (Uber) | lo que cobra cada viaje | Gastos → Envíos, al anotarlo en el pedido |
 | Mercado Pago | la comisión de cada pago (depende de tu cuenta, el plazo y las cuotas) | Gastos → Comisiones y bancos, sola |
 
 Los precios de Meta son aproximados para Argentina; si Meta los cambia, se corrigen en la base

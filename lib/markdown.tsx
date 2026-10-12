@@ -45,7 +45,11 @@ function bloques(lineas: string[]): ReactNode[] {
     const l = lineas[i];
     if (!l.trim()) { i++; continue; }
     if (l.startsWith("# ")) { out.push(<h1 key={i} className="text-2xl font-bold">{enLinea(l.slice(2))}</h1>); i++; continue; }
-    if (l.startsWith("## ")) { out.push(<h2 key={i} className="pt-3 text-lg font-bold">{enLinea(l.slice(3))}</h2>); i++; continue; }
+    if (l.startsWith("## ")) {
+      // «## Parte 12 — …» → id="parte-12", para enlazar directo a esa parte
+      const parte = l.match(/^## Parte (\d+)/)?.[1];
+      out.push(<h2 key={i} id={parte ? `parte-${parte}` : undefined} className="scroll-mt-20 pt-3 text-lg font-bold">{enLinea(l.slice(3))}</h2>); i++; continue;
+    }
     if (l.trim() === "---") { out.push(<hr key={i} className="border-borde" />); i++; continue; }
     if (l.trimStart().startsWith(">")) {
       const cita: string[] = [];

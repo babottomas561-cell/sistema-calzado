@@ -48,7 +48,7 @@ create function prueba.listo_hace_dias(p_pedido bigint, p_dias int) returns void
 grant execute on all functions in schema prueba to anon, authenticated;
 create table prueba.ids (nombre text primary key, id bigint);
 grant all on prueba.ids to anon, authenticated;
-select plan(18);
+select plan(19);
 
 set local role authenticated;
 select prueba.como_admin();
@@ -83,6 +83,10 @@ select results_eq(format($$ select estado, pagado from prueba.pedido(%s) $$, (se
   $$ values ('confirmado'::text, true) $$, 'el pedido queda pagado y confirmado');
 select mp_notificacion('payment', '111', 'req-2', prueba.firma('111', 'req-2', '1700000001'));
 select is(prueba.gastos_mp(), 1, 'la comisión queda como gasto una sola vez, aunque el aviso se repita');
+set local role authenticated;
+select prueba.como_cliente();
+select is((select count(*)::int from pagos_online where estado = 'approved'), 1, 'el cliente ve el pago de su pedido');
+set local role anon;
 
 -- ── Cancelar un pedido pagado ──
 set local role authenticated;

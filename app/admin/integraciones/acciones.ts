@@ -3,6 +3,7 @@
 // a leer; la base controla el permiso. Un campo vacío no toca lo que había; «quitar» borra esa clave.
 import { revalidatePath } from "next/cache";
 import { crearCliente } from "@/lib/supabase/server";
+import { leerMonto } from "@/lib/formato";
 
 type Estado = { error?: string; ok?: string };
 const texto = (f: FormData, campo: string, max = 200) => String(f.get(campo) ?? "").trim().slice(0, max);
@@ -16,7 +17,7 @@ export async function guardarConexiones(_: Estado, f: FormData): Promise<Estado>
     p_quitar: f.getAll("quitar").map(String),
   });
   if (error) return { error: error.message };
-  revalidatePath("/admin/integraciones");
+  revalidatePath("/admin/integraciones", "layout");
   return { ok: "Conexiones guardadas" };
 }
 
@@ -25,12 +26,12 @@ export async function probarWhatsApp(_: Estado, f: FormData): Promise<Estado> {
   const supabase = await crearCliente();
   const { error } = await supabase.rpc("wa_mensaje_prueba", { p_telefono: texto(f, "telefono", 30) });
   if (error) return { error: error.message };
-  revalidatePath("/admin/integraciones");
+  revalidatePath("/admin/integraciones", "layout");
   return { ok: "Mensaje de prueba enviado: en unos segundos aparece abajo si Meta lo aceptó" };
 }
 
-// El bot y los avisos de pedidos (con su plantilla de Meta). Van en configuracion_tienda: no son secretos.
-export async function guardarAutomatizaciones(_: Estado, f: FormData): Promise<Estado> {
+// WhatsApp: el bot y los avisos de pedidos (con su plantilla de Meta). Van en configuracion_tienda: no son secretos.
+export async function guardarBotYAvisos(_: Estado, f: FormData): Promise<Estado> {
   const wa_bot_activo = f.get("wa_bot_activo") !== null;
   const wa_notificaciones_pedidos = f.get("wa_notificaciones_pedidos") !== null;
   const wa_plantilla_estado = texto(f, "wa_plantilla_estado", 512).toLowerCase() || null;
@@ -38,11 +39,20 @@ export async function guardarAutomatizaciones(_: Estado, f: FormData): Promise<E
   if (wa_plantilla_estado && !/^[a-z0-9_]+$/.test(wa_plantilla_estado)) return { error: "El nombre de la plantilla solo lleva minúsculas, números y guion bajo" };
   if (!/^[a-z]{2}(_[A-Z]{2})?$/.test(wa_idioma_plantilla)) return { error: "El idioma de la plantilla tiene que tener un formato como es_AR" };
   if (wa_notificaciones_pedidos && !wa_plantilla_estado) return { error: "Para activar los avisos, cargá primero el nombre de la plantilla aprobada por Meta" };
+  const supabase = await crearCliente();
+  const { error } = await supabase.from("configuracion_tienda")
+    .update({ wa_bot_activo, wa_notificaciones_pedidos, wa_plantilla_estado, wa_idioma_plantilla }).eq("unica", true);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  return { ok: "Bot y avisos guardados" };
+}
+
+// IA: el modelo de Gemini, el plan (gratis o pago) y el precio y límite gratis del modelo elegido
+export async function guardarIA(_: Estado, f: FormData): Promise<Estado> {
   const ia_modelo = texto(f, "ia_modelo", 60);
   const ia_plan = f.get("ia_plan") === "pago" ? "pago" : "gratis";
   const supabase = await crearCliente();
-  const { error } = await supabase.from("configuracion_tienda")
-    .update({ wa_bot_activo, wa_notificaciones_pedidos, wa_plantilla_estado, wa_idioma_plantilla, ia_modelo, ia_plan }).eq("unica", true);
+  const { error } = await supabase.from("configuracion_tienda").update({ ia_modelo, ia_plan }).eq("unica", true);
   if (error) return { error: error.message };
   // Precio y límite gratis del modelo elegido (vacío = sin dato). Si cambia el precio, queda la fecha de hoy.
   const num = (k: string) => { const v = String(f.get(k) ?? "").trim().replace(",", "."); return v === "" ? null : Number(v); };
@@ -57,8 +67,8 @@ export async function guardarAutomatizaciones(_: Estado, f: FormData): Promise<E
     ...(cambioPrecio ? { verificado: new Date().toISOString().slice(0, 10), nuevo: false } : {}),
   }).eq("id", ia_modelo);
   if (r.error) return { error: r.error.message };
-  revalidatePath("/admin/integraciones");
-  return { ok: "Bot y avisos guardados" };
+  revalidatePath("/admin/integraciones", "layout");
+  return { ok: "IA guardada" };
 }
 
 // Prueba la clave de Gemini (la consulta sale desde la base; la clave no pasa por acá)
@@ -66,7 +76,7 @@ export async function probarGemini(): Promise<Estado> {
   const supabase = await crearCliente();
   const { error } = await supabase.rpc("ia_probar");
   if (error) return { error: error.message };
-  revalidatePath("/admin/integraciones");
+  revalidatePath("/admin/integraciones", "layout");
   return { ok: "Consultando a Gemini… en unos segundos actualizá la página para ver el resultado" };
 }
 
@@ -75,7 +85,7 @@ export async function buscarModelos(): Promise<Estado> {
   const supabase = await crearCliente();
   const { error } = await supabase.rpc("ia_revisar_modelos", { p_pedir: true });
   if (error) return { error: error.message };
-  revalidatePath("/admin/integraciones");
+  revalidatePath("/admin/integraciones", "layout");
   return { ok: "Consultando a Google… en unos segundos actualizá la página" };
 }
 
@@ -92,7 +102,7 @@ export async function guardarMercadoPago(_: Estado, f: FormData): Promise<Estado
   if (error) return { error: error.message };
   // Si se cargó un token nuevo, se prueba en el momento (así se ve de quién es la cuenta)
   if (texto(f, "mp_access_token", 300)) await supabase.rpc("mp_probar");
-  revalidatePath("/admin/integraciones");
+  revalidatePath("/admin/integraciones", "layout");
   return { ok: "Mercado Pago guardado" };
 }
 
@@ -100,7 +110,7 @@ export async function probarMercadoPago(): Promise<Estado> {
   const supabase = await crearCliente();
   const { data, error } = await supabase.rpc("mp_probar");
   if (error) return { error: error.message };
-  revalidatePath("/admin/integraciones");
+  revalidatePath("/admin/integraciones", "layout");
   const r = data as { ok: boolean; error?: string };
   return r.ok ? { ok: "Conectado con Mercado Pago" } : { error: r.error ?? "Mercado Pago no respondió" };
 }
@@ -116,7 +126,29 @@ export async function guardarCobro(_: Estado, f: FormData): Promise<Estado> {
   }
   const { error } = await supabase.from("configuracion_tienda").update({ mp_modo, mp_cuotas_max }).eq("unica", true);
   if (error) return { error: error.message };
-  revalidatePath("/admin/integraciones");
+  revalidatePath("/admin/integraciones", "layout");
   revalidatePath("/", "layout");
   return { ok: "Cobro de la tienda guardado" };
+}
+
+// ── Zonas de envío ─────────────────────────────────────────────────────
+// Precio vacío = «a coordinar» (el envío se arregla aparte, por ejemplo al interior)
+export async function guardarZona(_: Estado, f: FormData): Promise<Estado> {
+  const id = Number(f.get("id")) || null;
+  const nombre = texto(f, "nombre", 60);
+  if (!nombre) return { error: "Poné el nombre de la zona" };
+  const precio = leerMonto(texto(f, "precio", 20));
+  if (precio !== null && !(precio >= 0)) return { error: "El precio tiene que ser un número (o vacío, para «a coordinar»)" };
+  const fila = { nombre, precio, descripcion: texto(f, "descripcion", 200) || null };
+  const supabase = await crearCliente();
+  const { error } = id ? await supabase.from("zonas_envio").update(fila).eq("id", id) : await supabase.from("zonas_envio").insert(fila);
+  if (error) return { error: error.message.includes("zonas_envio_nombre_key") ? "Ya hay una zona con ese nombre" : error.message };
+  revalidatePath("/admin/integraciones", "layout"); revalidatePath("/carrito");
+  return { ok: id ? "Zona guardada" : "Zona agregada" };
+}
+
+export async function activarZona(f: FormData) {
+  const supabase = await crearCliente();
+  await supabase.from("zonas_envio").update({ activo: f.get("activo") === "1" }).eq("id", Number(f.get("id")));
+  revalidatePath("/admin/integraciones", "layout"); revalidatePath("/carrito");
 }

@@ -17,7 +17,7 @@ export default async function SeguimientoPedido({ params, searchParams }: { para
   const supabase = await crearCliente();
   // Si el pedido no es suyo, la base no lo devuelve (Row Level Security) → 404
   const [{ data: p }, { data: items }, { data: historial }, { data: tienda }, { data: ficha }, { data: hasta }] = await Promise.all([
-    supabase.from("pedidos").select("*, medios_pago(nombre)").eq("id", Number(id)).maybeSingle(),
+    supabase.from("pedidos").select("*, medios_pago(nombre), zonas_envio(nombre)").eq("id", Number(id)).maybeSingle(),
     // Por la vista: el cliente no lee las tablas del catálogo, solo los renglones de sus pedidos
     supabase.from("v_mis_pedido_items").select("id, cantidad, precio_unitario, descuento_promo, promocion, modelo, talle, color").eq("pedido_id", Number(id)).order("id"),
     supabase.from("pedido_estados").select("id, estado, fecha, comentario").eq("pedido_id", Number(id)).order("fecha"),
@@ -25,9 +25,10 @@ export default async function SeguimientoPedido({ params, searchParams }: { para
     supabase.from("v_mi_ficha").select("nombre").maybeSingle(),
     supabase.rpc("retirar_hasta", { p_pedido: Number(id) }),
   ]);
-  const [{ data: pagos }, { data: cobro }] = await Promise.all([
+  const [{ data: pagos }, { data: cobro }, { data: envio }] = await Promise.all([
     supabase.from("pagos_online").select("estado, monto, cuotas").eq("pedido_id", Number(id)).order("id", { ascending: false }),
     supabase.rpc("tienda_pagos"),
+    supabase.from("envios").select("proveedor, seguimiento").eq("pedido_id", Number(id)).maybeSingle(),
   ]);
   if (!p) notFound();
   const pasos = PASOS[p.entrega as "retiro" | "envio"];
@@ -37,7 +38,8 @@ export default async function SeguimientoPedido({ params, searchParams }: { para
   // El pedido armado para mandar por WhatsApp (lo que guardó la base, no lo que calculó el navegador)
   const mensaje = mensajePedido({ comprobante: p.comprobante ?? "", cliente: ficha?.nombre ?? null, renglones, subtotal: Number(p.subtotal),
     descuento_promociones: Number(p.descuento_promociones), ajuste_pct: Number(p.ajuste_pct), ajuste_medio_pago: Number(p.ajuste_medio_pago),
-    total: Number(p.total), medio, entrega: p.entrega, direccion: p.direccion_envio, notas: p.notas });
+    total: Number(p.total), medio, entrega: p.entrega, direccion: p.direccion_envio, notas: p.notas,
+    envio: Number(p.costo_envio), zona: (p.zonas_envio as { nombre: string } | null)?.nombre ?? null });
   const abierto = !["entregado", "cancelado"].includes(p.estado);
   // Con Mercado Pago: ¿está pagado? ¿se puede pagar ahora? (lo decide la base: mp_pagar_pedido vuelve a controlar todo)
   const conMP = (cobro as { mp_modo?: string } | null)?.mp_modo !== "no" && medio === "Mercado Pago";
@@ -107,7 +109,10 @@ export default async function SeguimientoPedido({ params, searchParams }: { para
         {Number(p.ajuste_medio_pago) !== 0 && <div className={`mt-2 flex justify-between text-sm ${Number(p.ajuste_medio_pago) < 0 ? "text-ok" : "text-alerta"}`}>
           <span>{Number(p.ajuste_medio_pago) < 0 ? "Descuento" : "Recargo"} por medio de pago ({porcentaje(p.ajuste_pct)})</span>
           <span>{Number(p.ajuste_medio_pago) < 0 ? "−" : "+"}{pesos(Math.abs(Number(p.ajuste_medio_pago)))}</span></div>}
-        <div className="mt-2 flex justify-between font-bold"><span>Total</span><span>{pesos(p.total)}</span></div>
+        {Number(p.costo_envio) > 0 && <div className="mt-2 flex justify-between text-sm text-texto-2"><span>Envío</span><span>+{pesos(p.costo_envio)}</span></div>}
+        <div className="mt-2 flex justify-between font-bold"><span>Total</span><span>{pesos(Number(p.total) + Number(p.costo_envio))}</span></div>
+        {envio?.seguimiento && <a href={envio.seguimiento.startsWith("http") ? envio.seguimiento : undefined} target="_blank" rel="noopener"
+          className="mt-2 block text-sm font-semibold text-marca">Seguir el envío{envio.proveedor === "uber" ? " (Uber)" : ""}{envio.seguimiento.startsWith("http") ? "" : `: ${envio.seguimiento}`}</a>}
         <div className="mt-2 text-sm text-texto-2">{p.entrega === "envio" ? `Envío a ${p.direccion_envio}` : `Retiro en el local${tienda?.direccion_retiro ? `: ${tienda.direccion_retiro}` : ""}${tienda?.horario ? ` (${tienda.horario})` : ""}`}
           {(p.medios_pago as { nombre: string } | null)?.nombre ? ` · Pago: ${(p.medios_pago as { nombre: string }).nombre}` : ""}</div>
       </section>

@@ -29,10 +29,12 @@ export default async function Resultado({ searchParams }: { searchParams: Promis
   const l = limites(rango);
   const supabase = await crearCliente();
   await supabase.rpc("generar_gastos_fijos");
-  const [items, perdidas, gastos] = await Promise.all([
+  const [items, perdidas, gastos, envios] = await Promise.all([
     leerTodo((a, b) => supabase.from("v_hechos_ventas").select("id, importe_neto, margen_neto").gte("fecha", l.gte).lt("fecha", l.lt).order("id").range(a, b)),
     leerTodo((a, b) => supabase.from("v_perdidas_fallados").select("dia, costo").gte("dia", rango.desde).lte("dia", rango.hasta).order("dia").range(a, b)),
     leerTodo((a, b) => supabase.from("gastos").select("id, monto, gasto_categorias(nombre, orden)").gte("fecha", rango.desde).lte("fecha", rango.hasta).order("id").range(a, b)),
+    // Lo que pagaron los clientes por el envío (va aparte de la venta); lo que costó está en Gastos → Envíos
+    leerTodo((a, b) => supabase.from("v_envios_cobrados").select("dia, cobrado").gte("dia", rango.desde).lte("dia", rango.hasta).order("dia").range(a, b)),
   ]);
 
   const ventas = items.reduce((s, i) => s + Number(i.importe_neto ?? 0), 0);
@@ -43,7 +45,8 @@ export default async function Resultado({ searchParams }: { searchParams: Promis
     return m.set(k, { orden: c?.orden ?? 99, monto: (m.get(k)?.monto ?? 0) + Number(g.monto ?? 0) });
   }, new Map<string, { orden: number; monto: number }>())].sort((a, b) => a[1].orden - b[1].orden);
   const totalGastos = categorias.reduce((s, [, c]) => s + c.monto, 0);
-  const neta = bruta - perdido - totalGastos;
+  const cobradoEnvios = envios.reduce((s, e) => s + Number(e.cobrado ?? 0), 0);
+  const neta = bruta + cobradoEnvios - perdido - totalGastos;
   const pct = (n: number) => (ventas > 0 ? `${Math.round((n / ventas) * 100)} % de lo vendido` : undefined);
 
   return (
@@ -53,6 +56,7 @@ export default async function Resultado({ searchParams }: { searchParams: Promis
         <Fila texto="Ventas" monto={ventas} nota="Netas: con descuentos y devoluciones" />
         <Fila texto="Costo de lo vendido" monto={ventas - bruta} resta />
         <Fila texto="Ganancia bruta" monto={bruta} fuerte nota={pct(bruta)} />
+        {cobradoEnvios > 0 && <Fila texto="Envíos cobrados" monto={cobradoEnvios} nota="Lo que pagaron los clientes; lo que costó, abajo en Envíos" />}
         {perdido > 0 && <Fila texto="Fallados dados de baja" monto={perdido} resta nota="A su costo" />}
         {categorias.map(([nombre, c]) => <Fila key={nombre} texto={nombre} monto={c.monto} resta />)}
         {!categorias.length && <p className="py-2 text-texto-2">Sin gastos cargados en el período. <Link href="/admin/gastos" className="text-marca">Cargar gastos</Link></p>}

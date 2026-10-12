@@ -167,6 +167,10 @@ una API de Next.** Lo que ya pisamos:
     reembolsa en la misma transacción (trigger) o no se cancela; el cliente no lo cancela solo; no se vence solo.
     `configuracion_tienda.mp_modo` (no / opcional / obligatorio, lo frena la base) y `mp_cuotas_max`; la tienda lo lee
     por `tienda_pagos()`. En las pruebas, `_mp_pedir` se reemplaza por respuestas preparadas.
+    **Envíos**: `zonas_envio` (precio por zona, null = a coordinar) → `pedidos.zona_envio_id` y `costo_envio`, que pone
+    `crear_pedido(…, p_zona)`. El envío va APARTE de la venta (no toca `total` ni la venta al entregar); el cliente paga
+    total + envío (también por Mercado Pago). `envios` (uno por pedido con envío): proveedor, `costo_real` y seguimiento
+    con `registrar_envio()` → Gastos → Envíos; el Resultado suma `v_envios_cobrados`.
     La guía paso a paso es `docs/INTEGRACIONES.md` y se ve en el panel (`/admin/integraciones/guia`).
 17. **Gastos** (`/admin/gastos`, permiso `gastos.gestionar`): a mano, fijos por mes (`gastos_fijos`, los genera
     `_generar_gastos_fijos()` con pg_cron) y automáticos (`_sumar_gasto_automatico()`, no se tocan a mano). En dólares
@@ -192,8 +196,8 @@ app/admin/             panel del equipo (el layout verifica que sea staff; cada 
   reposicion/          pedido sugerido por talle según el ritmo de venta (reposicion_sugerida), copiable a WhatsApp
   precios/             ajuste masivo de precios de venta y compra (ajustar_precios), historial y deshacer
   tienda/              tienda online: secciones de la portada (orden, ocultar, editar, fotos) y datos de la tienda
-  integraciones/       WhatsApp (Meta) y Gemini: claves (se guardan, no se leen), webhook, bot, avisos, modelo de IA,
-                       pruebas y la guía paso a paso (guia/, lee docs/INTEGRACIONES.md)
+  integraciones/       portada con una tarjeta por servicio; whatsapp/ (claves, webhook, bot y avisos), ia/ (Gemini: clave,
+                       modelo, plan, uso), mercadopago/, envios/ (zonas) y guia/ (lee docs/INTEGRACIONES.md, con #parte-N)
   tablas/              maestros: rubros/subrubros, marcas, colores (muestra), talles (orden), medios de pago
 components/            Menu (íconos lucide), Logo, Volver, SelectorVariantes (venta), Contactos…
 lib/supabase/server.ts crearCliente() tipado y usuarioActual() → { supabase, user, rol, nombre }

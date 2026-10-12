@@ -6,6 +6,7 @@ export type RenglonPedido = { cantidad: number; precio_unitario: number; descuen
 export type DatosPedido = {
   comprobante: string; cliente: string | null; renglones: RenglonPedido[]; subtotal: number; descuento_promociones: number;
   ajuste_pct: number; ajuste_medio_pago: number; total: number; medio: string | null; entrega: string; direccion: string | null; notas: string | null;
+  envio?: number; zona?: string | null;   // costo del envío (aparte de los productos) y su zona
 };
 
 export function mensajePedido(p: DatosPedido) {
@@ -20,9 +21,10 @@ export function mensajePedido(p: DatosPedido) {
     ...(p.descuento_promociones > 0 || p.ajuste_medio_pago !== 0 ? [`Subtotal: ${pesos(p.subtotal)}`] : []),
     ...(p.descuento_promociones > 0 ? [`Promociones: −${pesos(p.descuento_promociones)}`] : []),
     ...(p.ajuste_medio_pago !== 0 ? [`${p.ajuste_medio_pago < 0 ? "Descuento" : "Recargo"} ${p.medio ?? ""} (${porcentaje(p.ajuste_pct)}): ${p.ajuste_medio_pago < 0 ? "−" : "+"}${pesos(Math.abs(p.ajuste_medio_pago))}`] : []),
-    `*Total: ${pesos(p.total)}*`,
+    ...(p.envio ? [`Envío${p.zona ? ` (${p.zona})` : ""}: +${pesos(p.envio)}`] : []),
+    `*Total: ${pesos(p.total + (p.envio ?? 0))}*`,
     `Pago: ${p.medio ?? "a convenir"}`,
-    `Entrega: ${p.entrega === "envio" ? `envío a ${p.direccion}` : "retiro en el local"}`,
+    `Entrega: ${p.entrega === "envio" ? `envío a ${p.direccion}${p.zona ? ` (${p.zona})` : ""}` : "retiro en el local"}`,
     ...(p.notas ? [`Notas: ${p.notas}`] : []),
     "", "¿Me confirmás? ¡Gracias!",
   ];

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { crearCliente } from "@/lib/supabase/server";
 import { fecha, fechaHora, pesos, porcentaje } from "@/lib/formato";
 import { CANCELADO_POR, ESTADOS, MOTIVOS_CANCELACION } from "@/lib/estados-pedido";
+import Envio from "./Envio";
 import Acciones from "./Acciones";
 import Volver from "@/components/Volver";
 import { exigir } from "@/lib/exigir";
@@ -14,13 +15,17 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
   const { id } = await params;
   const supabase = await crearCliente();
   const [{ data: p }, { data: items }, { data: historial }, { data: venta }, { data: hasta }] = await Promise.all([
-    supabase.from("pedidos").select("*, clientes(id, nombre, telefono, email), medios_pago(nombre)").eq("id", Number(id)).single(),
+    supabase.from("pedidos").select("*, clientes(id, nombre, telefono, email), medios_pago(nombre), zonas_envio(nombre)").eq("id", Number(id)).single(),
     supabase.from("pedido_items").select("id, cantidad, precio_unitario, descuento_promo, promociones(nombre), variantes(talles(nombre), colores(nombre), productos(nombre))").eq("pedido_id", Number(id)),
     supabase.from("pedido_estados").select("id, estado, fecha, comentario").eq("pedido_id", Number(id)).order("fecha"),
     supabase.from("ventas").select("id, comprobante").eq("pedido_id", Number(id)).maybeSingle(),
     supabase.rpc("retirar_hasta", { p_pedido: Number(id) }),
   ]);
   const { data: medios } = await supabase.from("medios_pago").select("id, nombre, ajuste_pct, cuotas").eq("activo", true).order("orden");
+  const [{ data: envio }, { data: tienda }] = await Promise.all([
+    supabase.from("envios").select("proveedor, costo_real, seguimiento, notas").eq("pedido_id", Number(id)).maybeSingle(),
+    supabase.from("configuracion_tienda").select("direccion_retiro").single(),
+  ]);
   const { data: pagosOnline } = await supabase.from("pagos_online").select("id, pago_externo, estado, monto, comision, cuotas, medio, creado_en").eq("pedido_id", Number(id)).order("id");
   if (!p) notFound();
   const medio = (p.medios_pago as unknown as { nombre: string }).nombre;
@@ -57,7 +62,8 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
               {Number(p.ajuste_medio_pago) !== 0 && <>
                 <div className={`flex justify-between ${Number(p.ajuste_medio_pago) < 0 ? "text-ok" : "text-alerta"}`}>
                   <span>{medio} ({porcentaje(p.ajuste_pct)})</span><span>{Number(p.ajuste_medio_pago) < 0 ? "−" : "+"}{pesos(Math.abs(Number(p.ajuste_medio_pago)))}</span></div></>}
-              <div className="flex justify-between text-lg font-bold"><span>Total</span><span>{pesos(p.total)}</span></div>
+              {Number(p.costo_envio) > 0 && <div className="flex justify-between text-texto-2"><span>Envío (aparte de la venta)</span><span>+{pesos(p.costo_envio)}</span></div>}
+              <div className="flex justify-between text-lg font-bold"><span>Total</span><span>{pesos(Number(p.total) + Number(p.costo_envio))}</span></div>
             </div>
           </section>
           <section className="tarjeta">
@@ -85,6 +91,9 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
               {p.notas && <div><b>Notas:</b> {p.notas}</div>}
             </div>
           </section>
+          {p.entrega === "envio" && <Envio local={tienda?.direccion_retiro ?? null} d={{ pedido: p.id, comprobante: p.comprobante ?? "", cliente: c.nombre, telefono: c.telefono,
+            direccion: p.direccion_envio, zona: (p.zonas_envio as unknown as { nombre: string } | null)?.nombre ?? null, cobrado: Number(p.costo_envio),
+            envio: envio ? { ...envio, costo_real: envio.costo_real == null ? null : Number(envio.costo_real) } : null }} />}
           {ESTADOS[p.estado].siguientes.length > 0 && <Acciones key={p.estado} pedido={p.id} siguientes={ESTADOS[p.estado].siguientes} medios={medios ?? []}
             elegido={{ id: p.medio_pago_id, ajuste_pct: Number(p.ajuste_pct) }} subtotal={Number(p.subtotal)} />}
         </div>

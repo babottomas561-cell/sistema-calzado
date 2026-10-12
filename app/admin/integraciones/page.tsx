@@ -1,51 +1,75 @@
-// Integraciones: WhatsApp (Meta) y la IA (Gemini), todo junto. Las claves se cargan acá y quedan en la base sin que
-// nadie las pueda volver a leer; abajo, el bot, los avisos de pedidos, el modelo de IA y su prueba (ver docs/INTEGRACIONES.md).
+// Integraciones: la portada. Una tarjeta por servicio externo con su estado y el botón para configurarlo; cada uno
+// tiene su pantalla (whatsapp/, ia/, mercadopago/, envios/) y su parte de la guía paso a paso (guia/).
 // Lo ve quien tiene el permiso «Tienda online».
 import Link from "next/link";
-import { BookOpen } from "lucide-react";
+import { BookOpen, ChevronRight, CreditCard, MessageCircle, Sparkles, Truck, type LucideIcon } from "lucide-react";
 import { crearCliente } from "@/lib/supabase/server";
 import { exigir } from "@/lib/exigir";
-import Conexiones, { type EstadoConexiones } from "./Conexiones";
-import Automatizaciones, { type Config, type EstadoIA, type Modelo } from "./Automatizaciones";
-import { diaArgentina } from "@/lib/formato";
-import MercadoPago, { type EstadoMP } from "./MercadoPago";
+
+type Estado = { texto: string; tono: "ok" | "falta" | "apagado" };
+const TONO = { ok: "bg-green-50 text-ok", falta: "bg-amber-50 text-alerta", apagado: "bg-gray-100 text-texto-2" };
+
+function Tarjeta({ href, icono: Icono, titulo, para, estados }: { href: string; icono: LucideIcon; titulo: string; para: string; estados: Estado[] }) {
+  return (
+    <Link href={href} className="tarjeta group flex flex-col gap-3 transition hover:border-marca">
+      <div className="flex items-start justify-between gap-3">
+        <span className="flex items-center gap-2 text-lg font-bold"><Icono size={20} strokeWidth={1.8} className="text-marca" /> {titulo}</span>
+        <ChevronRight size={18} className="mt-1 shrink-0 text-texto-2 transition group-hover:translate-x-0.5 group-hover:text-marca" />
+      </div>
+      <p className="text-sm text-texto-2">{para}</p>
+      <div className="mt-auto flex flex-wrap gap-1.5">{estados.map((e) => (
+        <span key={e.texto} className={`rounded-full px-2.5 py-1 text-xs font-semibold ${TONO[e.tono]}`}>{e.texto}</span>
+      ))}</div>
+      <span className="text-sm font-semibold text-marca">Configurar</span>
+    </Link>
+  );
+}
 
 export default async function Integraciones() {
   await exigir("tienda.editar");
   const supabase = await crearCliente();
-  // Si Google ya contestó la lista de modelos (revisión diaria o «Buscar ahora»), se procesa al abrir
-  await supabase.rpc("ia_revisar_modelos", { p_pedir: false });
-  const [{ data: estado }, { data: envios }, { data: config }, { data: modelos }, { data: mp }] = await Promise.all([
+  const [{ data: e }, { data: mp }, { data: t }, { count: zonas }] = await Promise.all([
     supabase.rpc("estado_integraciones"),
-    supabase.rpc("wa_envios_recientes", { p_limite: 10 }),
-    supabase.from("configuracion_tienda").select("wa_bot_activo, wa_notificaciones_pedidos, wa_plantilla_estado, wa_idioma_plantilla, ia_modelo, ia_plan, mp_modo, mp_cuotas_max").single(),
-    supabase.from("ia_modelos").select("id, nombre, precio_entrada, precio_salida, tiene_gratis, limite_diario_gratis, nota, verificado, disponible, nuevo").order("disponible", { ascending: false }).order("orden").order("id"),
     supabase.rpc("estado_mercadopago"),
+    supabase.from("configuracion_tienda").select("wa_bot_activo, wa_notificaciones_pedidos, mp_modo, ia_plan").single(),
+    supabase.from("zonas_envio").select("id", { count: "exact", head: true }).eq("activo", true),
   ]);
-  // La dirección que se pega en Meta (la de producción; en local, la de esta compu)
-  const sitio = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000";
-  const webhook = `${sitio}/api/whatsapp`;
+  const wa = e as { meta_lista?: boolean; gemini?: string | null; ia_prueba?: { estado: string } | null } | null;
+  const cuenta = (mp as { cuenta?: { ok: boolean; prueba?: boolean } | null } | null)?.cuenta;
+  const MODO = { no: "No cobra online", opcional: "Cobro online opcional", obligatorio: "Solo pago online" } as const;
+
   return (
-    <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold">Integraciones</h1>
-        <p className="text-sm text-texto-2">WhatsApp (Meta), la IA (Gemini) y Mercado Pago. Las claves quedan guardadas en la base y nadie las puede volver a leer: acá solo se ve si están cargadas.</p>
-        <Link href="/admin/integraciones/guia" className="boton-sec mt-3 inline-flex items-center gap-1.5"><BookOpen size={16} strokeWidth={1.8} /> Cómo se configura, paso a paso</Link></div>
-      <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
-        <div className="border-b border-borde px-5 py-4"><h2 className="font-semibold">Conexiones</h2>
-          <p className="text-sm text-texto-2">Las claves de Meta y de Gemini, el webhook y la prueba de WhatsApp.</p></div>
-        {estado && <Conexiones estado={estado as EstadoConexiones} webhook={webhook} envios={envios ?? []} />}
-      </section>
-      <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
-        <div className="border-b border-borde px-5 py-4"><h2 className="font-semibold">Bot, avisos e IA</h2>
-          <p className="text-sm text-texto-2">Qué hace el sistema con esas conexiones.</p></div>
-        {config && estado && <Automatizaciones config={config as Config} ia={estado as unknown as EstadoIA} hoy={diaArgentina()}
-          modelos={(modelos ?? []).map((m) => ({ ...m, precio_entrada: m.precio_entrada == null ? null : Number(m.precio_entrada), precio_salida: m.precio_salida == null ? null : Number(m.precio_salida) })) as Modelo[]} />}
-      </section>
-      <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
-        <div className="border-b border-borde px-5 py-4"><h2 className="font-semibold">Mercado Pago</h2>
-          <p className="text-sm text-texto-2">Cobrar los pedidos de la tienda online. Usá una cuenta de Mercado Pago a nombre del local.</p></div>
-        {mp && config && <MercadoPago estado={mp as unknown as EstadoMP} modo={config.mp_modo} cuotasMax={config.mp_cuotas_max} webhook={`${sitio}/api/mercadopago`} />}
-      </section>
+    <div className="max-w-5xl space-y-5">
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold">Integraciones</h1>
+        <p className="text-sm text-texto-2">Los servicios de afuera que usa el sistema. Entrá a cada uno para configurarlo: los pasos están en orden y cada pantalla tiene su parte de la guía.
+          Las claves quedan guardadas en la base y nadie las puede volver a leer.</p>
+        <Link href="/admin/integraciones/guia" className="inline-flex items-center gap-1.5 text-sm font-semibold text-marca"><BookOpen size={15} strokeWidth={1.8} /> Guía completa, paso a paso</Link>
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Tarjeta href="/admin/integraciones/whatsapp" icono={MessageCircle} titulo="WhatsApp"
+          para="Contestar a los clientes con el número del local (bot) y avisarles solos cómo va su pedido."
+          estados={[
+            wa?.meta_lista ? { texto: "Conectado", tono: "ok" } : { texto: "Falta conectar", tono: "falta" },
+            { texto: t?.wa_bot_activo ? "Bot prendido" : "Bot apagado", tono: t?.wa_bot_activo ? "ok" : "apagado" },
+            { texto: t?.wa_notificaciones_pedidos ? "Avisos prendidos" : "Avisos apagados", tono: t?.wa_notificaciones_pedidos ? "ok" : "apagado" },
+          ]} />
+        <Tarjeta href="/admin/integraciones/ia" icono={Sparkles} titulo="Inteligencia artificial"
+          para="Gemini, de Google: le da al bot la capacidad de contestar con el stock, los precios y el estado de los pedidos. Opcional."
+          estados={[
+            !wa?.gemini ? { texto: "Sin clave", tono: "apagado" } : wa.ia_prueba?.estado === "error" ? { texto: "La clave no anda", tono: "falta" } : { texto: "Clave cargada", tono: "ok" },
+            { texto: t?.ia_plan === "pago" ? "Plan pago" : "Plan gratis", tono: "apagado" },
+          ]} />
+        <Tarjeta href="/admin/integraciones/mercadopago" icono={CreditCard} titulo="Mercado Pago"
+          para="Cobrar online los pedidos de la tienda: tarjeta, débito, cuotas o dinero en cuenta. La comisión va sola a Gastos."
+          estados={[
+            !cuenta ? { texto: "Falta conectar", tono: "falta" } : !cuenta.ok ? { texto: "No conecta", tono: "falta" } : cuenta.prueba ? { texto: "Cuenta de prueba", tono: "falta" } : { texto: "Conectado", tono: "ok" },
+            { texto: MODO[(t?.mp_modo ?? "no") as keyof typeof MODO], tono: t?.mp_modo && t.mp_modo !== "no" ? "ok" : "apagado" },
+          ]} />
+        <Tarjeta href="/admin/integraciones/envios" icono={Truck} titulo="Envíos"
+          para="Zonas de Tucumán con su precio, el Uber de cada pedido y lo que costó (va a Gastos). Uber Direct y Andreani, cuando haya acceso."
+          estados={[zonas ? { texto: `${zonas} ${zonas === 1 ? "zona" : "zonas"}`, tono: "ok" } : { texto: "Sin zonas (se coordina)", tono: "falta" }]} />
+      </div>
     </div>
   );
 }

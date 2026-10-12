@@ -126,4 +126,3 @@ export async function guardarTienda(_: Estado, f: FormData): Promise<Estado> {
   refrescar();
   return { ok: "Datos de la tienda guardados" };
 }
-

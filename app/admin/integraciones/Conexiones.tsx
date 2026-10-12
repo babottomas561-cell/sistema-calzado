@@ -1,5 +1,5 @@
 "use client";
-// Conexiones con WhatsApp (Meta) y la IA (Gemini). Las claves se escriben acá y se guardan en la base, que no las
+// La conexión con WhatsApp (Meta). Las claves se escriben acá y se guardan en la base, que no las
 // devuelve nunca: se ve si están cargadas (con los últimos 4 caracteres). Dejar un campo vacío no cambia nada.
 import { useActionState, useState } from "react";
 import { CircleCheck, CircleAlert, Copy, Check, Send } from "lucide-react";
@@ -39,11 +39,9 @@ export default function Conexiones({ estado, webhook, envios }: { estado: Estado
   const [prueba, probar, probando] = useActionState(probarWhatsApp, {});
   return (
     <div className="space-y-5 px-5 py-4">
-      <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+      <div className="text-sm">
         <p className={`flex items-center gap-1.5 rounded-lg p-2.5 ${estado.meta_lista ? "bg-green-50 text-ok" : "bg-amber-50 text-alerta"}`}>
           {estado.meta_lista ? <CircleCheck size={16} /> : <CircleAlert size={16} />} WhatsApp (Meta): {estado.meta_lista ? "conectado" : "falta configurar"}</p>
-        <p className={`flex items-center gap-1.5 rounded-lg p-2.5 ${estado.gemini ? "bg-green-50 text-ok" : "bg-gray-50 text-texto-2"}`}>
-          {estado.gemini ? <CircleCheck size={16} /> : <CircleAlert size={16} />} IA (Gemini): {estado.gemini ? "cargada" : "sin cargar (el bot contesta un mensaje fijo)"}</p>
       </div>
 
       <div className="space-y-2 rounded-lg border border-borde p-3 text-sm">
@@ -56,7 +54,7 @@ export default function Conexiones({ estado, webhook, envios }: { estado: Estado
       </div>
 
       <form action={guardar} className="space-y-3">
-        <p className="text-sm font-semibold">2. Pegá las claves de Meta y de Gemini</p>
+        <p className="text-sm font-semibold">2. Pegá las claves de Meta</p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Clave nombre="phone_number_id" etiqueta="ID del número de teléfono" tipo="text" cargada={estado.phone_number_id}
             ayuda="Meta → WhatsApp → Configuración de la API. Son solo números." quitar="numero" />
@@ -66,8 +64,6 @@ export default function Conexiones({ estado, webhook, envios }: { estado: Estado
             ayuda="El de un usuario del sistema (Configuración del negocio → Usuarios del sistema). El temporal vence en 24 h." quitar="token" />
           <Clave nombre="app_secret" etiqueta="Clave secreta de la app" cargada={estado.secreto}
             ayuda="developers.facebook.com → tu app → Configuración → Básica. Sin ella no se aceptan mensajes." quitar="secreto" />
-          <Clave nombre="gemini_api_key" etiqueta="Clave de Gemini (opcional)" cargada={estado.gemini}
-            ayuda="aistudio.google.com → Get API key. Sin ella, el bot contesta un mensaje fijo y ustedes siguen la charla." quitar="gemini" />
         </div>
         {guardado.error && <p className="text-sm text-error">{guardado.error}</p>}
         {guardado.ok && <p className="flex items-center gap-1.5 text-sm text-ok"><CircleCheck size={15} /> {guardado.ok}</p>}

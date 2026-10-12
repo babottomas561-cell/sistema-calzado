@@ -415,6 +415,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"envios": {
+                  Row: {
+                    "actualizado_en": string,"actualizado_por": string | null,"costo_real": number | null,"id": number,"notas": string | null,"pedido_id": number,"proveedor": string | null,"seguimiento": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"costo_real"?: number | null,"id"?: never,"notas"?: string | null,"pedido_id": number,"proveedor"?: string | null,"seguimiento"?: string | null
+                  }
+                  Update: {
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"costo_real"?: number | null,"id"?: never,"notas"?: string | null,"pedido_id"?: number,"proveedor"?: string | null,"seguimiento"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "envios_actualizado_por_fkey"
+      columns: ["actualizado_por"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "envios_pedido_id_fkey"
+      columns: ["pedido_id"]
+isOneToOne: true
+      referencedRelation: "pedidos"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"fallados": {
                   Row: {
                     "cantidad": number,"costo_unitario": number,"deposito_origen_id": number,"estado": string,"fecha": string,"id": number,"motivo": string,"nota": string | null,"origen": string,"proveedor_id": number | null,"resuelto_en": string | null,"resuelto_por": string | null,"usuario_id": string | null,"variante_id": number,"venta_id": number | null
@@ -895,14 +921,14 @@ isOneToOne: false
                   ]
                 },"pedidos": {
                   Row: {
-                    "ajuste_medio_pago": number,"ajuste_pct": number,"canal": string,"cancelado_por": string | null,"cliente_id": number,"comprobante": string | null,"deposito_id": number,"descuento_promociones": number,"direccion_envio": string | null,"entrega": string,"estado": string,"fecha": string,"id": number,"medio_pago_id": number,"motivo_cancelacion": string | null,"notas": string | null,"numero": number | null,"pagado_online": boolean,"punto_venta": number,"subtotal": number,"total": number
+                    "ajuste_medio_pago": number,"ajuste_pct": number,"canal": string,"cancelado_por": string | null,"cliente_id": number,"comprobante": string | null,"costo_envio": number,"deposito_id": number,"descuento_promociones": number,"direccion_envio": string | null,"entrega": string,"estado": string,"fecha": string,"id": number,"medio_pago_id": number,"motivo_cancelacion": string | null,"notas": string | null,"numero": number | null,"pagado_online": boolean,"punto_venta": number,"subtotal": number,"total": number,"zona_envio_id": number | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cancelado_por"?: string | null,"cliente_id": number,"comprobante"?: never,"deposito_id": number,"descuento_promociones"?: number,"direccion_envio"?: string | null,"entrega"?: string,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id": number,"motivo_cancelacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"pagado_online"?: boolean,"punto_venta"?: number,"subtotal"?: number,"total"?: number
+                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cancelado_por"?: string | null,"cliente_id": number,"comprobante"?: never,"costo_envio"?: number,"deposito_id": number,"descuento_promociones"?: number,"direccion_envio"?: string | null,"entrega"?: string,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id": number,"motivo_cancelacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"pagado_online"?: boolean,"punto_venta"?: number,"subtotal"?: number,"total"?: number,"zona_envio_id"?: number | null
                   }
                   Update: {
-                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cancelado_por"?: string | null,"cliente_id"?: number,"comprobante"?: never,"deposito_id"?: number,"descuento_promociones"?: number,"direccion_envio"?: string | null,"entrega"?: string,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id"?: number,"motivo_cancelacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"pagado_online"?: boolean,"punto_venta"?: number,"subtotal"?: number,"total"?: number
+                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cancelado_por"?: string | null,"cliente_id"?: number,"comprobante"?: never,"costo_envio"?: number,"deposito_id"?: number,"descuento_promociones"?: number,"direccion_envio"?: string | null,"entrega"?: string,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id"?: number,"motivo_cancelacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"pagado_online"?: boolean,"punto_venta"?: number,"subtotal"?: number,"total"?: number,"zona_envio_id"?: number | null
                   }
                   Relationships: [
                     {
@@ -934,6 +960,12 @@ isOneToOne: false
       columns: ["medio_pago_id"]
 isOneToOne: false
       referencedRelation: "medios_pago"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pedidos_zona_envio_id_fkey"
+      columns: ["zona_envio_id"]
+isOneToOne: false
+      referencedRelation: "zonas_envio"
       referencedColumns: ["id"]
     }
                   ]
@@ -1661,6 +1693,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"zonas_envio": {
+                  Row: {
+                    "activo": boolean,"descripcion": string | null,"id": number,"nombre": string,"orden": number,"precio": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activo"?: boolean,"descripcion"?: string | null,"id"?: never,"nombre": string,"orden"?: number,"precio"?: number | null
+                  }
+                  Update: {
+                    "activo"?: boolean,"descripcion"?: string | null,"id"?: never,"nombre"?: string,"orden"?: number,"precio"?: number | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Views: {
@@ -1705,6 +1751,14 @@ isOneToOne: false
       referencedRelation: "devoluciones"
       referencedColumns: ["id"]
     }
+                  ]
+                },"v_envios_cobrados": {
+                  Row: {
+                    "cobrado": number | null,"dia": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
                   ]
                 },"v_fallados": {
                   Row: {
@@ -2127,7 +2181,7 @@ isOneToOne: false
 { Args: { "p_items": Json,"p_venta": number }; Returns: Json
                            },
 "crear_pedido":
-{ Args: { "p_canal"?: string,"p_cliente"?: number,"p_direccion"?: string,"p_entrega"?: string,"p_items": Json,"p_medio_pago"?: number,"p_notas"?: string }; Returns: number
+{ Args: { "p_canal"?: string,"p_cliente"?: number,"p_direccion"?: string,"p_entrega"?: string,"p_items": Json,"p_medio_pago"?: number,"p_notas"?: string,"p_zona"?: number }; Returns: number
                            },
 "crear_presupuesto":
 { Args: { "p_canal"?: string,"p_cliente"?: number,"p_descuento"?: number,"p_items": Json,"p_medio_pago"?: number,"p_notas"?: string,"p_validez_dias"?: number }; Returns: number
@@ -2224,6 +2278,9 @@ isOneToOne: false
                            },
 "registrar_devolucion":
 { Args: { "p_cliente"?: number,"p_comentario"?: string,"p_items": Json,"p_motivo": string,"p_venta": number }; Returns: number
+                           },
+"registrar_envio":
+{ Args: { "p_costo_real"?: number,"p_notas"?: string,"p_pedido": number,"p_proveedor": string,"p_seguimiento"?: string }; Returns: undefined
                            },
 "registrar_venta":
 { Args: { "p_canal"?: string,"p_cliente"?: number,"p_deposito"?: number,"p_descuento"?: number,"p_items": Json,"p_notas"?: string,"p_pagos"?: Json }; Returns: number
