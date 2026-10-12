@@ -192,3 +192,16 @@ queda en `movimientos_stock`. Siempre: `stock.cantidad = Σ movimientos`.
 Funciones: `validar_registro()` (anon), `invitacion_info()` (anon, requiere el token), `crear_invitacion()`, `anular_invitacion()`,
 `guardar_correo()`, `estado_correo()` y `cuentas_aplicar()` (pasa a Supabase Auth: confirmación, contraseña, SMTP y plantillas).
 El trigger `antes_de_registrarse` en `auth.users` hace cumplir las reglas aunque se salteen el formulario.
+
+
+## Legales
+
+| tabla | para qué |
+|---|---|
+| `datos_legales` (una fila, lectura pública) | razón social, CUIT, IVA, domicilio, contacto, tribunales y link de Defensa del Consumidor |
+| `documentos_legales` | términos y privacidad: una fila por versión, **inmutable**. Vigente = `v_documentos_vigentes` |
+| `aceptaciones_legales` | usuario, versión aceptada, origen (`registro` / `compra`), pedido y fecha |
+| `arrepentimientos` | solicitudes del botón (código `ARR-000001`, estado, resolución). Solo las ve quien atiende pedidos |
+
+Funciones: `publicar_documento()`, `legales_completos()`, `documentos_pendientes()`, `aceptar_documentos_compra()`,
+`registrar_arrepentimiento()` (anon), `resolver_arrepentimiento()`.

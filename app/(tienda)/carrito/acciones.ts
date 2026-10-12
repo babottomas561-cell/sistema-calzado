@@ -8,6 +8,9 @@ export async function confirmarPedido(_: Estado, f: FormData): Promise<Estado> {
   const supabase = await crearCliente();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Para confirmar el pedido tenés que ingresar con tu cuenta.", necesitaIngresar: true };
+  // Si hay términos o privacidad vigentes que todavía no aceptó, tiene que tildar la casilla
+  const { data: pendientes } = await supabase.rpc("documentos_pendientes");
+  if (Array.isArray(pendientes) && pendientes.length > 0 && !f.get("terminos")) return { error: "Para confirmar tenés que aceptar los términos y condiciones." };
   const items = JSON.parse(String(f.get("items") ?? "[]")) as { variante_id: number; cantidad: number }[];
   // crear_pedido (en la base) valida stock, usa los precios vigentes y reserva los pares
   const { data: id, error } = await supabase.rpc("crear_pedido", {
@@ -18,6 +21,8 @@ export async function confirmarPedido(_: Estado, f: FormData): Promise<Estado> {
     p_zona: f.get("entrega") === "envio" && Number(f.get("zona_id")) ? Number(f.get("zona_id")) : undefined,
   });
   if (error) return { error: error.message };
+  // Queda constancia de qué versión aceptó al comprar (el pedido ya está creado: si esto fallara, no se pierde la compra)
+  if (Array.isArray(pendientes) && pendientes.length > 0) await supabase.rpc("aceptar_documentos_compra", { p_pedido: id });
   // Con Mercado Pago: la base arma el cobro (con el total que ella calculó) y se va a pagar
   if (f.get("pagar_online") === "1") {
     const { data: link, error: e } = await supabase.rpc("mp_pagar_pedido", { p_pedido: id });

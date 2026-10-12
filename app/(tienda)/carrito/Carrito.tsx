@@ -11,7 +11,7 @@ export type ZonaEnvio = { id: number; nombre: string; descripcion: string | null
 
 // mpId: el medio «Mercado Pago» cuando la tienda cobra online (si no, null): elegirlo lleva a pagar.
 // zonas: las zonas de envío del local (el precio lo vuelve a poner la base al crear el pedido)
-export default function Carrito({ medios, conWhatsApp, mpId, zonas }: { medios: MedioPago[]; conWhatsApp: boolean; mpId: number | null; zonas: ZonaEnvio[] }) {
+export default function Carrito({ pendientes, medios, conWhatsApp, mpId, zonas }: { pendientes: { tipo: string; version: number }[]; medios: MedioPago[]; conWhatsApp: boolean; mpId: number | null; zonas: ZonaEnvio[] }) {
   const { items, cargado, total, cambiar, quitar } = useCarrito();
   const [entrega, setEntrega] = useState("retiro");
   const [zonaId, setZonaId] = useState<number | null>(null);
@@ -112,6 +112,13 @@ export default function Carrito({ medios, conWhatsApp, mpId, zonas }: { medios: 
           {envio > 0 && <div className="flex justify-between text-texto-2"><dt>Envío ({zona?.nombre})</dt><dd>+{pesos(envio)}</dd></div>}
           <div className="flex items-baseline justify-between"><dt className="font-semibold">Total</dt><dd className="text-3xl font-extrabold tracking-[-0.03em]">{pesos(totalFinal + envio)}</dd></div>
         </dl>
+        {pendientes.length > 0 && (
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" name="terminos" required className="mt-1" />
+            <span>Leí y acepto {pendientes.some((d) => d.tipo === "terminos") && <><Link href="/terminos" target="_blank" className="font-semibold underline underline-offset-2">los términos y condiciones</Link>{pendientes.some((d) => d.tipo === "privacidad") && " y "}</>}
+              {pendientes.some((d) => d.tipo === "privacidad") && <Link href="/privacidad" target="_blank" className="font-semibold underline underline-offset-2">la política de privacidad</Link>}.</span>
+          </label>
+        )}
         {estado.error && <p className="text-sm text-error">{estado.error}{estado.necesitaIngresar && <> <Link href="/ingresar?volver=/carrito" className="font-semibold text-marca">Ingresar</Link> o <Link href="/registro?volver=/carrito" className="font-semibold text-marca">crear una cuenta</Link></>}</p>}
         {online && <input type="hidden" name="pagar_online" value="1" />}
         {online ? (

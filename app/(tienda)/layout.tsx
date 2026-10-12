@@ -5,7 +5,7 @@ import { AtSign, CircleUserRound, Clock, MapPin, MessageCircle, Search } from "l
 import BotonCarrito from "@/components/BotonCarrito";
 import Marca from "@/components/Marca";
 import { crearCliente, usuarioActual } from "@/lib/supabase/server";
-import { datosTienda } from "@/lib/tienda";
+import { datosLegales, datosTienda } from "@/lib/tienda";
 import Avisos from "./marco/Avisos";
 import Cabecera from "./marco/Cabecera";
 import WhatsAppFlotante from "./marco/WhatsAppFlotante";
@@ -16,7 +16,7 @@ const serif = Instrument_Serif({ subsets: ["latin"], weight: "400", style: ["nor
 
 export default async function LayoutTienda({ children }: { children: React.ReactNode }) {
   const supabase = await crearCliente();
-  const [{ user, rol }, tienda, { data: primera }] = await Promise.all([usuarioActual(), datosTienda(),
+  const [{ user, rol }, tienda, legal, { data: primera }] = await Promise.all([usuarioActual(), datosTienda(), datosLegales(),
     // ¿La portada arranca con una campaña a pantalla completa? Entonces la cabecera flota transparente encima
     supabase.from("inicio_secciones").select("tipo, imagen_url, contenido").eq("visible", true).order("orden").order("id").limit(1).maybeSingle()]);
   const contacto = tienda;
@@ -57,7 +57,19 @@ export default async function LayoutTienda({ children }: { children: React.React
             {tienda.instagram && <a href={`https://instagram.com/${tienda.instagram}`} target="_blank" rel="noopener" className="flex min-h-11 items-center gap-2 font-semibold underline underline-offset-4"><AtSign size={17} /> {tienda.instagram}</a>}
           </div>
         </div>
-        <div className="border-t border-borde py-4 text-center text-xs text-texto-2">© {new Date().getFullYear()} {tienda.nombre}</div>
+        <div className="border-t border-borde px-4 py-5 text-center text-xs text-texto-2">
+          <nav className="mb-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-1 font-semibold" aria-label="Información legal">
+            {legal.terminos && <Link href="/terminos" className="inline-flex min-h-8 items-center underline-offset-4 hover:underline">Términos y condiciones</Link>}
+            {legal.privacidad && <Link href="/privacidad" className="inline-flex min-h-8 items-center underline-offset-4 hover:underline">Política de privacidad</Link>}
+            <Link href="/arrepentimiento" className="inline-flex min-h-8 items-center underline-offset-4 hover:underline">Botón de arrepentimiento</Link>
+            {legal.datos?.defensa_consumidor_url && <a href={legal.datos.defensa_consumidor_url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-8 items-center underline-offset-4 hover:underline">Defensa del Consumidor</a>}
+          </nav>
+          {legal.datos?.razon_social && (
+            <p className="mx-auto mb-2 max-w-2xl">{legal.datos.razon_social}{legal.datos.cuit ? ` · CUIT ${legal.datos.cuit}` : ""}{legal.datos.condicion_iva ? ` · ${legal.datos.condicion_iva}` : ""}
+              {legal.datos.domicilio_legal ? ` · ${legal.datos.domicilio_legal}` : ""}{legal.datos.email_contacto ? ` · ${legal.datos.email_contacto}` : ""}</p>
+          )}
+          © {new Date().getFullYear()} {tienda.nombre}
+        </div>
       </footer>
     </div>
   );

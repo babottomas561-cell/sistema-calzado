@@ -1,6 +1,7 @@
 // Tienda online: cómo se ve la portada (secciones en orden, cada una editable) y los datos de la
 // tienda (nombre, avisos, Instagram, WhatsApp, local). Lo ve quien tiene el permiso "Tienda online".
-import { ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { ExternalLink, Scale } from "lucide-react";
 import { crearCliente } from "@/lib/supabase/server";
 import { exigir } from "@/lib/exigir";
 import { leerContenido, type Seccion, type Tipo } from "@/lib/inicio";
@@ -30,7 +31,10 @@ export default async function TiendaOnline() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div><h1 className="text-2xl font-bold">Tienda online</h1>
           <p className="text-sm text-texto-2">La portada de la tienda, armada por secciones. Los cambios se ven al instante.</p></div>
-        <a href="/" target="_blank" className="boton-sec"><ExternalLink size={16} /> Ver la tienda</a>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/admin/tienda/legales" className="boton-sec"><Scale size={16} strokeWidth={1.8} /> Legales</Link>
+          <a href="/" target="_blank" className="boton-sec"><ExternalLink size={16} /> Ver la tienda</a>
+        </div>
       </div>
 
       <section className="space-y-3">

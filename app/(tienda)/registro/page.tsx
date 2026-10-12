@@ -10,6 +10,7 @@ export default async function Registro({ searchParams }: { searchParams: Promise
   const { invitacion, volver } = await searchParams;
   const supabase = await crearCliente();
   const config = await leerConfigCuentas(supabase);
+  const { data: docs } = await supabase.from("v_documentos_vigentes").select("tipo");
   const { data: inv } = invitacion ? await supabase.rpc("invitacion_info", { p_token: invitacion }) : { data: null };
   const invitada = inv as { email: string; rol: string | null } | null;
 
@@ -29,5 +30,5 @@ export default async function Registro({ searchParams }: { searchParams: Promise
       <Link href="/ingresar" className="boton w-full">Ingresar</Link>
     </div>
   );
-  return <Formulario config={config} invitacion={invitada ? { token: invitacion!, email: invitada.email, rol: invitada.rol } : null} volver={volver ?? ""} />;
+  return <Formulario config={config} invitacion={invitada ? { token: invitacion!, email: invitada.email, rol: invitada.rol } : null} volver={volver ?? ""} docs={{ terminos: !!docs?.some((d) => d.tipo === "terminos"), privacidad: !!docs?.some((d) => d.tipo === "privacidad") }} />;
 }

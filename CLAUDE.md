@@ -207,6 +207,15 @@ una API de Next.** Lo que ya pisamos:
     desde otro dispositivo. Hay reenviar mail, «Olvidé mi contraseña» (`/olvide-clave`, `/nueva-clave`). Nunca usar `disable_signup`
     de Supabase (frena también las invitaciones): el cierre es el trigger. Manual: `docs/integraciones/correo.md`.
 
+20. **Legales** (`/admin/tienda/legales`, `tienda.editar`; `/admin/arrepentimientos`, `pedidos.gestionar`): `datos_legales` (razón
+    social, CUIT, domicilio, contacto; pública, va al pie) y `documentos_legales` (términos y privacidad **versionados e
+    inmutables**: un trigger frena editar o borrar; se publica solo con `publicar_documento()`, que exige los datos del comercio;
+    la vigente es `v_documentos_vigentes`). `aceptaciones_legales` guarda quién aceptó qué versión, cuándo y dónde (`registro` por
+    `_nuevo_usuario` si tildó la casilla; `compra` por `aceptar_documentos_compra()` desde `confirmarPedido`, que pide tildar si
+    `documentos_pendientes()` no está vacío). Los textos son un borrador (`lib/legales.ts`, con los días de cambio/retiro/saldo de
+    la tienda) y **los tiene que revisar un abogado**. El botón de arrepentimiento (`/arrepentimiento`, público, 10 días) llama a
+    `registrar_arrepentimiento()` y devuelve un código; solo se vincula a un pedido si el email coincide con el de ese cliente.
+
 ---
 
 ## Dónde está cada cosa

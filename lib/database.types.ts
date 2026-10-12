@@ -23,7 +23,39 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "ajuste_precio_items": {
+            "aceptaciones_legales": {
+                  Row: {
+                    "aceptado_en": string,"documento_id": number,"id": number,"origen": string,"pedido_id": number | null,"usuario_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "aceptado_en"?: string,"documento_id": number,"id"?: never,"origen": string,"pedido_id"?: number | null,"usuario_id": string
+                  }
+                  Update: {
+                    "aceptado_en"?: string,"documento_id"?: number,"id"?: never,"origen"?: string,"pedido_id"?: number | null,"usuario_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "aceptaciones_legales_documento_id_fkey"
+      columns: ["documento_id"]
+isOneToOne: false
+      referencedRelation: "documentos_legales"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "aceptaciones_legales_documento_id_fkey"
+      columns: ["documento_id"]
+isOneToOne: false
+      referencedRelation: "v_documentos_vigentes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "aceptaciones_legales_pedido_id_fkey"
+      columns: ["pedido_id"]
+isOneToOne: false
+      referencedRelation: "pedidos"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"ajuste_precio_items": {
                   Row: {
                     "ajuste_id": number,"id": number,"precio_anterior": number,"precio_nuevo": number,"producto_id": number
                   }
@@ -114,6 +146,26 @@ isOneToOne: false
       columns: ["usuario_id"]
 isOneToOne: false
       referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"arrepentimientos": {
+                  Row: {
+                    "codigo": string,"comprobante": string | null,"creado_en": string,"detalle": string | null,"email": string,"estado": string,"id": number,"nombre": string,"pedido_id": number | null,"resolucion": string | null,"resuelto_en": string | null,"resuelto_por": string | null,"telefono": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "codigo"?: string,"comprobante"?: string | null,"creado_en"?: string,"detalle"?: string | null,"email": string,"estado"?: string,"id"?: never,"nombre": string,"pedido_id"?: number | null,"resolucion"?: string | null,"resuelto_en"?: string | null,"resuelto_por"?: string | null,"telefono"?: string | null
+                  }
+                  Update: {
+                    "codigo"?: string,"comprobante"?: string | null,"creado_en"?: string,"detalle"?: string | null,"email"?: string,"estado"?: string,"id"?: never,"nombre"?: string,"pedido_id"?: number | null,"resolucion"?: string | null,"resuelto_en"?: string | null,"resuelto_por"?: string | null,"telefono"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "arrepentimientos_pedido_id_fkey"
+      columns: ["pedido_id"]
+isOneToOne: false
+      referencedRelation: "pedidos"
       referencedColumns: ["id"]
     }
                   ]
@@ -339,6 +391,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"datos_legales": {
+                  Row: {
+                    "actualizado_en": string,"actualizado_por": string | null,"condicion_iva": string | null,"cuit": string | null,"defensa_consumidor_url": string,"domicilio_legal": string | null,"email_contacto": string | null,"jurisdiccion": string,"razon_social": string | null,"telefono_contacto": string | null,"unica": boolean
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"condicion_iva"?: string | null,"cuit"?: string | null,"defensa_consumidor_url"?: string,"domicilio_legal"?: string | null,"email_contacto"?: string | null,"jurisdiccion"?: string,"razon_social"?: string | null,"telefono_contacto"?: string | null,"unica"?: boolean
+                  }
+                  Update: {
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"condicion_iva"?: string | null,"cuit"?: string | null,"defensa_consumidor_url"?: string,"domicilio_legal"?: string | null,"email_contacto"?: string | null,"jurisdiccion"?: string,"razon_social"?: string | null,"telefono_contacto"?: string | null,"unica"?: boolean
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"depositos": {
                   Row: {
                     "activo": boolean,"id": number,"nombre": string,"vendible": boolean
@@ -428,6 +494,20 @@ isOneToOne: false
       referencedRelation: "ventas"
       referencedColumns: ["id"]
     }
+                  ]
+                },"documentos_legales": {
+                  Row: {
+                    "contenido": string,"id": number,"publicado_en": string,"publicado_por": string | null,"tipo": string,"version": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "contenido": string,"id"?: never,"publicado_en"?: string,"publicado_por"?: string | null,"tipo": string,"version": number
+                  }
+                  Update: {
+                    "contenido"?: string,"id"?: never,"publicado_en"?: string,"publicado_por"?: string | null,"tipo"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    
                   ]
                 },"dominios": {
                   Row: {
@@ -1826,6 +1906,14 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"v_documentos_vigentes": {
+                  Row: {
+                    "contenido": string | null,"id": number | null,"publicado_en": string | null,"tipo": string | null,"version": number | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
                 },"v_envios_cobrados": {
                   Row: {
                     "cobrado": number | null,"dia": string | null
@@ -2185,6 +2273,9 @@ isOneToOne: false
 "_queda_administrador":
 { Args: { "p_sin": string }; Returns: boolean
                            },
+"_registrar_aceptacion":
+{ Args: { "p_origen": string,"p_pedido"?: number,"p_usuario": string }; Returns: undefined
+                           },
 "_registrar_venta":
 { Args: { "p_canal": string,"p_cliente": number,"p_deposito": number,"p_descuento": number,"p_items": Json,"p_notas": string,"p_pagos": Json }; Returns: number
                            },
@@ -2216,6 +2307,9 @@ isOneToOne: false
                            },
 "_wa_firma_valida":
 { Args: { "p_firma": string,"p_payload": string }; Returns: boolean
+                           },
+"aceptar_documentos_compra":
+{ Args: { "p_pedido": number }; Returns: undefined
                            },
 "actualizar_mi_ficha":
 { Args: { "p_acepta_promos"?: boolean,"p_direccion"?: string,"p_documento"?: string,"p_fecha_nacimiento"?: string,"p_localidad"?: string,"p_nombre": string,"p_telefono"?: string }; Returns: undefined
@@ -2296,6 +2390,9 @@ isOneToOne: false
 "deshacer_ajuste_precios":
 { Args: { "p_ajuste": number }; Returns: number
                            },
+"documentos_pendientes":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "dominio_agregar":
 { Args: { "p_nombre": string }; Returns: undefined
                            },
@@ -2364,6 +2461,9 @@ isOneToOne: false
 "invitacion_info":
 { Args: { "p_token": string }; Returns: Json
                            },
+"legales_completos":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
 "mas_vendidos_tienda":
 { Args: { "p_dias"?: number }; Returns: {
               "producto_id": number
@@ -2407,11 +2507,17 @@ isOneToOne: false
 "probar_uber":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"publicar_documento":
+{ Args: { "p_contenido": string,"p_tipo": string }; Returns: number
+                           },
 "puede_ver_venta":
 { Args: { "p_usuario": string }; Returns: boolean
                            },
 "quitar_del_equipo":
 { Args: { "p_usuario": string }; Returns: undefined
+                           },
+"registrar_arrepentimiento":
+{ Args: { "p_comprobante"?: string,"p_detalle"?: string,"p_email": string,"p_nombre": string,"p_telefono"?: string }; Returns: string
                            },
 "registrar_cambio":
 { Args: { "p_cliente"?: number,"p_comentario"?: string,"p_devuelve": Json,"p_lleva": Json,"p_motivo"?: string,"p_pagos"?: Json,"p_venta": number }; Returns: Json
@@ -2435,6 +2541,9 @@ isOneToOne: false
 { Args: { "p_dias_cobertura"?: number,"p_dias_ventas"?: number }; Returns: {
               "codigo": string,"color": string,"color_hex": string,"costo_unitario": number,"disponible": number,"marca": string,"nombre": string,"producto_id": number,"proveedor": string,"proveedor_id": number,"sugerido": number,"talle": string,"talle_orden": number,"variante_id": number,"vendidos": number
             }[]
+                           },
+"resolver_arrepentimiento":
+{ Args: { "p_estado": string,"p_id": number,"p_resolucion"?: string }; Returns: undefined
                            },
 "resolver_fallado":
 { Args: { "p_cantidad"?: number,"p_fallado": number,"p_nota"?: string,"p_proveedor"?: number,"p_salida": string }; Returns: number

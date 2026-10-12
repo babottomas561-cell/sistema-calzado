@@ -45,7 +45,7 @@ function Campo({ nombre, etiqueta, modo, tipo = "text", auto, v, intento, ayuda 
   );
 }
 
-export default function Formulario({ config, invitacion, volver }: { config: ConfigCuentas; invitacion: { token: string; email: string; rol: string | null } | null; volver: string }) {
+export default function Formulario({ config, invitacion, volver, docs }: { docs: { terminos: boolean; privacidad: boolean }; config: ConfigCuentas; invitacion: { token: string; email: string; rol: string | null } | null; volver: string }) {
   const [estado, accion, cargando] = useActionState(registrarse, {});
   const [verClave, setVerClave] = useState(false);
   const [volverAlForm, setVolverAlForm] = useState(false);
@@ -84,7 +84,9 @@ export default function Formulario({ config, invitacion, volver }: { config: Con
       {config.exigir_terminos && (
         <label className="flex items-start gap-2 text-sm">
           <input type="checkbox" name="terminos" required className="mt-0.5" />
-          <span>Acepto los <a href={config.terminos_url ?? "#"} target="_blank" rel="noreferrer" className="font-semibold text-marca underline">términos y condiciones</a>.</span>
+          <span>Acepto {docs.terminos || config.terminos_url
+            ? <a href={docs.terminos ? "/terminos" : config.terminos_url!} target="_blank" rel="noreferrer" className="font-semibold text-marca underline">los términos y condiciones</a> : "los términos y condiciones"}
+            {docs.privacidad && <> y <a href="/privacidad" target="_blank" rel="noreferrer" className="font-semibold text-marca underline">la política de privacidad</a></>}.</span>
         </label>
       )}
       {config.ofrecer_novedades && !invitacion && (
