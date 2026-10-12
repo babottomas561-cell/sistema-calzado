@@ -1,10 +1,10 @@
-# Conectar WhatsApp (Meta) y la IA (Gemini) — paso a paso
+# Integraciones paso a paso: WhatsApp (Meta), IA (Gemini) y Mercado Pago
 
 Todo se configura desde el panel, en **Configuración → Integraciones**. No hace falta tocar Vercel ni código.
 Las claves quedan guardadas en la base y **nadie las puede volver a leer** (ni desde el panel): solo se ve si están
 cargadas y sus últimos 4 caracteres. Para cambiar una, se pega la nueva encima.
 
-Necesitás: una compu (las pantallas de Meta son incómodas en el celular), un **número de celular que NO esté usando
+Para WhatsApp necesitás: una compu (las pantallas de Meta son incómodas en el celular), un **número de celular que NO esté usando
 WhatsApp** (conviene un chip nuevo solo para el bot) y una tarjeta para pagar lo que cobra Meta.
 
 > Meta cambia los nombres de sus pantallas seguido. Si algo no aparece exactamente así, buscá el nombre parecido.
@@ -139,6 +139,44 @@ Desde ahí, el aviso sale solo cuando el pedido pasa a confirmado, listo, en cam
 Sin la clave de Gemini, el bot igual contesta: manda un mensaje fijo («Recibimos tu mensaje, te respondemos en
 breve») y la charla sigue a mano desde el WhatsApp del local.
 
+## Parte 12 — Mercado Pago (cobrar los pedidos de la tienda)
+
+Usá una cuenta de Mercado Pago **a nombre del local** (con su CUIT), no una personal: la plata, las retenciones y los
+reportes quedan a nombre de quien sea la cuenta. Al conectarla, el panel muestra de quién es para que lo confirmes.
+
+1. Entrá a **mercadopago.com.ar/developers** con la cuenta del local → **Tus integraciones → Crear aplicación**.
+   - Nombre: «Tienda online». Tipo de solución: **Pagos online**. Producto: **Checkout Pro**.
+   - Mercado Pago puede pedirte que verifiques tu identidad.
+2. Dentro de la aplicación → **Credenciales de producción** → **Activar credenciales** (te pide rubro y la web de la
+   tienda) → copiá el **Access Token** (empieza con `APP_USR-`). No compartas este token con nadie.
+3. En el panel, **Integraciones → Mercado Pago**: pegalo y **Guardar Mercado Pago**. Arriba tiene que decir
+   «Conectado a la cuenta …» con el nombre del local.
+4. Avisos de pago: en la aplicación de Mercado Pago → **Webhooks → Configurar notificaciones**:
+   - **Modo productivo**, URL: la que muestra el panel («URL para las notificaciones», botón copiar).
+   - Eventos: tildá **Pagos** → **Guardar**.
+   - Copiá la **clave secreta** que aparece ahí y pegala en el panel («Clave secreta de las notificaciones»).
+5. **Cómo cobra la tienda** (en el panel):
+   - *Sin Mercado Pago*: como hasta ahora (se coordina por WhatsApp o al retirar).
+   - *Mercado Pago como opción*: el cliente elige pagar online o con otro medio.
+   - *Solo online*: todo pedido de la tienda se paga con Mercado Pago al confirmarlo.
+   - Cuotas máximas: lo que querés ofrecer. El costo de las cuotas lo define tu cuenta de Mercado Pago
+     (Tu negocio → Costos → Cuotas).
+6. Revisá en **Medios de pago** (Tablas) que «Mercado Pago» esté activo para la tienda.
+
+**Cómo funciona:** el cliente confirma el pedido, paga en Mercado Pago (tarjeta, débito, cuotas o dinero en cuenta) y
+vuelve a la tienda. Cuando Mercado Pago avisa que se aprobó, el pedido queda **pagado y confirmado**, el cliente recibe
+el aviso por WhatsApp (si está activo) y la **comisión** de Mercado Pago se anota sola en **Gastos → Comisiones y
+bancos**. Si el pago no se completó, el pedido sigue reservado y el cliente lo puede pagar después desde su pedido.
+
+- **Cancelar un pedido pagado** (desde el panel) le **devuelve la plata** por Mercado Pago en el momento. Si
+  Mercado Pago no puede devolverla, el pedido no se cancela y el panel muestra por qué.
+- El cliente **no puede cancelar solo** un pedido ya pagado: tiene que escribirles.
+- Un pedido pagado **no se vence solo** aunque no lo retiren.
+
+**Para probar sin plata de verdad:** en la aplicación de Mercado Pago → **Cuentas de prueba**, creá un vendedor y un
+comprador; cargá en el panel el Access Token de **prueba** (el panel avisa «cuenta de PRUEBA») y pagá con las tarjetas
+de prueba de Mercado Pago. Cuando todo ande, cambiá al Access Token de producción.
+
 ---
 
 ## Costos
@@ -150,6 +188,7 @@ breve») y la charla sigue a mano desde el WhatsApp del local.
 | Promociones (plantilla de marketing) | ~US$ 0,06 cada una | Gastos → WhatsApp (Meta), solo |
 | Gemini, plan gratis | US$ 0 (con límite de consultas por día) | Integraciones → Uso de la IA (y cuánto costaría) |
 | Gemini, plan pago | según el modelo y los tokens | Gastos → Inteligencia artificial, solo |
+| Mercado Pago | la comisión de cada pago (depende de tu cuenta, el plazo y las cuotas) | Gastos → Comisiones y bancos, sola |
 
 Los precios de Meta son aproximados para Argentina; si Meta los cambia, se corrigen en la base
 (`configuracion_gastos.wa_precio_*`). Para que los gastos en dólares den bien, cargá la cotización en **Gastos**.
@@ -166,4 +205,6 @@ Los precios de Meta son aproximados para Argentina; si Meta los cambia, se corri
 | El bot contesta siempre el mensaje fijo | Falta la clave de Gemini o es inválida: usá **Probar Gemini**. |
 | Probar Gemini da «model not found» | Ese modelo ya no existe: tocá «Buscar ahora» y elegí otro en Modelo. |
 | El bot dejó de contestar con IA a la tarde | Se pasó el límite gratis del día: mirá Uso de la IA. Vuelve solo a la medianoche de California. |
+| Mercado Pago: «no reconoce el Access Token» | Copialo entero desde Credenciales **de producción** (empieza con APP_USR-). |
+| El cliente pagó pero el pedido no figura pagado | Revisá en Mercado Pago → Webhooks que la URL sea la del panel y esté tildado **Pagos**. |
 | Los avisos no salen | Avisos tildados, plantilla aprobada con su nombre en el panel, y el cliente con teléfono en su ficha. |

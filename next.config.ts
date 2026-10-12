@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   // Ver CLAUDE.md antes de activar cacheComponents.
   cacheComponents: false,
   // La guía de integraciones se lee de docs/ al abrirla: que el archivo viaje con el deploy
-  outputFileTracingIncludes: { "/admin/integraciones/guia": ["./docs/WHATSAPP.md"] },
+  outputFileTracingIncludes: { "/admin/integraciones/guia": ["./docs/INTEGRACIONES.md"] },
   turbopack: {
     rules: {
       "*.css": {

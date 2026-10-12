@@ -160,7 +160,14 @@ una API de Next.** Lo que ya pisamos:
     que se copia de AI Studio). Con `configuracion_tienda.ia_plan = 'pago'` suma a Gastos → Inteligencia artificial; con
     'gratis' solo calcula cuánto costaría. La lista de modelos se revisa sola cada mañana (pg_cron + models.list de Google:
     suma los nuevos sin precio, marca los retirados); los precios NO se bajan solos (Google no los publica por API).
-    La guía paso a paso es `docs/WHATSAPP.md` y se ve en el panel (`/admin/integraciones/guia`).
+    **Mercado Pago** (Checkout Pro): token y secreto también en `integraciones`; la base habla con Mercado Pago con la
+    extensión `http` (síncrona): `mp_pagar_pedido()` arma el cobro con el total del pedido (solo el dueño del pedido o el
+    equipo), `mp_notificacion()` (webhook `app/api/mercadopago`) verifica la firma y CONSULTA el pago a Mercado Pago;
+    aprobado → `pedidos.pagado_online`, confirmado y comisión a Gastos (una vez). Cancelar un pedido pagado lo
+    reembolsa en la misma transacción (trigger) o no se cancela; el cliente no lo cancela solo; no se vence solo.
+    `configuracion_tienda.mp_modo` (no / opcional / obligatorio, lo frena la base) y `mp_cuotas_max`; la tienda lo lee
+    por `tienda_pagos()`. En las pruebas, `_mp_pedir` se reemplaza por respuestas preparadas.
+    La guía paso a paso es `docs/INTEGRACIONES.md` y se ve en el panel (`/admin/integraciones/guia`).
 17. **Gastos** (`/admin/gastos`, permiso `gastos.gestionar`): a mano, fijos por mes (`gastos_fijos`, los genera
     `_generar_gastos_fijos()` con pg_cron) y automáticos (`_sumar_gasto_automatico()`, no se tocan a mano). En dólares
     guardan **una copia** de la cotización. Informes → Resultado: ventas − costo − fallados de baja − gastos = neta.
@@ -186,7 +193,7 @@ app/admin/             panel del equipo (el layout verifica que sea staff; cada 
   precios/             ajuste masivo de precios de venta y compra (ajustar_precios), historial y deshacer
   tienda/              tienda online: secciones de la portada (orden, ocultar, editar, fotos) y datos de la tienda
   integraciones/       WhatsApp (Meta) y Gemini: claves (se guardan, no se leen), webhook, bot, avisos, modelo de IA,
-                       pruebas y la guía paso a paso (guia/, lee docs/WHATSAPP.md)
+                       pruebas y la guía paso a paso (guia/, lee docs/INTEGRACIONES.md)
   tablas/              maestros: rubros/subrubros, marcas, colores (muestra), talles (orden), medios de pago
 components/            Menu (íconos lucide), Logo, Volver, SelectorVariantes (venta), Contactos…
 lib/supabase/server.ts crearCliente() tipado y usuarioActual() → { supabase, user, rol, nombre }

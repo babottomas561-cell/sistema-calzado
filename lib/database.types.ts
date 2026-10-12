@@ -257,14 +257,14 @@ isOneToOne: false
                   ]
                 },"configuracion_tienda": {
                   Row: {
-                    "aviso_enlace": string | null,"avisos": (string)[],"dias_cambio": number,"dias_retiro": number,"dias_saldo": number,"direccion_retiro": string | null,"horario": string | null,"ia_modelo": string,"ia_plan": string,"id": number,"instagram": string | null,"nombre": string,"unica": boolean,"wa_bot_activo": boolean,"wa_idioma_plantilla": string,"wa_notificaciones_pedidos": boolean,"wa_plantilla_estado": string | null,"whatsapp": string | null
+                    "aviso_enlace": string | null,"avisos": (string)[],"dias_cambio": number,"dias_retiro": number,"dias_saldo": number,"direccion_retiro": string | null,"horario": string | null,"ia_modelo": string,"ia_plan": string,"id": number,"instagram": string | null,"mp_cuotas_max": number,"mp_modo": string,"nombre": string,"unica": boolean,"wa_bot_activo": boolean,"wa_idioma_plantilla": string,"wa_notificaciones_pedidos": boolean,"wa_plantilla_estado": string | null,"whatsapp": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"id"?: never,"instagram"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
                   }
                   Update: {
-                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"id"?: never,"instagram"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
                   }
                   Relationships: [
                     {
@@ -623,14 +623,14 @@ isOneToOne: false
                   ]
                 },"integraciones": {
                   Row: {
-                    "actualizado_en": string,"actualizado_por": string | null,"gemini_api_key": string | null,"ia_modelos_error": string | null,"ia_modelos_req": number | null,"ia_modelos_revisado": string | null,"ia_ultima_prueba": number | null,"unica": boolean,"wa_access_token": string | null,"wa_app_secret": string | null,"wa_phone_number_id": string | null,"wa_verify_token": string,"wa_waba_id": string | null
+                    "actualizado_en": string,"actualizado_por": string | null,"gemini_api_key": string | null,"ia_modelos_error": string | null,"ia_modelos_req": number | null,"ia_modelos_revisado": string | null,"ia_ultima_prueba": number | null,"mp_access_token": string | null,"mp_cuenta": Json | null,"mp_webhook_secret": string | null,"sitio_url": string | null,"unica": boolean,"wa_access_token": string | null,"wa_app_secret": string | null,"wa_phone_number_id": string | null,"wa_verify_token": string,"wa_waba_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"actualizado_por"?: string | null,"gemini_api_key"?: string | null,"ia_modelos_error"?: string | null,"ia_modelos_req"?: number | null,"ia_modelos_revisado"?: string | null,"ia_ultima_prueba"?: number | null,"unica"?: boolean,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"gemini_api_key"?: string | null,"ia_modelos_error"?: string | null,"ia_modelos_req"?: number | null,"ia_modelos_revisado"?: string | null,"ia_ultima_prueba"?: number | null,"mp_access_token"?: string | null,"mp_cuenta"?: Json | null,"mp_webhook_secret"?: string | null,"sitio_url"?: string | null,"unica"?: boolean,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
                   }
                   Update: {
-                    "actualizado_en"?: string,"actualizado_por"?: string | null,"gemini_api_key"?: string | null,"ia_modelos_error"?: string | null,"ia_modelos_req"?: number | null,"ia_modelos_revisado"?: string | null,"ia_ultima_prueba"?: number | null,"unica"?: boolean,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"gemini_api_key"?: string | null,"ia_modelos_error"?: string | null,"ia_modelos_req"?: number | null,"ia_modelos_revisado"?: string | null,"ia_ultima_prueba"?: number | null,"mp_access_token"?: string | null,"mp_cuenta"?: Json | null,"mp_webhook_secret"?: string | null,"sitio_url"?: string | null,"unica"?: boolean,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -803,6 +803,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"pagos_online": {
+                  Row: {
+                    "actualizado_en": string,"comision": number,"comision_registrada": boolean,"creado_en": string,"cuotas": number | null,"detalle_estado": string | null,"estado": string,"id": number,"medio": string | null,"monto": number,"neto": number | null,"pago_externo": string,"pedido_id": number,"proveedor": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actualizado_en"?: string,"comision"?: number,"comision_registrada"?: boolean,"creado_en"?: string,"cuotas"?: number | null,"detalle_estado"?: string | null,"estado": string,"id"?: never,"medio"?: string | null,"monto": number,"neto"?: number | null,"pago_externo": string,"pedido_id": number,"proveedor"?: string
+                  }
+                  Update: {
+                    "actualizado_en"?: string,"comision"?: number,"comision_registrada"?: boolean,"creado_en"?: string,"cuotas"?: number | null,"detalle_estado"?: string | null,"estado"?: string,"id"?: never,"medio"?: string | null,"monto"?: number,"neto"?: number | null,"pago_externo"?: string,"pedido_id"?: number,"proveedor"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pagos_online_pedido_id_fkey"
+      columns: ["pedido_id"]
+isOneToOne: false
+      referencedRelation: "pedidos"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"pedido_estados": {
                   Row: {
                     "comentario": string | null,"estado": string,"fecha": string,"id": number,"pedido_id": number,"usuario_id": string | null
@@ -875,14 +895,14 @@ isOneToOne: false
                   ]
                 },"pedidos": {
                   Row: {
-                    "ajuste_medio_pago": number,"ajuste_pct": number,"canal": string,"cancelado_por": string | null,"cliente_id": number,"comprobante": string | null,"deposito_id": number,"descuento_promociones": number,"direccion_envio": string | null,"entrega": string,"estado": string,"fecha": string,"id": number,"medio_pago_id": number,"motivo_cancelacion": string | null,"notas": string | null,"numero": number | null,"punto_venta": number,"subtotal": number,"total": number
+                    "ajuste_medio_pago": number,"ajuste_pct": number,"canal": string,"cancelado_por": string | null,"cliente_id": number,"comprobante": string | null,"deposito_id": number,"descuento_promociones": number,"direccion_envio": string | null,"entrega": string,"estado": string,"fecha": string,"id": number,"medio_pago_id": number,"motivo_cancelacion": string | null,"notas": string | null,"numero": number | null,"pagado_online": boolean,"punto_venta": number,"subtotal": number,"total": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cancelado_por"?: string | null,"cliente_id": number,"comprobante"?: never,"deposito_id": number,"descuento_promociones"?: number,"direccion_envio"?: string | null,"entrega"?: string,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id": number,"motivo_cancelacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number
+                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cancelado_por"?: string | null,"cliente_id": number,"comprobante"?: never,"deposito_id": number,"descuento_promociones"?: number,"direccion_envio"?: string | null,"entrega"?: string,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id": number,"motivo_cancelacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"pagado_online"?: boolean,"punto_venta"?: number,"subtotal"?: number,"total"?: number
                   }
                   Update: {
-                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cancelado_por"?: string | null,"cliente_id"?: number,"comprobante"?: never,"deposito_id"?: number,"descuento_promociones"?: number,"direccion_envio"?: string | null,"entrega"?: string,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id"?: number,"motivo_cancelacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number
+                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cancelado_por"?: string | null,"cliente_id"?: number,"comprobante"?: never,"deposito_id"?: number,"descuento_promociones"?: number,"direccion_envio"?: string | null,"entrega"?: string,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id"?: number,"motivo_cancelacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"pagado_online"?: boolean,"punto_venta"?: number,"subtotal"?: number,"total"?: number
                   }
                   Relationships: [
                     {
@@ -1984,6 +2004,15 @@ isOneToOne: false
 "_mover_stock":
 { Args: { "p_cantidad": number,"p_compra"?: number,"p_deposito": number,"p_motivo"?: string,"p_tipo": string,"p_variante": number,"p_venta"?: number }; Returns: undefined
                            },
+"_mp_firma_valida":
+{ Args: { "p_data_id": string,"p_firma": string,"p_request_id": string }; Returns: boolean
+                           },
+"_mp_pedir":
+{ Args: { "p_cuerpo"?: Json,"p_idempotencia"?: string,"p_metodo": string,"p_ruta": string }; Returns: Json
+                           },
+"_mp_reembolsar":
+{ Args: { "p_pedido": number }; Returns: undefined
+                           },
 "_pagado_con_promos":
 { Args: { "p_items": Json,"p_promos": (number)[] }; Returns: number
                            },
@@ -2123,6 +2152,9 @@ isOneToOne: false
 "estado_integraciones":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"estado_mercadopago":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "etiqueta_promocion":
 { Args: { "p_lleva": number,"p_paga": number,"p_pct": number,"p_tipo": string }; Returns: string
                            },
@@ -2131,6 +2163,9 @@ isOneToOne: false
                            },
 "guardar_integraciones":
 { Args: { "p_access_token"?: string,"p_app_secret"?: string,"p_gemini_api_key"?: string,"p_phone_number_id"?: string,"p_quitar"?: (string)[],"p_waba_id"?: string }; Returns: undefined
+                           },
+"guardar_mercadopago":
+{ Args: { "p_access_token"?: string,"p_quitar"?: (string)[],"p_sitio_url"?: string,"p_webhook_secret"?: string }; Returns: undefined
                            },
 "ia_probar":
 { Args: Record<PropertyKey, never>; Returns: number
@@ -2156,6 +2191,15 @@ isOneToOne: false
                            },
 "mover_a_fallados":
 { Args: { "p_cantidad": number,"p_deposito"?: number,"p_motivo": string,"p_variante": number }; Returns: number
+                           },
+"mp_notificacion":
+{ Args: { "p_data_id": string,"p_firma": string,"p_request_id": string,"p_tipo": string }; Returns: string
+                           },
+"mp_pagar_pedido":
+{ Args: { "p_pedido": number }; Returns: string
+                           },
+"mp_probar":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "orden_escala":
 { Args: { "p_escala": string }; Returns: number
@@ -2197,6 +2241,9 @@ isOneToOne: false
                            },
 "saldo_disponible":
 { Args: { "p_cliente": number }; Returns: number
+                           },
+"tienda_pagos":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "tiene_permiso":
 { Args: { "p_permiso": string }; Returns: boolean

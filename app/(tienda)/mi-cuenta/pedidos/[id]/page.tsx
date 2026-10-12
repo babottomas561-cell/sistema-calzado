@@ -4,15 +4,16 @@ import { crearCliente } from "@/lib/supabase/server";
 import { fecha, fechaHora, pesos, porcentaje } from "@/lib/formato";
 import { ESTADOS, MOTIVOS_CANCELACION } from "@/lib/estados-pedido";
 import CancelarPedido from "./CancelarPedido";
+import PagarPedido from "./PagarPedido";
 import VaciarCarrito from "@/components/VaciarCarrito";
 import Volver from "@/components/Volver";
-import { Check, MessageCircle } from "lucide-react";
+import { Check, CircleCheck, MessageCircle } from "lucide-react";
 import { enlaceWhatsApp, mensajePedido } from "@/lib/whatsapp";
 
 const PASOS = { retiro: ["pendiente", "confirmado", "preparado", "listo_retiro", "entregado"], envio: ["pendiente", "confirmado", "preparado", "enviado", "entregado"] };
 
-export default async function SeguimientoPedido({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ nuevo?: string }> }) {
-  const [{ id }, { nuevo }] = await Promise.all([params, searchParams]);
+export default async function SeguimientoPedido({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ nuevo?: string; pago?: string }> }) {
+  const [{ id }, { nuevo, pago }] = await Promise.all([params, searchParams]);
   const supabase = await crearCliente();
   // Si el pedido no es suyo, la base no lo devuelve (Row Level Security) → 404
   const [{ data: p }, { data: items }, { data: historial }, { data: tienda }, { data: ficha }, { data: hasta }] = await Promise.all([
@@ -24,6 +25,10 @@ export default async function SeguimientoPedido({ params, searchParams }: { para
     supabase.from("v_mi_ficha").select("nombre").maybeSingle(),
     supabase.rpc("retirar_hasta", { p_pedido: Number(id) }),
   ]);
+  const [{ data: pagos }, { data: cobro }] = await Promise.all([
+    supabase.from("pagos_online").select("estado, monto, cuotas").eq("pedido_id", Number(id)).order("id", { ascending: false }),
+    supabase.rpc("tienda_pagos"),
+  ]);
   if (!p) notFound();
   const pasos = PASOS[p.entrega as "retiro" | "envio"];
   const renglones = (items ?? []).map((i) => ({ cantidad: i.cantidad ?? 0, precio_unitario: Number(i.precio_unitario), descuento_promo: Number(i.descuento_promo),
@@ -34,11 +39,22 @@ export default async function SeguimientoPedido({ params, searchParams }: { para
     descuento_promociones: Number(p.descuento_promociones), ajuste_pct: Number(p.ajuste_pct), ajuste_medio_pago: Number(p.ajuste_medio_pago),
     total: Number(p.total), medio, entrega: p.entrega, direccion: p.direccion_envio, notas: p.notas });
   const abierto = !["entregado", "cancelado"].includes(p.estado);
+  // Con Mercado Pago: ¿está pagado? ¿se puede pagar ahora? (lo decide la base: mp_pagar_pedido vuelve a controlar todo)
+  const conMP = (cobro as { mp_modo?: string } | null)?.mp_modo !== "no" && medio === "Mercado Pago";
+  const aprobado = (pagos ?? []).find((x) => x.estado === "approved");
+  const enProceso = (pagos ?? []).some((x) => ["pending", "in_process", "authorized"].includes(x.estado));
+  const puedePagar = conMP && !p.pagado_online && !enProceso && abierto;
   const actual = pasos.indexOf(p.estado);
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      {nuevo && <><VaciarCarrito /><div className="rounded-xl border border-green-200 bg-green-50 p-4 text-ok"><b>¡Listo! Te reservamos tu pedido.</b>{tienda?.whatsapp ? " Ahora mandanos el pedido por WhatsApp para coordinar el pago y la entrega." : " Acá podés seguir su estado."}</div></>}
+      {pago === "ok" && <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 p-4 text-ok"><CircleCheck size={20} /><span><b>¡Pago recibido!</b> En unos segundos lo ves confirmado acá.</span></div>}
+      {pago === "pendiente" && <div className="rounded-xl bg-amber-50 p-4 text-alerta"><b>Tu pago está en proceso.</b> Mercado Pago nos avisa cuando se acredite.</div>}
+      {pago === "error" && <div className="rounded-xl bg-red-50 p-4 text-error"><b>El pago no se completó.</b> Tu pedido sigue reservado: podés intentar de nuevo.</div>}
+      {p.pagado_online && <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 p-4 text-ok"><CircleCheck size={20} /><span><b>Pagado con Mercado Pago</b>{aprobado?.cuotas && aprobado.cuotas > 1 ? ` en ${aprobado.cuotas} cuotas` : ""}.</span></div>}
+      {enProceso && !p.pagado_online && pago !== "pendiente" && <div className="rounded-xl bg-amber-50 p-4 text-alerta">Tu pago está en proceso: Mercado Pago nos avisa cuando se acredite.</div>}
+      {puedePagar && <PagarPedido pedido={p.id} />}
+      {nuevo && <><VaciarCarrito /><div className="rounded-xl border border-green-200 bg-green-50 p-4 text-ok"><b>¡Listo! Te reservamos tu pedido.</b>{conMP ? (p.pagado_online ? "" : " Pagalo con Mercado Pago para confirmarlo.") : tienda?.whatsapp ? " Ahora mandanos el pedido por WhatsApp para coordinar el pago y la entrega." : " Acá podés seguir su estado."}</div></>}
       {tienda?.whatsapp && abierto && (
         <a href={enlaceWhatsApp(tienda.whatsapp, mensaje)} target="_blank" rel="noopener"
           className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3.5 font-semibold text-white shadow-sm ${nuevo ? "bg-[#1f9d55] text-base" : "bg-[#1f9d55]/90 text-sm"}`}>
@@ -67,7 +83,7 @@ export default async function SeguimientoPedido({ params, searchParams }: { para
       )}
 
       {hasta && <p className="rounded-xl bg-indigo-50 p-4 text-indigo-900"><b>¡Ya podés retirarlo!</b> Te lo guardamos hasta el <b>{fecha(hasta)}</b>.</p>}
-      {["pendiente", "confirmado"].includes(p.estado) && (
+      {["pendiente", "confirmado"].includes(p.estado) && !p.pagado_online && (
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-texto-2">
           <span>¿Cambiaste de idea? Podés cancelarlo mientras no lo empezamos a preparar.</span>
           <CancelarPedido pedido={p.id} comprobante={p.comprobante ?? ""} />

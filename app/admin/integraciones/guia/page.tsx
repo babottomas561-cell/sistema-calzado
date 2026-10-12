@@ -1,4 +1,4 @@
-// La guía para conectar WhatsApp y Gemini, paso a paso. Es la misma de docs/WHATSAPP.md (una sola versión que mantener).
+// La guía de las integraciones (WhatsApp, Gemini, Mercado Pago), paso a paso. Es la misma de docs/INTEGRACIONES.md (una sola versión que mantener).
 // Es larga: además del «volver» de arriba, hay uno al final y uno flotante que queda a mano mientras se baja.
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -10,7 +10,7 @@ import { Markdown } from "@/lib/markdown";
 
 export default async function Guia() {
   await exigir("tienda.editar");
-  const texto = await readFile(path.join(process.cwd(), "docs", "WHATSAPP.md"), "utf8");
+  const texto = await readFile(path.join(process.cwd(), "docs", "INTEGRACIONES.md"), "utf8");
   return (
     <div className="max-w-3xl space-y-4 pb-20">
       <Volver href="/admin/integraciones">Integraciones</Volver>

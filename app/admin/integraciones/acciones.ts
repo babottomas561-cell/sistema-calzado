@@ -78,3 +78,45 @@ export async function buscarModelos(): Promise<Estado> {
   revalidatePath("/admin/integraciones");
   return { ok: "Consultando a Google… en unos segundos actualizá la página" };
 }
+
+// ── Mercado Pago ───────────────────────────────────────────────────────
+// La dirección de la tienda (para que Mercado Pago avise y devuelva al cliente) la pone el servidor, no el navegador
+const sitio = () => (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000");
+
+export async function guardarMercadoPago(_: Estado, f: FormData): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("guardar_mercadopago", {
+    p_access_token: texto(f, "mp_access_token", 300), p_webhook_secret: texto(f, "mp_webhook_secret", 300),
+    p_sitio_url: sitio(), p_quitar: f.getAll("quitar").map(String),
+  });
+  if (error) return { error: error.message };
+  // Si se cargó un token nuevo, se prueba en el momento (así se ve de quién es la cuenta)
+  if (texto(f, "mp_access_token", 300)) await supabase.rpc("mp_probar");
+  revalidatePath("/admin/integraciones");
+  return { ok: "Mercado Pago guardado" };
+}
+
+export async function probarMercadoPago(): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("mp_probar");
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones");
+  const r = data as { ok: boolean; error?: string };
+  return r.ok ? { ok: "Conectado con Mercado Pago" } : { error: r.error ?? "Mercado Pago no respondió" };
+}
+
+// Cómo cobra la tienda: sin Mercado Pago, como opción o solo online; y cuántas cuotas como máximo
+export async function guardarCobro(_: Estado, f: FormData): Promise<Estado> {
+  const mp_modo = ["no", "opcional", "obligatorio"].includes(String(f.get("mp_modo"))) ? String(f.get("mp_modo")) : "no";
+  const mp_cuotas_max = Math.min(Math.max(Math.round(Number(f.get("mp_cuotas_max")) || 1), 1), 12);
+  const supabase = await crearCliente();
+  if (mp_modo !== "no") {
+    const { data } = await supabase.rpc("estado_mercadopago");
+    if (!(data as { token?: string } | null)?.token) return { error: "Primero cargá el Access Token de Mercado Pago" };
+  }
+  const { error } = await supabase.from("configuracion_tienda").update({ mp_modo, mp_cuotas_max }).eq("unica", true);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones");
+  revalidatePath("/", "layout");
+  return { ok: "Cobro de la tienda guardado" };
+}

@@ -5,13 +5,15 @@ import { useCarrito } from "@/lib/carrito";
 import { numero, pesos, porcentaje } from "@/lib/formato";
 import { ajusteDe, type MedioPago } from "@/lib/medios";
 import { confirmarPedido, cotizarCarrito, type Cotizacion } from "./acciones";
-import { BadgePercent, Minus, Plus, Shirt, MessageCircle, Trash2 } from "lucide-react";
+import { BadgePercent, CreditCard, Minus, Plus, Shirt, MessageCircle, Trash2 } from "lucide-react";
 
-export default function Carrito({ medios, conWhatsApp }: { medios: MedioPago[]; conWhatsApp: boolean }) {
+// mpId: el medio «Mercado Pago» cuando la tienda cobra online (si no, null): elegirlo lleva a pagar
+export default function Carrito({ medios, conWhatsApp, mpId }: { medios: MedioPago[]; conWhatsApp: boolean; mpId: number | null }) {
   const { items, cargado, total, cambiar, quitar } = useCarrito();
   const [entrega, setEntrega] = useState("retiro");
   const [medioId, setMedioId] = useState(medios[0]?.id);
   const medio = medios.find((m) => m.id === medioId);
+  const online = mpId !== null && medioId === mpId;
   // El total lo calcula la base (cotizar: precios, promociones y % del medio), igual que crear_pedido.
   // Mientras llega, se muestra una estimación sin promociones.
   const [cot, setCot] = useState<Cotizacion | null>(null);
@@ -95,9 +97,17 @@ export default function Carrito({ medios, conWhatsApp }: { medios: MedioPago[]; 
           <div className="flex items-baseline justify-between"><dt className="font-semibold">Total</dt><dd className="text-3xl font-extrabold tracking-[-0.03em]">{pesos(totalFinal)}</dd></div>
         </dl>
         {estado.error && <p className="text-sm text-error">{estado.error}{estado.necesitaIngresar && <> <Link href="/ingresar?volver=/carrito" className="font-semibold text-marca">Ingresar</Link> o <Link href="/registro?volver=/carrito" className="font-semibold text-marca">crear una cuenta</Link></>}</p>}
-        <button className="boton w-full" disabled={cargando || !medio}>
-          {conWhatsApp && <MessageCircle size={18} />}{cargando ? "Enviando…" : conWhatsApp ? "Confirmar y enviar por WhatsApp" : "Confirmar pedido"}</button>
-        <p className="text-xs text-texto-2">{conWhatsApp
+        {online && <input type="hidden" name="pagar_online" value="1" />}
+        {online ? (
+          <button className="boton w-full" disabled={cargando || !medio}>
+            <CreditCard size={18} />{cargando ? "Llevándote a Mercado Pago…" : "Confirmar y pagar con Mercado Pago"}</button>
+        ) : (
+          <button className="boton w-full" disabled={cargando || !medio}>
+            {conWhatsApp && <MessageCircle size={18} />}{cargando ? "Enviando…" : conWhatsApp ? "Confirmar y enviar por WhatsApp" : "Confirmar pedido"}</button>
+        )}
+        <p className="text-xs text-texto-2">{online
+          ? "Te reservamos los productos y pagás en Mercado Pago (tarjeta, débito o dinero en cuenta). Si el pago no se completa, lo podés pagar después desde tu pedido."
+          : conWhatsApp
           ? "Te reservamos los productos y en el paso siguiente nos mandás el pedido por WhatsApp para coordinar el pago y la entrega."
           : "Te reservamos los productos al confirmar. Te avisamos por acá cuando esté listo."}</p>
       </form>

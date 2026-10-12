@@ -16,6 +16,12 @@ export async function confirmarPedido(_: Estado, f: FormData): Promise<Estado> {
     p_medio_pago: Number(f.get("medio_pago_id")), p_notas: String(f.get("notas") ?? "").trim() || undefined,
   });
   if (error) return { error: error.message };
+  // Con Mercado Pago: la base arma el cobro (con el total que ella calculó) y se va a pagar
+  if (f.get("pagar_online") === "1") {
+    const { data: link, error: e } = await supabase.rpc("mp_pagar_pedido", { p_pedido: id });
+    if (!e && link) redirect(link);
+    redirect(`/mi-cuenta/pedidos/${id}?nuevo=1&pago=error`);
+  }
   redirect(`/mi-cuenta/pedidos/${id}?nuevo=1`);
 }
 

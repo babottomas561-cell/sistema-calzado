@@ -7,6 +7,8 @@ import Acciones from "./Acciones";
 import Volver from "@/components/Volver";
 import { exigir } from "@/lib/exigir";
 
+const ESTADO_MP: Record<string, string> = { approved: "aprobado", pending: "pendiente", in_process: "en revisión", rejected: "rechazado", refunded: "devuelto", cancelled: "cancelado", charged_back: "contracargo" };
+
 export default async function Pedido({ params }: { params: Promise<{ id: string }> }) {
   await exigir("pedidos.gestionar");
   const { id } = await params;
@@ -19,6 +21,7 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
     supabase.rpc("retirar_hasta", { p_pedido: Number(id) }),
   ]);
   const { data: medios } = await supabase.from("medios_pago").select("id, nombre, ajuste_pct, cuotas").eq("activo", true).order("orden");
+  const { data: pagosOnline } = await supabase.from("pagos_online").select("id, pago_externo, estado, monto, comision, cuotas, medio, creado_en").eq("pedido_id", Number(id)).order("id");
   if (!p) notFound();
   const medio = (p.medios_pago as unknown as { nombre: string }).nombre;
   const c = p.clientes as unknown as { id: number; nombre: string; telefono: string | null; email: string | null };
@@ -72,7 +75,13 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
             <div>{c.telefono}</div><div className="text-texto-2">{c.email}</div>
             <div className="mt-3 border-t border-borde pt-3">
               <div><b>Entrega:</b> {p.entrega === "envio" ? `Envío a ${p.direccion_envio}` : "Retira en el local"}</div>
-              <div><b>Pago:</b> {medio}{Number(p.ajuste_pct) ? ` (${porcentaje(p.ajuste_pct)})` : ""}</div>
+              <div><b>Pago:</b> {medio}{Number(p.ajuste_pct) ? ` (${porcentaje(p.ajuste_pct)})` : ""}
+                {p.pagado_online && <span className="ml-1 rounded bg-green-50 px-1.5 py-0.5 text-xs font-semibold text-ok">Pagado online</span>}</div>
+              {(pagosOnline ?? []).map((g) => (
+                <div key={g.id} className="text-xs text-texto-2">Mercado Pago n.º {g.pago_externo}: {ESTADO_MP[g.estado] ?? g.estado} · {pesos(g.monto)}
+                  {g.cuotas && g.cuotas > 1 ? ` en ${g.cuotas} cuotas` : ""}{Number(g.comision) > 0 ? ` · comisión ${pesos(g.comision)}` : ""}</div>
+              ))}
+              {p.pagado_online && p.estado !== "cancelado" && <div className="text-xs text-alerta">Si lo cancelás, se le devuelve el pago por Mercado Pago.</div>}
               {p.notas && <div><b>Notas:</b> {p.notas}</div>}
             </div>
           </section>
