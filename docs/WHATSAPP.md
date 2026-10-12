@@ -1,6 +1,6 @@
 # Conectar WhatsApp (Meta) y la IA (Gemini)
 
-Todo se carga desde el panel: **Tienda online → Conexiones: WhatsApp e IA**. No hace falta tocar Vercel.
+Todo se carga desde el panel: **Configuración → Integraciones**. No hace falta tocar Vercel.
 Las claves quedan guardadas en la base y nadie las puede volver a leer (ni desde el panel): solo se ve si están
 cargadas. Si hay que cambiarlas, se pega la nueva encima.
 

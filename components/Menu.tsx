@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   BadgePercent, BookUser, Boxes, ChartBar, ExternalLink, FileText, PackageSearch, ShieldCheck, Tags, House, LogOut, Menu as IconoMenu, MessageCircleMore, Package, PackagePlus,
-  PackageX, Plus, Receipt, Wallet, Undo2, Settings2, ShoppingBag, Store, Truck, Users, X, type LucideIcon,
+  PackageX, Plug, Plus, Receipt, Wallet, Undo2, Settings2, ShoppingBag, Store, Truck, Users, X, type LucideIcon,
 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { puede, type Permiso } from "@/lib/permisos";
@@ -40,6 +40,7 @@ const GRUPOS: { titulo?: string; items: Item[] }[] = [
   ] },
   { titulo: "Configuración", items: [
     { href: "/admin/tienda", texto: "Tienda online", icono: Store, permisos: ["tienda.editar"] },
+    { href: "/admin/integraciones", texto: "Integraciones", icono: Plug, permisos: ["tienda.editar"] },
     { href: "/admin/tablas", texto: "Tablas", icono: Settings2, permisos: ["tablas.editar"] },
     { href: "/admin/equipo", texto: "Equipo", icono: ShieldCheck, permisos: ["equipo.administrar"] },
   ] },

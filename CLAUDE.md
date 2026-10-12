@@ -147,7 +147,7 @@ una API de Next.** Lo que ya pisamos:
     (`app/(tienda)/marco/Cabecera.tsx`). Tipografía: Bricolage (titulares) + Instrument Serif (`.serif`, frases). El movimiento es **CSS** (bloque «PORTADA» de `globals.css`), siempre dentro de
     `prefers-reduced-motion: no-preference` y sin esconder contenido si el navegador no lo soporta.
 16. **Claves de servicios externos (WhatsApp de Meta, Gemini): en la base, nunca legibles.** Se cargan en
-    `/admin/tienda` → Conexiones y van a `integraciones`, una tabla **sin lectura para nadie**
+    `/admin/integraciones` y van a `integraciones`, una tabla **sin lectura para nadie**
     (`guardar_integraciones()` escribe; `estado_integraciones()` solo dice si están, con los últimos 4).
     **Nunca** en `configuracion_tienda` (la lee el público) **ni en variables de Vercel**. Lo que manda el local
     sale **desde la base** con `pg_net` (`_wa_enviar`: avisos de pedidos por trigger, mensaje de prueba); el webhook
@@ -178,6 +178,7 @@ app/admin/             panel del equipo (el layout verifica que sea staff; cada 
   reposicion/          pedido sugerido por talle según el ritmo de venta (reposicion_sugerida), copiable a WhatsApp
   precios/             ajuste masivo de precios de venta y compra (ajustar_precios), historial y deshacer
   tienda/              tienda online: secciones de la portada (orden, ocultar, editar, fotos) y datos de la tienda
+  integraciones/       WhatsApp (Meta) y Gemini: claves (se guardan, no se leen), webhook, prueba y últimos envíos
   tablas/              maestros: rubros/subrubros, marcas, colores (muestra), talles (orden), medios de pago
 components/            Menu (íconos lucide), Logo, Volver, SelectorVariantes (venta), Contactos…
 lib/supabase/server.ts crearCliente() tipado y usuarioActual() → { supabase, user, rol, nombre }

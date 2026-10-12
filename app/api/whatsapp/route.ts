@@ -1,7 +1,7 @@
 // Webhook para Meta WhatsApp Cloud API.
 // Documentación: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks
 //
-// Las claves NO están acá ni en Vercel: se cargan en el panel (Tienda online → Conexiones) y viven en la base, que
+// Las claves NO están acá ni en Vercel: se cargan en el panel (Configuración → Integraciones) y viven en la base, que
 // nadie puede leer. Este webhook le pasa a la base el cuerpo crudo y la firma de Meta: la base verifica la firma,
 // registra lo cobrado, marca leído y devuelve los mensajes (y la clave de la IA si el bot está activo). Las respuestas
 // también las manda la base, y solo a quien escribió en ese mismo aviso firmado.
