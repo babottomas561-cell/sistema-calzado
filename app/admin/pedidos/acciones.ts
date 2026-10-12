@@ -1,7 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { crearCliente } from "@/lib/supabase/server";
-import { enviarMensajeTexto } from "@/lib/whatsapp/meta";
+import { enviarMensajePlantilla } from "@/lib/whatsapp/meta";
 
 export type Estado = { error?: string; ok?: string };
 
@@ -24,7 +24,7 @@ export async function cambiarEstado(_: Estado, f: FormData): Promise<Estado> {
       .single(),
     supabase
       .from("configuracion_tienda")
-      .select("wa_notificaciones_pedidos")
+      .select("wa_notificaciones_pedidos, wa_plantilla_estado, wa_idioma_plantilla")
       .single(),
   ]);
 
@@ -41,26 +41,23 @@ export async function cambiarEstado(_: Estado, f: FormData): Promise<Estado> {
   const telefono = cliente?.telefono;
   let avisoNotificacion: string | null = null;
 
-  if (notificacionesActivas && telefono && datosPedido?.comprobante) {
-    let mensajeAviso: string | null = null;
-    const nombre = cliente?.nombre ? ` ${cliente.nombre}` : "";
+  if (notificacionesActivas && telefono && datosPedido?.comprobante && configTienda?.wa_plantilla_estado) {
+    let estadoAviso: string | null = null;
+    const nombre = cliente?.nombre || "Cliente";
 
     if (estado === "confirmado") {
-      mensajeAviso = `¡Hola${nombre}! Tu pedido *${datosPedido.comprobante}* fue confirmado y ya te reservamos los pares.`;
+      estadoAviso = "confirmado y reservado";
     } else if (estado === "preparado") {
-      if (datosPedido.entrega === "retiro") {
-        mensajeAviso = `¡Hola${nombre}! Tu pedido *${datosPedido.comprobante}* ya está listo para retirar en el local. ¡Te esperamos!`;
-      } else {
-        mensajeAviso = `¡Hola${nombre}! Tu pedido *${datosPedido.comprobante}* ya está embalado y listo para ser despachado.`;
-      }
+      estadoAviso = datosPedido.entrega === "retiro" ? "listo para retirar" : "listo para despachar";
     } else if (estado === "entregado") {
-      mensajeAviso = `¡Hola${nombre}! Tu pedido *${datosPedido.comprobante}* figura como entregado. ¡Muchas gracias por tu compra!`;
+      estadoAviso = "entregado";
     } else if (estado === "cancelado") {
-      mensajeAviso = `Hola${nombre}. Te informamos que tu pedido *${datosPedido.comprobante}* fue cancelado. Cualquier consulta no dudes en escribirnos.`;
+      estadoAviso = "cancelado";
     }
 
-    if (mensajeAviso) {
-      const envio = await enviarMensajeTexto(telefono, mensajeAviso);
+    if (estadoAviso) {
+      const envio = await enviarMensajePlantilla(telefono, configTienda.wa_plantilla_estado,
+        [nombre, datosPedido.comprobante, estadoAviso], configTienda.wa_idioma_plantilla);
       if (!envio.ok) {
         console.error("[Notificación Pedido WhatsApp] Error al enviar:", envio.error);
         avisoNotificacion = " El estado se guardó, pero no se pudo enviar el aviso por WhatsApp.";

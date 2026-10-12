@@ -119,12 +119,17 @@ export async function guardarTienda(_: Estado, f: FormData): Promise<Estado> {
 
   const wa_bot_activo = f.get("wa_bot_activo") !== null;
   const wa_notificaciones_pedidos = f.get("wa_notificaciones_pedidos") !== null;
+  const wa_plantilla_estado = texto(f, "wa_plantilla_estado", 512).toLowerCase() || null;
+  const wa_idioma_plantilla = texto(f, "wa_idioma_plantilla", 10) || "es_AR";
+  if (wa_plantilla_estado && !/^[a-z0-9_]{1,512}$/.test(wa_plantilla_estado)) return { error: "El nombre de la plantilla solo lleva minúsculas, números y guion bajo" };
+  if (!/^[a-z]{2}(_[A-Z]{2})?$/.test(wa_idioma_plantilla)) return { error: "El idioma de la plantilla tiene que tener un formato como es_AR" };
+  if (wa_notificaciones_pedidos && !wa_plantilla_estado) return { error: "Para activar las notificaciones, cargá primero la plantilla aprobada por Meta" };
 
   const { error } = await supabase.from("configuracion_tienda").update({
     dias_retiro, dias_cambio, dias_saldo, nombre: texto(f, "nombre") || "Mi Tienda", whatsapp: whatsapp || null, instagram: instagram || null,
     avisos, aviso_enlace: aviso_enlace || null,
     direccion_retiro: texto(f, "direccion_retiro") || null, horario: texto(f, "horario") || null,
-    wa_bot_activo, wa_notificaciones_pedidos,
+    wa_bot_activo, wa_notificaciones_pedidos, wa_plantilla_estado, wa_idioma_plantilla,
   }).eq("unica", true);
   if (error) return { error: error.message };
   refrescar();

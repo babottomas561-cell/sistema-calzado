@@ -70,6 +70,41 @@ export async function enviarMensajeTexto(
   }
 }
 
+/** Envía una plantilla aprobada por Meta para avisos iniciados por el local. */
+export async function enviarMensajePlantilla(
+  destinatario: string,
+  plantilla: string,
+  parametros: string[],
+  idioma = "es_AR"
+): Promise<EnviarMensajeRespuesta> {
+  const token = process.env.WHATSAPP_ACCESS_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  if (!token || !phoneId) return { ok: false, error: "La conexión con WhatsApp todavía no está configurada" };
+
+  try {
+    const res = await fetch(`https://graph.facebook.com/${META_GRAPH_VERSION}/${phoneId}/messages`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: normalizarTelefono(destinatario),
+        type: "template",
+        template: {
+          name: plantilla,
+          language: { code: idioma },
+          components: [{ type: "body", parameters: parametros.map((text) => ({ type: "text", text })) }],
+        },
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) return { ok: false, error: data?.error?.message || "Meta rechazó la plantilla" };
+    return { ok: true, messageId: data?.messages?.[0]?.id };
+  } catch (err: unknown) {
+    return { ok: false, error: err instanceof Error ? err.message : "Error inesperado" };
+  }
+}
+
 /**
  * Marca un mensaje entrante como leído en WhatsApp (doble tilde azul).
  */

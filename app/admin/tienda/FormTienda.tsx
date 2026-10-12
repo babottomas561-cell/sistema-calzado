@@ -18,6 +18,8 @@ type Tienda = {
   dias_saldo: number;
   wa_bot_activo?: boolean | null;
   wa_notificaciones_pedidos?: boolean | null;
+  wa_plantilla_estado?: string | null;
+  wa_idioma_plantilla?: string | null;
 };
 
 type Integracion = { meta: boolean; gemini: boolean; webhook: string };
@@ -86,6 +88,13 @@ export default function FormTienda({ tienda, integracion }: { tienda: Tienda; in
               <span className="text-texto-2">Avisa por WhatsApp al cliente cuando el pedido pasa a confirmado, listo para retirar o entregado.</span>
             </div>
           </label>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-[1fr_8rem]">
+          <div><label className="etiqueta">Plantilla de Meta para estados</label>
+            <input name="wa_plantilla_estado" defaultValue={tienda.wa_plantilla_estado ?? ""} placeholder="estado_pedido" className="campo bg-white" />
+            <p className="mt-0.5 text-[11px] text-texto-2">Debe estar aprobada en Meta y llevar tres variables, en este orden: nombre, comprobante y estado.</p></div>
+          <div><label className="etiqueta">Idioma</label>
+            <input name="wa_idioma_plantilla" defaultValue={tienda.wa_idioma_plantilla ?? "es_AR"} placeholder="es_AR" className="campo bg-white" /></div>
         </div>
       </div>
 
