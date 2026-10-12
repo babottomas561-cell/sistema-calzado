@@ -2,7 +2,7 @@
 // tiene su pantalla (whatsapp/, ia/, mercadopago/, envios/) con su manual paso a paso adentro (docs/integraciones/).
 // Lo ve quien tiene el permiso «Tienda online».
 import Link from "next/link";
-import { ChevronRight, CreditCard, MessageCircle, Sparkles, Truck, type LucideIcon } from "lucide-react";
+import { ChevronRight, CreditCard, Globe, MessageCircle, Sparkles, Truck, type LucideIcon } from "lucide-react";
 import { crearCliente } from "@/lib/supabase/server";
 import { exigir } from "@/lib/exigir";
 
@@ -26,7 +26,8 @@ function Tarjeta({ href, icono: Icono, titulo, para, estados }: { href: string; 
 }
 
 export default async function Integraciones() {
-  await exigir("tienda.editar");
+  const { permisos } = await exigir("tienda.editar");
+  const admin = permisos.includes("equipo.administrar");
   const supabase = await crearCliente();
   const [{ data: e }, { data: mp }, { data: t }, { count: zonas }] = await Promise.all([
     supabase.rpc("estado_integraciones"),
@@ -34,6 +35,8 @@ export default async function Integraciones() {
     supabase.from("configuracion_tienda").select("wa_bot_activo, wa_notificaciones_pedidos, mp_modo, ia_plan").single(),
     supabase.from("zonas_envio").select("id", { count: "exact", head: true }).eq("activo", true),
   ]);
+  // El dominio solo lo ve el Administrador (sin el permiso, la base no devuelve filas)
+  const { data: principal } = admin ? await supabase.from("dominios").select("nombre").eq("principal", true).maybeSingle() : { data: null };
   const wa = e as { meta_lista?: boolean; gemini?: string | null; ia_prueba?: { estado: string } | null } | null;
   const cuenta = (mp as { cuenta?: { ok: boolean; prueba?: boolean } | null } | null)?.cuenta;
   const MODO = { no: "No cobra online", opcional: "Cobro online opcional", obligatorio: "Solo pago online" } as const;
@@ -68,6 +71,9 @@ export default async function Integraciones() {
         <Tarjeta href="/admin/integraciones/envios" icono={Truck} titulo="Envíos"
           para="Zonas de Tucumán con su precio, el Uber de cada pedido y lo que costó (va a Gastos). Uber Direct y Andreani, cuando haya acceso."
           estados={[zonas ? { texto: `${zonas} ${zonas === 1 ? "zona" : "zonas"}`, tono: "ok" } : { texto: "Sin zonas (se coordina)", tono: "falta" }]} />
+        {admin && <Tarjeta href="/admin/integraciones/dominio" icono={Globe} titulo="Dominio propio"
+          para="Que la tienda se vea en tu propia dirección (mitienda.com.ar). Comprás el dominio y lo conectás desde acá."
+          estados={[principal ? { texto: principal.nombre, tono: "ok" } : { texto: "Usa la dirección de Vercel", tono: "apagado" }]} />}
       </div>
     </div>
   );

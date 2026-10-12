@@ -171,6 +171,11 @@ una API de Next.** Lo que ya pisamos:
     `crear_pedido(…, p_zona)`. El envío va APARTE de la venta (no toca `total` ni la venta al entregar); el cliente paga
     total + envío (también por Mercado Pago). `envios` (uno por pedido con envío): proveedor, `costo_real` y seguimiento
     con `registrar_envio()` → Gastos → Envíos; el Resultado suma `v_envios_cobrados`.
+    **Dominio propio** (`/admin/integraciones/dominio`, solo `equipo.administrar`): `dominios`; la base usa la API de
+    Vercel (`_vercel`) para sumar el dominio y www (redirige), mostrar los registros a cargar y revisarlo (pg_cron cada
+    10 min); «principal» actualiza Supabase (site_url y uri_allow_list) e `integraciones.sitio_url`. Los tokens de Vercel y
+    Supabase los carga una vez quien instaló el sistema (Conexión técnica). Los servicios de afuera se llaman con
+    `_pedir_http` (en las pruebas se reemplaza).
     Cada integración tiene su manual paso a paso en `docs/integraciones/<servicio>.md`, que se ve adentro de su pantalla.
 17. **Gastos** (`/admin/gastos`, permiso `gastos.gestionar`): a mano, fijos por mes (`gastos_fijos`, los genera
     `_generar_gastos_fijos()` con pg_cron) y automáticos (`_sumar_gasto_automatico()`, no se tocan a mano). En dólares

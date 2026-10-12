@@ -415,6 +415,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"dominios": {
+                  Row: {
+                    "configurado": boolean,"creado_en": string,"error": string | null,"id": number,"nombre": string,"principal": boolean,"registros": NonNullable<Json>,"revisado_en": string | null,"verificado": boolean
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "configurado"?: boolean,"creado_en"?: string,"error"?: string | null,"id"?: never,"nombre": string,"principal"?: boolean,"registros"?: NonNullable<Json>,"revisado_en"?: string | null,"verificado"?: boolean
+                  }
+                  Update: {
+                    "configurado"?: boolean,"creado_en"?: string,"error"?: string | null,"id"?: never,"nombre"?: string,"principal"?: boolean,"registros"?: NonNullable<Json>,"revisado_en"?: string | null,"verificado"?: boolean
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"envios": {
                   Row: {
                     "actualizado_en": string,"actualizado_por": string | null,"costo_real": number | null,"id": number,"notas": string | null,"pedido_id": number,"proveedor": string | null,"seguimiento": string | null
@@ -649,14 +663,14 @@ isOneToOne: false
                   ]
                 },"integraciones": {
                   Row: {
-                    "actualizado_en": string,"actualizado_por": string | null,"andreani_clave": string | null,"andreani_cliente": string | null,"andreani_contrato": string | null,"andreani_prueba": Json | null,"andreani_usuario": string | null,"gemini_api_key": string | null,"ia_modelos_error": string | null,"ia_modelos_req": number | null,"ia_modelos_revisado": string | null,"ia_ultima_prueba": number | null,"mp_access_token": string | null,"mp_cuenta": Json | null,"mp_webhook_secret": string | null,"sitio_url": string | null,"uber_client_id": string | null,"uber_client_secret": string | null,"uber_customer_id": string | null,"uber_prueba": Json | null,"unica": boolean,"wa_access_token": string | null,"wa_app_secret": string | null,"wa_phone_number_id": string | null,"wa_verify_token": string,"wa_waba_id": string | null
+                    "actualizado_en": string,"actualizado_por": string | null,"andreani_clave": string | null,"andreani_cliente": string | null,"andreani_contrato": string | null,"andreani_prueba": Json | null,"andreani_usuario": string | null,"gemini_api_key": string | null,"ia_modelos_error": string | null,"ia_modelos_req": number | null,"ia_modelos_revisado": string | null,"ia_ultima_prueba": number | null,"mp_access_token": string | null,"mp_cuenta": Json | null,"mp_webhook_secret": string | null,"sitio_original": string | null,"sitio_url": string | null,"supabase_ref": string | null,"supabase_token": string | null,"uber_client_id": string | null,"uber_client_secret": string | null,"uber_customer_id": string | null,"uber_prueba": Json | null,"unica": boolean,"vercel_equipo": string | null,"vercel_proyecto": string | null,"vercel_token": string | null,"wa_access_token": string | null,"wa_app_secret": string | null,"wa_phone_number_id": string | null,"wa_verify_token": string,"wa_waba_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"actualizado_por"?: string | null,"andreani_clave"?: string | null,"andreani_cliente"?: string | null,"andreani_contrato"?: string | null,"andreani_prueba"?: Json | null,"andreani_usuario"?: string | null,"gemini_api_key"?: string | null,"ia_modelos_error"?: string | null,"ia_modelos_req"?: number | null,"ia_modelos_revisado"?: string | null,"ia_ultima_prueba"?: number | null,"mp_access_token"?: string | null,"mp_cuenta"?: Json | null,"mp_webhook_secret"?: string | null,"sitio_url"?: string | null,"uber_client_id"?: string | null,"uber_client_secret"?: string | null,"uber_customer_id"?: string | null,"uber_prueba"?: Json | null,"unica"?: boolean,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"andreani_clave"?: string | null,"andreani_cliente"?: string | null,"andreani_contrato"?: string | null,"andreani_prueba"?: Json | null,"andreani_usuario"?: string | null,"gemini_api_key"?: string | null,"ia_modelos_error"?: string | null,"ia_modelos_req"?: number | null,"ia_modelos_revisado"?: string | null,"ia_ultima_prueba"?: number | null,"mp_access_token"?: string | null,"mp_cuenta"?: Json | null,"mp_webhook_secret"?: string | null,"sitio_original"?: string | null,"sitio_url"?: string | null,"supabase_ref"?: string | null,"supabase_token"?: string | null,"uber_client_id"?: string | null,"uber_client_secret"?: string | null,"uber_customer_id"?: string | null,"uber_prueba"?: Json | null,"unica"?: boolean,"vercel_equipo"?: string | null,"vercel_proyecto"?: string | null,"vercel_token"?: string | null,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
                   }
                   Update: {
-                    "actualizado_en"?: string,"actualizado_por"?: string | null,"andreani_clave"?: string | null,"andreani_cliente"?: string | null,"andreani_contrato"?: string | null,"andreani_prueba"?: Json | null,"andreani_usuario"?: string | null,"gemini_api_key"?: string | null,"ia_modelos_error"?: string | null,"ia_modelos_req"?: number | null,"ia_modelos_revisado"?: string | null,"ia_ultima_prueba"?: number | null,"mp_access_token"?: string | null,"mp_cuenta"?: Json | null,"mp_webhook_secret"?: string | null,"sitio_url"?: string | null,"uber_client_id"?: string | null,"uber_client_secret"?: string | null,"uber_customer_id"?: string | null,"uber_prueba"?: Json | null,"unica"?: boolean,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"andreani_clave"?: string | null,"andreani_cliente"?: string | null,"andreani_contrato"?: string | null,"andreani_prueba"?: Json | null,"andreani_usuario"?: string | null,"gemini_api_key"?: string | null,"ia_modelos_error"?: string | null,"ia_modelos_req"?: number | null,"ia_modelos_revisado"?: string | null,"ia_ultima_prueba"?: number | null,"mp_access_token"?: string | null,"mp_cuenta"?: Json | null,"mp_webhook_secret"?: string | null,"sitio_original"?: string | null,"sitio_url"?: string | null,"supabase_ref"?: string | null,"supabase_token"?: string | null,"uber_client_id"?: string | null,"uber_client_secret"?: string | null,"uber_customer_id"?: string | null,"uber_prueba"?: Json | null,"unica"?: boolean,"vercel_equipo"?: string | null,"vercel_proyecto"?: string | null,"vercel_token"?: string | null,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -2066,6 +2080,12 @@ isOneToOne: false
               "cliente_id": number,"id": number,"restante": number,"vence": string
             }[]
                            },
+"_dominio_revisar":
+{ Args: { "p_id": number }; Returns: undefined
+                           },
+"_dominios_revisar_pendientes":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "_en_promocion":
 { Args: { "p_producto": number,"p_promocion": number }; Returns: boolean
                            },
@@ -2144,6 +2164,9 @@ isOneToOne: false
                            },
 "_sumar_gasto_automatico":
 { Args: { "p_categoria": string,"p_descripcion": string,"p_fecha"?: string,"p_importe": number,"p_moneda"?: string,"p_referencia": string }; Returns: number
+                           },
+"_vercel":
+{ Args: { "p_cuerpo"?: Json,"p_metodo": string,"p_ruta": string }; Returns: Json
                            },
 "_vincular_cliente":
 { Args: { "p_usuario": unknown }; Returns: undefined
@@ -2224,6 +2247,18 @@ isOneToOne: false
 "deshacer_ajuste_precios":
 { Args: { "p_ajuste": number }; Returns: number
                            },
+"dominio_agregar":
+{ Args: { "p_nombre": string }; Returns: undefined
+                           },
+"dominio_principal":
+{ Args: { "p_id": number }; Returns: string
+                           },
+"dominio_quitar":
+{ Args: { "p_id": number }; Returns: undefined
+                           },
+"dominio_revisar":
+{ Args: { "p_id": number }; Returns: undefined
+                           },
 "equipo":
 { Args: Record<PropertyKey, never>; Returns: {
               "desde": string,"email": string,"nombre": string,"rol": string,"rol_id": number,"usuario_id": string
@@ -2231,6 +2266,9 @@ isOneToOne: false
                            },
 "es_staff":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"estado_dominio":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "estado_envios":
 { Args: Record<PropertyKey, never>; Returns: Json
@@ -2246,6 +2284,9 @@ isOneToOne: false
                            },
 "generar_gastos_fijos":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"guardar_conexion_hosting":
+{ Args: { "p_supabase_ref"?: string,"p_supabase_token"?: string,"p_vercel_equipo"?: string,"p_vercel_proyecto"?: string,"p_vercel_token"?: string }; Returns: undefined
                            },
 "guardar_envios_credenciales":
 { Args: { "p_andreani_clave"?: string,"p_andreani_cliente"?: string,"p_andreani_contrato"?: string,"p_andreani_usuario"?: string,"p_quitar"?: (string)[],"p_uber_client_id"?: string,"p_uber_client_secret"?: string,"p_uber_customer_id"?: string }; Returns: undefined

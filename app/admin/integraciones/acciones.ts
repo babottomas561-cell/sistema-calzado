@@ -184,3 +184,33 @@ export async function probarServicioEnvio(_: Estado, f: FormData): Promise<Estad
   const r = data as { ok: boolean; error?: string };
   return r.ok ? { ok: "Conectado" } : { error: r.error ?? "No conecta" };
 }
+
+// ── Dominio propio (solo el Administrador; la base habla con Vercel y Supabase) ─────
+export async function agregarDominio(_: Estado, f: FormData): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("dominio_agregar", { p_nombre: texto(f, "dominio", 100) });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  return { ok: "Agregado: ahora cargá los registros que se muestran donde compraste el dominio" };
+}
+
+export async function accionDominio(_: Estado, f: FormData): Promise<Estado> {
+  const id = Number(f.get("id")), que = String(f.get("que"));
+  const supabase = await crearCliente();
+  const { error } = que === "principal" ? await supabase.rpc("dominio_principal", { p_id: id })
+    : que === "quitar" ? await supabase.rpc("dominio_quitar", { p_id: id }) : await supabase.rpc("dominio_revisar", { p_id: id });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  return { ok: que === "principal" ? "Listo: la tienda ya usa este dominio" : que === "quitar" ? "Quitado" : "Revisado" };
+}
+
+export async function guardarHosting(_: Estado, f: FormData): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("guardar_conexion_hosting", {
+    p_vercel_token: texto(f, "vercel_token", 200), p_vercel_proyecto: texto(f, "vercel_proyecto", 100), p_vercel_equipo: texto(f, "vercel_equipo", 100),
+    p_supabase_token: texto(f, "supabase_token", 200), p_supabase_ref: texto(f, "supabase_ref", 40),
+  });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  return { ok: "Conexión técnica guardada" };
+}
