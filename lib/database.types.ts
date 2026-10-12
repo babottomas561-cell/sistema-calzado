@@ -243,28 +243,28 @@ isOneToOne: false
                   ]
                 },"configuracion_gastos": {
                   Row: {
-                    "dolar": number,"dolar_actualizado": string,"id": boolean,"wa_precio_authentication": number,"wa_precio_marketing": number,"wa_precio_utility": number
+                    "dolar": number,"dolar_actualizado": string,"ia_precio_entrada": number,"ia_precio_salida": number,"id": boolean,"wa_precio_authentication": number,"wa_precio_marketing": number,"wa_precio_utility": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "dolar"?: number,"dolar_actualizado"?: string,"id"?: boolean,"wa_precio_authentication"?: number,"wa_precio_marketing"?: number,"wa_precio_utility"?: number
+                    "dolar"?: number,"dolar_actualizado"?: string,"ia_precio_entrada"?: number,"ia_precio_salida"?: number,"id"?: boolean,"wa_precio_authentication"?: number,"wa_precio_marketing"?: number,"wa_precio_utility"?: number
                   }
                   Update: {
-                    "dolar"?: number,"dolar_actualizado"?: string,"id"?: boolean,"wa_precio_authentication"?: number,"wa_precio_marketing"?: number,"wa_precio_utility"?: number
+                    "dolar"?: number,"dolar_actualizado"?: string,"ia_precio_entrada"?: number,"ia_precio_salida"?: number,"id"?: boolean,"wa_precio_authentication"?: number,"wa_precio_marketing"?: number,"wa_precio_utility"?: number
                   }
                   Relationships: [
                     
                   ]
                 },"configuracion_tienda": {
                   Row: {
-                    "aviso_enlace": string | null,"avisos": (string)[],"dias_cambio": number,"dias_retiro": number,"dias_saldo": number,"direccion_retiro": string | null,"horario": string | null,"id": number,"instagram": string | null,"nombre": string,"unica": boolean,"wa_bot_activo": boolean,"wa_idioma_plantilla": string,"wa_notificaciones_pedidos": boolean,"wa_plantilla_estado": string | null,"whatsapp": string | null
+                    "aviso_enlace": string | null,"avisos": (string)[],"dias_cambio": number,"dias_retiro": number,"dias_saldo": number,"direccion_retiro": string | null,"horario": string | null,"ia_modelo": string,"id": number,"instagram": string | null,"nombre": string,"unica": boolean,"wa_bot_activo": boolean,"wa_idioma_plantilla": string,"wa_notificaciones_pedidos": boolean,"wa_plantilla_estado": string | null,"whatsapp": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"ia_modelo"?: string,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
                   }
                   Update: {
-                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"ia_modelo"?: string,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
                   }
                   Relationships: [
                     
@@ -573,6 +573,20 @@ isOneToOne: false
       referencedColumns: ["proveedor_id"]
     }
                   ]
+                },"ia_usos": {
+                  Row: {
+                    "costo_usd": number,"fecha": string,"id": number,"modelo": string,"tokens_entrada": number,"tokens_salida": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "costo_usd"?: number,"fecha"?: string,"id"?: never,"modelo": string,"tokens_entrada": number,"tokens_salida": number
+                  }
+                  Update: {
+                    "costo_usd"?: number,"fecha"?: string,"id"?: never,"modelo"?: string,"tokens_entrada"?: number,"tokens_salida"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"inicio_secciones": {
                   Row: {
                     "actualizado_en": string,"bajada": string | null,"boton_enlace": string | null,"boton_texto": string | null,"contenido": NonNullable<Json>,"id": number,"imagen_ruta": string | null,"imagen_url": string | null,"orden": number,"tipo": string,"titulo": string | null,"visible": boolean
@@ -589,14 +603,14 @@ isOneToOne: false
                   ]
                 },"integraciones": {
                   Row: {
-                    "actualizado_en": string,"actualizado_por": string | null,"gemini_api_key": string | null,"unica": boolean,"wa_access_token": string | null,"wa_app_secret": string | null,"wa_phone_number_id": string | null,"wa_verify_token": string,"wa_waba_id": string | null
+                    "actualizado_en": string,"actualizado_por": string | null,"gemini_api_key": string | null,"ia_ultima_prueba": number | null,"unica": boolean,"wa_access_token": string | null,"wa_app_secret": string | null,"wa_phone_number_id": string | null,"wa_verify_token": string,"wa_waba_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"actualizado_por"?: string | null,"gemini_api_key"?: string | null,"unica"?: boolean,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"gemini_api_key"?: string | null,"ia_ultima_prueba"?: number | null,"unica"?: boolean,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
                   }
                   Update: {
-                    "actualizado_en"?: string,"actualizado_por"?: string | null,"gemini_api_key"?: string | null,"unica"?: boolean,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"gemini_api_key"?: string | null,"ia_ultima_prueba"?: number | null,"unica"?: boolean,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -2091,6 +2105,12 @@ isOneToOne: false
                            },
 "guardar_integraciones":
 { Args: { "p_access_token"?: string,"p_app_secret"?: string,"p_gemini_api_key"?: string,"p_phone_number_id"?: string,"p_quitar"?: (string)[],"p_waba_id"?: string }; Returns: undefined
+                           },
+"ia_probar":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"ia_registrar_uso":
+{ Args: { "p_firma": string,"p_payload": string,"p_tokens_entrada": number,"p_tokens_salida": number }; Returns: boolean
                            },
 "mas_vendidos_tienda":
 { Args: { "p_dias"?: number }; Returns: {

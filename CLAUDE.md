@@ -153,7 +153,11 @@ una API de Next.** Lo que ya pisamos:
     sale **desde la base** con `pg_net` (`_wa_enviar`: avisos de pedidos por trigger, mensaje de prueba); el webhook
     `app/api/whatsapp` le pasa el cuerpo crudo y la firma a `wa_recibir()`, que la verifica (HMAC con el secreto
     de la app) y recién ahí devuelve los mensajes; `wa_responder()` solo le contesta a quien escribió en ese aviso.
-    Lo que cobra Meta se suma solo a `gastos` (`whatsapp_cobros`, una vez por mensaje).
+    Lo que cobra Meta se suma solo a `gastos` (`whatsapp_cobros`, una vez por mensaje). El bot, los avisos, la plantilla y
+    el **modelo de Gemini** (`configuracion_tienda.ia_modelo`) se eligen en la misma pantalla; «Probar Gemini» (`ia_probar()`)
+    consulta desde la base. Cada respuesta del bot registra sus tokens (`ia_registrar_uso()`, solo con el aviso firmado) y,
+    con precio por millón cargado (`configuracion_gastos.ia_precio_*`), suma a Gastos → Inteligencia artificial.
+    La guía paso a paso es `docs/WHATSAPP.md` y se ve en el panel (`/admin/integraciones/guia`).
 17. **Gastos** (`/admin/gastos`, permiso `gastos.gestionar`): a mano, fijos por mes (`gastos_fijos`, los genera
     `_generar_gastos_fijos()` con pg_cron) y automáticos (`_sumar_gasto_automatico()`, no se tocan a mano). En dólares
     guardan **una copia** de la cotización. Informes → Resultado: ventas − costo − fallados de baja − gastos = neta.
@@ -178,7 +182,8 @@ app/admin/             panel del equipo (el layout verifica que sea staff; cada 
   reposicion/          pedido sugerido por talle según el ritmo de venta (reposicion_sugerida), copiable a WhatsApp
   precios/             ajuste masivo de precios de venta y compra (ajustar_precios), historial y deshacer
   tienda/              tienda online: secciones de la portada (orden, ocultar, editar, fotos) y datos de la tienda
-  integraciones/       WhatsApp (Meta) y Gemini: claves (se guardan, no se leen), webhook, prueba y últimos envíos
+  integraciones/       WhatsApp (Meta) y Gemini: claves (se guardan, no se leen), webhook, bot, avisos, modelo de IA,
+                       pruebas y la guía paso a paso (guia/, lee docs/WHATSAPP.md)
   tablas/              maestros: rubros/subrubros, marcas, colores (muestra), talles (orden), medios de pago
 components/            Menu (íconos lucide), Logo, Volver, SelectorVariantes (venta), Contactos…
 lib/supabase/server.ts crearCliente() tipado y usuarioActual() → { supabase, user, rol, nombre }

@@ -2,7 +2,7 @@
 // Datos de la tienda: el nombre, los avisos de arriba, Instagram y lo que ve el cliente al hacer un pedido
 // (a qué WhatsApp llega, dónde se retira y el horario).
 import { useActionState } from "react";
-import { CircleCheck, MessageSquare, Bell } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 import { guardarTienda } from "./acciones";
 
 type Tienda = {
@@ -16,10 +16,6 @@ type Tienda = {
   dias_retiro: number;
   dias_cambio: number;
   dias_saldo: number;
-  wa_bot_activo?: boolean | null;
-  wa_notificaciones_pedidos?: boolean | null;
-  wa_plantilla_estado?: string | null;
-  wa_idioma_plantilla?: string | null;
 };
 
 export default function FormTienda({ tienda }: { tienda: Tienda }) {
@@ -36,59 +32,11 @@ export default function FormTienda({ tienda }: { tienda: Tienda }) {
           <input name="aviso_enlace" defaultValue={tienda.aviso_enlace ?? ""} placeholder="Link: /tienda (opcional)" className="campo h-fit" aria-label="Link de los avisos" /></div>
         <p className="mt-0.5 text-[11px] text-texto-2">Una franja fina arriba de todo. Si ponés varios (hasta 5), rotan solos. Vacío, no se muestra.</p></div>
 
-      {/* Sección Configuración de WhatsApp */}
-      <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4 sm:col-span-2 space-y-4">
-        <div>
-          <h3 className="text-sm font-semibold text-marca flex items-center gap-1.5">
-            <MessageSquare size={16} /> WhatsApp y Automatizaciones
-          </h3>
-          <p className="text-xs text-texto-2">Número de atención y funciones automáticas del bot y notificaciones.</p>
-        </div>
-
-
-        <div>
+      <div className="sm:col-span-2">
           <label className="etiqueta">WhatsApp para los pedidos y atención</label>
-          <input name="whatsapp" type="tel" defaultValue={tienda.whatsapp ?? ""} placeholder="549 381 555-1234" className="campo bg-white" />
-          <p className="mt-0.5 text-[11px] text-texto-2">Con el 54, el 9 y el código de área. Al confirmar un pedido, el cliente lo manda a este número.</p>
+          <input name="whatsapp" type="tel" defaultValue={tienda.whatsapp ?? ""} placeholder="549 381 555-1234" className="campo" />
+          <p className="mt-0.5 text-[11px] text-texto-2">Con el 54, el 9 y el código de área. Al confirmar un pedido, el cliente lo manda a este número. El bot y los avisos automáticos se configuran en Integraciones.</p>
         </div>
-
-        <div className="grid gap-3 sm:grid-cols-2 pt-1">
-          <label className="flex items-start gap-2.5 rounded-lg border border-borde bg-white p-3 cursor-pointer hover:border-gray-300">
-            <input
-              type="checkbox"
-              name="wa_bot_activo"
-              defaultChecked={tienda.wa_bot_activo ?? false}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-marca focus:ring-marca"
-            />
-            <div className="text-xs">
-              <span className="font-semibold text-texto block">Bot de respuestas con IA</span>
-              <span className="text-texto-2">Responde automáticamente consultas de catálogo, stock por talle, pedidos y horarios vía Gemini.</span>
-            </div>
-          </label>
-
-          <label className="flex items-start gap-2.5 rounded-lg border border-borde bg-white p-3 cursor-pointer hover:border-gray-300">
-            <input
-              type="checkbox"
-              name="wa_notificaciones_pedidos"
-              defaultChecked={tienda.wa_notificaciones_pedidos ?? false}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-marca focus:ring-marca"
-            />
-            <div className="text-xs">
-              <span className="font-semibold text-texto block flex items-center gap-1">
-                <Bell size={13} className="text-alerta" /> Notificaciones de pedidos
-              </span>
-              <span className="text-texto-2">Avisa por WhatsApp al cliente cuando el pedido pasa a confirmado, listo para retirar o entregado.</span>
-            </div>
-          </label>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-[1fr_8rem]">
-          <div><label className="etiqueta">Plantilla de Meta para estados</label>
-            <input name="wa_plantilla_estado" defaultValue={tienda.wa_plantilla_estado ?? ""} placeholder="estado_pedido" className="campo bg-white" />
-            <p className="mt-0.5 text-[11px] text-texto-2">Debe estar aprobada en Meta y llevar tres variables, en este orden: nombre, comprobante y estado.</p></div>
-          <div><label className="etiqueta">Idioma</label>
-            <input name="wa_idioma_plantilla" defaultValue={tienda.wa_idioma_plantilla ?? "es_AR"} placeholder="es_AR" className="campo bg-white" /></div>
-        </div>
-      </div>
 
       <div><label className="etiqueta">Horario</label><input name="horario" defaultValue={tienda.horario ?? ""} placeholder="Lun a sáb de 9 a 13 y de 17 a 21" className="campo" /></div>
       <div><label className="etiqueta">Días que se guarda un pedido para retirar</label>

@@ -215,45 +215,40 @@ Reglas clave:
 4. Mantené respuestas breves y directas aptas para WhatsApp (máximo 3 párrafos cortos, podés usar emojis con moderación).
 5. Si no sabés algo o el cliente pide hablar con un humano o coordinar algo especial, decile amablemente que el equipo del local le va a responder a la brevedad.`;
 
-// La clave de Gemini la entrega la base (wa_recibir) solo con un aviso de Meta firmado y el bot activo
-export async function procesarMensajeConIA(mensajeUsuario: string, telefonoRemitente: string, apiKey: string | null): Promise<string> {
+// Lo que contesta el bot y cuánto usó de la IA (para registrarlo como gasto)
+export type RespuestaBot = { texto: string; tokensEntrada: number; tokensSalida: number };
+const sinIA = (texto: string): RespuestaBot => ({ texto, tokensEntrada: 0, tokensSalida: 0 });
 
+// La clave de Gemini y el modelo los entrega la base (wa_recibir) solo con un aviso de Meta firmado y el bot activo
+export async function procesarMensajeConIA(mensajeUsuario: string, telefonoRemitente: string, apiKey: string | null, modelo: string): Promise<RespuestaBot> {
   if (!apiKey) {
     console.warn("[Bot WhatsApp] Sin clave de Gemini cargada en el panel. Respuesta por defecto.");
-    return "¡Hola! Gracias por comunicarte con nuestro local. Recibimos tu mensaje y un miembro de nuestro equipo te va a responder en breve.";
+    return sinIA("¡Hola! Gracias por comunicarte con nuestro local. Recibimos tu mensaje y un miembro de nuestro equipo te va a responder en breve.");
   }
+  let tokensEntrada = 0, tokensSalida = 0;
+  // La clave va en un encabezado (no en la URL, que puede quedar en registros)
+  const preguntar = async (contents: Array<Record<string, unknown>>) => {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+      body: JSON.stringify({ systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] }, contents, tools: GEMINI_TOOLS }),
+    });
+    if (!res.ok) throw new Error(`Gemini respondió ${res.status}`);
+    const data = await res.json();
+    tokensEntrada += Number(data?.usageMetadata?.promptTokenCount ?? 0);
+    tokensSalida += Number(data?.usageMetadata?.candidatesTokenCount ?? 0) + Number(data?.usageMetadata?.thoughtsTokenCount ?? 0);
+    return data?.candidates?.[0]?.content;
+  };
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-    const contents: Array<Record<string, unknown>> = [
-      {
-        role: "user",
-        parts: [{ text: mensajeUsuario }],
-      },
-    ];
-
-    let res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
-        contents,
-        tools: GEMINI_TOOLS,
-      }),
-    });
-
-    if (!res.ok) throw new Error(`Gemini respondió ${res.status}`);
-    let data = await res.json();
-    let candidate = data?.candidates?.[0]?.content;
-
+    const contents: Array<Record<string, unknown>> = [{ role: "user", parts: [{ text: mensajeUsuario }] }];
+    let candidate = await preguntar(contents);
     const call = candidate?.parts?.find((p: { functionCall?: unknown }) => p.functionCall)?.functionCall;
 
     if (call) {
       const toolName = call.name;
       const toolArgs = call.args || {};
       let toolResult: unknown = {};
-
       if (toolName === "consultarCatalogo") {
         toolResult = await toolConsultarCatalogo(toolArgs.busqueda, toolArgs.categoria, toolArgs.marca);
       } else if (toolName === "consultarStockYDisponibilidad") {
@@ -263,39 +258,15 @@ export async function procesarMensajeConIA(mensajeUsuario: string, telefonoRemit
       } else if (toolName === "datosDelLocal") {
         toolResult = await toolDatosDelLocal();
       }
-
       contents.push(candidate);
-      contents.push({
-        role: "user",
-        parts: [
-          {
-            functionResponse: {
-              name: toolName,
-              response: { content: toolResult },
-            },
-          },
-        ],
-      });
-
-      res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
-          contents,
-          tools: GEMINI_TOOLS,
-        }),
-      });
-
-      if (!res.ok) throw new Error(`Gemini respondió ${res.status}`);
-      data = await res.json();
-      candidate = data?.candidates?.[0]?.content;
+      contents.push({ role: "user", parts: [{ functionResponse: { name: toolName, response: { content: toolResult } } }] });
+      candidate = await preguntar(contents);
     }
 
     const textoRespuesta = candidate?.parts?.find((p: { text?: string }) => p.text)?.text;
-    return textoRespuesta || "¡Hola! Gracias por escribirnos. ¿En qué te podemos ayudar?";
+    return { texto: textoRespuesta || "¡Hola! Gracias por escribirnos. ¿En qué te podemos ayudar?", tokensEntrada, tokensSalida };
   } catch (err) {
     console.error("[Bot WhatsApp] Error al invocar Gemini:", err);
-    return "¡Hola! Recibimos tu consulta. En un momento te respondemos desde el local.";
+    return { texto: "¡Hola! Recibimos tu consulta. En un momento te respondemos desde el local.", tokensEntrada, tokensSalida };
   }
 }

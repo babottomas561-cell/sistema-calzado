@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   // Modelo clásico: cada página se arma al pedirla (todo depende del usuario logueado).
   // Ver CLAUDE.md antes de activar cacheComponents.
   cacheComponents: false,
+  // La guía de integraciones se lee de docs/ al abrirla: que el archivo viaje con el deploy
+  outputFileTracingIncludes: { "/admin/integraciones/guia": ["./docs/WHATSAPP.md"] },
   turbopack: {
     rules: {
       "*.css": {
