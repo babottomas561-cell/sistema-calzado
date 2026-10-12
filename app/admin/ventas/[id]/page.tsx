@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { crearCliente } from "@/lib/supabase/server";
 import { fechaHora, pesos, porcentaje } from "@/lib/formato";
-import { Ban, CircleCheck, Plus, Undo2 } from "lucide-react";
+import { ArrowLeftRight, Ban, CircleCheck, Plus, Undo2 } from "lucide-react";
 import { MOTIVOS_DEVOLUCION } from "@/lib/devoluciones";
 import Volver from "@/components/Volver";
 import { exigir } from "@/lib/exigir";
@@ -12,16 +12,18 @@ import { esDeHoy, MOTIVOS_ANULACION } from "@/lib/ventas";
 import AnularVenta from "./AnularVenta";
 
 export default async function Venta({ params, searchParams }: {
-  params: Promise<{ id: string }>; searchParams: Promise<{ nueva?: string }>;
+  params: Promise<{ id: string }>; searchParams: Promise<{ nueva?: string; cambio?: string }>;
 }) {
   const { permisos } = await exigir("ventas.registrar", "ventas.ver_todas");
-  const [{ id }, { nueva }] = await Promise.all([params, searchParams]);
+  const [{ id }, { nueva, cambio }] = await Promise.all([params, searchParams]);
   const supabase = await crearCliente();
-  const [{ data: v }, { data: items }, { data: presupuesto }, { data: devoluciones }] = await Promise.all([
+  const [{ data: v }, { data: items }, { data: presupuesto }, { data: devoluciones }, { data: deCambio }] = await Promise.all([
     supabase.from("ventas").select("*, clientes(id, nombre, telefono), vendedor:perfiles!ventas_usuario_id_fkey(nombre), anulo:perfiles!ventas_anulada_por_fkey(nombre), pagos(base, ajuste_pct, ajuste, monto, cuotas, referencia, medios_pago(nombre))").eq("id", Number(id)).single(),
     supabase.from("v_venta_items").select("id, nombre, marca, talle, color, cantidad, precio_unitario, descuento_promo, promocion, subtotal").eq("venta_id", Number(id)),
     supabase.from("presupuestos").select("id, comprobante").eq("venta_id", Number(id)).maybeSingle(),
-    supabase.from("devoluciones").select("id, comprobante, fecha, motivo, total, devolucion_items(cantidad)").eq("venta_id", Number(id)).order("fecha"),
+    supabase.from("devoluciones").select("id, comprobante, fecha, motivo, total, venta_cambio_id, devolucion_items(cantidad)").eq("venta_id", Number(id)).order("fecha"),
+    // ¿Esta venta salió de un cambio? (la devolución que la originó)
+    supabase.from("devoluciones").select("id, comprobante, venta_id, ventas!devoluciones_venta_id_fkey(comprobante)").eq("venta_cambio_id", Number(id)).maybeSingle(),
   ]);
   if (!v) notFound();
   const cliente = v.clientes as { id: number; nombre: string; telefono: string | null } | null;
@@ -38,14 +40,21 @@ export default async function Venta({ params, searchParams }: {
   return (
     <div className="mx-auto max-w-xl space-y-4">
       {nueva && <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-semibold text-ok"><CircleCheck size={18} /> Venta registrada. El stock ya se descontó.</div>}
-      <div className="flex items-center justify-between">
+      {cambio && <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-semibold text-ok"><CircleCheck size={18} /> Cambio hecho: entró lo que trajo y salió lo que se llevó.</div>}
+      {deCambio && <p className="rounded-lg bg-marca-suave px-3 py-2 text-sm text-marca"><ArrowLeftRight size={16} className="mr-1.5 inline align-[-3px]" />
+        Es un cambio: devolución <Link href={`/admin/devoluciones/${deCambio.id}`} className="font-mono font-semibold">{deCambio.comprobante}</Link> de la venta{" "}
+        <Link href={`/admin/ventas/${deCambio.venta_id}`} className="font-mono font-semibold">{(deCambio.ventas as unknown as { comprobante: string } | null)?.comprobante}</Link></p>}
+      <div className="flex items-center justify-between gap-2">
         <Volver href="/admin/ventas">Ventas</Volver>
-        <div className="flex items-center gap-1">
-          {puedeDevolver && <Link href={`/admin/ventas/${v.id}/devolucion`} className="inline-flex items-center gap-1.5 rounded-lg px-2 py-2 text-sm font-semibold text-marca hover:bg-marca-suave"><Undo2 size={16} /> Devolución</Link>}
-          {puedeAnular && <AnularVenta venta={v.id} comprobante={v.comprobante ?? ""} dePedido={!!v.pedido_id} dePresupuesto={!!presupuesto} />}
-          <Link href="/admin/ventas/nueva" className="boton-sec"><Plus size={16} /> Otra venta</Link>
-        </div>
+        <Link href="/admin/ventas/nueva" className="boton-sec"><Plus size={16} /> Otra venta</Link>
       </div>
+      {(puedeDevolver || puedeAnular) && (
+        <div className="flex flex-wrap items-center gap-1 rounded-lg border border-borde bg-white p-1">
+          {puedeDevolver && <Link href={`/admin/ventas/${v.id}/cambio`} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-marca hover:bg-marca-suave"><ArrowLeftRight size={16} /> Cambio</Link>}
+          {puedeDevolver && <Link href={`/admin/ventas/${v.id}/devolucion`} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-marca hover:bg-marca-suave"><Undo2 size={16} /> Devolución</Link>}
+          {puedeAnular && <span className="ml-auto"><AnularVenta venta={v.id} comprobante={v.comprobante ?? ""} dePedido={!!v.pedido_id} dePresupuesto={!!presupuesto} /></span>}
+        </div>
+      )}
       {anulada && (
         <div className="flex gap-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm">
           <Ban size={18} className="mt-0.5 shrink-0 text-error" />
@@ -93,7 +102,8 @@ export default async function Venta({ params, searchParams }: {
             <li key={d.id} className="flex items-center justify-between gap-3 py-2">
               <span><Link href={`/admin/devoluciones/${d.id}`} className="font-mono font-semibold text-marca">{d.comprobante}</Link>
                 <span className="text-texto-2"> · {fechaHora(d.fecha)} · {MOTIVOS_DEVOLUCION[d.motivo]}</span></span>
-              <span className="shrink-0 font-semibold">{pesos(d.total)} <span className="text-xs font-normal text-texto-2">de saldo</span></span></li>
+              <span className="shrink-0 text-right font-semibold">{pesos(d.total)} <span className="text-xs font-normal text-texto-2">de saldo</span>
+                {d.venta_cambio_id && <Link href={`/admin/ventas/${d.venta_cambio_id}`} className="block text-xs font-normal text-marca">→ venta del cambio</Link>}</span></li>
           ))}</ul>
         </section>
       )}

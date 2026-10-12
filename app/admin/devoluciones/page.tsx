@@ -14,7 +14,7 @@ export default async function Devoluciones({ searchParams }: { searchParams: Pro
   const { periodo: p = "mes" } = await searchParams;
   const periodo = (p in PERIODOS ? p : "mes") as keyof typeof PERIODOS;
   const supabase = await crearCliente();
-  let c = supabase.from("devoluciones").select("id, comprobante, fecha, motivo, total, fuera_de_plazo, clientes(nombre), ventas(comprobante), devolucion_items(cantidad, estado, venta_items(variantes(talles(nombre), productos(id, nombre))))")
+  let c = supabase.from("devoluciones").select("id, comprobante, fecha, motivo, total, fuera_de_plazo, clientes(nombre), ventas!devoluciones_venta_id_fkey(comprobante), devolucion_items(cantidad, estado, venta_items(variantes(talles(nombre), productos(id, nombre))))")
     .order("fecha", { ascending: false }).limit(500);
   if (periodo === "mes") c = c.gte("fecha", inicioDe("mes"));
   const { data } = await c;

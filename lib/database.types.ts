@@ -291,14 +291,14 @@ isOneToOne: false
                   ]
                 },"devoluciones": {
                   Row: {
-                    "bruto": number,"cliente_id": number,"comentario": string | null,"comprobante": string | null,"fecha": string,"fuera_de_plazo": boolean,"id": number,"motivo": string,"numero": number | null,"punto_venta": number,"total": number,"usuario_id": string | null,"venta_id": number
+                    "bruto": number,"cliente_id": number,"comentario": string | null,"comprobante": string | null,"fecha": string,"fuera_de_plazo": boolean,"id": number,"motivo": string,"numero": number | null,"punto_venta": number,"total": number,"usuario_id": string | null,"venta_cambio_id": number | null,"venta_id": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "bruto": number,"cliente_id": number,"comentario"?: string | null,"comprobante"?: never,"fecha"?: string,"fuera_de_plazo"?: boolean,"id"?: never,"motivo": string,"numero"?: number | null,"punto_venta"?: number,"total": number,"usuario_id"?: string | null,"venta_id": number
+                    "bruto": number,"cliente_id": number,"comentario"?: string | null,"comprobante"?: never,"fecha"?: string,"fuera_de_plazo"?: boolean,"id"?: never,"motivo": string,"numero"?: number | null,"punto_venta"?: number,"total": number,"usuario_id"?: string | null,"venta_cambio_id"?: number | null,"venta_id": number
                   }
                   Update: {
-                    "bruto"?: number,"cliente_id"?: number,"comentario"?: string | null,"comprobante"?: never,"fecha"?: string,"fuera_de_plazo"?: boolean,"id"?: never,"motivo"?: string,"numero"?: number | null,"punto_venta"?: number,"total"?: number,"usuario_id"?: string | null,"venta_id"?: number
+                    "bruto"?: number,"cliente_id"?: number,"comentario"?: string | null,"comprobante"?: never,"fecha"?: string,"fuera_de_plazo"?: boolean,"id"?: never,"motivo"?: string,"numero"?: number | null,"punto_venta"?: number,"total"?: number,"usuario_id"?: string | null,"venta_cambio_id"?: number | null,"venta_id"?: number
                   }
                   Relationships: [
                     {
@@ -318,6 +318,12 @@ isOneToOne: false
       columns: ["usuario_id"]
 isOneToOne: false
       referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "devoluciones_venta_cambio_id_fkey"
+      columns: ["venta_cambio_id"]
+isOneToOne: true
+      referencedRelation: "ventas"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "devoluciones_venta_id_fkey"
@@ -1630,6 +1636,9 @@ isOneToOne: false
             "_aplicar_promociones":
 { Args: { "p_promos": (number)[] }; Returns: undefined
                            },
+"_armar_cambio":
+{ Args: { "p_devueltos": Json,"p_lleva": Json }; Returns: Json
+                           },
 "_avisos_cortos":
 { Args: { "p": (string)[] }; Returns: boolean
                            },
@@ -1704,6 +1713,11 @@ isOneToOne: false
 "_renglones_cotizados":
 { Args: { "p_canal": string,"p_items": Json }; Returns: Json
                            },
+"_repartir_devolucion":
+{ Args: { "p_items": Json,"p_total": number }; Returns: {
+              "cantidad": number,"costo_unitario": number,"estado": string,"monto": number,"producto_id": number,"variante_id": number,"venta_item_id": number
+            }[]
+                           },
 "_vincular_cliente":
 { Args: { "p_usuario": unknown }; Returns: undefined
                            },
@@ -1744,6 +1758,9 @@ isOneToOne: false
                            },
 "cotizar":
 { Args: { "p_canal"?: string,"p_items": Json,"p_medio_pago"?: number }; Returns: Json
+                           },
+"cotizar_cambio":
+{ Args: { "p_devuelve": Json,"p_lleva": Json,"p_medio"?: number,"p_venta": number }; Returns: Json
                            },
 "cotizar_devolucion":
 { Args: { "p_items": Json,"p_venta": number }; Returns: Json
@@ -1804,6 +1821,9 @@ isOneToOne: false
                            },
 "quitar_del_equipo":
 { Args: { "p_usuario": string }; Returns: undefined
+                           },
+"registrar_cambio":
+{ Args: { "p_cliente"?: number,"p_comentario"?: string,"p_devuelve": Json,"p_lleva": Json,"p_motivo"?: string,"p_pagos"?: Json,"p_venta": number }; Returns: Json
                            },
 "registrar_compra":
 { Args: { "p_actualizar_costo"?: boolean,"p_comprobante_proveedor"?: string,"p_deposito"?: number,"p_fecha_comprobante"?: string,"p_items": Json,"p_notas"?: string,"p_proveedor"?: number }; Returns: number

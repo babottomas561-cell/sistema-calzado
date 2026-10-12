@@ -189,5 +189,5 @@ Así el dueño ve en un lugar cuánto tiene «parado» en fallados y qué provee
 2. **HECHO (2026-10-12):** anular venta del día (migración `anular_ventas`, permiso `ventas.anular` para Administrador y Encargado).
 3. **HECHO (2026-10-12):** depósitos vendibles + bandeja de fallados (migración `fallados`, pantalla `/admin/fallados`).
 4. **HECHO (2026-10-12):** devolución con saldo a favor, plazo y vencimiento configurables (migración `devoluciones`). El motor de promociones se partió en `_crear_unidades` + `_aplicar_promociones` para recalcular con las promos de la venta.
-5. Cambio en una sola operación desde el punto de venta.
+5. **HECHO (2026-10-12):** cambio en una sola operación, desde la venta (migración `cambios`, pantalla `/admin/ventas/[id]/cambio`).
 6. Con la caja diaria: recibos (y, si el contador lo confirma, el reintegro por arrepentimiento online).

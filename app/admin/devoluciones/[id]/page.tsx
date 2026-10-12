@@ -13,7 +13,7 @@ export default async function ComprobanteDevolucion({ params, searchParams }: { 
   const [{ id }, { nueva }] = await Promise.all([params, searchParams]);
   const supabase = await crearCliente();
   const [{ data: d }, { data: items }, { data: credito }] = await Promise.all([
-    supabase.from("devoluciones").select("*, ventas(id, comprobante, fecha), clientes(id, nombre), hizo:perfiles(nombre)").eq("id", Number(id)).single(),
+    supabase.from("devoluciones").select("*, ventas!devoluciones_venta_id_fkey(id, comprobante, fecha), clientes(id, nombre), hizo:perfiles(nombre)").eq("id", Number(id)).single(),
     supabase.from("devolucion_items").select("id, cantidad, estado, monto, venta_items(precio_unitario, variantes(talles(nombre), colores(nombre), productos(nombre)))").eq("devolucion_id", Number(id)),
     supabase.from("v_creditos").select("monto, restante, vence").eq("devolucion_id", Number(id)).maybeSingle(),
   ]);
@@ -34,6 +34,7 @@ export default async function ComprobanteDevolucion({ params, searchParams }: { 
           <div className="text-right text-sm"><Link href={`/admin/clientes/${cliente.id}`} className="font-semibold text-marca">{cliente.nombre}</Link>
             <div className="text-texto-2">de la venta <Link href={`/admin/ventas/${venta.id}`} className="font-mono text-marca">{venta.comprobante}</Link></div></div>
         </div>
+        {d.venta_cambio_id && <p className="rounded-lg bg-marca-suave px-3 py-2 text-sm text-marca">Fue un cambio: se llevó lo de la <Link href={`/admin/ventas/${d.venta_cambio_id}`} className="font-semibold underline">venta del cambio</Link>.</p>}
         <p className="text-sm"><b>{MOTIVOS_DEVOLUCION[d.motivo]}</b>{d.comentario ? ` · «${d.comentario}»` : ""}
           {d.fuera_de_plazo && <span className="chip ml-2 bg-amber-100 text-alerta">fuera de plazo</span>}</p>
         <table className="tabla">
