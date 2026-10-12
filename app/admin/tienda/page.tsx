@@ -12,7 +12,7 @@ export default async function TiendaOnline() {
   const supabase = await crearCliente();
   const [{ data: secciones }, { data: tienda }, { data: catalogo }] = await Promise.all([
     supabase.from("inicio_secciones").select("id, tipo, orden, visible, titulo, bajada, boton_texto, boton_enlace, imagen_url, imagen_ruta, contenido").order("orden").order("id"),
-    supabase.from("configuracion_tienda").select("nombre, avisos, aviso_enlace, instagram, whatsapp, direccion_retiro, horario, dias_retiro, dias_cambio, dias_saldo").single(),
+    supabase.from("configuracion_tienda").select("nombre, avisos, aviso_enlace, instagram, whatsapp, direccion_retiro, horario, dias_retiro, dias_cambio, dias_saldo, wa_bot_activo, wa_notificaciones_pedidos").single(),
     supabase.from("v_catalogo").select("producto_id, nombre, marca, categoria, genero, linea, imagen_url"),
   ]);
   const lista = (secciones ?? []).map((s) => ({ ...s, tipo: s.tipo as Tipo, contenido: leerContenido(s.tipo as Tipo, s.contenido) })) as Seccion[];
@@ -41,7 +41,11 @@ export default async function TiendaOnline() {
       <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
         <div className="border-b border-borde px-5 py-4"><h2 className="font-semibold">Datos de la tienda</h2>
           <p className="text-sm text-texto-2">Nombre, avisos, redes y lo que ve el cliente al hacer un pedido.</p></div>
-        {tienda && <FormTienda tienda={tienda} />}
+        {tienda && <FormTienda tienda={tienda} integracion={{
+          meta: Boolean(process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID && process.env.WHATSAPP_VERIFY_TOKEN && process.env.WHATSAPP_APP_SECRET),
+          gemini: Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY),
+          webhook: process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}/api/whatsapp` : "/api/whatsapp",
+        }} />}
       </section>
     </div>
   );

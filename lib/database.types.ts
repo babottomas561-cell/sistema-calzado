@@ -2,7 +2,7 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
-  
+
   "graphql_public": {
           Tables: {
             [_ in never]: never
@@ -129,7 +129,7 @@ isOneToOne: false
                     "codigo"?: string,"id"?: never,"linea"?: string,"nombre"?: string
                   }
                   Relationships: [
-                    
+
                   ]
                 },"clientes": {
                   Row: {
@@ -143,7 +143,7 @@ isOneToOne: false
                     "acepta_promos"?: boolean,"codigo"?: number,"creado_en"?: string,"direccion"?: string | null,"documento"?: string | null,"email"?: string | null,"etiquetas"?: (string)[],"fecha_nacimiento"?: string | null,"id"?: never,"localidad"?: string | null,"nombre"?: string,"notas"?: string | null,"origen"?: string | null,"telefono"?: string | null,"usuario_id"?: string | null
                   }
                   Relationships: [
-                    
+
                   ]
                 },"colores": {
                   Row: {
@@ -157,7 +157,7 @@ isOneToOne: false
                     "codigo"?: string,"hex"?: string | null,"id"?: never,"nombre"?: string
                   }
                   Relationships: [
-                    
+
                   ]
                 },"compra_items": {
                   Row: {
@@ -241,19 +241,33 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"configuracion_tienda": {
+                },"configuracion_gastos": {
                   Row: {
-                    "aviso_enlace": string | null,"avisos": (string)[],"dias_cambio": number,"dias_retiro": number,"dias_saldo": number,"direccion_retiro": string | null,"horario": string | null,"id": number,"instagram": string | null,"nombre": string,"unica": boolean,"whatsapp": string | null
+                    "dolar": number,"dolar_actualizado": string,"id": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
+                    "dolar"?: number,"dolar_actualizado"?: string,"id"?: boolean
                   }
                   Update: {
-                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
+                    "dolar"?: number,"dolar_actualizado"?: string,"id"?: boolean
                   }
                   Relationships: [
-                    
+
+                  ]
+                },"configuracion_tienda": {
+                  Row: {
+                    "aviso_enlace": string | null,"avisos": (string)[],"dias_cambio": number,"dias_retiro": number,"dias_saldo": number,"direccion_retiro": string | null,"horario": string | null,"id": number,"instagram": string | null,"nombre": string,"unica": boolean,"wa_bot_activo": boolean,"wa_notificaciones_pedidos": boolean,"whatsapp": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_notificaciones_pedidos"?: boolean,"whatsapp"?: string | null
+                  }
+                  Update: {
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_notificaciones_pedidos"?: boolean,"whatsapp"?: string | null
+                  }
+                  Relationships: [
+
                   ]
                 },"creditos_proveedor": {
                   Row: {
@@ -317,7 +331,7 @@ isOneToOne: false
                     "activo"?: boolean,"id"?: never,"nombre"?: string,"vendible"?: boolean
                   }
                   Relationships: [
-                    
+
                   ]
                 },"devolucion_items": {
                   Row: {
@@ -469,6 +483,96 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"gasto_categorias": {
+                  Row: {
+                    "activo": boolean,"id": number,"nombre": string,"orden": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activo"?: boolean,"id"?: never,"nombre": string,"orden"?: number
+                  }
+                  Update: {
+                    "activo"?: boolean,"id"?: never,"nombre"?: string,"orden"?: number
+                  }
+                  Relationships: [
+
+                  ]
+                },"gastos": {
+                  Row: {
+                    "categoria_id": number,"cotizacion": number,"creado_en": string,"descripcion": string,"fecha": string,"gasto_fijo_id": number | null,"id": number,"importe": number,"moneda": string,"monto": number | null,"nota": string | null,"origen": string,"periodo": string | null,"proveedor_id": number | null,"referencia": string | null,"usuario_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "categoria_id": number,"cotizacion"?: number,"creado_en"?: string,"descripcion": string,"fecha"?: string,"gasto_fijo_id"?: number | null,"id"?: never,"importe": number,"moneda"?: string,"monto"?: never,"nota"?: string | null,"origen"?: string,"periodo"?: string | null,"proveedor_id"?: number | null,"referencia"?: string | null,"usuario_id"?: string | null
+                  }
+                  Update: {
+                    "categoria_id"?: number,"cotizacion"?: number,"creado_en"?: string,"descripcion"?: string,"fecha"?: string,"gasto_fijo_id"?: number | null,"id"?: never,"importe"?: number,"moneda"?: string,"monto"?: never,"nota"?: string | null,"origen"?: string,"periodo"?: string | null,"proveedor_id"?: number | null,"referencia"?: string | null,"usuario_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "gastos_categoria_id_fkey"
+      columns: ["categoria_id"]
+isOneToOne: false
+      referencedRelation: "gasto_categorias"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "gastos_gasto_fijo_id_fkey"
+      columns: ["gasto_fijo_id"]
+isOneToOne: false
+      referencedRelation: "gastos_fijos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "gastos_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "proveedores"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "gastos_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "v_credito_proveedores"
+      referencedColumns: ["proveedor_id"]
+    },{
+      foreignKeyName: "gastos_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"gastos_fijos": {
+                  Row: {
+                    "activo": boolean,"categoria_id": number,"descripcion": string,"desde": string,"dia": number,"id": number,"importe": number,"moneda": string,"proveedor_id": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activo"?: boolean,"categoria_id": number,"descripcion": string,"desde"?: string,"dia"?: number,"id"?: never,"importe": number,"moneda"?: string,"proveedor_id"?: number | null
+                  }
+                  Update: {
+                    "activo"?: boolean,"categoria_id"?: number,"descripcion"?: string,"desde"?: string,"dia"?: number,"id"?: never,"importe"?: number,"moneda"?: string,"proveedor_id"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "gastos_fijos_categoria_id_fkey"
+      columns: ["categoria_id"]
+isOneToOne: false
+      referencedRelation: "gasto_categorias"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "gastos_fijos_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "proveedores"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "gastos_fijos_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "v_credito_proveedores"
+      referencedColumns: ["proveedor_id"]
+    }
+                  ]
                 },"inicio_secciones": {
                   Row: {
                     "actualizado_en": string,"bajada": string | null,"boton_enlace": string | null,"boton_texto": string | null,"contenido": NonNullable<Json>,"id": number,"imagen_ruta": string | null,"imagen_url": string | null,"orden": number,"tipo": string,"titulo": string | null,"visible": boolean
@@ -481,7 +585,7 @@ isOneToOne: false
                     "actualizado_en"?: string,"bajada"?: string | null,"boton_enlace"?: string | null,"boton_texto"?: string | null,"contenido"?: NonNullable<Json>,"id"?: never,"imagen_ruta"?: string | null,"imagen_url"?: string | null,"orden"?: number,"tipo"?: string,"titulo"?: string | null,"visible"?: boolean
                   }
                   Relationships: [
-                    
+
                   ]
                 },"interacciones": {
                   Row: {
@@ -527,7 +631,7 @@ isOneToOne: false
                     "codigo"?: string,"id"?: never,"nombre"?: string
                   }
                   Relationships: [
-                    
+
                   ]
                 },"medios_pago": {
                   Row: {
@@ -541,7 +645,7 @@ isOneToOne: false
                     "activo"?: boolean,"ajuste_pct"?: number,"codigo"?: string,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre"?: string,"orden"?: number,"tipo"?: string
                   }
                   Relationships: [
-                    
+
                   ]
                 },"movimientos_stock": {
                   Row: {
@@ -617,7 +721,7 @@ isOneToOne: false
                     "punto_venta"?: number,"tipo"?: string,"ultimo"?: number
                   }
                   Relationships: [
-                    
+
                   ]
                 },"pagos": {
                   Row: {
@@ -791,7 +895,7 @@ isOneToOne: false
                     "codigo"?: string,"descripcion"?: string | null,"grupo"?: string,"id"?: never,"nombre"?: string,"orden"?: number
                   }
                   Relationships: [
-                    
+
                   ]
                 },"presupuesto_items": {
                   Row: {
@@ -1131,7 +1235,7 @@ isOneToOne: false
                     "codigo"?: number,"creado_en"?: string,"documento"?: string | null,"email"?: string | null,"id"?: never,"nombre"?: string,"notas"?: string | null,"telefono"?: string | null
                   }
                   Relationships: [
-                    
+
                   ]
                 },"roles": {
                   Row: {
@@ -1145,7 +1249,7 @@ isOneToOne: false
                     "activo"?: boolean,"creado_en"?: string,"descripcion"?: string | null,"descuento_max_pct"?: number | null,"id"?: never,"nombre"?: string,"permisos"?: (string)[],"todos"?: boolean
                   }
                   Relationships: [
-                    
+
                   ]
                 },"saldos_cliente": {
                   Row: {
@@ -1285,7 +1389,7 @@ isOneToOne: false
                     "id"?: never,"nombre"?: string,"orden"?: number,"tipo"?: string
                   }
                   Relationships: [
-                    
+
                   ]
                 },"variantes": {
                   Row: {
@@ -1458,7 +1562,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Relationships: [
-                    
+
                   ]
                 },"v_credito_proveedores": {
                   Row: {
@@ -1466,7 +1570,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Relationships: [
-                    
+
                   ]
                 },"v_creditos": {
                   Row: {
@@ -1556,7 +1660,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Relationships: [
-                    
+
                   ]
                 },"v_imagenes_tienda": {
                   Row: {
@@ -1614,7 +1718,7 @@ isOneToOne: false
                            "acepta_promos"?: boolean | null,"codigo"?: number | null,"direccion"?: string | null,"documento"?: string | null,"email"?: string | null,"fecha_nacimiento"?: string | null,"id"?: number | null,"localidad"?: string | null,"nombre"?: string | null,"telefono"?: string | null
                          }
                         Relationships: [
-                    
+
                   ]
                 },"v_mi_saldo": {
                   Row: {
@@ -1622,7 +1726,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Relationships: [
-                    
+
                   ]
                 },"v_mis_pedido_items": {
                   Row: {
@@ -1638,13 +1742,27 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"v_perdidas_fallados": {
+                  Row: {
+                    "cantidad": number | null,"costo": number | null,"dia": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "cantidad"?: number | null,"costo"?: never,"dia"?: never
+                         }
+                        Update: {
+                           "cantidad"?: number | null,"costo"?: never,"dia"?: never
+                         }
+                        Relationships: [
+
+                  ]
                 },"v_promos_tienda": {
                   Row: {
                     "etiqueta": string | null,"hasta": string | null,"mezcla": boolean | null,"nombre": string | null,"producto_id": number | null,"promocion_id": number | null
                   }
                   ComputedFields: never
                   Relationships: [
-                    
+
                   ]
                 },"v_saldo_clientes": {
                   Row: {
@@ -1672,7 +1790,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Relationships: [
-                    
+
                   ]
                 },"v_venta_items": {
                   Row: {
@@ -1763,6 +1881,9 @@ isOneToOne: false
 "_en_promocion":
 { Args: { "p_producto": number,"p_promocion": number }; Returns: boolean
                            },
+"_generar_gastos_fijos":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "_hoy_ar":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
@@ -1815,6 +1936,9 @@ isOneToOne: false
 "_saldo_proveedor":
 { Args: { "p_proveedor": number }; Returns: number
                            },
+"_sumar_gasto_automatico":
+{ Args: { "p_categoria": string,"p_descripcion": string,"p_fecha"?: string,"p_importe": number,"p_moneda"?: string,"p_referencia": string }; Returns: number
+                           },
 "_vincular_cliente":
 { Args: { "p_usuario": unknown }; Returns: undefined
                            },
@@ -1856,6 +1980,11 @@ isOneToOne: false
 "cancelar_mi_pedido":
 { Args: { "p_comentario"?: string,"p_motivo"?: string,"p_pedido": number }; Returns: undefined
                            },
+"consultar_pedido_whatsapp":
+{ Args: { "p_comprobante": string,"p_telefono": string }; Returns: {
+              "comprobante": string,"entrega": string,"estado": string,"total": number
+            }[]
+                           },
 "convertir_presupuesto":
 { Args: { "p_medio_pago"?: number,"p_presupuesto": number }; Returns: number
                            },
@@ -1893,6 +2022,9 @@ isOneToOne: false
                            },
 "etiqueta_promocion":
 { Args: { "p_lleva": number,"p_paga": number,"p_pct": number,"p_tipo": string }; Returns: string
+                           },
+"generar_gastos_fijos":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "mas_vendidos_tienda":
 { Args: { "p_dias"?: number }; Returns: {
@@ -2084,11 +2216,11 @@ export type CompositeTypes<
 export const Constants = {
   "graphql_public": {
           Enums: {
-            
+
           }
         },"public": {
           Enums: {
-            
+
           }
         }
 } as const

@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Boxes, Receipt, type LucideIcon } from "lucide-react";
+import { Boxes, Receipt, Scale, type LucideIcon } from "lucide-react";
 
 const PESTANAS: { href: string; texto: string; icono: LucideIcon; permiso: string }[] = [
   { href: "/admin/informes/ventas", texto: "Ventas", icono: Receipt, permiso: "informes.ventas" },
   { href: "/admin/informes/stock", texto: "Stock valorizado", icono: Boxes, permiso: "informes.stock" },
+  { href: "/admin/informes/resultado", texto: "Resultado", icono: Scale, permiso: "gastos.gestionar" },
 ];
 
 export default function Pestanas({ permisos }: { permisos: string[] }) {

@@ -116,10 +116,15 @@ export async function guardarTienda(_: Estado, f: FormData): Promise<Estado> {
   const avisos = String(f.get("avisos") ?? "").split("\n").map((a) => a.trim()).filter(Boolean);
   if (avisos.length > 5) return { error: "Hasta 5 avisos (uno por renglón)" };
   if (avisos.some((a) => a.length > 120)) return { error: "Cada aviso puede tener hasta 120 letras" };
+
+  const wa_bot_activo = f.get("wa_bot_activo") !== null;
+  const wa_notificaciones_pedidos = f.get("wa_notificaciones_pedidos") !== null;
+
   const { error } = await supabase.from("configuracion_tienda").update({
     dias_retiro, dias_cambio, dias_saldo, nombre: texto(f, "nombre") || "Mi Tienda", whatsapp: whatsapp || null, instagram: instagram || null,
     avisos, aviso_enlace: aviso_enlace || null,
     direccion_retiro: texto(f, "direccion_retiro") || null, horario: texto(f, "horario") || null,
+    wa_bot_activo, wa_notificaciones_pedidos,
   }).eq("unica", true);
   if (error) return { error: error.message };
   refrescar();

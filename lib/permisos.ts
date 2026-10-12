@@ -6,6 +6,6 @@ export type Permiso =
   | "ventas.registrar" | "ventas.ver_todas" | "ventas.cambiar_precio" | "pedidos.gestionar"
   | "clientes.ver" | "clientes.editar" | "stock.ver" | "stock.ajustar"
   | "compras.registrar" | "proveedores.gestionar" | "productos.editar" | "precios.editar" | "costos.ver"
-  | "ventas.anular" | "devoluciones.fuera_de_plazo" | "informes.ventas" | "informes.stock" | "tablas.editar" | "equipo.administrar" | "promociones.gestionar" | "tienda.editar";
+  | "ventas.anular" | "devoluciones.fuera_de_plazo" | "informes.ventas" | "informes.stock" | "tablas.editar" | "equipo.administrar" | "promociones.gestionar" | "tienda.editar" | "gastos.gestionar";
 
 export const puede = (permisos: readonly string[], ...algunos: Permiso[]) => algunos.some((p) => permisos.includes(p));

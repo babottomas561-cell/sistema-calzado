@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   BadgePercent, BookUser, Boxes, ChartBar, ExternalLink, FileText, PackageSearch, ShieldCheck, Tags, House, LogOut, Menu as IconoMenu, MessageCircleMore, Package, PackagePlus,
-  PackageX, Plus, Receipt, Undo2, Settings2, ShoppingBag, Store, Truck, Users, X, type LucideIcon,
+  PackageX, Plus, Receipt, Wallet, Undo2, Settings2, ShoppingBag, Store, Truck, Users, X, type LucideIcon,
 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { puede, type Permiso } from "@/lib/permisos";
@@ -29,7 +29,10 @@ const GRUPOS: { titulo?: string; items: Item[] }[] = [
     { href: "/admin/fallados", texto: "Fallados", icono: PackageX, permisos: ["stock.ver"] },
     { href: "/admin/reposicion", texto: "Reposición", icono: PackageSearch, permisos: ["compras.registrar"] },
   ] },
-  { titulo: "Análisis", items: [{ href: "/admin/informes", texto: "Informes", icono: ChartBar, permisos: ["informes.ventas", "informes.stock"] }] },
+  { titulo: "Análisis", items: [
+    { href: "/admin/informes", texto: "Informes", icono: ChartBar, permisos: ["informes.ventas", "informes.stock", "gastos.gestionar"] },
+    { href: "/admin/gastos", texto: "Gastos", icono: Wallet, permisos: ["gastos.gestionar"] },
+  ] },
   { titulo: "Contactos", items: [
     { href: "/admin/clientes", texto: "Clientes", icono: Users, permisos: ["clientes.ver"] },
     { href: "/admin/seguimientos", texto: "Seguimientos", icono: MessageCircleMore, permisos: ["clientes.ver"] },
