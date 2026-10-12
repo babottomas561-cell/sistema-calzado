@@ -5,7 +5,7 @@ import { useActionState } from "react";
 import { CircleCheck } from "lucide-react";
 import { guardarTienda } from "./acciones";
 
-type Tienda = { nombre: string; aviso: string | null; aviso_enlace: string | null; instagram: string | null; whatsapp: string | null; direccion_retiro: string | null; horario: string | null };
+type Tienda = { nombre: string; aviso: string | null; aviso_enlace: string | null; instagram: string | null; whatsapp: string | null; direccion_retiro: string | null; horario: string | null; dias_retiro: number };
 
 export default function FormTienda({ tienda }: { tienda: Tienda }) {
   const [estado, accion, cargando] = useActionState(guardarTienda, {});
@@ -24,6 +24,9 @@ export default function FormTienda({ tienda }: { tienda: Tienda }) {
         <input name="whatsapp" type="tel" defaultValue={tienda.whatsapp ?? ""} placeholder="549 381 555-1234" className="campo" />
         <p className="mt-0.5 text-[11px] text-texto-2">Con el 54, el 9 y el código de área. Al confirmar un pedido, el cliente lo manda a este número.</p></div>
       <div><label className="etiqueta">Horario</label><input name="horario" defaultValue={tienda.horario ?? ""} placeholder="Lun a sáb de 9 a 13 y de 17 a 21" className="campo" /></div>
+      <div><label className="etiqueta">Días que se guarda un pedido para retirar</label>
+        <input name="dias_retiro" type="number" min={1} max={90} defaultValue={tienda.dias_retiro} className="campo" />
+        <p className="mt-0.5 text-[11px] text-texto-2">Si no lo retiran en ese plazo, se cancela solo y el stock vuelve a la venta. El cliente ve la fecha.</p></div>
       <div className="sm:col-span-2"><label className="etiqueta">Dirección para retirar</label><input name="direccion_retiro" defaultValue={tienda.direccion_retiro ?? ""} placeholder="Av. Mate de Luna 1234, San Miguel de Tucumán" className="campo" /></div>
       <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
         <button className="boton" disabled={cargando}>Guardar</button>

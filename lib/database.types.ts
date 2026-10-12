@@ -225,14 +225,14 @@ isOneToOne: false
                   ]
                 },"configuracion_tienda": {
                   Row: {
-                    "aviso": string | null,"aviso_enlace": string | null,"direccion_retiro": string | null,"horario": string | null,"id": number,"instagram": string | null,"nombre": string,"unica": boolean,"whatsapp": string | null
+                    "aviso": string | null,"aviso_enlace": string | null,"dias_retiro": number,"direccion_retiro": string | null,"horario": string | null,"id": number,"instagram": string | null,"nombre": string,"unica": boolean,"whatsapp": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "aviso"?: string | null,"aviso_enlace"?: string | null,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
+                    "aviso"?: string | null,"aviso_enlace"?: string | null,"dias_retiro"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
                   }
                   Update: {
-                    "aviso"?: string | null,"aviso_enlace"?: string | null,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
+                    "aviso"?: string | null,"aviso_enlace"?: string | null,"dias_retiro"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
                   }
                   Relationships: [
                     
@@ -511,14 +511,14 @@ isOneToOne: false
                   ]
                 },"pedidos": {
                   Row: {
-                    "ajuste_medio_pago": number,"ajuste_pct": number,"canal": string,"cliente_id": number,"comprobante": string | null,"deposito_id": number,"descuento_promociones": number,"direccion_envio": string | null,"entrega": string,"estado": string,"fecha": string,"id": number,"medio_pago_id": number,"notas": string | null,"numero": number | null,"punto_venta": number,"subtotal": number,"total": number
+                    "ajuste_medio_pago": number,"ajuste_pct": number,"canal": string,"cancelado_por": string | null,"cliente_id": number,"comprobante": string | null,"deposito_id": number,"descuento_promociones": number,"direccion_envio": string | null,"entrega": string,"estado": string,"fecha": string,"id": number,"medio_pago_id": number,"motivo_cancelacion": string | null,"notas": string | null,"numero": number | null,"punto_venta": number,"subtotal": number,"total": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cliente_id": number,"comprobante"?: never,"deposito_id": number,"descuento_promociones"?: number,"direccion_envio"?: string | null,"entrega"?: string,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id": number,"notas"?: string | null,"numero"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number
+                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cancelado_por"?: string | null,"cliente_id": number,"comprobante"?: never,"deposito_id": number,"descuento_promociones"?: number,"direccion_envio"?: string | null,"entrega"?: string,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id": number,"motivo_cancelacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number
                   }
                   Update: {
-                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cliente_id"?: number,"comprobante"?: never,"deposito_id"?: number,"descuento_promociones"?: number,"direccion_envio"?: string | null,"entrega"?: string,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id"?: number,"notas"?: string | null,"numero"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number
+                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cancelado_por"?: string | null,"cliente_id"?: number,"comprobante"?: never,"deposito_id"?: number,"descuento_promociones"?: number,"direccion_envio"?: string | null,"entrega"?: string,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id"?: number,"motivo_cancelacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number
                   }
                   Relationships: [
                     {
@@ -1240,6 +1240,20 @@ isOneToOne: false
                         Relationships: [
                     
                   ]
+                },"v_mis_pedido_items": {
+                  Row: {
+                    "cantidad": number | null,"color": string | null,"descuento_promo": number | null,"id": number | null,"modelo": string | null,"pedido_id": number | null,"precio_unitario": number | null,"promocion": string | null,"talle": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "pedido_items_pedido_id_fkey"
+      columns: ["pedido_id"]
+isOneToOne: false
+      referencedRelation: "pedidos"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"v_promos_tienda": {
                   Row: {
                     "etiqueta": string | null,"hasta": string | null,"mezcla": boolean | null,"nombre": string | null,"producto_id": number | null,"promocion_id": number | null
@@ -1315,7 +1329,10 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "_codigo_corto":
+            "_cancelar_pedido":
+{ Args: { "p_comentario": string,"p_motivo": string,"p_pedido": number,"p_por": string }; Returns: undefined
+                           },
+"_codigo_corto":
 { Args: { "p_largo"?: number,"p_nombre": string,"p_prefijo"?: string,"p_tabla": string }; Returns: string
                            },
 "_cotizar":
@@ -1394,7 +1411,10 @@ isOneToOne: false
 { Args: { "p_escala"?: string,"p_nombre": string }; Returns: number
                            },
 "cambiar_estado_pedido":
-{ Args: { "p_comentario"?: string,"p_estado": string,"p_pagos"?: Json,"p_pedido": number }; Returns: number
+{ Args: { "p_comentario"?: string,"p_estado": string,"p_motivo"?: string,"p_pagos"?: Json,"p_pedido": number }; Returns: number
+                           },
+"cancelar_mi_pedido":
+{ Args: { "p_comentario"?: string,"p_motivo"?: string,"p_pedido": number }; Returns: undefined
                            },
 "convertir_presupuesto":
 { Args: { "p_medio_pago"?: number,"p_presupuesto": number }; Returns: number
@@ -1464,8 +1484,14 @@ isOneToOne: false
               "codigo": string,"color": string,"color_hex": string,"costo_unitario": number,"disponible": number,"marca": string,"nombre": string,"producto_id": number,"proveedor": string,"proveedor_id": number,"sugerido": number,"talle": string,"talle_orden": number,"variante_id": number,"vendidos": number
             }[]
                            },
+"retirar_hasta":
+{ Args: { "p_pedido": number }; Returns: string
+                           },
 "tiene_permiso":
 { Args: { "p_permiso": string }; Returns: boolean
+                           },
+"vencer_pedidos_sin_retirar":
+{ Args: Record<PropertyKey, never>; Returns: number
                            }
           }
           Enums: {

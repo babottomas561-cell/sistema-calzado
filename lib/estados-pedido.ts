@@ -8,3 +8,16 @@ export const ESTADOS: Record<string, { texto: string; color: string; siguientes:
   entregado:    { texto: "Entregado",          color: "bg-green-100 text-ok",      siguientes: [] },
   cancelado:    { texto: "Cancelado",          color: "bg-gray-100 text-texto-2",  siguientes: [] },
 };
+
+// Por qué se canceló un pedido (pedidos.motivo_cancelacion). El cliente solo elige entre los suyos.
+export const MOTIVOS_CANCELACION: Record<string, string> = {
+  arrepentido: "El cliente se arrepintió",
+  no_retiro: "No lo retiró a tiempo",
+  no_pago: "No lo pagó",
+  sin_stock: "No hay stock",
+  otro: "Otro motivo",
+};
+export const MOTIVOS_LOCAL = ["arrepentido", "no_pago", "sin_stock", "no_retiro", "otro"] as const;
+export const MOTIVOS_CLIENTE = { arrepentido: "Me arrepentí / ya no lo quiero", otro: "Otro motivo" } as const;
+// Quién lo canceló (pedidos.cancelado_por)
+export const CANCELADO_POR: Record<string, string> = { cliente: "el cliente", local: "el local", vencimiento: "vencimiento automático" };

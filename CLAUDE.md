@@ -42,7 +42,8 @@ una API de Next.** Lo que ya pisamos:
    | `registrar_compra(p_items, p_proveedor, p_notas, p_actualizar_costo, p_deposito, p_comprobante_proveedor, p_fecha_comprobante)` | factura de compra: suma stock y (si `p_actualizar_costo`) actualiza el precio de compra del artículo **y el de ese proveedor** |
    | `ajustar_stock(p_variante, p_stock_nuevo, p_motivo, p_deposito)` | inventario, rotura, pérdida (con motivo obligatorio) |
    | `crear_pedido(p_items, p_entrega, p_direccion, p_medio_pago, p_notas, p_cliente, p_canal)` | pedido web: **reserva** stock; el precio y el % del medio de pago los pone la base, no el navegador |
-   | `cambiar_estado_pedido(p_pedido, p_estado, p_comentario, p_pagos)` | `entregado` → se convierte en venta (respeta el % prometido); `cancelado` → libera la reserva |
+   | `cambiar_estado_pedido(p_pedido, p_estado, p_comentario, p_pagos, p_motivo)` | `entregado` → se convierte en venta (respeta el % prometido); `cancelado` (motivo obligatorio) → libera la reserva |
+   | `cancelar_mi_pedido(p_pedido, p_motivo, p_comentario)` | el cliente cancela el suyo mientras esté pendiente o confirmado. Los *listo para retirar* vencen solos a los `dias_retiro` (pg_cron, `vencer_pedidos_sin_retirar()`) |
 
    Se llaman con `supabase.rpc("registrar_venta", { p_items: [...], ... })`. Los parámetros
    llevan prefijo `p_`.
@@ -78,7 +79,7 @@ una API de Next.** Lo que ya pisamos:
      `v_hechos_ventas`, que devuelven el costo **vacío**. Una vista nueva con costos hace lo mismo;
    - **la operación** (ventas, compras, stock, pedidos) se escribe **solo** por las funciones de la regla 1,
      que son `security definer` y verifican el permiso; esas tablas no tienen políticas de escritura;
-   - un cliente registrado ve **sus** pedidos y **su** ficha, pero la ficha **no** por la tabla `clientes`
+   - un cliente registrado ve **sus** pedidos y **su** ficha (los renglones por `v_mis_pedido_items`: no lee el catálogo interno), pero la ficha **no** por la tabla `clientes`
      (tiene notas internas del CRM): la lee por `v_mi_ficha` y la cambia con `actualizar_mi_ficha()`;
      su cuenta se vincula a una ficha del local recién cuando **confirma el email**;
    - el público (anon) solo lee `v_catalogo`, que **no tiene costos**.

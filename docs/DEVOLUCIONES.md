@@ -185,7 +185,7 @@ Así el dueño ve en un lugar cuánto tiene «parado» en fallados y qué provee
 
 ## Orden sugerido para construirlo
 
-1. Motivo de cancelación + el cliente cancela desde Mi cuenta (con confirmación) + vencimiento de pedidos sin retirar.
+1. **HECHO (2026-10-12):** motivo de cancelación + el cliente cancela desde Mi cuenta (con confirmación) + vencimiento de pedidos sin retirar (migración `cancelacion_de_pedidos`).
 2. Anular venta del día.
 3. Depósitos vendibles + bandeja de fallados.
 4. Devolución con saldo a favor (necesita `saldos_cliente`) y plazo configurable.

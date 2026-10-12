@@ -70,7 +70,7 @@ select is((select array_agg(estado order by id) from pedido_estados where pedido
   array['pendiente', 'confirmado', 'entregado'], 'queda el historial de estados');
 select throws_ok(format($$ select cambiar_estado_pedido(%s, 'cancelado') $$, (select id from prueba.ids where nombre = 'p1')), 'El pedido ya está entregado');
 
-select cambiar_estado_pedido((select id from prueba.ids where nombre = 'p2'), 'cancelado', 'Se arrepintió');
+select cambiar_estado_pedido((select id from prueba.ids where nombre = 'p2'), 'cancelado', 'Se arrepintió', p_motivo => 'arrepentido');
 select is(prueba.reservado((select id from prueba.ids where nombre = 'urbana40n')), 0, 'cancelar libera la reserva');
 select is((select count(*)::int from (select s.variante_id from stock s left join movimientos_stock m on m.variante_id = s.variante_id and m.deposito_id = s.deposito_id
   group by s.variante_id, s.cantidad having s.cantidad <> coalesce(sum(m.cantidad), 0)) x), 0, 'stock = suma de movimientos');

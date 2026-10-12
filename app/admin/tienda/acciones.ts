@@ -107,8 +107,10 @@ export async function guardarTienda(_: Estado, f: FormData): Promise<Estado> {
   if (instagram && !/^[A-Za-z0-9._]{1,30}$/.test(instagram)) return { error: "El usuario de Instagram solo lleva letras, números, punto y guion bajo" };
   const aviso_enlace = texto(f, "aviso_enlace", 300);
   if (aviso_enlace && !enlaceValido(aviso_enlace)) return { error: "El link del aviso tiene que empezar con / o con https://" };
+  const dias_retiro = Math.round(Number(f.get("dias_retiro")));
+  if (!(dias_retiro >= 1 && dias_retiro <= 90)) return { error: "Los días para retirar van de 1 a 90" };
   const { error } = await supabase.from("configuracion_tienda").update({
-    nombre: texto(f, "nombre") || "Mi Tienda", whatsapp: whatsapp || null, instagram: instagram || null,
+    dias_retiro, nombre: texto(f, "nombre") || "Mi Tienda", whatsapp: whatsapp || null, instagram: instagram || null,
     aviso: texto(f, "aviso", 120) || null, aviso_enlace: aviso_enlace || null,
     direccion_retiro: texto(f, "direccion_retiro") || null, horario: texto(f, "horario") || null,
   }).eq("unica", true);

@@ -18,3 +18,15 @@ export async function guardarMisDatos(_: { error?: string; ok?: string }, f: For
   revalidatePath("/mi-cuenta");
   return { ok: "Datos guardados" };
 }
+
+// El cliente cancela su pedido. La base controla que sea suyo y que el local no lo haya empezado a preparar.
+export async function cancelarMiPedido(_: { error?: string; ok?: string }, f: FormData): Promise<{ error?: string; ok?: string }> {
+  const supabase = await crearCliente();
+  const pedido = Number(f.get("pedido_id"));
+  const { error } = await supabase.rpc("cancelar_mi_pedido", {
+    p_pedido: pedido, p_motivo: String(f.get("motivo") ?? "arrepentido"), p_comentario: String(f.get("comentario") ?? "").trim() || undefined,
+  });
+  if (error) return { error: error.message };
+  revalidatePath("/mi-cuenta"); revalidatePath(`/mi-cuenta/pedidos/${pedido}`);
+  return { ok: "Cancelaste el pedido" };
+}

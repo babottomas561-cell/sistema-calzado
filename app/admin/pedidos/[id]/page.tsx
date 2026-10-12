@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { crearCliente } from "@/lib/supabase/server";
-import { fechaHora, pesos, porcentaje } from "@/lib/formato";
-import { ESTADOS } from "@/lib/estados-pedido";
+import { fecha, fechaHora, pesos, porcentaje } from "@/lib/formato";
+import { CANCELADO_POR, ESTADOS, MOTIVOS_CANCELACION } from "@/lib/estados-pedido";
 import Acciones from "./Acciones";
 import Volver from "@/components/Volver";
 import { exigir } from "@/lib/exigir";
@@ -11,11 +11,12 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
   await exigir("pedidos.gestionar");
   const { id } = await params;
   const supabase = await crearCliente();
-  const [{ data: p }, { data: items }, { data: historial }, { data: venta }] = await Promise.all([
+  const [{ data: p }, { data: items }, { data: historial }, { data: venta }, { data: hasta }] = await Promise.all([
     supabase.from("pedidos").select("*, clientes(id, nombre, telefono, email), medios_pago(nombre)").eq("id", Number(id)).single(),
     supabase.from("pedido_items").select("id, cantidad, precio_unitario, descuento_promo, promociones(nombre), variantes(talles(nombre), colores(nombre), productos(nombre))").eq("pedido_id", Number(id)),
     supabase.from("pedido_estados").select("id, estado, fecha, comentario").eq("pedido_id", Number(id)).order("fecha"),
     supabase.from("ventas").select("id, comprobante").eq("pedido_id", Number(id)).maybeSingle(),
+    supabase.rpc("retirar_hasta", { p_pedido: Number(id) }),
   ]);
   const { data: medios } = await supabase.from("medios_pago").select("id, nombre, ajuste_pct, cuotas").eq("activo", true).order("orden");
   if (!p) notFound();
@@ -28,6 +29,11 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
       <div className="flex flex-wrap items-center gap-3"><h1 className="text-2xl font-bold">Pedido <span className="font-mono">{p.comprobante}</span></h1>
         <span className={`chip ${ESTADOS[p.estado].color}`}>{ESTADOS[p.estado].texto}</span>
         {venta && <Link href={`/admin/ventas/${venta.id}`} className="text-sm text-marca">→ Venta {venta.comprobante}</Link>}</div>
+      {p.estado === "cancelado" && p.motivo_cancelacion && (
+        <p className="rounded-lg bg-gray-100 px-3 py-2 text-sm"><b>{MOTIVOS_CANCELACION[p.motivo_cancelacion]}</b>
+          <span className="text-texto-2"> · cancelado por {CANCELADO_POR[p.cancelado_por ?? "local"]}</span></p>
+      )}
+      {hasta && <p className="rounded-lg bg-indigo-50 px-3 py-2 text-sm text-indigo-800">Se guarda hasta el <b>{fecha(hasta)}</b>. Si no lo retiran, se cancela solo y el stock vuelve a la venta.</p>}
 
       <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
         <div className="space-y-4">

@@ -4,7 +4,7 @@ import { CircleCheck } from "lucide-react";
 import { pesos } from "@/lib/formato";
 import { ajusteDe, textoMedio, type MedioPago } from "@/lib/medios";
 import { cambiarEstado } from "../acciones";
-import { ESTADOS } from "@/lib/estados-pedido";
+import { ESTADOS, MOTIVOS_CANCELACION, MOTIVOS_LOCAL } from "@/lib/estados-pedido";
 
 // Avanzar el pedido. Al entregarlo se cobra: por defecto con el medio que eligió el cliente y con el %
 // que tenía ese medio al hacer el pedido (se respeta el precio prometido aunque después haya cambiado).
@@ -40,7 +40,16 @@ export default function Acciones({ pedido, siguientes, medios, elegido, subtotal
           <p className="text-xs text-texto-2">Al marcarlo entregado se registra la venta y se descuenta el stock.</p>
         </div>
       )}
-      {destino === "cancelado" && <p className="text-xs text-error">Al cancelar se libera el stock reservado.</p>}
+      {destino === "cancelado" && (
+        <div className="space-y-1 rounded-lg bg-red-50 p-2">
+          <label className="text-xs text-texto-2">Motivo
+            <select name="motivo" required defaultValue="" className="campo mt-0.5">
+              <option value="" disabled>Elegí el motivo</option>
+              {MOTIVOS_LOCAL.map((m) => <option key={m} value={m}>{MOTIVOS_CANCELACION[m]}</option>)}
+            </select></label>
+          <p className="text-xs text-error">Al cancelar se libera el stock reservado. El cliente ve el comentario.</p>
+        </div>
+      )}
       {estado.error && <p className="text-sm text-error">{estado.error}</p>}
       {estado.ok && <p className="flex items-center gap-1.5 text-sm text-ok"><CircleCheck size={16} /> {estado.ok}</p>}
       <button className={destino === "cancelado" ? "boton w-full bg-error hover:bg-red-700" : "boton w-full"} disabled={cargando}>
