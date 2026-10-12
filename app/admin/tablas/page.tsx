@@ -6,6 +6,7 @@ import { CreditCard, Layers, Monitor, Palette, Plus, Ruler, Store, Tag } from "l
 import { crearCliente } from "@/lib/supabase/server";
 import { porcentaje } from "@/lib/formato";
 import Editor from "./Editor";
+import FormTienda from "./FormTienda";
 import { exigir } from "@/lib/exigir";
 
 const PESTANAS = [
@@ -14,6 +15,7 @@ const PESTANAS = [
   { clave: "colores", texto: "Colores", icono: Palette },
   { clave: "talles", texto: "Talles", icono: Ruler },
   { clave: "medios", texto: "Medios de pago", icono: CreditCard },
+  { clave: "tienda", texto: "Tienda", icono: Store },
 ] as const;
 type Clave = (typeof PESTANAS)[number]["clave"];
 
@@ -47,16 +49,17 @@ export default async function Tablas({ searchParams }: { searchParams: Promise<{
   const { t } = await searchParams;
   const actual: Clave = PESTANAS.some((p) => p.clave === t) ? (t as Clave) : "rubros";
   const supabase = await crearCliente();
-  const [rubros, subrubros, marcas, colores, talles, medios] = await Promise.all([
+  const [rubros, subrubros, marcas, colores, talles, medios, tienda] = await Promise.all([
     supabase.from("categorias").select("id, codigo, nombre, productos(count)").order("nombre"),
     supabase.from("subcategorias").select("id, codigo, nombre, categoria_id, productos(count)").order("nombre"),
     supabase.from("marcas").select("id, codigo, nombre, productos(count)").order("nombre"),
     supabase.from("colores").select("id, codigo, nombre, hex, variantes(count)").order("nombre"),
     supabase.from("talles").select("id, nombre, orden, tipo, variantes(count)").order("orden"),
     supabase.from("medios_pago").select("id, codigo, nombre, tipo, ajuste_pct, cuotas, en_mostrador, en_tienda, activo, orden, pagos(count)").order("orden"),
+    supabase.from("configuracion_tienda").select("nombre, whatsapp, direccion_retiro, horario").single(),
   ]);
   const cantidades: Record<Clave, number> = { rubros: rubros.data?.length ?? 0, marcas: marcas.data?.length ?? 0,
-    colores: colores.data?.length ?? 0, talles: talles.data?.length ?? 0, medios: medios.data?.length ?? 0 };
+    colores: colores.data?.length ?? 0, talles: talles.data?.length ?? 0, medios: medios.data?.length ?? 0, tienda: 0 };
 
   return (
     <div className="space-y-5">
@@ -69,7 +72,7 @@ export default async function Tablas({ searchParams }: { searchParams: Promise<{
           <Link key={clave} href={`/admin/tablas?t=${clave}`} aria-current={clave === actual ? "page" : undefined}
             className={`flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${clave === actual ? "bg-white text-marca shadow-sm ring-1 ring-borde" : "text-gray-600 hover:bg-white/60"}`}>
             <Icono size={16} strokeWidth={clave === actual ? 2.2 : 1.8} />{texto}
-            <span className={`rounded-full px-1.5 text-xs ${clave === actual ? "bg-marca-suave" : "bg-gray-200/70"}`}>{cantidades[clave]}</span>
+            {clave !== "tienda" && <span className={`rounded-full px-1.5 text-xs ${clave === actual ? "bg-marca-suave" : "bg-gray-200/70"}`}>{cantidades[clave]}</span>}
           </Link>
         ))}
       </nav>
@@ -180,6 +183,11 @@ export default async function Tablas({ searchParams }: { searchParams: Promise<{
               );
             })}
           </div>
+        </>}
+
+        {actual === "tienda" && <>
+          <Encabezado titulo="Tienda" detalle="Lo que ve el cliente al hacer un pedido: a qué WhatsApp lo manda, dónde retira y en qué horario." />
+          {tienda.data && <FormTienda tienda={tienda.data} />}
         </>}
 
         {actual === "medios" && <>

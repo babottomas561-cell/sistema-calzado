@@ -12,7 +12,7 @@ import SelectorPeriodo from "../SelectorPeriodo";
 import GraficoVentas, { type Punto } from "./GraficoVentas";
 import { exigir } from "@/lib/exigir";
 
-const POR = { rubro: "Rubro", marca: "Marca", modelo: "Modelo", talle: "Talle", color: "Color", canal: "Canal", vendedor: "Vendedor", cliente: "Cliente", medio: "Medio de pago" } as const;
+const POR = { rubro: "Rubro", marca: "Marca", modelo: "Modelo", talle: "Talle", color: "Color", canal: "Canal", vendedor: "Vendedor", promocion: "Promoción", cliente: "Cliente", medio: "Medio de pago" } as const;
 type Por = keyof typeof POR;
 
 const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
@@ -45,7 +45,7 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
   const supabase = await crearCliente();
   const [items, itemsAnt, pagos] = await Promise.all([
     leerTodo((a, b) => supabase.from("v_hechos_ventas")
-      .select("id, venta_id, dia, cantidad, importe, importe_neto, margen_neto, canal, rubro, marca, articulo, modelo, talle, talle_orden, color, cliente, cliente_codigo, vendedor_id, vendedor")
+      .select("id, venta_id, dia, cantidad, importe, importe_neto, margen_neto, canal, rubro, marca, articulo, modelo, talle, talle_orden, color, cliente, cliente_codigo, vendedor_id, vendedor, promocion_id, promocion, descuento_promo")
       .gte("fecha", l.gte).lt("fecha", l.lt).order("id").range(a, b)),
     leerTodo((a, b) => supabase.from("v_hechos_ventas").select("id, venta_id, cantidad, importe_neto, margen_neto")
       .gte("fecha", la.gte).lt("fecha", la.lt).order("id").range(a, b)),
@@ -60,7 +60,9 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
     return r;
   };
   const act = resumen(items), ant = resumen(itemsAnt);
-  const ajustes = items.reduce((s, i) => s + Number(i.importe_neto ?? 0) - Number(i.importe ?? 0), 0);
+  // Lo que se resignó en promociones (va aparte de los descuentos manuales y por medio de pago)
+  const enPromos = items.reduce((s, i) => s + Number(i.descuento_promo ?? 0), 0);
+  const ajustes = items.reduce((s, i) => s + Number(i.importe_neto ?? 0) - Number(i.importe ?? 0), 0) + enPromos;
   const margenPct = (g: number, v: number) => (v > 0 ? Math.round((g / v) * 100) : 0);
 
   // ── Gráfico: por día, o por mes si el período pasa de dos meses ──
@@ -99,6 +101,7 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
         : por === "color" ? [i.color ?? "", i.color ?? "", 0]
         : por === "canal" ? [i.canal ?? "", i.canal ?? "—", 0]
         : por === "vendedor" ? [i.vendedor_id ?? "", i.vendedor ?? "Sin registrar", 0]
+        : por === "promocion" ? [String(i.promocion_id ?? ""), i.promocion ?? "Sin promoción", 0]
         : [i.cliente_codigo ? String(i.cliente_codigo) : "", i.cliente ? `${i.cliente_codigo} · ${i.cliente}` : "Sin cliente (mostrador)", 0];
       sumar(k, etiqueta, orden, Number(i.importe_neto ?? 0), Number(i.margen_neto ?? 0), i.cantidad ?? 0, i.venta_id ?? 0);
     }
@@ -124,6 +127,7 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
     { titulo: "Pares", valor: numero(act.pares), extra: <Variacion actual={act.pares} anterior={ant.pares} /> },
     { titulo: "Ticket promedio", valor: pesos(act.ventas ? act.vendido / act.ventas : 0), extra: <span className="text-texto-2">{act.ventas ? `${(act.pares / act.ventas).toFixed(1).replace(".", ",")} pares por venta` : "—"}</span> },
     { titulo: ajustes <= 0 ? "Descuentos" : "Recargos", valor: pesos(Math.abs(ajustes)), extra: <span className="text-texto-2">manuales y por medio de pago</span> },
+    ...(enPromos > 0 ? [{ titulo: "En promociones", valor: pesos(enPromos), extra: <span className="text-texto-2">lo que se resignó (2×1, % off…)</span> }] : []),
   ];
 
   return (

@@ -4,7 +4,9 @@ import Carrito from "./Carrito";
 
 export default async function PaginaCarrito() {
   const supabase = await crearCliente();
-  const { data: medios } = await supabase.from("medios_pago").select("id, nombre, ajuste_pct, cuotas")
-    .eq("activo", true).eq("en_tienda", true).order("orden");
-  return <Carrito medios={medios ?? []} />;
+  const [{ data: medios }, { data: tienda }] = await Promise.all([
+    supabase.from("medios_pago").select("id, nombre, ajuste_pct, cuotas").eq("activo", true).eq("en_tienda", true).order("orden"),
+    supabase.from("configuracion_tienda").select("whatsapp").single(),
+  ]);
+  return <Carrito medios={medios ?? []} conWhatsApp={!!tienda?.whatsapp} />;
 }

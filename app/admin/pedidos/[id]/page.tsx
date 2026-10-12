@@ -13,7 +13,7 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
   const supabase = await crearCliente();
   const [{ data: p }, { data: items }, { data: historial }, { data: venta }] = await Promise.all([
     supabase.from("pedidos").select("*, clientes(id, nombre, telefono, email), medios_pago(nombre)").eq("id", Number(id)).single(),
-    supabase.from("pedido_items").select("id, cantidad, precio_unitario, variantes(talles(nombre), colores(nombre), productos(nombre))").eq("pedido_id", Number(id)),
+    supabase.from("pedido_items").select("id, cantidad, precio_unitario, descuento_promo, promociones(nombre), variantes(talles(nombre), colores(nombre), productos(nombre))").eq("pedido_id", Number(id)),
     supabase.from("pedido_estados").select("id, estado, fecha, comentario").eq("pedido_id", Number(id)).order("fecha"),
     supabase.from("ventas").select("id, comprobante").eq("pedido_id", Number(id)).maybeSingle(),
   ]);
@@ -36,13 +36,16 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
               <thead><tr><th>Producto</th><th className="text-right">Cant.</th><th className="text-right">Precio</th><th className="text-right">Subtotal</th></tr></thead>
               <tbody>{(items ?? []).map((i) => {
                 const v = i.variantes as unknown as { talles: { nombre: string }; colores: { nombre: string }; productos: { nombre: string } };
-                return <tr key={i.id}><td>{v.productos.nombre}<div className="text-xs text-texto-2">Talle {v.talles.nombre} · {v.colores.nombre}</div></td>
-                  <td className="text-right">{i.cantidad}</td><td className="text-right">{pesos(i.precio_unitario)}</td><td className="text-right">{pesos(i.cantidad * Number(i.precio_unitario))}</td></tr>;
+                const promo = Number(i.descuento_promo);
+                return <tr key={i.id}><td>{v.productos.nombre}<div className="text-xs text-texto-2">Talle {v.talles.nombre} · {v.colores.nombre}</div>
+                  {promo > 0 && <div className="text-xs font-semibold text-ok">{(i.promociones as { nombre: string } | null)?.nombre ?? "Promo"}: −{pesos(promo)}</div>}</td>
+                  <td className="text-right">{i.cantidad}</td><td className="text-right">{pesos(i.precio_unitario)}</td><td className="text-right">{pesos(i.cantidad * Number(i.precio_unitario) - promo)}</td></tr>;
               })}</tbody>
             </table>
             <div className="mt-2 space-y-1 text-sm">
+              {(Number(p.ajuste_medio_pago) !== 0 || Number(p.descuento_promociones) > 0) && <div className="flex justify-between text-texto-2"><span>Subtotal</span><span>{pesos(p.subtotal)}</span></div>}
+              {Number(p.descuento_promociones) > 0 && <div className="flex justify-between text-ok"><span>Promociones</span><span>−{pesos(p.descuento_promociones)}</span></div>}
               {Number(p.ajuste_medio_pago) !== 0 && <>
-                <div className="flex justify-between text-texto-2"><span>Subtotal</span><span>{pesos(p.subtotal)}</span></div>
                 <div className={`flex justify-between ${Number(p.ajuste_medio_pago) < 0 ? "text-ok" : "text-alerta"}`}>
                   <span>{medio} ({porcentaje(p.ajuste_pct)})</span><span>{Number(p.ajuste_medio_pago) < 0 ? "−" : "+"}{pesos(Math.abs(Number(p.ajuste_medio_pago)))}</span></div></>}
               <div className="flex justify-between text-lg font-bold"><span>Total</span><span>{pesos(p.total)}</span></div>

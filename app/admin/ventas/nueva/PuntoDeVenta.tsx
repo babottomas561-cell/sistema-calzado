@@ -1,10 +1,10 @@
 "use client";
-import { useActionState, useState } from "react";
-import { Plus, X } from "lucide-react";
+import { useActionState, useEffect, useState } from "react";
+import { BadgePercent, Plus, X } from "lucide-react";
 import SelectorVariantes, { type FilaStock } from "@/components/SelectorVariantes";
 import { pesos, porcentaje } from "@/lib/formato";
 import { ajusteDe, textoMedio, type MedioPago } from "@/lib/medios";
-import { registrarVenta } from "../acciones";
+import { cotizarMostrador, registrarVenta, type CotizacionMostrador } from "../acciones";
 
 type Item = FilaStock & { cantidad: number; precio: number };
 // base = qué parte del precio cubre ese medio (el primero cubre lo que falte)
@@ -32,16 +32,32 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
   const cambiar = (id: number, campo: "cantidad" | "precio", valor: number) =>
     setItems((prev) => prev.map((i) => i.variante_id === id ? { ...i, [campo]: valor } : i));
 
+  // Promociones: las calcula la base (las mismas que va a aplicar registrar_venta)
+  const [ultima, setCot] = useState<CotizacionMostrador | null>(null);
+  const clave = JSON.stringify(items.map((i) => [i.variante_id, i.cantidad, i.precio]));
+  useEffect(() => {
+    if (!items.length) return;
+    let vigente = true;
+    const t = setTimeout(async () => { const r = await cotizarMostrador(items.map((i) => ({ variante_id: i.variante_id, cantidad: i.cantidad, precio_unitario: i.precio }))); if (vigente) setCot(r); }, 200);
+    return () => { vigente = false; clearTimeout(t); };
+  }, [clave]); // eslint-disable-line react-hooks/exhaustive-deps
+  const cot = items.length ? ultima : null;   // sin ítems no hay promociones (no hace falta borrar el estado)
+  const promoDe = (id: number) => (cot?.renglones ?? []).filter((r) => r.variante_id === id && r.descuento_promo > 0);
+
   const subtotal = items.reduce((s, i) => s + i.cantidad * i.precio, 0);
-  const neto = Math.max(subtotal - descuento, 0);
-  const topeDescuento = descuentoMax === null ? null : Math.floor((subtotal * descuentoMax) / 100);
+  const promos = cot?.descuento_promociones ?? 0;
+  // Parte que admite el % del medio de pago (una promo puede no acumularse con el efectivo)
+  const acumulable = (cot?.renglones ?? []).reduce((s, r) => s + (r.acumula ? r.total : 0), 0);
+  const factor = cot && subtotal - promos > 0 ? acumulable / (subtotal - promos) : 1;
+  const neto = Math.max(subtotal - promos - descuento, 0);
+  const topeDescuento = descuentoMax === null ? null : Math.floor(((subtotal - promos) * descuentoMax) / 100);
   const pasaTope = topeDescuento !== null && descuento > topeDescuento;
   // El primer medio completa lo que no cubren los demás
   const otros = pagos.slice(1).reduce((s, p) => s + p.base, 0);
   const lineas = pagos.map((p, i) => {
     const base = i === 0 ? Math.max(neto - otros, 0) : p.base;
     const m = medio(p.medio_pago_id);
-    const ajuste = ajusteDe(base, m.ajuste_pct);
+    const ajuste = ajusteDe(base * factor, m.ajuste_pct);
     return { ...p, base, ajuste, cobra: base + ajuste, m };
   });
   const ajustes = lineas.reduce((s, l) => s + l.ajuste, 0);
@@ -71,6 +87,7 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
               <li key={i.variante_id} className="py-2 text-sm">
                 <div className="flex justify-between gap-2"><span><b>{i.nombre}</b> · {i.talle} · {i.color}</span>
                   <button type="button" onClick={() => setItems((p) => p.filter((x) => x.variante_id !== i.variante_id))} className="text-gray-400 hover:text-error" aria-label="Quitar"><X size={16} /></button></div>
+                {promoDe(i.variante_id).map((r) => <div key={r.promocion} className="mt-0.5 inline-flex items-center gap-1 text-xs font-semibold text-ok"><BadgePercent size={13} /> {r.promocion}: −{pesos(r.descuento_promo)}</div>)}
                 <div className="mt-1 grid grid-cols-2 gap-2">
                   <label className="text-xs text-texto-2">Cantidad (hay {i.stock})
                     <input type="number" min={1} max={i.stock} value={i.cantidad} className="campo mt-0.5 py-1.5"
@@ -127,6 +144,7 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
 
         <dl className="space-y-1 border-t border-borde pt-3 text-sm">
           <div className="flex justify-between text-texto-2"><dt>Subtotal</dt><dd>{pesos(subtotal)}</dd></div>
+          {promos > 0 && <div className="flex justify-between text-ok"><dt>Promociones</dt><dd>−{pesos(promos)}</dd></div>}
           {descuento > 0 && <div className="flex justify-between text-texto-2"><dt>Descuento</dt><dd>−{pesos(descuento)}</dd></div>}
           {ajustes !== 0 && <div className="flex justify-between text-texto-2"><dt>{ajustes < 0 ? "Descuento" : "Recargo"} por medio de pago</dt><dd>{ajustes < 0 ? "−" : "+"}{pesos(Math.abs(ajustes))}</dd></div>}
           <div className="flex items-baseline justify-between pt-1"><dt className="font-semibold">Total a cobrar</dt><dd className="text-2xl font-bold">{pesos(total)}</dd></div>
@@ -134,7 +152,7 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
 
         <input type="hidden" name="venta" value={venta} />
         {estado.error && <p className="text-sm text-error">{estado.error}</p>}
-        <button className="boton w-full py-3 text-base" disabled={cargando || items.length === 0 || descuento > subtotal || excedido || pasaTope}>
+        <button className="boton w-full py-3 text-base" disabled={cargando || items.length === 0 || descuento > subtotal - promos || excedido || pasaTope}>
           {cargando ? "Registrando…" : "Confirmar venta"}
         </button>
       </form>

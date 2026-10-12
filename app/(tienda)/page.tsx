@@ -15,7 +15,12 @@ function Chip({ activo, href, children }: { activo: boolean; href: string; child
 export default async function Catalogo({ searchParams }: { searchParams: Promise<{ categoria?: string; genero?: string; talle?: string; escala?: string; q?: string }> }) {
   const filtros = await searchParams;
   const supabase = await crearCliente();
-  const { data } = await supabase.from("v_catalogo").select("*");
+  const [{ data }, { data: promos }] = await Promise.all([
+    supabase.from("v_catalogo").select("*"),
+    supabase.from("v_promos_tienda").select("producto_id, etiqueta"),
+  ]);
+  // La etiqueta de la promoción de cada modelo ("2×1", "2do al 50 %") para la esquina de la foto
+  const etiquetas = new Map((promos ?? []).map((p) => [p.producto_id, p.etiqueta]));
   const filas = (data ?? []) as Fila[];
 
   // Opciones de filtro (de lo que hay publicado)
@@ -74,7 +79,8 @@ export default async function Catalogo({ searchParams }: { searchParams: Promise
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
         {lista.map((m) => (
           <Link key={m.id} href={`/producto/${m.id}`} className="group overflow-hidden rounded-xl border border-borde bg-white transition hover:shadow-md">
-            <div className="grid aspect-square place-items-center bg-gray-100 text-5xl">
+            <div className="relative grid aspect-square place-items-center bg-gray-100 text-5xl">
+              {etiquetas.get(m.id) && <span className="absolute left-2 top-2 rounded-md bg-ok px-2 py-0.5 text-xs font-bold text-white shadow-sm">{etiquetas.get(m.id)}</span>}
               {m.imagen ? <img src={m.imagen} alt={m.nombre} className="h-full w-full object-cover" /> : <Footprints size={56} className="text-gray-300" />}
             </div>
             <div className="space-y-1 p-3">

@@ -18,3 +18,18 @@ export async function confirmarPedido(_: Estado, f: FormData): Promise<Estado> {
   if (error) return { error: error.message };
   redirect(`/mi-cuenta/pedidos/${id}?nuevo=1`);
 }
+
+// Lo que cuesta el carrito según la base: precios vigentes, promociones y el % del medio de pago.
+// Es el mismo cálculo que va a usar crear_pedido, así el total que se ve es el que queda.
+export type Cotizacion = {
+  renglones: { variante_id: number; cantidad: number; precio_unitario: number; descuento_promo: number; promocion: string | null; etiqueta: string | null; total: number }[];
+  subtotal: number; descuento_promociones: number; ajuste_pct: number; ajuste_medio_pago: number; total: number;
+  sugerencias: { promocion: string; etiqueta: string; faltan: number }[];
+};
+
+export async function cotizarCarrito(items: { variante_id: number; cantidad: number }[], medioId: number | null): Promise<Cotizacion | null> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("cotizar", { p_items: items, p_medio_pago: medioId ?? undefined, p_canal: "tienda" });
+  if (error || !data) return null;
+  return data as unknown as Cotizacion;
+}

@@ -113,9 +113,23 @@ Venta $100.000 → $60.000 en efectivo (−10 %) + $40.000 en 3 cuotas (+15 %)
 
 ## Comprobantes
 
-`ventas`, `pedidos` y `compras` se numeran con la tabla `numeradores` (por tipo y punto de venta,
+`ventas`, `pedidos`, `presupuestos` y `compras` se numeran con la tabla `numeradores` (por tipo y punto de venta,
 con `FOR UPDATE`): `0001-00000123`. Las compras guardan además el número y la fecha de la
 **factura del proveedor** (`comprobante_proveedor`, `fecha_comprobante`).
+
+### Los documentos del local (ninguno tiene validez fiscal)
+
+| documento | tabla | qué es | toca stock |
+|---|---|---|---|
+| **Presupuesto** | `presupuestos` + `presupuesto_items` | lo que se ofrece y a qué precio; congela precios y promociones hasta `valido_hasta` | no |
+| **Pedido** (web) | `pedidos` | un presupuesto que el cliente confirmó desde la tienda | reserva |
+| **Comprobante de venta** | `ventas` | lo que se entregó y se cobró | descuenta |
+| **Recibo** | (pendiente) | constancia de cada cobro, para saldos y pagos parciales | no |
+
+`crear_presupuesto` arma el presupuesto con el mismo motor que la caja (`_renglones_cotizados`);
+`convertir_presupuesto` lo pasa a venta respetando lo presupuestado (`_registrar_venta`), y si ya
+venció avisa que hay que hacer uno nuevo. Estados: `vigente`, `convertido`, `anulado`; «vencido» se
+calcula por la fecha. Se escribe solo por esas funciones (permiso `ventas.registrar`).
 
 ## Stock
 

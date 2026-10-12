@@ -57,6 +57,12 @@ isOneToOne: false
       foreignKeyName: "ajuste_precio_items_producto_id_fkey"
       columns: ["producto_id"]
 isOneToOne: false
+      referencedRelation: "v_promos_tienda"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "ajuste_precio_items_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
       referencedRelation: "v_stock"
       referencedColumns: ["producto_id"]
     },{
@@ -216,6 +222,20 @@ isOneToOne: false
       referencedRelation: "perfiles"
       referencedColumns: ["id"]
     }
+                  ]
+                },"configuracion_tienda": {
+                  Row: {
+                    "direccion_retiro": string | null,"horario": string | null,"id": number,"nombre": string,"unica": boolean,"whatsapp": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
+                  }
+                  Update: {
+                    "direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
+                  }
+                  Relationships: [
+                    
                   ]
                 },"depositos": {
                   Row: {
@@ -433,14 +453,14 @@ isOneToOne: false
                   ]
                 },"pedido_items": {
                   Row: {
-                    "cantidad": number,"id": number,"pedido_id": number,"precio_unitario": number,"variante_id": number
+                    "cantidad": number,"descuento_promo": number,"id": number,"pedido_id": number,"precio_unitario": number,"promocion_id": number | null,"variante_id": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "cantidad": number,"id"?: never,"pedido_id": number,"precio_unitario": number,"variante_id": number
+                    "cantidad": number,"descuento_promo"?: number,"id"?: never,"pedido_id": number,"precio_unitario": number,"promocion_id"?: number | null,"variante_id": number
                   }
                   Update: {
-                    "cantidad"?: number,"id"?: never,"pedido_id"?: number,"precio_unitario"?: number,"variante_id"?: number
+                    "cantidad"?: number,"descuento_promo"?: number,"id"?: never,"pedido_id"?: number,"precio_unitario"?: number,"promocion_id"?: number | null,"variante_id"?: number
                   }
                   Relationships: [
                     {
@@ -448,6 +468,12 @@ isOneToOne: false
       columns: ["pedido_id"]
 isOneToOne: false
       referencedRelation: "pedidos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pedido_items_promocion_id_fkey"
+      columns: ["promocion_id"]
+isOneToOne: false
+      referencedRelation: "promociones"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "pedido_items_variante_id_fkey"
@@ -471,14 +497,14 @@ isOneToOne: false
                   ]
                 },"pedidos": {
                   Row: {
-                    "ajuste_medio_pago": number,"ajuste_pct": number,"canal": string,"cliente_id": number,"comprobante": string | null,"deposito_id": number,"direccion_envio": string | null,"entrega": string,"estado": string,"fecha": string,"id": number,"medio_pago_id": number,"notas": string | null,"numero": number | null,"punto_venta": number,"subtotal": number,"total": number
+                    "ajuste_medio_pago": number,"ajuste_pct": number,"canal": string,"cliente_id": number,"comprobante": string | null,"deposito_id": number,"descuento_promociones": number,"direccion_envio": string | null,"entrega": string,"estado": string,"fecha": string,"id": number,"medio_pago_id": number,"notas": string | null,"numero": number | null,"punto_venta": number,"subtotal": number,"total": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cliente_id": number,"comprobante"?: never,"deposito_id": number,"direccion_envio"?: string | null,"entrega"?: string,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id": number,"notas"?: string | null,"numero"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number
+                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cliente_id": number,"comprobante"?: never,"deposito_id": number,"descuento_promociones"?: number,"direccion_envio"?: string | null,"entrega"?: string,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id": number,"notas"?: string | null,"numero"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number
                   }
                   Update: {
-                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cliente_id"?: number,"comprobante"?: never,"deposito_id"?: number,"direccion_envio"?: string | null,"entrega"?: string,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id"?: number,"notas"?: string | null,"numero"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number
+                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cliente_id"?: number,"comprobante"?: never,"deposito_id"?: number,"descuento_promociones"?: number,"direccion_envio"?: string | null,"entrega"?: string,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id"?: number,"notas"?: string | null,"numero"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number
                   }
                   Relationships: [
                     {
@@ -547,6 +573,100 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"presupuesto_items": {
+                  Row: {
+                    "cantidad": number,"descuento_promo": number,"id": number,"precio_unitario": number,"presupuesto_id": number,"promocion_id": number | null,"variante_id": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cantidad": number,"descuento_promo"?: number,"id"?: never,"precio_unitario": number,"presupuesto_id": number,"promocion_id"?: number | null,"variante_id": number
+                  }
+                  Update: {
+                    "cantidad"?: number,"descuento_promo"?: number,"id"?: never,"precio_unitario"?: number,"presupuesto_id"?: number,"promocion_id"?: number | null,"variante_id"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "presupuesto_items_presupuesto_id_fkey"
+      columns: ["presupuesto_id"]
+isOneToOne: false
+      referencedRelation: "presupuestos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "presupuesto_items_promocion_id_fkey"
+      columns: ["promocion_id"]
+isOneToOne: false
+      referencedRelation: "promociones"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "presupuesto_items_variante_id_fkey"
+      columns: ["variante_id"]
+isOneToOne: false
+      referencedRelation: "v_catalogo"
+      referencedColumns: ["variante_id"]
+    },{
+      foreignKeyName: "presupuesto_items_variante_id_fkey"
+      columns: ["variante_id"]
+isOneToOne: false
+      referencedRelation: "v_stock"
+      referencedColumns: ["variante_id"]
+    },{
+      foreignKeyName: "presupuesto_items_variante_id_fkey"
+      columns: ["variante_id"]
+isOneToOne: false
+      referencedRelation: "variantes"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"presupuestos": {
+                  Row: {
+                    "ajuste_medio_pago": number,"ajuste_pct": number,"canal": string,"cliente_id": number | null,"comprobante": string | null,"descuento": number,"descuento_promociones": number,"estado": string,"fecha": string,"id": number,"medio_pago_id": number | null,"notas": string | null,"numero": number | null,"punto_venta": number,"subtotal": number,"total": number,"usuario_id": string | null,"valido_hasta": string,"venta_id": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cliente_id"?: number | null,"comprobante"?: never,"descuento"?: number,"descuento_promociones"?: number,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id"?: number | null,"notas"?: string | null,"numero"?: number | null,"punto_venta"?: number,"subtotal": number,"total": number,"usuario_id"?: string | null,"valido_hasta": string,"venta_id"?: number | null
+                  }
+                  Update: {
+                    "ajuste_medio_pago"?: number,"ajuste_pct"?: number,"canal"?: string,"cliente_id"?: number | null,"comprobante"?: never,"descuento"?: number,"descuento_promociones"?: number,"estado"?: string,"fecha"?: string,"id"?: never,"medio_pago_id"?: number | null,"notas"?: string | null,"numero"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number,"usuario_id"?: string | null,"valido_hasta"?: string,"venta_id"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "presupuestos_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "clientes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "presupuestos_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "v_mi_ficha"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "presupuestos_medio_pago_id_fkey"
+      columns: ["medio_pago_id"]
+isOneToOne: false
+      referencedRelation: "medios_pago"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "presupuestos_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "presupuestos_venta_id_fkey"
+      columns: ["venta_id"]
+isOneToOne: true
+      referencedRelation: "v_hechos_ventas"
+      referencedColumns: ["venta_id"]
+    },{
+      foreignKeyName: "presupuestos_venta_id_fkey"
+      columns: ["venta_id"]
+isOneToOne: true
+      referencedRelation: "ventas"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"producto_imagenes": {
                   Row: {
                     "creado_en": string,"id": number,"orden": number,"principal": boolean,"producto_id": number,"ruta": string | null,"url": string
@@ -570,6 +690,12 @@ isOneToOne: false
       columns: ["producto_id"]
 isOneToOne: false
       referencedRelation: "v_catalogo"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "producto_imagenes_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_promos_tienda"
       referencedColumns: ["producto_id"]
     },{
       foreignKeyName: "producto_imagenes_producto_id_fkey"
@@ -608,6 +734,12 @@ isOneToOne: false
       columns: ["producto_id"]
 isOneToOne: false
       referencedRelation: "v_catalogo"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "producto_proveedores_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_promos_tienda"
       referencedColumns: ["producto_id"]
     },{
       foreignKeyName: "producto_proveedores_producto_id_fkey"
@@ -658,6 +790,94 @@ isOneToOne: false
       columns: ["subcategoria_id"]
 isOneToOne: false
       referencedRelation: "subcategorias"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"promocion_alcances": {
+                  Row: {
+                    "categoria_id": number | null,"excluir": boolean,"id": number,"marca_id": number | null,"producto_id": number | null,"promocion_id": number,"subcategoria_id": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "categoria_id"?: number | null,"excluir"?: boolean,"id"?: never,"marca_id"?: number | null,"producto_id"?: number | null,"promocion_id": number,"subcategoria_id"?: number | null
+                  }
+                  Update: {
+                    "categoria_id"?: number | null,"excluir"?: boolean,"id"?: never,"marca_id"?: number | null,"producto_id"?: number | null,"promocion_id"?: number,"subcategoria_id"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "promocion_alcances_categoria_id_fkey"
+      columns: ["categoria_id"]
+isOneToOne: false
+      referencedRelation: "categorias"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "promocion_alcances_marca_id_fkey"
+      columns: ["marca_id"]
+isOneToOne: false
+      referencedRelation: "marcas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "promocion_alcances_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "productos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "promocion_alcances_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_catalogo"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "promocion_alcances_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_promos_tienda"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "promocion_alcances_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_stock"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "promocion_alcances_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_venta_items"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "promocion_alcances_promocion_id_fkey"
+      columns: ["promocion_id"]
+isOneToOne: false
+      referencedRelation: "promociones"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "promocion_alcances_subcategoria_id_fkey"
+      columns: ["subcategoria_id"]
+isOneToOne: false
+      referencedRelation: "subcategorias"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"promociones": {
+                  Row: {
+                    "activa": boolean,"acumula_medio_pago": boolean,"creado_en": string,"descuento_pct": number | null,"desde": string | null,"en_mostrador": boolean,"en_tienda": boolean,"hasta": string | null,"id": number,"lleva": number | null,"mezcla": boolean,"nombre": string,"paga": number | null,"precio_fijo": number | null,"prioridad": number,"tipo": string,"usuario_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activa"?: boolean,"acumula_medio_pago"?: boolean,"creado_en"?: string,"descuento_pct"?: number | null,"desde"?: string | null,"en_mostrador"?: boolean,"en_tienda"?: boolean,"hasta"?: string | null,"id"?: never,"lleva"?: number | null,"mezcla"?: boolean,"nombre": string,"paga"?: number | null,"precio_fijo"?: number | null,"prioridad"?: number,"tipo": string,"usuario_id"?: string | null
+                  }
+                  Update: {
+                    "activa"?: boolean,"acumula_medio_pago"?: boolean,"creado_en"?: string,"descuento_pct"?: number | null,"desde"?: string | null,"en_mostrador"?: boolean,"en_tienda"?: boolean,"hasta"?: string | null,"id"?: never,"lleva"?: number | null,"mezcla"?: boolean,"nombre"?: string,"paga"?: number | null,"precio_fijo"?: number | null,"prioridad"?: number,"tipo"?: string,"usuario_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "promociones_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "perfiles"
       referencedColumns: ["id"]
     }
                   ]
@@ -801,6 +1021,12 @@ isOneToOne: false
       foreignKeyName: "variantes_producto_id_fkey"
       columns: ["producto_id"]
 isOneToOne: false
+      referencedRelation: "v_promos_tienda"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "variantes_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
       referencedRelation: "v_stock"
       referencedColumns: ["producto_id"]
     },{
@@ -819,17 +1045,23 @@ isOneToOne: false
                   ]
                 },"venta_items": {
                   Row: {
-                    "cantidad": number,"costo_unitario": number,"id": number,"precio_unitario": number,"variante_id": number,"venta_id": number
+                    "cantidad": number,"costo_unitario": number,"descuento_promo": number,"id": number,"precio_unitario": number,"promocion_id": number | null,"variante_id": number,"venta_id": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "cantidad": number,"costo_unitario"?: number,"id"?: never,"precio_unitario": number,"variante_id": number,"venta_id": number
+                    "cantidad": number,"costo_unitario"?: number,"descuento_promo"?: number,"id"?: never,"precio_unitario": number,"promocion_id"?: number | null,"variante_id": number,"venta_id": number
                   }
                   Update: {
-                    "cantidad"?: number,"costo_unitario"?: number,"id"?: never,"precio_unitario"?: number,"variante_id"?: number,"venta_id"?: number
+                    "cantidad"?: number,"costo_unitario"?: number,"descuento_promo"?: number,"id"?: never,"precio_unitario"?: number,"promocion_id"?: number | null,"variante_id"?: number,"venta_id"?: number
                   }
                   Relationships: [
                     {
+      foreignKeyName: "venta_items_promocion_id_fkey"
+      columns: ["promocion_id"]
+isOneToOne: false
+      referencedRelation: "promociones"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "venta_items_variante_id_fkey"
       columns: ["variante_id"]
 isOneToOne: false
@@ -863,14 +1095,14 @@ isOneToOne: false
                   ]
                 },"ventas": {
                   Row: {
-                    "ajuste_medio_pago": number,"canal": string,"cliente_id": number | null,"comprobante": string | null,"deposito_id": number,"descuento": number,"fecha": string,"id": number,"notas": string | null,"numero": number | null,"pedido_id": number | null,"punto_venta": number,"subtotal": number,"total": number,"usuario_id": string | null,"vendedor_id": string | null
+                    "ajuste_medio_pago": number,"canal": string,"cliente_id": number | null,"comprobante": string | null,"deposito_id": number,"descuento": number,"descuento_promociones": number,"fecha": string,"id": number,"notas": string | null,"numero": number | null,"pedido_id": number | null,"punto_venta": number,"subtotal": number,"total": number,"usuario_id": string | null,"vendedor_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "ajuste_medio_pago"?: number,"canal"?: string,"cliente_id"?: number | null,"comprobante"?: never,"deposito_id": number,"descuento"?: number,"fecha"?: string,"id"?: never,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal": number,"total": number,"usuario_id"?: string | null,"vendedor_id"?: string | null
+                    "ajuste_medio_pago"?: number,"canal"?: string,"cliente_id"?: number | null,"comprobante"?: never,"deposito_id": number,"descuento"?: number,"descuento_promociones"?: number,"fecha"?: string,"id"?: never,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal": number,"total": number,"usuario_id"?: string | null,"vendedor_id"?: string | null
                   }
                   Update: {
-                    "ajuste_medio_pago"?: number,"canal"?: string,"cliente_id"?: number | null,"comprobante"?: never,"deposito_id"?: number,"descuento"?: number,"fecha"?: string,"id"?: never,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number,"usuario_id"?: string | null,"vendedor_id"?: string | null
+                    "ajuste_medio_pago"?: number,"canal"?: string,"cliente_id"?: number | null,"comprobante"?: never,"deposito_id"?: number,"descuento"?: number,"descuento_promociones"?: number,"fecha"?: string,"id"?: never,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number,"usuario_id"?: string | null,"vendedor_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -924,11 +1156,17 @@ isOneToOne: false
                   ]
                 },"v_hechos_ventas": {
                   Row: {
-                    "anio": number | null,"articulo": string | null,"canal": string | null,"cantidad": number | null,"cliente": string | null,"cliente_codigo": number | null,"cliente_origen": string | null,"color": string | null,"comprobante": string | null,"costo": number | null,"costo_unitario": number | null,"deposito": string | null,"dia": string | null,"dia_semana": number | null,"fecha": string | null,"genero": string | null,"id": number | null,"importe": number | null,"importe_neto": number | null,"marca": string | null,"margen": number | null,"margen_neto": number | null,"mes": number | null,"modelo": string | null,"precio_unitario": number | null,"rubro": string | null,"rubro_codigo": string | null,"sku": string | null,"subrubro": string | null,"talle": string | null,"talle_orden": number | null,"vendedor": string | null,"vendedor_id": string | null,"venta_id": number | null,"vino_de_pedido": boolean | null
+                    "anio": number | null,"articulo": string | null,"canal": string | null,"cantidad": number | null,"cliente": string | null,"cliente_codigo": number | null,"cliente_origen": string | null,"color": string | null,"comprobante": string | null,"costo": number | null,"costo_unitario": number | null,"deposito": string | null,"descuento_promo": number | null,"dia": string | null,"dia_semana": number | null,"fecha": string | null,"genero": string | null,"id": number | null,"importe": number | null,"importe_neto": number | null,"marca": string | null,"margen": number | null,"margen_neto": number | null,"mes": number | null,"modelo": string | null,"precio_unitario": number | null,"promocion": string | null,"promocion_id": number | null,"rubro": string | null,"rubro_codigo": string | null,"sku": string | null,"subrubro": string | null,"talle": string | null,"talle_orden": number | null,"vendedor": string | null,"vendedor_id": string | null,"venta_id": number | null,"vino_de_pedido": boolean | null
                   }
                   ComputedFields: never
                   Relationships: [
                     {
+      foreignKeyName: "venta_items_promocion_id_fkey"
+      columns: ["promocion_id"]
+isOneToOne: false
+      referencedRelation: "promociones"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "ventas_usuario_id_fkey"
       columns: ["vendedor_id"]
 isOneToOne: false
@@ -958,6 +1196,12 @@ isOneToOne: false
       foreignKeyName: "producto_imagenes_producto_id_fkey"
       columns: ["producto_id"]
 isOneToOne: false
+      referencedRelation: "v_promos_tienda"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "producto_imagenes_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
       referencedRelation: "v_stock"
       referencedColumns: ["producto_id"]
     },{
@@ -982,6 +1226,14 @@ isOneToOne: false
                         Relationships: [
                     
                   ]
+                },"v_promos_tienda": {
+                  Row: {
+                    "etiqueta": string | null,"hasta": string | null,"mezcla": boolean | null,"nombre": string | null,"producto_id": number | null,"promocion_id": number | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
                 },"v_stock": {
                   Row: {
                     "categoria": string | null,"codigo": string | null,"color": string | null,"color_hex": string | null,"deposito": string | null,"deposito_id": number | null,"disponible": number | null,"marca": string | null,"nombre": string | null,"precio_compra": number | null,"precio_venta": number | null,"producto_id": number | null,"reservado": number | null,"sku": string | null,"stock": number | null,"stock_bajo": boolean | null,"stock_minimo": number | null,"talle": string | null,"talle_orden": number | null,"valor_costo": number | null,"variante_id": number | null
@@ -992,11 +1244,17 @@ isOneToOne: false
                   ]
                 },"v_venta_items": {
                   Row: {
-                    "canal": string | null,"cantidad": number | null,"cliente_id": number | null,"color": string | null,"costo_unitario": number | null,"fecha": string | null,"id": number | null,"marca": string | null,"margen": number | null,"nombre": string | null,"precio_unitario": number | null,"producto_id": number | null,"subtotal": number | null,"talle": string | null,"variante_id": number | null,"venta_id": number | null
+                    "canal": string | null,"cantidad": number | null,"cliente_id": number | null,"color": string | null,"costo_unitario": number | null,"descuento_promo": number | null,"fecha": string | null,"id": number | null,"marca": string | null,"margen": number | null,"nombre": string | null,"precio_unitario": number | null,"producto_id": number | null,"promocion": string | null,"promocion_id": number | null,"subtotal": number | null,"talle": string | null,"variante_id": number | null,"venta_id": number | null
                   }
                   ComputedFields: never
                   Relationships: [
                     {
+      foreignKeyName: "venta_items_promocion_id_fkey"
+      columns: ["promocion_id"]
+isOneToOne: false
+      referencedRelation: "promociones"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "venta_items_variante_id_fkey"
       columns: ["variante_id"]
 isOneToOne: false
@@ -1046,14 +1304,54 @@ isOneToOne: false
             "_codigo_corto":
 { Args: { "p_largo"?: number,"p_nombre": string,"p_prefijo"?: string,"p_tabla": string }; Returns: string
                            },
+"_cotizar":
+{ Args: { "p_canal": string,"p_items": Json }; Returns: {
+              "acumula": boolean,"cantidad": number,"descuento_promo": number,"precio_unitario": number,"producto_id": number,"promocion_id": number,"variante_id": number
+            }[]
+                           },
+"_en_promocion":
+{ Args: { "p_producto": number,"p_promocion": number }; Returns: boolean
+                           },
+"_hoy_ar":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
 "_mover_stock":
 { Args: { "p_cantidad": number,"p_compra"?: number,"p_deposito": number,"p_motivo"?: string,"p_tipo": string,"p_variante": number,"p_venta"?: number }; Returns: undefined
                            },
+"_promociones_vigentes":
+{ Args: { "p_canal": string }; Returns: {
+              "activa": boolean,
+"acumula_medio_pago": boolean,
+"creado_en": string,
+"descuento_pct": number | null,
+"desde": string | null,
+"en_mostrador": boolean,
+"en_tienda": boolean,
+"hasta": string | null,
+"id": number,
+"lleva": number | null,
+"mezcla": boolean,
+"nombre": string,
+"paga": number | null,
+"precio_fijo": number | null,
+"prioridad": number,
+"tipo": string,
+"usuario_id": string | null
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "promociones"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "_queda_administrador":
 { Args: { "p_sin": string }; Returns: boolean
                            },
 "_registrar_venta":
 { Args: { "p_canal": string,"p_cliente": number,"p_deposito": number,"p_descuento": number,"p_items": Json,"p_notas": string,"p_pagos": Json }; Returns: number
+                           },
+"_renglones_cotizados":
+{ Args: { "p_canal": string,"p_items": Json }; Returns: Json
                            },
 "_vincular_cliente":
 { Args: { "p_usuario": unknown }; Returns: undefined
@@ -1069,6 +1367,9 @@ isOneToOne: false
 "ajustar_stock":
 { Args: { "p_deposito"?: number,"p_motivo": string,"p_stock_nuevo": number,"p_variante": number }; Returns: undefined
                            },
+"anular_presupuesto":
+{ Args: { "p_presupuesto": number }; Returns: undefined
+                           },
 "asignar_rol":
 { Args: { "p_email": string,"p_rol": number }; Returns: string
                            },
@@ -1081,8 +1382,17 @@ isOneToOne: false
 "cambiar_estado_pedido":
 { Args: { "p_comentario"?: string,"p_estado": string,"p_pagos"?: Json,"p_pedido": number }; Returns: number
                            },
+"convertir_presupuesto":
+{ Args: { "p_medio_pago"?: number,"p_presupuesto": number }; Returns: number
+                           },
+"cotizar":
+{ Args: { "p_canal"?: string,"p_items": Json,"p_medio_pago"?: number }; Returns: Json
+                           },
 "crear_pedido":
 { Args: { "p_canal"?: string,"p_cliente"?: number,"p_direccion"?: string,"p_entrega"?: string,"p_items": Json,"p_medio_pago"?: number,"p_notas"?: string }; Returns: number
+                           },
+"crear_presupuesto":
+{ Args: { "p_canal"?: string,"p_cliente"?: number,"p_descuento"?: number,"p_items": Json,"p_medio_pago"?: number,"p_notas"?: string,"p_validez_dias"?: number }; Returns: number
                            },
 "deposito_principal":
 { Args: Record<PropertyKey, never>; Returns: number
@@ -1097,6 +1407,9 @@ isOneToOne: false
                            },
 "es_staff":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"etiqueta_promocion":
+{ Args: { "p_lleva": number,"p_paga": number,"p_pct": number,"p_tipo": string }; Returns: string
                            },
 "mi_cliente_id":
 { Args: Record<PropertyKey, never>; Returns: number

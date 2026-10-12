@@ -59,3 +59,18 @@ export async function guardarMaestro(_: Estado, f: FormData): Promise<Estado> {
   revalidatePath("/admin/tablas");
   return { ok: f.get("_accion") === "borrar" ? "Borrado" : "Guardado" };
 }
+
+// Datos de la tienda (una sola fila): el WhatsApp que recibe los pedidos, dónde se retira y el horario
+export async function guardarTienda(_: Estado, f: FormData): Promise<Estado> {
+  const supabase = await crearCliente();
+  // El número va solo con dígitos (con código de país y área): "+54 9 381 555-1234" → 5493815551234
+  const whatsapp = texto(f, "whatsapp").replace(/\D/g, "");
+  if (whatsapp && (whatsapp.length < 10 || whatsapp.length > 15)) return { error: "El WhatsApp tiene que tener entre 10 y 15 dígitos, con el 54 y el código de área (ej.: 549 381 555-1234)" };
+  const { error } = await supabase.from("configuracion_tienda").update({
+    nombre: texto(f, "nombre") || "Mi Calzado", whatsapp: whatsapp || null,
+    direccion_retiro: texto(f, "direccion_retiro") || null, horario: texto(f, "horario") || null,
+  }).eq("unica", true);
+  if (error) return { error: traducir(error.message, error.code) };
+  revalidatePath("/admin/tablas"); revalidatePath("/", "layout");
+  return { ok: "Datos de la tienda guardados" };
+}

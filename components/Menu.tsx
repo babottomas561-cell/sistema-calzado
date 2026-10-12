@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  BookUser, Boxes, ChartBar, ExternalLink, PackageSearch, ShieldCheck, Tags, House, LogOut, Menu as IconoMenu, MessageCircleMore, Package, PackagePlus,
+  BadgePercent, BookUser, Boxes, ChartBar, ExternalLink, FileText, PackageSearch, ShieldCheck, Tags, House, LogOut, Menu as IconoMenu, MessageCircleMore, Package, PackagePlus,
   Plus, Receipt, Settings2, ShoppingBag, Truck, Users, X, type LucideIcon,
 } from "lucide-react";
 import Logo from "@/components/Logo";
@@ -16,6 +16,7 @@ const GRUPOS: { titulo?: string; items: Item[] }[] = [
   { items: [{ href: "/admin", texto: "Inicio", icono: House, permisos: [] }] },
   { titulo: "Operación", items: [
     { href: "/admin/ventas", texto: "Ventas", icono: Receipt, permisos: ["ventas.registrar", "ventas.ver_todas"] },
+    { href: "/admin/presupuestos", texto: "Presupuestos", icono: FileText, permisos: ["ventas.registrar", "ventas.ver_todas"] },
     { href: "/admin/pedidos", texto: "Pedidos", icono: ShoppingBag, permisos: ["pedidos.gestionar"] },
     { href: "/admin/compras", texto: "Compras", icono: PackagePlus, permisos: ["compras.registrar"] },
   ] },
@@ -23,6 +24,7 @@ const GRUPOS: { titulo?: string; items: Item[] }[] = [
     { href: "/admin/productos", texto: "Productos", icono: Package, permisos: ["costos.ver"] },
     { href: "/admin/stock", texto: "Stock", icono: Boxes, permisos: ["stock.ver"] },
     { href: "/admin/precios", texto: "Precios", icono: Tags, permisos: ["precios.editar", "proveedores.gestionar"] },
+    { href: "/admin/promociones", texto: "Promociones", icono: BadgePercent, permisos: ["promociones.gestionar"] },
     { href: "/admin/reposicion", texto: "Reposición", icono: PackageSearch, permisos: ["compras.registrar", "stock.ver"] },
   ] },
   { titulo: "Análisis", items: [{ href: "/admin/informes", texto: "Informes", icono: ChartBar, permisos: ["informes.ventas", "informes.stock"] }] },

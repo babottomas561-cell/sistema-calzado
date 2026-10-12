@@ -1,4 +1,4 @@
-# Promociones (diseño, todavía no construido)
+# Promociones (construido: ver supabase/migrations/20261011232500_promociones_y_cotizar.sql)
 
 2×1, 3×2, "segundo par al 50 %", "20 % off en toda la marca", "precio especial de liquidación".
 Este documento fija **cómo se modelan** y **cómo se reflejan** en la tienda, el presupuesto, el

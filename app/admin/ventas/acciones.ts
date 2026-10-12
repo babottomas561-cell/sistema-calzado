@@ -19,3 +19,11 @@ export async function registrarVenta(_: Estado, f: FormData): Promise<Estado> {
   revalidatePath("/", "layout");
   redirect(`/admin/ventas/${id}?nueva=1`);
 }
+
+// Promociones del mostrador para lo que se está por vender (las mismas que va a aplicar registrar_venta)
+export type CotizacionMostrador = { renglones: { variante_id: number; descuento_promo: number; promocion: string | null; acumula: boolean; total: number }[]; descuento_promociones: number };
+export async function cotizarMostrador(items: { variante_id: number; cantidad: number; precio_unitario: number }[]): Promise<CotizacionMostrador | null> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("cotizar", { p_items: items, p_canal: "mostrador" });
+  return error || !data ? null : (data as unknown as CotizacionMostrador);
+}
