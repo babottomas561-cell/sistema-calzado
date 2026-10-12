@@ -5,7 +5,7 @@ import { useCarrito } from "@/lib/carrito";
 import { numero, pesos, porcentaje } from "@/lib/formato";
 import { ajusteDe, type MedioPago } from "@/lib/medios";
 import { confirmarPedido, cotizarCarrito, type Cotizacion } from "./acciones";
-import { BadgePercent, Footprints, MessageCircle, Trash2 } from "lucide-react";
+import { BadgePercent, Shirt, MessageCircle, Trash2 } from "lucide-react";
 
 export default function Carrito({ medios, conWhatsApp }: { medios: MedioPago[]; conWhatsApp: boolean }) {
   const { items, cargado, total, cambiar, quitar } = useCarrito();
@@ -42,7 +42,7 @@ export default function Carrito({ medios, conWhatsApp }: { medios: MedioPago[]; 
         {items.map((i) => (
           <div key={i.variante_id} className="flex items-center gap-3 rounded-xl border border-borde bg-white p-3">
             <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-lg bg-gray-100 text-gray-300">
-              {i.imagen_url ? <img src={i.imagen_url} alt="" className="h-full w-full object-cover" /> : <Footprints size={28} />}</div>
+              {i.imagen_url ? <img src={i.imagen_url} alt="" className="h-full w-full object-cover" /> : <Shirt size={28} />}</div>
             <div className="flex-1"><Link href={`/producto/${i.producto_id}`} className="font-semibold hover:text-marca">{i.nombre}</Link>
               <div className="text-sm text-texto-2">Talle {i.talle} · {i.color}</div><div className="font-semibold">{pesos(i.precio)}</div>
               {promoDe(i.variante_id).map((r) => <div key={r.promocion} className="inline-flex items-center gap-1 text-xs font-semibold text-ok"><BadgePercent size={13} /> {r.promocion}: −{pesos(r.descuento_promo)}</div>)}</div>
@@ -50,10 +50,10 @@ export default function Carrito({ medios, conWhatsApp }: { medios: MedioPago[]; 
             <button onClick={() => quitar(i.variante_id)} className="grid h-8 w-8 place-items-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-error" aria-label="Quitar"><Trash2 size={16} /></button>
           </div>
         ))}
-        {/* "Te falta 1 par para el 2×1" */}
+        {/* "Te falta 1 unidad para el 2×1" */}
         {(cot?.sugerencias ?? []).map((g) => (
           <p key={g.promocion} className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-ok">
-            <BadgePercent size={18} className="shrink-0" /> <span>Sumá <b>{g.faltan} par{g.faltan === 1 ? "" : "es"}</b> más y aprovechás <b>{g.promocion}</b>. <Link href="/" className="font-semibold underline">Ver el catálogo</Link></span></p>
+            <BadgePercent size={18} className="shrink-0" /> <span>Sumá <b>{g.faltan} {g.faltan === 1 ? "unidad" : "unidades"}</b> más y aprovechás <b>{g.promocion}</b>. <Link href="/" className="font-semibold underline">Ver el catálogo</Link></span></p>
         ))}
       </section>
       <form action={accion} className="tarjeta h-fit space-y-4">
@@ -85,8 +85,8 @@ export default function Carrito({ medios, conWhatsApp }: { medios: MedioPago[]; 
         <button className="boton w-full py-3" disabled={cargando || !medio}>
           {conWhatsApp && <MessageCircle size={18} />}{cargando ? "Enviando…" : conWhatsApp ? "Confirmar y enviar por WhatsApp" : "Confirmar pedido"}</button>
         <p className="text-xs text-texto-2">{conWhatsApp
-          ? "Te reservamos los pares y en el paso siguiente nos mandás el pedido por WhatsApp para coordinar el pago y la entrega."
-          : "Te reservamos los pares al confirmar. Te avisamos por acá cuando esté listo."}</p>
+          ? "Te reservamos los productos y en el paso siguiente nos mandás el pedido por WhatsApp para coordinar el pago y la entrega."
+          : "Te reservamos los productos al confirmar. Te avisamos por acá cuando esté listo."}</p>
       </form>
     </div>
   );

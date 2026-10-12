@@ -4,13 +4,15 @@ import { useActionState } from "react";
 import { CircleCheck } from "lucide-react";
 import { guardarTienda } from "./acciones";
 
-type Tienda = { nombre: string; whatsapp: string | null; direccion_retiro: string | null; horario: string | null };
+type Tienda = { nombre: string; titulo_inicio: string; bajada_inicio: string; whatsapp: string | null; direccion_retiro: string | null; horario: string | null };
 
 export default function FormTienda({ tienda }: { tienda: Tienda }) {
   const [estado, accion, cargando] = useActionState(guardarTienda, {});
   return (
     <form action={accion} className="max-w-xl space-y-4 px-5 py-4">
       <div><label className="etiqueta">Nombre de la tienda</label><input name="nombre" defaultValue={tienda.nombre} className="campo" /></div>
+      <div><label className="etiqueta">Título de la portada</label><input name="titulo_inicio" defaultValue={tienda.titulo_inicio} className="campo" /></div>
+      <div><label className="etiqueta">Bajada de la portada</label><input name="bajada_inicio" defaultValue={tienda.bajada_inicio} className="campo" /></div>
       <div><label className="etiqueta">WhatsApp para los pedidos</label>
         <input name="whatsapp" type="tel" defaultValue={tienda.whatsapp ?? ""} placeholder="549 381 555-1234" className="campo" />
         <p className="mt-0.5 text-[11px] text-texto-2">Con el 54, el 9 y el código de área. Al confirmar un pedido en la tienda, el cliente lo manda a este número con todo el detalle.</p></div>

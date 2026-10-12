@@ -62,7 +62,7 @@ export default function SelectorVariantes({ filas: todas, alElegir, soloConStock
             <button key={p.id} type="button" onClick={() => setProductoId(p.id)}
               className="rounded-lg border border-borde bg-white p-3 text-left hover:border-marca">
               <div className="font-semibold">{p.nombre}</div>
-              <div className="text-xs text-texto-2">{p.marca ?? ""} · {p.stock} pares</div>
+              <div className="text-xs text-texto-2">{p.marca ?? ""} · {p.stock} unidades</div>
             </button>
           ))}
           {productos.length === 0 && <p className="text-sm text-texto-2">{soloConStock ? "No hay nada con stock que coincida." : "No se encontró nada."}</p>}

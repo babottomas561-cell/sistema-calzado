@@ -44,7 +44,7 @@ export default async function Reposicion({ searchParams }: { searchParams: Promi
   const textoPedido = (prov: string, grupos: Map<string, { nombre: string; codigo: string; color: string; talles: Fila[] }>) =>
     [`Hola! Te paso un pedido de reposición${prov !== "Sin proveedor" ? ` (${prov})` : ""}:`, "",
      ...[...grupos.values()].map((g) => `• ${g.nombre} ${g.color} (${g.codigo}): ${g.talles.map((t) => `${t.talle}×${t.sugerido}`).join(", ")}`),
-     "", `Total: ${pares([...grupos.values()].flatMap((g) => g.talles))} pares. ¡Gracias!`].join("\n");
+     "", `Total: ${pares([...grupos.values()].flatMap((g) => g.talles))} unidades. ¡Gracias!`].join("\n");
 
   const link = (cambio: Record<string, string | number | undefined>) => {
     const p = new URLSearchParams(Object.entries({ dias, cobertura, proveedor: sp.proveedor, marca: sp.marca, ...cambio })
@@ -81,7 +81,7 @@ export default async function Reposicion({ searchParams }: { searchParams: Promi
           <section key={prov} className="tarjeta space-y-3">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div><h2 className="font-semibold">{prov}</h2>
-                <p className="text-sm text-texto-2">{numero(pares(lineas))} pares{conCostos ? ` · costo estimado ${pesos(costo(lineas))}` : ""}</p></div>
+                <p className="text-sm text-texto-2">{numero(pares(lineas))} unidades{conCostos ? ` · costo estimado ${pesos(costo(lineas))}` : ""}</p></div>
               <div className="flex flex-wrap gap-2">
                 <CopiarPedido texto={textoPedido(prov, grupos)} />
                 <BotonCSV archivo={`reposicion-${prov.toLowerCase().replace(/\W+/g, "-")}`}
@@ -95,7 +95,7 @@ export default async function Reposicion({ searchParams }: { searchParams: Promi
                   <div className="mb-1.5 flex items-center gap-2 text-sm">
                     <span className="h-3 w-3 rounded-full border border-gray-300" style={{ background: g.hex ?? "transparent" }} />
                     <b>{g.nombre}</b><span className="text-texto-2">{g.color} · <span className="font-mono text-xs">{g.codigo}</span></span>
-                    <span className="ml-auto font-semibold">{pares(g.talles)} pares</span>
+                    <span className="ml-auto font-semibold">{pares(g.talles)} unidades</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {g.talles.map((t) => (

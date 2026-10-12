@@ -13,7 +13,8 @@ const texto = (f: FormData, campo: string) => String(f.get(campo) ?? "").trim();
 // Cada tabla guarda sus propios campos (nunca se toma un campo que no corresponda)
 function datos(tabla: Tabla, f: FormData) {
   switch (tabla) {
-    case "marcas": case "categorias": return { nombre: texto(f, "nombre"), codigo: texto(f, "codigo").toUpperCase() };
+    case "marcas": return { nombre: texto(f, "nombre"), codigo: texto(f, "codigo").toUpperCase() };
+    case "categorias": return { nombre: texto(f, "nombre"), codigo: texto(f, "codigo").toUpperCase(), linea: texto(f, "linea") || "Calzado" };
     case "subcategorias": return { nombre: texto(f, "nombre"), codigo: texto(f, "codigo").toUpperCase(), categoria_id: Number(f.get("categoria_id")) };
     case "colores": return { nombre: texto(f, "nombre"), codigo: texto(f, "codigo").toUpperCase(), hex: texto(f, "hex") || null };
     case "talles": return { nombre: texto(f, "nombre"), orden: Number(f.get("orden")), tipo: texto(f, "tipo") || "Adulto" };
@@ -46,7 +47,7 @@ export async function guardarMaestro(_: Estado, f: FormData): Promise<Estado> {
     ({ error } = await supabase.from(tabla).delete().eq("id", id));
   } else if (!id && tabla === "talles") {
     // Talle nuevo: la base calcula el orden (38.5 entre 38 y 39; S, M, L al final); la escala, si no se elige,
-    // la deduce (menos de 35 = Niños)
+    // la deduce (menos de 35 = Niños, letras = Ropa letras)
     if (!texto(f, "nombre")) return { error: "Falta el talle" };
     ({ error } = await supabase.rpc("buscar_talle", { p_nombre: texto(f, "nombre"), p_escala: texto(f, "tipo") || undefined }));
   } else {
@@ -67,7 +68,8 @@ export async function guardarTienda(_: Estado, f: FormData): Promise<Estado> {
   const whatsapp = texto(f, "whatsapp").replace(/\D/g, "");
   if (whatsapp && (whatsapp.length < 10 || whatsapp.length > 15)) return { error: "El WhatsApp tiene que tener entre 10 y 15 dígitos, con el 54 y el código de área (ej.: 549 381 555-1234)" };
   const { error } = await supabase.from("configuracion_tienda").update({
-    nombre: texto(f, "nombre") || "Mi Calzado", whatsapp: whatsapp || null,
+    nombre: texto(f, "nombre") || "Mi Tienda", whatsapp: whatsapp || null,
+    titulo_inicio: texto(f, "titulo_inicio") || "Elegí lo que más te gusta", bajada_inicio: texto(f, "bajada_inicio") || "Elegí tu modelo y tu talle. Retirás en el local o te lo enviamos.",
     direccion_retiro: texto(f, "direccion_retiro") || null, horario: texto(f, "horario") || null,
   }).eq("unica", true);
   if (error) return { error: traducir(error.message, error.code) };

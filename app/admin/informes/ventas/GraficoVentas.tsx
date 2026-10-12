@@ -2,7 +2,7 @@
 // a la base, y el detalle de cada barra al pasar el mouse o tocarla. Sin librerías.
 import { pesos } from "@/lib/formato";
 
-export type Punto = { clave: string; etiqueta: string; total: number; ventas: number; pares: number };
+export type Punto = { clave: string; etiqueta: string; total: number; ventas: number; unidades: number };
 
 export default function GraficoVentas({ puntos, titulo }: { puntos: Punto[]; titulo: string }) {
   const maximo = Math.max(0, ...puntos.map((p) => p.total));
@@ -29,7 +29,7 @@ export default function GraficoVentas({ puntos, titulo }: { puntos: Punto[]; tit
                   <div className={`pointer-events-none absolute bottom-full z-10 mb-1 hidden w-max rounded-lg border border-borde bg-white px-2.5 py-1.5 text-xs shadow-md group-hover:block group-focus:block ${i < puntos.length / 2 ? "left-0" : "right-0"}`}>
                     <div className="font-semibold">{p.etiqueta}</div>
                     <div className="tabular-nums">{pesos(p.total)}</div>
-                    <div className="text-texto-2">{p.ventas} venta{p.ventas === 1 ? "" : "s"} · {p.pares} pares</div>
+                    <div className="text-texto-2">{p.ventas} venta{p.ventas === 1 ? "" : "s"} · {p.unidades} unidades</div>
                   </div>
                 </div>
               ))}

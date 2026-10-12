@@ -1,6 +1,6 @@
 # Sistema de calzado — leer antes de tocar nada
 
-Sistema de gestión + tienda online para un emprendimiento de **calzado**. Lo usa el dueño
+Sistema de gestión + tienda online para un local de **calzado y ropa**. Lo usa el dueño
 desde el celular. Hay dos caras sobre la misma base:
 
 - **Tienda** (`/`): catálogo público, registro, carrito, pedidos y seguimiento del pedido.
@@ -119,9 +119,15 @@ una API de Next.** Lo que ya pisamos:
     (`lib/supabase/navegador.ts`), y el Server Action solo registra la fila. La tienda lee `v_imagenes_tienda`.
 
 
-13. **Escalas de talles.** Cada artículo es de una escala (`productos.escala`: Adulto, Niños, Bebé) y solo
-    acepta talles de esa escala (`talles.tipo`); lo frena un trigger. El mismo número puede existir en dos
-    escalas (el 34 de niños y el de adulto son dos talles): para buscar uno, `buscar_talle(nombre, escala)`.
+13. **Escalas de talles.** Cada artículo es de una escala (`productos.escala`: Adulto, Niños, Bebé de calzado;
+    Ropa letras XS-XXXL, Ropa números 36-52 y Único) y solo acepta talles de esa escala (`talles.tipo`); lo
+    frena un trigger. El mismo número puede existir en dos escalas (el 34 de niños y el de adulto, el 38 de
+    calzado y el de jeans son talles distintos): para buscar uno, `buscar_talle(nombre, escala)`. Los informes
+    agrupan «por talle» con la escala (`lib/escalas.ts`, `rotuloTalle`) para no mezclarlos.
+14. **Línea del rubro.** Cada rubro es de una línea (`categorias.linea`: Calzado, Ropa, Accesorios): separa los
+    totales en informes y stock (`v_hechos_ventas`, `v_stock` traen `linea`, `escala`, `temporada`). La ropa
+    suma `productos.temporada` y `productos.material` (opcionales). Textos de la tienda (nombre, portada) en
+    `configuracion_tienda`, se editan en Tablas → Tienda; nada de «calzado» escrito a mano en las pantallas.
 
 ---
 

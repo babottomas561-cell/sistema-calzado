@@ -11,6 +11,7 @@
 begin;
 
 -- Operación (de lo que depende a lo que es dependido)
+delete from presupuesto_items; delete from presupuestos;
 delete from pedido_estados; delete from pedido_items;
 update ventas set pedido_id = null where pedido_id is not null;
 delete from pedidos;
@@ -18,6 +19,10 @@ delete from movimientos_stock;
 delete from pagos; delete from venta_items; delete from ventas;
 delete from compra_items; delete from compras;
 delete from stock;
+
+-- Promociones de la demo (las ventas que las usaban ya se borraron)
+delete from promocion_alcances where promocion_id in (select id from promociones where nombre like '%(demo)');
+delete from promociones where nombre like '%(demo)';
 
 -- Catálogo
 delete from producto_imagenes; delete from producto_proveedores;
@@ -33,7 +38,8 @@ delete from categorias c where not exists (select 1 from productos p where p.cat
   and not exists (select 1 from subcategorias s where s.categoria_id = c.id);
 delete from marcas m where not exists (select 1 from productos p where p.marca_id = m.id);
 delete from colores c where not exists (select 1 from variantes v where v.color_id = c.id);
-delete from talles t where not exists (select 1 from variantes v where v.talle_id = t.id);
+-- (los talles estándar de ropa y el «Único» se conservan: vienen con el sistema)
+delete from talles t where t.tipo in ('Adulto', 'Niños', 'Bebé') and not exists (select 1 from variantes v where v.talle_id = t.id);
 
 -- Numeración de comprobantes desde cero
 update numeradores set ultimo = 0;

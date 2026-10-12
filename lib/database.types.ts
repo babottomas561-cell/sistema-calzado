@@ -107,14 +107,14 @@ isOneToOne: false
                   ]
                 },"categorias": {
                   Row: {
-                    "codigo": string,"id": number,"nombre": string
+                    "codigo": string,"id": number,"linea": string,"nombre": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "codigo": string,"id"?: never,"nombre": string
+                    "codigo": string,"id"?: never,"linea"?: string,"nombre": string
                   }
                   Update: {
-                    "codigo"?: string,"id"?: never,"nombre"?: string
+                    "codigo"?: string,"id"?: never,"linea"?: string,"nombre"?: string
                   }
                   Relationships: [
                     
@@ -225,14 +225,14 @@ isOneToOne: false
                   ]
                 },"configuracion_tienda": {
                   Row: {
-                    "direccion_retiro": string | null,"horario": string | null,"id": number,"nombre": string,"unica": boolean,"whatsapp": string | null
+                    "bajada_inicio": string,"direccion_retiro": string | null,"horario": string | null,"id": number,"nombre": string,"titulo_inicio": string,"unica": boolean,"whatsapp": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
+                    "bajada_inicio"?: string,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"nombre"?: string,"titulo_inicio"?: string,"unica"?: boolean,"whatsapp"?: string | null
                   }
                   Update: {
-                    "direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
+                    "bajada_inicio"?: string,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"nombre"?: string,"titulo_inicio"?: string,"unica"?: boolean,"whatsapp"?: string | null
                   }
                   Relationships: [
                     
@@ -763,14 +763,14 @@ isOneToOne: false
                   ]
                 },"productos": {
                   Row: {
-                    "activo": boolean,"categoria_id": number | null,"codigo": string,"creado_en": string,"descripcion": string | null,"escala": string,"genero": string | null,"id": number,"imagen_url": string | null,"marca_id": number | null,"nombre": string,"precio_compra": number,"precio_venta": number,"publicado_web": boolean,"subcategoria_id": number | null
+                    "activo": boolean,"categoria_id": number | null,"codigo": string,"creado_en": string,"descripcion": string | null,"escala": string,"genero": string | null,"id": number,"imagen_url": string | null,"marca_id": number | null,"material": string | null,"nombre": string,"precio_compra": number,"precio_venta": number,"publicado_web": boolean,"subcategoria_id": number | null,"temporada": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "activo"?: boolean,"categoria_id"?: number | null,"codigo": string,"creado_en"?: string,"descripcion"?: string | null,"escala"?: string,"genero"?: string | null,"id"?: never,"imagen_url"?: string | null,"marca_id"?: number | null,"nombre": string,"precio_compra"?: number,"precio_venta"?: number,"publicado_web"?: boolean,"subcategoria_id"?: number | null
+                    "activo"?: boolean,"categoria_id"?: number | null,"codigo": string,"creado_en"?: string,"descripcion"?: string | null,"escala"?: string,"genero"?: string | null,"id"?: never,"imagen_url"?: string | null,"marca_id"?: number | null,"material"?: string | null,"nombre": string,"precio_compra"?: number,"precio_venta"?: number,"publicado_web"?: boolean,"subcategoria_id"?: number | null,"temporada"?: string | null
                   }
                   Update: {
-                    "activo"?: boolean,"categoria_id"?: number | null,"codigo"?: string,"creado_en"?: string,"descripcion"?: string | null,"escala"?: string,"genero"?: string | null,"id"?: never,"imagen_url"?: string | null,"marca_id"?: number | null,"nombre"?: string,"precio_compra"?: number,"precio_venta"?: number,"publicado_web"?: boolean,"subcategoria_id"?: number | null
+                    "activo"?: boolean,"categoria_id"?: number | null,"codigo"?: string,"creado_en"?: string,"descripcion"?: string | null,"escala"?: string,"genero"?: string | null,"id"?: never,"imagen_url"?: string | null,"marca_id"?: number | null,"material"?: string | null,"nombre"?: string,"precio_compra"?: number,"precio_venta"?: number,"publicado_web"?: boolean,"subcategoria_id"?: number | null,"temporada"?: string | null
                   }
                   Relationships: [
                     {
@@ -1148,7 +1148,7 @@ isOneToOne: false
           Views: {
             "v_catalogo": {
                   Row: {
-                    "categoria": string | null,"color": string | null,"color_hex": string | null,"descripcion": string | null,"disponible": number | null,"escala": string | null,"genero": string | null,"imagen_url": string | null,"marca": string | null,"nombre": string | null,"precio": number | null,"producto_id": number | null,"talle": string | null,"talle_orden": number | null,"variante_id": number | null
+                    "categoria": string | null,"color": string | null,"color_hex": string | null,"descripcion": string | null,"disponible": number | null,"escala": string | null,"genero": string | null,"imagen_url": string | null,"marca": string | null,"material": string | null,"nombre": string | null,"precio": number | null,"producto_id": number | null,"talle": string | null,"talle_orden": number | null,"temporada": string | null,"variante_id": number | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -1156,7 +1156,7 @@ isOneToOne: false
                   ]
                 },"v_hechos_ventas": {
                   Row: {
-                    "anio": number | null,"articulo": string | null,"canal": string | null,"cantidad": number | null,"cliente": string | null,"cliente_codigo": number | null,"cliente_origen": string | null,"color": string | null,"comprobante": string | null,"costo": number | null,"costo_unitario": number | null,"deposito": string | null,"descuento_promo": number | null,"dia": string | null,"dia_semana": number | null,"fecha": string | null,"genero": string | null,"id": number | null,"importe": number | null,"importe_neto": number | null,"marca": string | null,"margen": number | null,"margen_neto": number | null,"mes": number | null,"modelo": string | null,"precio_unitario": number | null,"promocion": string | null,"promocion_id": number | null,"rubro": string | null,"rubro_codigo": string | null,"sku": string | null,"subrubro": string | null,"talle": string | null,"talle_orden": number | null,"vendedor": string | null,"vendedor_id": string | null,"venta_id": number | null,"vino_de_pedido": boolean | null
+                    "anio": number | null,"articulo": string | null,"canal": string | null,"cantidad": number | null,"cliente": string | null,"cliente_codigo": number | null,"cliente_origen": string | null,"color": string | null,"comprobante": string | null,"costo": number | null,"costo_unitario": number | null,"deposito": string | null,"descuento_promo": number | null,"dia": string | null,"dia_semana": number | null,"escala": string | null,"fecha": string | null,"genero": string | null,"id": number | null,"importe": number | null,"importe_neto": number | null,"linea": string | null,"marca": string | null,"margen": number | null,"margen_neto": number | null,"material": string | null,"mes": number | null,"modelo": string | null,"precio_unitario": number | null,"promocion": string | null,"promocion_id": number | null,"rubro": string | null,"rubro_codigo": string | null,"sku": string | null,"subrubro": string | null,"talle": string | null,"talle_orden": number | null,"temporada": string | null,"vendedor": string | null,"vendedor_id": string | null,"venta_id": number | null,"vino_de_pedido": boolean | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -1236,7 +1236,7 @@ isOneToOne: false
                   ]
                 },"v_stock": {
                   Row: {
-                    "categoria": string | null,"codigo": string | null,"color": string | null,"color_hex": string | null,"deposito": string | null,"deposito_id": number | null,"disponible": number | null,"marca": string | null,"nombre": string | null,"precio_compra": number | null,"precio_venta": number | null,"producto_id": number | null,"reservado": number | null,"sku": string | null,"stock": number | null,"stock_bajo": boolean | null,"stock_minimo": number | null,"talle": string | null,"talle_orden": number | null,"valor_costo": number | null,"variante_id": number | null
+                    "categoria": string | null,"codigo": string | null,"color": string | null,"color_hex": string | null,"deposito": string | null,"deposito_id": number | null,"disponible": number | null,"escala": string | null,"genero": string | null,"linea": string | null,"marca": string | null,"nombre": string | null,"precio_compra": number | null,"precio_venta": number | null,"producto_id": number | null,"reservado": number | null,"sku": string | null,"stock": number | null,"stock_bajo": boolean | null,"stock_minimo": number | null,"talle": string | null,"talle_orden": number | null,"temporada": string | null,"valor_costo": number | null,"variante_id": number | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -1418,6 +1418,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "descuento_max_pct": number,"permisos": (string)[],"rol": string
             }[]
+                           },
+"orden_escala":
+{ Args: { "p_escala": string }; Returns: number
                            },
 "precio_ajustado":
 { Args: { "p_actual": number,"p_costo": number,"p_modo": string,"p_redondeo": string,"p_valor": number }; Returns: number

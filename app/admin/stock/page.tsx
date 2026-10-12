@@ -49,7 +49,7 @@ export default async function Stock({ searchParams }: { searchParams: Promise<{ 
       </div>
       {error && <p className="text-error">{error}</p>}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-        <div className="tarjeta"><div className="etiqueta">Pares</div><div className="text-xl font-bold">{numero(lista.reduce((s, v) => s + v.stock, 0))}</div></div>
+        <div className="tarjeta"><div className="etiqueta">Unidades</div><div className="text-xl font-bold">{numero(lista.reduce((s, v) => s + v.stock, 0))}</div></div>
         {veCostos && <div className="tarjeta"><div className="etiqueta">Valor a costo</div><div className="text-xl font-bold">{pesos(lista.reduce((s, v) => s + Number(v.valor_costo), 0))}</div></div>}
         <div className={`tarjeta ${veCostos ? "col-span-2 md:col-span-1" : ""}`}><div className="etiqueta">Valor a precio de venta</div><div className="text-xl font-bold">{pesos(lista.reduce((s, v) => s + v.stock * Number(v.precio_venta), 0))}</div></div>
       </div>

@@ -2,6 +2,7 @@
 // y el detalle abierto por rubro, marca, modelo, talle, color, canal, cliente o medio de pago.
 // Importes NETOS: con el descuento manual y el ajuste por medio de pago ya prorrateados
 // (v_hechos_ventas), los mismos que suman el Inicio y la pantalla de Ventas.
+import { LINEAS, ordenEscala, rotuloTalle } from "@/lib/escalas";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { crearCliente } from "@/lib/supabase/server";
 import { diasDe, diasEntre, leerTodo, limites, PERIODOS, rangoAnterior, rangoDe, type Periodo, type Rango } from "@/lib/informes";
@@ -12,7 +13,7 @@ import SelectorPeriodo from "../SelectorPeriodo";
 import GraficoVentas, { type Punto } from "./GraficoVentas";
 import { exigir } from "@/lib/exigir";
 
-const POR = { rubro: "Rubro", marca: "Marca", modelo: "Modelo", talle: "Talle", color: "Color", canal: "Canal", vendedor: "Vendedor", promocion: "Promoción", cliente: "Cliente", medio: "Medio de pago" } as const;
+const POR = { linea: "Línea", rubro: "Rubro", temporada: "Temporada", genero: "Género", marca: "Marca", modelo: "Modelo", talle: "Talle", color: "Color", canal: "Canal", vendedor: "Vendedor", promocion: "Promoción", cliente: "Cliente", medio: "Medio de pago" } as const;
 type Por = keyof typeof POR;
 
 const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
@@ -45,7 +46,7 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
   const supabase = await crearCliente();
   const [items, itemsAnt, pagos] = await Promise.all([
     leerTodo((a, b) => supabase.from("v_hechos_ventas")
-      .select("id, venta_id, dia, cantidad, importe, importe_neto, margen_neto, canal, rubro, marca, articulo, modelo, talle, talle_orden, color, cliente, cliente_codigo, vendedor_id, vendedor, promocion_id, promocion, descuento_promo")
+      .select("id, venta_id, dia, cantidad, importe, importe_neto, margen_neto, canal, rubro, marca, articulo, modelo, talle, talle_orden, escala, temporada, linea, genero, color, cliente, cliente_codigo, vendedor_id, vendedor, promocion_id, promocion, descuento_promo")
       .gte("fecha", l.gte).lt("fecha", l.lt).order("id").range(a, b)),
     leerTodo((a, b) => supabase.from("v_hechos_ventas").select("id, venta_id, cantidad, importe_neto, margen_neto")
       .gte("fecha", la.gte).lt("fecha", la.lt).order("id").range(a, b)),
@@ -55,8 +56,8 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
   ]);
 
   const resumen = (lista: { venta_id: number | null; cantidad: number | null; importe_neto: number | null; margen_neto: number | null }[]) => {
-    const r = { vendido: 0, ganancia: 0, pares: 0, ventas: new Set(lista.map((i) => i.venta_id)).size };
-    lista.forEach((i) => { r.vendido += Number(i.importe_neto ?? 0); r.ganancia += Number(i.margen_neto ?? 0); r.pares += i.cantidad ?? 0; });
+    const r = { vendido: 0, ganancia: 0, unidades: 0, ventas: new Set(lista.map((i) => i.venta_id)).size };
+    lista.forEach((i) => { r.vendido += Number(i.importe_neto ?? 0); r.ganancia += Number(i.margen_neto ?? 0); r.unidades += i.cantidad ?? 0; });
     return r;
   };
   const act = resumen(items), ant = resumen(itemsAnt);
@@ -70,20 +71,20 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
   const puntos = new Map<string, Punto & { ids: Set<number> }>();
   for (const d of diasDe(rango)) {
     const k = porMes ? d.slice(0, 7) : d;
-    if (!puntos.has(k)) puntos.set(k, { clave: k, etiqueta: porMes ? `${MESES[Number(d.slice(5, 7)) - 1]} ${d.slice(2, 4)}` : diaCorto(d), total: 0, ventas: 0, pares: 0, ids: new Set() });
+    if (!puntos.has(k)) puntos.set(k, { clave: k, etiqueta: porMes ? `${MESES[Number(d.slice(5, 7)) - 1]} ${d.slice(2, 4)}` : diaCorto(d), total: 0, ventas: 0, unidades: 0, ids: new Set() });
   }
   for (const i of items) {
     const p = puntos.get(porMes ? (i.dia ?? "").slice(0, 7) : i.dia ?? "");
     if (!p) continue;
-    p.total += Number(i.importe_neto ?? 0); p.pares += i.cantidad ?? 0; p.ids.add(i.venta_id ?? 0); p.ventas = p.ids.size;
+    p.total += Number(i.importe_neto ?? 0); p.unidades += i.cantidad ?? 0; p.ids.add(i.venta_id ?? 0); p.ventas = p.ids.size;
   }
 
   // ── Desglose ──
-  type Grupo = { etiqueta: string; orden: number; vendido: number; ganancia: number; pares: number; ventas: Set<number> };
+  type Grupo = { etiqueta: string; orden: number; vendido: number; ganancia: number; unidades: number; ventas: Set<number> };
   const grupos = new Map<string, Grupo>();
-  const sumar = (k: string, etiqueta: string, orden: number, vendido: number, ganancia: number, pares: number, venta: number) => {
-    const g = grupos.get(k) ?? { etiqueta, orden, vendido: 0, ganancia: 0, pares: 0, ventas: new Set<number>() };
-    g.vendido += vendido; g.ganancia += ganancia; g.pares += pares; g.ventas.add(venta);
+  const sumar = (k: string, etiqueta: string, orden: number, vendido: number, ganancia: number, unidades: number, venta: number) => {
+    const g = grupos.get(k) ?? { etiqueta, orden, vendido: 0, ganancia: 0, unidades: 0, ventas: new Set<number>() };
+    g.vendido += vendido; g.ganancia += ganancia; g.unidades += unidades; g.ventas.add(venta);
     grupos.set(k, g);
   };
   if (por === "medio") {
@@ -94,10 +95,13 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
   } else {
     for (const i of items) {
       const [k, etiqueta, orden] =
-        por === "rubro" ? [i.rubro ?? "", i.rubro ?? "Sin rubro", 0]
+        por === "linea" ? [i.linea ?? "", i.linea ?? "Sin línea", LINEAS.indexOf((i.linea ?? "") as never)]
+        : por === "rubro" ? [i.rubro ?? "", i.rubro ?? "Sin rubro", 0]
+        : por === "temporada" ? [i.temporada ?? "", i.temporada ?? "Sin temporada", 0]
+        : por === "genero" ? [i.genero ?? "", i.genero ?? "Sin género", 0]
         : por === "marca" ? [i.marca ?? "", i.marca ?? "Sin marca", 0]
         : por === "modelo" ? [i.articulo ?? "", `${i.articulo} · ${i.modelo}`, 0]
-        : por === "talle" ? [i.talle ?? "", i.talle ?? "", Number(i.talle_orden)]
+        : por === "talle" ? [`${i.escala}|${i.talle}`, rotuloTalle(i.talle, i.escala), ordenEscala(i.escala) * 10000 + Number(i.talle_orden)]
         : por === "color" ? [i.color ?? "", i.color ?? "", 0]
         : por === "canal" ? [i.canal ?? "", i.canal ?? "—", 0]
         : por === "vendedor" ? [i.vendedor_id ?? "", i.vendedor ?? "Sin registrar", 0]
@@ -106,17 +110,17 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
       sumar(k, etiqueta, orden, Number(i.importe_neto ?? 0), Number(i.margen_neto ?? 0), i.cantidad ?? 0, i.venta_id ?? 0);
     }
   }
-  const lista = [...grupos.entries()].sort(([, a], [, b]) => (por === "talle" ? a.orden - b.orden : b.vendido - a.vendido));
+  const lista = [...grupos.entries()].sort(([, a], [, b]) => (por === "talle" || por === "linea" ? a.orden - b.orden : b.vendido - a.vendido));
   const totalDesglose = lista.reduce((s, [, g]) => s + g.vendido, 0);
 
   const esMedio = por === "medio";
-  const columnas = esMedio ? [POR[por], "Ventas", "Cobrado"] : [POR[por], "Pares", "Ventas", "Vendido", ...(conCostos ? ["Ganancia", "Margen"] : [])];
+  const columnas = esMedio ? [POR[por], "Ventas", "Cobrado"] : [POR[por], "Unidades", "Ventas", "Vendido", ...(conCostos ? ["Ganancia", "Margen"] : [])];
   const filas: FilaDesglose[] = lista.map(([k, g]) => ({
     clave: k || "—", etiqueta: g.etiqueta, principal: g.vendido, principalTexto: pesos(g.vendido),
     celdas: esMedio ? [numero(g.ventas.size), pesos(g.vendido)]
-      : [numero(g.pares), numero(g.ventas.size), pesos(g.vendido), ...(conCostos ? [pesos(g.ganancia), `${margenPct(g.ganancia, g.vendido)} %`] : [])],
+      : [numero(g.unidades), numero(g.ventas.size), pesos(g.vendido), ...(conCostos ? [pesos(g.ganancia), `${margenPct(g.ganancia, g.vendido)} %`] : [])],
     detalle: esMedio ? `${g.ventas.size} venta${g.ventas.size === 1 ? "" : "s"}`
-      : `${numero(g.pares)} pares · ${g.ventas.size} venta${g.ventas.size === 1 ? "" : "s"}${conCostos ? ` · ganancia ${pesos(g.ganancia)} (${margenPct(g.ganancia, g.vendido)} %)` : ""}`,
+      : `${numero(g.unidades)} unidades · ${g.ventas.size} venta${g.ventas.size === 1 ? "" : "s"}${conCostos ? ` · ganancia ${pesos(g.ganancia)} (${margenPct(g.ganancia, g.vendido)} %)` : ""}`,
   }));
 
   const params = periodo === "rango" ? `&periodo=rango&desde=${rango.desde}&hasta=${rango.hasta}` : `&periodo=${periodo}`;
@@ -124,8 +128,8 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
     { titulo: "Vendido", valor: pesos(act.vendido), extra: <Variacion actual={act.vendido} anterior={ant.vendido} /> },
     ...(conCostos ? [{ titulo: "Ganancia bruta", valor: pesos(act.ganancia), extra: <span className="text-texto-2">{margenPct(act.ganancia, act.vendido)} % de lo vendido</span> }] : []),
     { titulo: "Ventas", valor: numero(act.ventas), extra: <Variacion actual={act.ventas} anterior={ant.ventas} /> },
-    { titulo: "Pares", valor: numero(act.pares), extra: <Variacion actual={act.pares} anterior={ant.pares} /> },
-    { titulo: "Ticket promedio", valor: pesos(act.ventas ? act.vendido / act.ventas : 0), extra: <span className="text-texto-2">{act.ventas ? `${(act.pares / act.ventas).toFixed(1).replace(".", ",")} pares por venta` : "—"}</span> },
+    { titulo: "Unidades", valor: numero(act.unidades), extra: <Variacion actual={act.unidades} anterior={ant.unidades} /> },
+    { titulo: "Ticket promedio", valor: pesos(act.ventas ? act.vendido / act.ventas : 0), extra: <span className="text-texto-2">{act.ventas ? `${(act.unidades / act.ventas).toFixed(1).replace(".", ",")} unidades por venta` : "—"}</span> },
     { titulo: ajustes <= 0 ? "Descuentos" : "Recargos", valor: pesos(Math.abs(ajustes)), extra: <span className="text-texto-2">manuales y por medio de pago</span> },
     ...(enPromos > 0 ? [{ titulo: "En promociones", valor: pesos(enPromos), extra: <span className="text-texto-2">lo que se resignó (2×1, % off…)</span> }] : []),
   ];
@@ -148,9 +152,9 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
 
       <Desglose titulo={`Ventas por ${POR[por].toLowerCase()}`} total={totalDesglose} filas={filas} columnas={columnas}
         acciones={<BotonCSV archivo={`ventas-por-${por}-${rango.desde}-al-${rango.hasta}`}
-          columnas={esMedio ? [POR[por], "Ventas", "Cobrado"] : [POR[por], "Pares", "Ventas", "Vendido", ...(conCostos ? ["Ganancia", "Margen %"] : [])]}
+          columnas={esMedio ? [POR[por], "Ventas", "Cobrado"] : [POR[por], "Unidades", "Ventas", "Vendido", ...(conCostos ? ["Ganancia", "Margen %"] : [])]}
           filas={lista.map(([, g]) => esMedio ? [g.etiqueta, g.ventas.size, g.vendido]
-            : [g.etiqueta, g.pares, g.ventas.size, g.vendido, ...(conCostos ? [g.ganancia, margenPct(g.ganancia, g.vendido)] : [])])} />} />
+            : [g.etiqueta, g.unidades, g.ventas.size, g.vendido, ...(conCostos ? [g.ganancia, margenPct(g.ganancia, g.vendido)] : [])])} />} />
 
       <p className="text-xs text-texto-2">
         {esMedio ? "Lo que entró por cada medio, ya con su descuento o recargo: es lo que tiene que haber en caja o en el banco. Una venta pagada con dos medios cuenta en los dos."

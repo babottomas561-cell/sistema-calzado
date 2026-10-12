@@ -65,6 +65,14 @@ Talles y colores son **tablas**, no texto: así «Negro» es uno solo, los talle
 talles de la otra). El nombre del talle es único **por escala**: el 34 de niños y el 34 de adulto son
 dos talles distintos. La escala es independiente del género (una juvenil puede ser Niños y llegar al 36).
 
+## Calzado y ropa
+
+Un solo modelo para los dos: artículo → variantes talle × color. Lo que los distingue es la **escala** del
+artículo (Adulto, Niños, Bebé para calzado; Ropa letras, Ropa números y Único para ropa) y la **línea** de su
+rubro (Calzado, Ropa, Accesorios). La ropa suma temporada y material. Los informes agrupan por línea,
+rubro, temporada, género, marca, modelo, talle (con su escala), color, canal, vendedor, promoción y cliente.
+Datos demo: `supabase/demo/ropa.sql` (prendas reales de Dexter y Zara con su foto y precio).
+
 ## Fotos
 
 `producto_imagenes` = la galería de un modelo: `url`, `ruta` (dónde está en el bucket `productos`;

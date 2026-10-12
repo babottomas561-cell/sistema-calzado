@@ -2,14 +2,14 @@
 // Fotos del producto en la tienda: se deslizan con el dedo (scroll-snap, sin librerías)
 // y abajo van las miniaturas para saltar a una. Empieza por la principal.
 import { useRef, useState } from "react";
-import { Footprints } from "lucide-react";
+import { Shirt } from "lucide-react";
 
 export default function Galeria({ fotos, nombre }: { fotos: string[]; nombre: string }) {
   const tira = useRef<HTMLDivElement>(null);
   const [actual, setActual] = useState(0);
 
   if (!fotos.length) return (
-    <div className="grid aspect-square place-items-center rounded-2xl bg-gray-100"><Footprints size={120} className="text-gray-300" /></div>
+    <div className="grid aspect-square place-items-center rounded-2xl bg-gray-100"><Shirt size={120} className="text-gray-300" /></div>
   );
 
   const ir = (i: number) => tira.current?.scrollTo({ left: i * tira.current.clientWidth, behavior: "smooth" });

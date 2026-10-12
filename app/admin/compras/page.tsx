@@ -22,12 +22,12 @@ export default async function Compras() {
           <FilaMovil key={c.id} href={`/admin/compras/${c.id}`}
             titulo={(c.proveedores as unknown as { nombre: string } | null)?.nombre ?? "Sin proveedor"}
             detalle={<>{fechaHora(c.fecha)} · <span className="font-mono">{c.comprobante}</span>{c.comprobante_proveedor ? ` · fact. ${c.comprobante_proveedor}` : ""}</>}
-            valor={<><div className="font-bold">{pesos(c.total)}</div><div className="text-xs text-texto-2">{(c.compra_items as { cantidad: number }[]).reduce((s, i) => s + i.cantidad, 0)} pares</div></>} />
+            valor={<><div className="font-bold">{pesos(c.total)}</div><div className="text-xs text-texto-2">{(c.compra_items as { cantidad: number }[]).reduce((s, i) => s + i.cantidad, 0)} unidades</div></>} />
         ))}
       </ListaMovil>
       <div className="tarjeta hidden overflow-x-auto p-0 md:block">
         <table className="tabla">
-          <thead><tr><th>Compra</th><th>Cargada</th><th>Proveedor</th><th>Factura/remito</th><th className="text-right">Pares</th><th className="text-right">Total</th></tr></thead>
+          <thead><tr><th>Compra</th><th>Cargada</th><th>Proveedor</th><th>Factura/remito</th><th className="text-right">Unidades</th><th className="text-right">Total</th></tr></thead>
           <tbody>
             {(compras ?? []).map((c) => (
               <tr key={c.id}>

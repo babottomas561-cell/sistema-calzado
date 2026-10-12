@@ -3,18 +3,18 @@
 // así no aparecen "Nike" y "nike" como dos marcas. Las altas se hacen en Tablas.
 import Link from "next/link";
 import { useState } from "react";
+import { ESCALAS, TEMPORADAS, TITULO_ESCALA } from "@/lib/escalas";
 
 export type Opcion = { id: number; codigo: string; nombre: string };
 export type Subrubro = Opcion & { categoria_id: number };
 export type Maestros = { marcas: Opcion[]; categorias: Opcion[]; subcategorias: Subrubro[] };
 
 type P = { codigo?: string; nombre?: string; marca_id?: number | null; categoria_id?: number | null; subcategoria_id?: number | null;
-  genero?: string | null; escala?: string; descripcion?: string | null; precio_compra?: number; precio_venta?: number; publicado_web?: boolean };
+  genero?: string | null; escala?: string; temporada?: string | null; material?: string | null; descripcion?: string | null; precio_compra?: number; precio_venta?: number; publicado_web?: boolean };
 
 // editaPrecio: sin "Cambiar precios de venta" el campo queda bloqueado (y no se manda: la base lo rechazaría)
-// escala: Adulto/Niños/Bebé define qué talles puede tener (la base no deja mezclar). alCambiarEscala avisa al
+// escala: define qué talles puede tener (la base no deja mezclar). alCambiarEscala avisa al
 // selector de talles; bloquearEscala: el artículo ya tiene talles, no se puede cambiar.
-export const ESCALAS = ["Adulto", "Niños", "Bebé"] as const;
 export default function CamposProducto({ p = {}, maestros, editaPrecio = true, alCambiarEscala, bloquearEscala = false }: {
   p?: P; maestros: Maestros; editaPrecio?: boolean; alCambiarEscala?: (escala: string) => void; bloquearEscala?: boolean;
 }) {
@@ -57,9 +57,17 @@ export default function CamposProducto({ p = {}, maestros, editaPrecio = true, a
           </select></div>
         <div><label className="etiqueta">Escala de talles</label>
           <select name="escala" defaultValue={p.escala ?? "Adulto"} disabled={bloquearEscala} onChange={(e) => alCambiarEscala?.(e.target.value)} className="campo disabled:bg-gray-50">
-            {ESCALAS.map((e) => <option key={e}>{e}</option>)}
+            {ESCALAS.map((e) => <option key={e} value={e}>{TITULO_ESCALA[e]}</option>)}
           </select>
           <p className="mt-0.5 text-[11px] text-texto-2">{bloquearEscala ? "Ya tiene talles: no se puede cambiar." : "Define qué talles puede tener (no se mezclan)."}</p></div>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div><label className="etiqueta">Temporada</label>
+          <select name="temporada" defaultValue={p.temporada ?? ""} className="campo">
+            <option value="">—</option>{TEMPORADAS.map((t) => <option key={t}>{t}</option>)}
+          </select></div>
+        <div><label className="etiqueta">Material</label>
+          <input name="material" defaultValue={p.material ?? ""} placeholder="Algodón, cuero, poliéster…" className="campo" /></div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div><label className="etiqueta">Precio de compra ($)</label><input name="precio_compra" type="number" min="0" step="0.01" defaultValue={p.precio_compra ?? ""} onChange={(e) => setCompra(Number(e.target.value))} className="campo" />

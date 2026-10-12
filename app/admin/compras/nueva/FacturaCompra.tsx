@@ -2,7 +2,7 @@
 // Cargar una factura de compra como viene del proveedor: por modelo y por CURVA.
 //  1. Cabecera: proveedor, n.º y fecha de la factura, y su total (para controlar que cierre).
 //  2. Se busca el modelo (por nombre, marca, código propio o el código del proveedor).
-//  3. Aparece la grilla talle × color: se escriben los pares de cada uno. Un solo costo por modelo,
+//  3. Aparece la grilla talle × color: se escriben las unidades de cada uno. Un solo costo por modelo,
 //     propuesto con el precio de ese proveedor.
 //  4. Si el modelo no existe, se crea ahí mismo y se sigue cargando.
 import { useMemo, useState, useTransition, useActionState } from "react";
@@ -108,7 +108,7 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-bold">Cargar factura de compra</h1>
-        <p className="text-sm text-texto-2">Buscá cada modelo de la factura y escribí los pares de cada talle y color.</p>
+        <p className="text-sm text-texto-2">Buscá cada modelo de la factura y escribí las unidades de cada talle y color.</p>
       </div>
 
       {/* 1. Cabecera de la factura */}
@@ -200,7 +200,7 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
                   <table className="text-sm">
                     <thead><tr><th className="pr-3 text-left text-xs font-semibold text-texto-2">Color \ Talle</th>
                       {tallesM.map((t) => <th key={t} className="w-14 px-0.5 text-center text-xs font-semibold">{t}</th>)}
-                      <th className="w-16 text-right text-xs font-semibold text-texto-2">Pares</th></tr></thead>
+                      <th className="w-16 text-right text-xs font-semibold text-texto-2">Unidades</th></tr></thead>
                     <tbody>{coloresM.map(([c, hex]) => {
                       const fila = tallesM.map((t) => celda(t, c)).filter(Boolean) as Fila[];
                       const paresFila = fila.reduce((s, v) => s + (b.pares[v.variante_id] ?? 0), 0);
@@ -208,7 +208,7 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
                         <tr key={c}>
                           <td className="whitespace-nowrap py-1 pr-3">
                             <span className="mr-1.5 inline-block h-3 w-3 rounded-full border border-gray-300 align-middle" style={{ background: hex ?? "#ddd" }} />{c}
-                            <button type="button" className="ml-2 text-[11px] font-semibold text-marca" title="Un par de cada talle"
+                            <button type="button" className="ml-2 text-[11px] font-semibold text-marca" title="Una unidad de cada talle"
                               onClick={() => cambiarBloque(b.producto_id, (x) => ({ ...x, pares: { ...x.pares, ...Object.fromEntries(fila.map((v) => [v.variante_id, 1])) } }))}>1 c/u</button>
                           </td>
                           {tallesM.map((t) => {
@@ -225,7 +225,7 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
                     })}</tbody>
                   </table>
                 </div>
-                <div className="flex justify-between border-t border-borde pt-2 text-sm"><span className="text-texto-2">{paresDe(b)} pares × {pesos(b.costo)}</span><b>{pesos(paresDe(b) * b.costo)}</b></div>
+                <div className="flex justify-between border-t border-borde pt-2 text-sm"><span className="text-texto-2">{paresDe(b)} unidades × {pesos(b.costo)}</span><b>{pesos(paresDe(b) * b.costo)}</b></div>
               </section>
             );
           })}
@@ -236,7 +236,7 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
           <h2 className="font-semibold">Resumen</h2>
           <dl className="space-y-1 text-sm">
             <div className="flex justify-between"><dt className="text-texto-2">Modelos</dt><dd>{bloques.length}</dd></div>
-            <div className="flex justify-between"><dt className="text-texto-2">Pares</dt><dd>{totalPares}</dd></div>
+            <div className="flex justify-between"><dt className="text-texto-2">Unidades</dt><dd>{totalPares}</dd></div>
             <div className="flex items-baseline justify-between"><dt className="text-texto-2">Total cargado</dt><dd className="text-xl font-bold">{pesos(totalCargado)}</dd></div>
           </dl>
           {diferencia !== null && (Math.abs(diferencia) < 1

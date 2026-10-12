@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { datosTienda } from "@/lib/tienda";
 
-export const metadata: Metadata = {
-  title: "Sistema de calzado",
-  description: "Stock, ventas y compras",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { nombre } = await datosTienda();
+  return { title: nombre, description: "Stock, ventas y compras" };
+}
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };
 

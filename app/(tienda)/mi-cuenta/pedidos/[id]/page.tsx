@@ -36,7 +36,7 @@ export default async function SeguimientoPedido({ params, searchParams }: { para
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      {nuevo && <><VaciarCarrito /><div className="rounded-xl border border-green-200 bg-green-50 p-4 text-ok"><b>¡Listo! Te reservamos los pares.</b>{tienda?.whatsapp ? " Ahora mandanos el pedido por WhatsApp para coordinar el pago y la entrega." : " Acá podés seguir su estado."}</div></>}
+      {nuevo && <><VaciarCarrito /><div className="rounded-xl border border-green-200 bg-green-50 p-4 text-ok"><b>¡Listo! Te reservamos tu pedido.</b>{tienda?.whatsapp ? " Ahora mandanos el pedido por WhatsApp para coordinar el pago y la entrega." : " Acá podés seguir su estado."}</div></>}
       {tienda?.whatsapp && abierto && (
         <a href={enlaceWhatsApp(tienda.whatsapp, mensaje)} target="_blank" rel="noopener"
           className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3.5 font-semibold text-white shadow-sm ${nuevo ? "bg-[#1f9d55] text-base" : "bg-[#1f9d55]/90 text-sm"}`}>

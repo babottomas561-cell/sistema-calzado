@@ -22,7 +22,7 @@ export default function GrillaStock({ variantes }: { variantes: CeldaStock[] }) 
           <div key={color}>
             <div className="mb-1.5 flex items-center gap-2 text-sm font-medium">
               <span className="h-3 w-3 rounded-full border border-gray-300" style={{ background: hex ?? "transparent" }} />
-              {color}<span className="text-xs font-normal text-texto-2">{delColor.reduce((s, v) => s + v.stock, 0)} pares</span>
+              {color}<span className="text-xs font-normal text-texto-2">{delColor.reduce((s, v) => s + v.stock, 0)} unidades</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {delColor.map((v) => (
@@ -47,7 +47,7 @@ export function LeyendaStock() {
       <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-green-200" /> hay stock</span>
       <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-amber-200" /> en el mínimo</span>
       <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-red-200" /> sin stock</span>
-      <span>· 2R = 2 pares reservados en pedidos</span>
+      <span>· 2R = 2 unidades reservados en pedidos</span>
     </p>
   );
 }

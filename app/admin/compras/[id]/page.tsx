@@ -24,7 +24,7 @@ export default async function Compra({ params, searchParams }: {
         <div className="flex justify-between"><div><h1 className="text-xl font-bold">Compra <span className="font-mono">{c.comprobante}</span></h1><p className="text-sm text-texto-2">{fechaHora(c.fecha)}</p></div>
           <div className="text-right text-sm"><div className="font-semibold">{(c.proveedores as { nombre: string } | null)?.nombre ?? "Sin proveedor"}</div><div className="text-texto-2">{c.comprobante_proveedor ? `Factura/remito ${c.comprobante_proveedor}` : ""}{c.fecha_comprobante ? ` del ${fecha(c.fecha_comprobante + "T12:00:00")}` : ""}</div><div className="text-texto-2">{c.notas}</div></div></div>
         <table className="tabla">
-          <thead><tr><th>Producto</th><th className="text-right">Pares</th><th className="text-right">Costo</th><th className="text-right">Subtotal</th></tr></thead>
+          <thead><tr><th>Producto</th><th className="text-right">Unidades</th><th className="text-right">Costo</th><th className="text-right">Subtotal</th></tr></thead>
           <tbody>
             {(items ?? []).map((i) => {
               const v = i.variantes as unknown as { talles: { nombre: string }; colores: { nombre: string }; productos: { nombre: string } };

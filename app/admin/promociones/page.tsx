@@ -41,7 +41,7 @@ export default async function Promociones() {
     <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold">Promociones</h1>
-        <p className="text-sm text-texto-2">Se aplican solas en la tienda, en los pedidos y al vender en el local. Un par tiene una sola promoción: si dos podrían tocarlo, gana la de mayor prioridad.</p>
+        <p className="text-sm text-texto-2">Se aplican solas en la tienda, en los pedidos y al vender en el local. Cada prenda tiene una sola promoción: si dos podrían tocarlo, gana la de mayor prioridad.</p>
       </div>
       <ListaPromociones promos={filas as never} opciones={{ marcas: marcas ?? [], rubros: rubros ?? [], subrubros: subrubros ?? [], productos: productos ?? [] }} />
     </div>

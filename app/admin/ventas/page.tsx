@@ -54,12 +54,12 @@ export default async function Ventas({ searchParams }: { searchParams: Promise<{
             detalle={<>{fechaHora(v.fecha)} · <span className="font-mono">{v.comprobante}</span>{v.vendedor ? ` · ${(v.vendedor as { nombre: string | null }).nombre ?? ""}` : ""}</>}
             extra={<><span className="chip bg-gray-100">{v.canal}</span>{v.pedido_id ? <span className="chip bg-blue-50 text-marca">pedido</span> : null}
               <span className="chip bg-gray-100 text-texto-2">{[...new Set((v.pagos as unknown as Pago[]).map((p) => p.medios_pago.nombre))].join(" + ") || "—"}</span></>}
-            valor={<><div className="font-bold">{pesos(v.total)}</div><div className="text-xs text-texto-2">{(v.venta_items as { cantidad: number }[]).reduce((s, i) => s + i.cantidad, 0)} pares</div></>} />
+            valor={<><div className="font-bold">{pesos(v.total)}</div><div className="text-xs text-texto-2">{(v.venta_items as { cantidad: number }[]).reduce((s, i) => s + i.cantidad, 0)} unidades</div></>} />
         ))}
       </ListaMovil>
       <div className="tarjeta hidden overflow-x-auto p-0 md:block">
         <table className="tabla">
-          <thead><tr><th>Comprobante</th><th>Fecha</th><th>Cliente</th><th>Vendió</th><th>Canal</th><th>Pago</th><th className="text-right">Pares</th><th className="text-right">Total</th></tr></thead>
+          <thead><tr><th>Comprobante</th><th>Fecha</th><th>Cliente</th><th>Vendió</th><th>Canal</th><th>Pago</th><th className="text-right">Unidades</th><th className="text-right">Total</th></tr></thead>
           <tbody>
             {lista.map((v) => (
               <tr key={v.id}>

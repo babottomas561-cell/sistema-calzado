@@ -37,7 +37,7 @@ export type DatosPresupuesto = {
   ajuste_pct: number; ajuste_medio_pago: number; total: number; medio: string | null; valido_hasta: string; notas: string | null;
 };
 
-// El presupuesto para mandarle al cliente: cada par con su precio final y todo lo que se descontó
+// El presupuesto para mandarle al cliente: cada prenda con su precio final y todo lo que se descontó
 export function mensajePresupuesto(p: DatosPresupuesto) {
   const hayDesglose = p.descuento_promociones > 0 || p.descuento > 0 || p.ajuste_medio_pago !== 0;
   return [

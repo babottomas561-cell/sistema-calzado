@@ -26,7 +26,7 @@ export default async function Presupuestos() {
       {abiertos.length > 0 && <p className="text-sm"><b>{abiertos.length}</b> vigentes por <b>{pesos(abiertos.reduce((s, p) => s + Number(p.total), 0))}</b></p>}
       <div className="tarjeta overflow-x-auto p-0">
         <table className="tabla">
-          <thead><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th className="text-right">Pares</th><th className="text-right">Total</th><th>Válido hasta</th><th>Estado</th></tr></thead>
+          <thead><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th className="text-right">Unidades</th><th className="text-right">Total</th><th>Válido hasta</th><th>Estado</th></tr></thead>
           <tbody>
             {lista.map((p) => (
               <tr key={p.id}>

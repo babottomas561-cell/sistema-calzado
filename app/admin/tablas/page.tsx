@@ -8,6 +8,7 @@ import { porcentaje } from "@/lib/formato";
 import Editor from "./Editor";
 import FormTienda from "./FormTienda";
 import { exigir } from "@/lib/exigir";
+import { ESCALAS, LINEAS, TITULO_ESCALA } from "@/lib/escalas";
 
 const PESTANAS = [
   { clave: "rubros", texto: "Rubros", icono: Layers },
@@ -32,6 +33,15 @@ function CodigoNombre({ codigo, nombre, ejemplo, prefijo }: { codigo?: string; n
   );
 }
 
+// La línea del rubro (Calzado, Ropa, Accesorios): separa los totales de cada una en los informes
+function SelectorLinea({ actual }: { actual?: string }) {
+  return (
+    <div><label className="etiqueta">Línea</label>
+      <select name="linea" defaultValue={actual ?? "Calzado"} className="campo">{LINEAS.map((l) => <option key={l}>{l}</option>)}</select>
+      <p className="mt-0.5 text-[11px] text-texto-2">Los informes separan calzado, ropa y accesorios.</p></div>
+  );
+}
+
 function Encabezado({ titulo, detalle, children }: { titulo: string; detalle: string; children?: React.ReactNode }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-3 border-b border-borde px-5 py-4">
@@ -50,13 +60,13 @@ export default async function Tablas({ searchParams }: { searchParams: Promise<{
   const actual: Clave = PESTANAS.some((p) => p.clave === t) ? (t as Clave) : "rubros";
   const supabase = await crearCliente();
   const [rubros, subrubros, marcas, colores, talles, medios, tienda] = await Promise.all([
-    supabase.from("categorias").select("id, codigo, nombre, productos(count)").order("nombre"),
+    supabase.from("categorias").select("id, codigo, nombre, linea, productos(count)").order("nombre"),
     supabase.from("subcategorias").select("id, codigo, nombre, categoria_id, productos(count)").order("nombre"),
     supabase.from("marcas").select("id, codigo, nombre, productos(count)").order("nombre"),
     supabase.from("colores").select("id, codigo, nombre, hex, variantes(count)").order("nombre"),
     supabase.from("talles").select("id, nombre, orden, tipo, variantes(count)").order("orden"),
     supabase.from("medios_pago").select("id, codigo, nombre, tipo, ajuste_pct, cuotas, en_mostrador, en_tienda, activo, orden, pagos(count)").order("orden"),
-    supabase.from("configuracion_tienda").select("nombre, whatsapp, direccion_retiro, horario").single(),
+    supabase.from("configuracion_tienda").select("nombre, titulo_inicio, bajada_inicio, whatsapp, direccion_retiro, horario").single(),
   ]);
   const cantidades: Record<Clave, number> = { rubros: rubros.data?.length ?? 0, marcas: marcas.data?.length ?? 0,
     colores: colores.data?.length ?? 0, talles: talles.data?.length ?? 0, medios: medios.data?.length ?? 0, tienda: 0 };
@@ -79,14 +89,15 @@ export default async function Tablas({ searchParams }: { searchParams: Promise<{
 
       <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
         {actual === "rubros" && <>
-          <Encabezado titulo="Rubros y subrubros" detalle="El código del rubro arma el código de artículo (ZAP-0001). Tocá un subrubro para editarlo.">
-            <Editor tabla="categorias" titulo="Nuevo rubro" nuevo="Nuevo rubro"><CodigoNombre ejemplo="Zapatilla" /></Editor>
+          <Encabezado titulo="Rubros y subrubros" detalle="El código del rubro arma el código de artículo (ZAP-0001, REM-0001). Cada rubro es de una línea: calzado, ropa o accesorios.">
+            <Editor tabla="categorias" titulo="Nuevo rubro" nuevo="Nuevo rubro"><CodigoNombre ejemplo="Zapatilla" /><SelectorLinea /></Editor>
           </Encabezado>
           <ul className="divide-y divide-gray-100">
             {(rubros.data ?? []).map((r) => (
               <li key={r.id} className="flex items-start gap-3 px-5 py-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2"><span className="font-semibold">{r.nombre}</span><Codigo>{r.codigo}</Codigo>
+                    <span className="rounded-full bg-gray-100 px-2 text-[11px] font-semibold text-texto-2">{r.linea}</span>
                     <span className="text-xs text-texto-2">{usos(r.productos)} {usos(r.productos) === 1 ? "artículo" : "artículos"}</span></div>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {(subrubros.data ?? []).filter((s) => s.categoria_id === r.id).map((s) => (
@@ -106,6 +117,7 @@ export default async function Tablas({ searchParams }: { searchParams: Promise<{
                 </div>
                 <Editor key={`${r.id}-${r.codigo}-${r.nombre}`} tabla="categorias" id={r.id} titulo="Editar rubro" enUso={usos(r.productos)}>
                   <CodigoNombre codigo={r.codigo} nombre={r.nombre} ejemplo="Zapatilla" />
+                  <SelectorLinea actual={r.linea} />
                   <p className="text-xs text-texto-2">Cambiar el código no renombra los artículos ya creados.</p>
                 </Editor>
               </li>
@@ -154,20 +166,20 @@ export default async function Tablas({ searchParams }: { searchParams: Promise<{
           <Encabezado titulo="Talles" detalle="Tocá un talle para editarlo. El orden define cómo se listan (38 · 38.5 · 39).">
             <Editor tabla="talles" titulo="Nuevo talle" nuevo="Nuevo talle">
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="etiqueta">Talle</label><input name="nombre" required placeholder="44 · 37.5 · XL" className="campo" autoFocus /></div>
+                <div><label className="etiqueta">Talle</label><input name="nombre" required placeholder="44 · 37.5 · XL · Único" className="campo" autoFocus /></div>
                 <div><label className="etiqueta">Escala</label><select name="tipo" defaultValue="" className="campo">
-                  <option value="">Automática</option><option>Adulto</option><option>Niños</option><option>Bebé</option></select></div>
+                  <option value="">Automática</option>{ESCALAS.map((e) => <option key={e} value={e}>{TITULO_ESCALA[e]}</option>)}</select></div>
               </div>
-              <p className="text-xs text-texto-2">El orden se calcula solo. Escala automática: menos de 35 es de niños. El mismo número puede existir en dos escalas (el 34 de niños y el de adulto).</p>
+              <p className="text-xs text-texto-2">El orden se calcula solo. Escala automática: menos de 35 es de niños, las letras son de ropa. El mismo número puede existir en dos escalas (el 38 de calzado y el 38 de jeans son talles distintos).</p>
             </Editor>
           </Encabezado>
           <div className="space-y-5 px-5 py-4">
-            {["Adulto", "Niños", "Bebé"].map((tipo) => {
+            {ESCALAS.map((tipo) => {
               const lista = (talles.data ?? []).filter((x) => x.tipo === tipo);
               if (!lista.length) return null;
               return (
                 <div key={tipo}>
-                  <div className="etiqueta">{tipo === "Adulto" ? "Adultos" : tipo === "Niños" ? "Niños" : "Bebés"}</div>
+                  <div className="etiqueta">{TITULO_ESCALA[tipo]}</div>
                   <div className="flex flex-wrap gap-2">{lista.map((x) => (
                     <Editor key={`${x.id}-${x.nombre}-${x.orden}-${x.tipo}`} tabla="talles" id={x.id} titulo={`Talle ${x.nombre}`} enUso={usos(x.variantes)}
                       disparador={<span className="flex h-14 w-16 flex-col items-center justify-center rounded-lg border border-borde bg-white transition hover:border-marca hover:bg-marca-suave">
@@ -175,7 +187,7 @@ export default async function Tablas({ searchParams }: { searchParams: Promise<{
                       <div className="grid grid-cols-3 gap-3">
                         <div><label className="etiqueta">Talle</label><input name="nombre" required defaultValue={x.nombre} className="campo" /></div>
                         <div><label className="etiqueta">Orden</label><input name="orden" type="number" step="0.5" required defaultValue={x.orden} className="campo" /></div>
-                        <div><label className="etiqueta">Escala</label><select name="tipo" defaultValue={x.tipo} className="campo"><option>Adulto</option><option>Niños</option><option>Bebé</option></select></div>
+                        <div><label className="etiqueta">Escala</label><select name="tipo" defaultValue={x.tipo} className="campo">{ESCALAS.map((e) => <option key={e} value={e}>{TITULO_ESCALA[e]}</option>)}</select></div>
                       </div>
                     </Editor>
                   ))}</div>

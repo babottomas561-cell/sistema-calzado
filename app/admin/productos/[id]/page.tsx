@@ -42,7 +42,7 @@ export default async function Producto({ params }: { params: Promise<{ id: strin
     <div className="space-y-5">
       <div><Volver href="/admin/productos">Productos</Volver>
         <h1 className="text-2xl font-bold"><span className="mr-2 font-mono text-lg text-texto-2">{p.codigo}</span>{p.nombre}</h1>
-        <p className="text-sm text-texto-2">{[marca, categoria, subcategoria, p.genero].filter(Boolean).join(" · ")} · {total} pares en stock
+        <p className="text-sm text-texto-2">{[marca, categoria, subcategoria, p.genero].filter(Boolean).join(" · ")} · {total} unidades en stock
           {p.publicado_web ? <> · <a href={`/producto/${p.id}`} target="_blank" className="text-marca">ver en la tienda <ExternalLink size={13} className="inline" /></a></> : " · no publicado en la tienda"}</p></div>
 
       <Fotos productoId={p.id} imagenes={imagenes ?? []} />

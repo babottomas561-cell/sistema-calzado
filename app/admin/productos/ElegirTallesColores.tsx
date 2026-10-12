@@ -2,11 +2,12 @@
 // Elegir talles y colores TILDANDO de las tablas (sin escribir): se crea una variante por cada combinación.
 import Link from "next/link";
 import { useState } from "react";
+import { ordenEscala, TITULO_ESCALA } from "@/lib/escalas";
 
 export type Talle = { id: number; nombre: string; tipo: string };
 export type Color = { id: number; nombre: string; codigo: string; hex: string | null };
 
-// escala: si viene, solo se ofrecen los talles de esa escala (Adulto, Niños o Bebé)
+// escala: si viene, solo se ofrecen los talles de esa escala (calzado, ropa o único)
 export default function ElegirTallesColores({ talles: todos, colores, escala }: { talles: Talle[]; colores: Color[]; escala?: string }) {
   const talles = escala ? todos.filter((t) => t.tipo === escala) : todos;
   const [tTilde, setT] = useState<number[]>([]);
@@ -14,13 +15,13 @@ export default function ElegirTallesColores({ talles: todos, colores, escala }: 
   // Actualización funcional: dos toques seguidos no se pisan
   const alternar = (set: React.Dispatch<React.SetStateAction<number[]>>, id: number) =>
     set((lista) => (lista.includes(id) ? lista.filter((x) => x !== id) : [...lista, id]));
-  const tipos = [...new Set(talles.map((t) => t.tipo))];
+  const tipos = [...new Set(talles.map((t) => t.tipo))].sort((a, b) => ordenEscala(a) - ordenEscala(b));
 
   return (
     <div className="space-y-3">
       {tipos.map((tipo) => (
         <div key={tipo}>
-          <div className="mb-1 flex items-center gap-3"><span className="etiqueta mb-0">Talles {tipo.toLowerCase()}</span>
+          <div className="mb-1 flex items-center gap-3"><span className="etiqueta mb-0">Talles · {TITULO_ESCALA[tipo] ?? tipo}</span>
             <button type="button" className="text-xs font-semibold text-marca" onClick={() => setT((l) => [...new Set([...l, ...talles.filter((t) => t.tipo === tipo).map((t) => t.id)])])}>todos</button></div>
           <div className="flex flex-wrap gap-1.5">{talles.filter((t) => t.tipo === tipo).map((t) => (
             <button key={t.id} type="button" onClick={() => alternar(setT, t.id)}

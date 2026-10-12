@@ -2,10 +2,12 @@
 import Link from "next/link";
 import { crearCliente } from "@/lib/supabase/server";
 import { pesos } from "@/lib/formato";
-import { Footprints } from "lucide-react";
+import { Shirt } from "lucide-react";
+import { ESCALAS, FILTRO_ESCALA } from "@/lib/escalas";
+import { datosTienda } from "@/lib/tienda";
 
 type Fila = { variante_id: number; producto_id: number; nombre: string; marca: string | null; categoria: string | null; genero: string | null; escala: string;
-  imagen_url: string | null; talle: string; talle_orden: number; color: string; color_hex: string | null; precio: number; disponible: number };
+  imagen_url: string | null; talle: string; talle_orden: number; color: string; color_hex: string | null; precio: number; disponible: number; temporada: string | null; material: string | null };
 
 // Botón de filtro
 function Chip({ activo, href, children }: { activo: boolean; href: string; children: React.ReactNode }) {
@@ -15,9 +17,10 @@ function Chip({ activo, href, children }: { activo: boolean; href: string; child
 export default async function Catalogo({ searchParams }: { searchParams: Promise<{ categoria?: string; genero?: string; talle?: string; escala?: string; q?: string }> }) {
   const filtros = await searchParams;
   const supabase = await crearCliente();
-  const [{ data }, { data: promos }] = await Promise.all([
+  const [{ data }, { data: promos }, tienda] = await Promise.all([
     supabase.from("v_catalogo").select("*"),
     supabase.from("v_promos_tienda").select("producto_id, etiqueta"),
+    datosTienda(),
   ]);
   // La etiqueta de la promoción de cada modelo ("2×1", "2do al 50 %") para la esquina de la foto
   const etiquetas = new Map((promos ?? []).map((p) => [p.producto_id, p.etiqueta]));
@@ -27,7 +30,6 @@ export default async function Catalogo({ searchParams }: { searchParams: Promise
   const categorias = [...new Set(filas.map((f) => f.categoria).filter(Boolean))] as string[];
   const generos = [...new Set(filas.map((f) => f.genero).filter(Boolean))] as string[];
   // Talles por escala: el 34 de niños y el de adulto son talles distintos, cada uno en su fila
-  const ESCALAS = ["Adulto", "Niños", "Bebé"];
   const tallesPorEscala = ESCALAS.map((e) => ({ escala: e, talles: [...new Map(filas.filter((f) => f.disponible > 0 && f.escala === e)
     .map((f) => [f.talle, f.talle_orden])).entries()].sort((a, b) => a[1] - b[1]).map(([t]) => t) })).filter((x) => x.talles.length);
 
@@ -56,8 +58,8 @@ export default async function Catalogo({ searchParams }: { searchParams: Promise
   return (
     <div className="space-y-5">
       <div className="rounded-2xl bg-gradient-to-r from-blue-700 to-blue-500 px-6 py-8 text-white">
-        <h1 className="text-2xl font-bold md:text-3xl">Calzado para todos los días</h1>
-        <p className="mt-1 opacity-90">Elegí tu modelo y tu talle. Retirás en el local o te lo enviamos.</p>
+        <h1 className="text-2xl font-bold md:text-3xl">{tienda.titulo_inicio}</h1>
+        <p className="mt-1 opacity-90">{tienda.bajada_inicio}</p>
       </div>
       <form className="flex gap-2">
         {Object.entries(filtros).filter(([k]) => k !== "q").map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
@@ -69,7 +71,7 @@ export default async function Catalogo({ searchParams }: { searchParams: Promise
         <div className="flex flex-wrap gap-2">{generos.map((g) => <Chip key={g} activo={filtros.genero === g} href={link({ genero: filtros.genero === g ? undefined : g })}>{g}</Chip>)}</div>
         {tallesPorEscala.map(({ escala, talles }) => (
           <div key={escala} className="flex flex-wrap items-center gap-1.5">
-            <span className="mr-1 text-sm text-texto-2">{escala === "Adulto" ? "Talle" : escala === "Niños" ? "Talle niños" : "Talle bebé"}:</span>
+            <span className="mr-1 text-sm text-texto-2">{FILTRO_ESCALA[escala] ?? "Talle"}:</span>
             {talles.map((t) => { const activo = filtros.talle === t && (filtros.escala ?? "Adulto") === escala;
               return <Chip key={t} activo={activo} href={link(activo ? { talle: undefined, escala: undefined } : { talle: t, escala: escala === "Adulto" ? undefined : escala })}>{t}</Chip>; })}
           </div>
@@ -81,7 +83,7 @@ export default async function Catalogo({ searchParams }: { searchParams: Promise
           <Link key={m.id} href={`/producto/${m.id}`} className="group overflow-hidden rounded-xl border border-borde bg-white transition hover:shadow-md">
             <div className="relative grid aspect-square place-items-center bg-gray-100 text-5xl">
               {etiquetas.get(m.id) && <span className="absolute left-2 top-2 rounded-md bg-ok px-2 py-0.5 text-xs font-bold text-white shadow-sm">{etiquetas.get(m.id)}</span>}
-              {m.imagen ? <img src={m.imagen} alt={m.nombre} className="h-full w-full object-cover" /> : <Footprints size={56} className="text-gray-300" />}
+              {m.imagen ? <img src={m.imagen} alt={m.nombre} className="h-full w-full object-cover" /> : <Shirt size={56} className="text-gray-300" />}
             </div>
             <div className="space-y-1 p-3">
               <div className="text-xs uppercase tracking-wide text-texto-2">{m.marca}</div>

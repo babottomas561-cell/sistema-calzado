@@ -53,10 +53,10 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
     ...(todas || vende ? [
       { titulo: todas ? "Vendido hoy" : "Vendiste hoy", valor: pesos(totalHoy), detalle: `${(ventasHoy.data ?? []).length} ventas` },
       { titulo: todas ? "Vendido en el mes" : "Vendiste en el mes", valor: pesos(facturadoMes),
-        detalle: todas ? `${new Set(items.map((i) => i.venta_id)).size} ventas · ${numero(paresMes)} pares` : `${(ventasMes.data ?? []).length} ventas` },
+        detalle: todas ? `${new Set(items.map((i) => i.venta_id)).size} ventas · ${numero(paresMes)} unidades` : `${(ventasMes.data ?? []).length} ventas` },
     ] : []),
     ...(todas && veCostos ? [{ titulo: "Ganancia bruta del mes", valor: pesos(margenMes), detalle: facturadoMes ? `${Math.round((margenMes / facturadoMes) * 100)}% sobre lo vendido` : "—" }] : []),
-    ...(veStock ? [{ titulo: "Stock", valor: `${numero(paresStock)} pares`, detalle: veCostos ? `${pesos(valorStock)} a costo` : `${bajos.length} para reponer` }] : []),
+    ...(veStock ? [{ titulo: "Stock", valor: `${numero(paresStock)} unidades`, detalle: veCostos ? `${pesos(valorStock)} a costo` : `${bajos.length} para reponer` }] : []),
   ];
 
   return (
@@ -110,7 +110,7 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
             <ul className="space-y-2 text-sm">
               {top.map(([nombre, pares]) => (
                 <li key={nombre}>
-                  <div className="flex justify-between"><span>{nombre}</span><b>{pares} pares</b></div>
+                  <div className="flex justify-between"><span>{nombre}</span><b>{pares} unidades</b></div>
                   <div className="mt-1 h-1.5 rounded bg-gray-100"><div className="h-1.5 rounded bg-marca" style={{ width: `${(pares / top[0][1]) * 100}%` }} /></div>
                 </li>
               ))}

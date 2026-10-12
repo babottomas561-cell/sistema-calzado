@@ -33,6 +33,7 @@ export default async function Producto({ params }: { params: Promise<{ id: strin
             </div>
           ))}
           {p.descripcion && <p className="text-gray-700">{p.descripcion}</p>}
+          {(p.temporada || p.material) && <p className="text-sm text-texto-2">{[p.material && `Material: ${p.material}`, p.temporada].filter(Boolean).join(" · ")}</p>}
           <ElegirVariante variantes={data as never} mejorMedio={medios?.[0] ?? null} />
         </div>
       </div>

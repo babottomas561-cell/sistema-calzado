@@ -24,6 +24,8 @@ function datosProducto(f: FormData) {
     // Escala de talles: si el campo no vino (bloqueado porque ya tiene talles), no se toca
     ...(f.has("escala") ? { escala: String(f.get("escala")) } : {}),
     descripcion: String(f.get("descripcion") ?? "").trim() || null,
+    temporada: String(f.get("temporada") ?? "") || null,
+    material: String(f.get("material") ?? "").trim() || null,
     // imagen_url no va acá: la mantiene la base (es la foto principal de producto_imagenes)
     precio_compra: num(f.get("precio_compra")),
     // Si el campo no vino (bloqueado por permisos), no se toca el precio de venta
