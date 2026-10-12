@@ -21,13 +21,13 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
 
   // La base ya filtra: sin "ver todas", ventas devuelve solo las propias
   const [ventasHoy, ventasMes, itemsMes, stock, ultimas, pedidos, seguimientos] = await Promise.all([
-    supabase.from("ventas").select("total").gte("fecha", hoy),
-    supabase.from("ventas").select("total").gte("fecha", mes),
+    supabase.from("ventas").select("total").gte("fecha", hoy).is("anulada_en", null),
+    supabase.from("ventas").select("total").gte("fecha", mes).is("anulada_en", null),
     // Importes netos (con descuento y ajuste por medio de pago), los mismos que suma "Vendido hoy".
     // De a páginas: un mes de ventas o el stock completo pasan enseguida las 1000 filas por consulta.
     todas ? leerTodo((a, b) => supabase.from("v_hechos_ventas").select("id, modelo, cantidad, importe_neto, margen_neto, venta_id").gte("fecha", mes).order("id").range(a, b)) : Promise.resolve([]),
     veStock ? leerTodo((a, b) => supabase.from("v_stock").select("variante_id, producto_id, nombre, talle, color, stock, disponible, stock_minimo, valor_costo, stock_bajo").order("variante_id").range(a, b)) : Promise.resolve([]),
-    supabase.from("ventas").select("id, comprobante, fecha, total, canal, clientes(nombre)").order("fecha", { ascending: false }).limit(5),
+    supabase.from("ventas").select("id, comprobante, fecha, total, canal, clientes(nombre)").is("anulada_en", null).order("fecha", { ascending: false }).limit(5),
     puede(permisos, "pedidos.gestionar") ? supabase.from("pedidos").select("id", { count: "exact", head: true }).in("estado", ["pendiente", "confirmado", "preparado"]) : vacio,
     puede(permisos, "clientes.ver") ? supabase.from("interacciones").select("id", { count: "exact", head: true }).eq("hecha", false).lte("proxima_fecha", diaArgentina()) : vacio,
   ]);

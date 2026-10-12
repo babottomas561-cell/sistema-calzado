@@ -51,8 +51,8 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
     leerTodo((a, b) => supabase.from("v_hechos_ventas").select("id, venta_id, cantidad, importe_neto, margen_neto")
       .gte("fecha", la.gte).lt("fecha", la.lt).order("id").range(a, b)),
     // Medio de pago va por pago (una venta puede pagarse con dos), no por artículo
-    por === "medio" ? leerTodo((a, b) => supabase.from("pagos").select("id, venta_id, monto, ajuste, medios_pago(nombre), ventas!inner(fecha)")
-      .gte("ventas.fecha", l.gte).lt("ventas.fecha", l.lt).order("id").range(a, b)) : Promise.resolve([]),
+    por === "medio" ? leerTodo((a, b) => supabase.from("pagos").select("id, venta_id, monto, ajuste, medios_pago(nombre), ventas!inner(fecha, anulada_en)")
+      .gte("ventas.fecha", l.gte).lt("ventas.fecha", l.lt).is("ventas.anulada_en", null).order("id").range(a, b)) : Promise.resolve([]),
   ]);
 
   const resumen = (lista: { venta_id: number | null; cantidad: number | null; importe_neto: number | null; margen_neto: number | null }[]) => {

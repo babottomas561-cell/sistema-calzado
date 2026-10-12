@@ -24,6 +24,9 @@ delete from stock;
 delete from promocion_alcances where promocion_id in (select id from promociones where nombre like '%(demo)');
 delete from promociones where nombre like '%(demo)';
 
+-- Historial de ajustes masivos de precios (apunta a los artículos)
+delete from ajuste_precio_items; delete from ajustes_precios;
+
 -- Catálogo
 delete from producto_imagenes; delete from producto_proveedores;
 delete from variantes; delete from productos;

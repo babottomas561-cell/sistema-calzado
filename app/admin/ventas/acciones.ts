@@ -27,3 +27,15 @@ export async function cotizarMostrador(items: { variante_id: number; cantidad: n
   const { data, error } = await supabase.rpc("cotizar", { p_items: items, p_canal: "mostrador" });
   return error || !data ? null : (data as unknown as CotizacionMostrador);
 }
+
+// Anula una venta del día. La base controla el permiso, el plazo, devuelve el stock y acomoda su pedido o presupuesto.
+export async function anularVenta(_: { error?: string; ok?: string }, f: FormData): Promise<{ error?: string; ok?: string }> {
+  const venta = Number(f.get("venta_id"));
+  const motivo = String(f.get("motivo") ?? "");
+  if (!motivo) return { error: "Elegí el motivo de la anulación" };
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("anular_venta", { p_venta: venta, p_motivo: motivo, p_comentario: String(f.get("comentario") ?? "").trim() || undefined });
+  if (error) return { error: error.message };
+  revalidatePath("/admin", "layout"); revalidatePath("/", "layout");
+  return { ok: "Venta anulada: el stock ya volvió" };
+}

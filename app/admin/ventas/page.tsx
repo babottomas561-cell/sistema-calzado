@@ -13,18 +13,21 @@ export default async function Ventas({ searchParams }: { searchParams: Promise<{
   const { periodo: p = "mes" } = await searchParams;
   const periodo = (p in PERIODOS ? p : "mes") as keyof typeof PERIODOS;
   const supabase = await crearCliente();
-  let consulta = supabase.from("ventas").select("id, comprobante, fecha, total, descuento, canal, pedido_id, clientes(nombre), vendedor:perfiles(nombre), venta_items(cantidad), ajuste_medio_pago, pagos(monto, medios_pago(nombre))")
+  let consulta = supabase.from("ventas").select("id, comprobante, fecha, total, descuento, canal, pedido_id, anulada_en, clientes(nombre), vendedor:perfiles!ventas_usuario_id_fkey(nombre), venta_items(cantidad), ajuste_medio_pago, pagos(monto, medios_pago(nombre))")
     .order("fecha", { ascending: false }).limit(500);
   if (periodo !== "todo") consulta = consulta.gte("fecha", inicioDe(periodo));
   const { data: ventas, error } = await consulta;
 
   const lista = ventas ?? [];
-  const total = lista.reduce((s, v) => s + Number(v.total), 0);
+  // Las anuladas se listan (tachadas) pero no suman en nada
+  const validas = lista.filter((v) => !v.anulada_en);
+  const anuladas = lista.length - validas.length;
+  const total = validas.reduce((s, v) => s + Number(v.total), 0);
   // Lo que entró por cada medio (ya con su descuento o recargo): es lo que tiene que haber en caja / banco
   type Pago = { monto: number; medios_pago: { nombre: string } };
   const porMedio = new Map<string, number>();
-  lista.forEach((v) => (v.pagos as unknown as Pago[]).forEach((p) => porMedio.set(p.medios_pago.nombre, (porMedio.get(p.medios_pago.nombre) ?? 0) + Number(p.monto))));
-  const ajustes = lista.reduce((s, v) => s + Number(v.ajuste_medio_pago), 0);
+  validas.forEach((v) => (v.pagos as unknown as Pago[]).forEach((p) => porMedio.set(p.medios_pago.nombre, (porMedio.get(p.medios_pago.nombre) ?? 0) + Number(p.monto))));
+  const ajustes = validas.reduce((s, v) => s + Number(v.ajuste_medio_pago), 0);
 
   return (
     <div className="space-y-4">
@@ -41,7 +44,7 @@ export default async function Ventas({ searchParams }: { searchParams: Promise<{
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-6">
         <div className="tarjeta col-span-2"><div className="etiqueta">Total {PERIODOS[periodo].toLowerCase()}</div>
-          <div className="text-2xl font-bold">{pesos(total)}</div><div className="text-xs text-texto-2">{lista.length} ventas{ajustes ? ` · ${ajustes < 0 ? "descuentos" : "recargos"} por medio de pago ${pesos(Math.abs(ajustes))}` : ""}</div></div>
+          <div className="text-2xl font-bold">{pesos(total)}</div><div className="text-xs text-texto-2">{validas.length} ventas{anuladas ? ` · ${anuladas} anulada${anuladas === 1 ? "" : "s"}` : ""}{ajustes ? ` · ${ajustes < 0 ? "descuentos" : "recargos"} por medio de pago ${pesos(Math.abs(ajustes))}` : ""}</div></div>
         {[...porMedio.entries()].sort((a, b) => b[1] - a[1]).map(([m, v]) => (
           <div key={m} className="tarjeta"><div className="etiqueta">{m}</div><div className="font-bold">{pesos(v)}</div></div>
         ))}
@@ -52,9 +55,9 @@ export default async function Ventas({ searchParams }: { searchParams: Promise<{
           <FilaMovil key={v.id} href={`/admin/ventas/${v.id}`}
             titulo={(v.clientes as unknown as { nombre: string } | null)?.nombre ?? "Sin cliente"}
             detalle={<>{fechaHora(v.fecha)} · <span className="font-mono">{v.comprobante}</span>{v.vendedor ? ` · ${(v.vendedor as { nombre: string | null }).nombre ?? ""}` : ""}</>}
-            extra={<><span className="chip bg-gray-100">{v.canal}</span>{v.pedido_id ? <span className="chip bg-blue-50 text-marca">pedido</span> : null}
+            extra={<>{v.anulada_en && <span className="chip bg-red-50 text-error">Anulada</span>}<span className="chip bg-gray-100">{v.canal}</span>{v.pedido_id ? <span className="chip bg-blue-50 text-marca">pedido</span> : null}
               <span className="chip bg-gray-100 text-texto-2">{[...new Set((v.pagos as unknown as Pago[]).map((p) => p.medios_pago.nombre))].join(" + ") || "—"}</span></>}
-            valor={<><div className="font-bold">{pesos(v.total)}</div><div className="text-xs text-texto-2">{(v.venta_items as { cantidad: number }[]).reduce((s, i) => s + i.cantidad, 0)} unidades</div></>} />
+            valor={<><div className={`font-bold ${v.anulada_en ? "text-texto-2 line-through" : ""}`}>{pesos(v.total)}</div><div className="text-xs text-texto-2">{(v.venta_items as { cantidad: number }[]).reduce((s, i) => s + i.cantidad, 0)} unidades</div></>} />
         ))}
       </ListaMovil>
       <div className="tarjeta hidden overflow-x-auto p-0 md:block">
@@ -62,15 +65,16 @@ export default async function Ventas({ searchParams }: { searchParams: Promise<{
           <thead><tr><th>Comprobante</th><th>Fecha</th><th>Cliente</th><th>Vendió</th><th>Canal</th><th>Pago</th><th className="text-right">Unidades</th><th className="text-right">Total</th></tr></thead>
           <tbody>
             {lista.map((v) => (
-              <tr key={v.id}>
-                <td><Link href={`/admin/ventas/${v.id}`} className="font-mono font-semibold text-marca">{v.comprobante}</Link></td>
+              <tr key={v.id} className={v.anulada_en ? "text-texto-2" : ""}>
+                <td><Link href={`/admin/ventas/${v.id}`} className="font-mono font-semibold text-marca">{v.comprobante}</Link>
+                  {v.anulada_en && <span className="chip ml-1.5 bg-red-50 text-error">Anulada</span>}</td>
                 <td>{fechaHora(v.fecha)}</td>
                 <td>{(v.clientes as unknown as { nombre: string } | null)?.nombre ?? "—"}</td>
                 <td className="text-texto-2">{(v.vendedor as { nombre: string | null } | null)?.nombre ?? "—"}</td>
                 <td>{v.canal}{v.pedido_id ? <span className="chip ml-1 bg-blue-50 text-marca">pedido</span> : null}</td>
                 <td className="text-texto-2">{[...new Set((v.pagos as unknown as Pago[]).map((p) => p.medios_pago.nombre))].join(" + ") || "—"}</td>
                 <td className="text-right">{(v.venta_items as { cantidad: number }[]).reduce((s, i) => s + i.cantidad, 0)}</td>
-                <td className="text-right font-semibold">{pesos(v.total)}</td>
+                <td className={`text-right font-semibold ${v.anulada_en ? "line-through" : ""}`}>{pesos(v.total)}</td>
               </tr>
             ))}
             {lista.length === 0 && <tr><td colSpan={8} className="py-8 text-center text-texto-2">No hay ventas en este período.</td></tr>}

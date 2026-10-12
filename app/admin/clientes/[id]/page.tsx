@@ -16,10 +16,10 @@ export default async function FichaCliente({ params }: { params: Promise<{ id: s
   const supabase = await crearCliente();
   const [{ data: c }, { data: ventas }, { data: pedidos }, { data: interacciones }, { data: items }] = await Promise.all([
     supabase.from("clientes").select("*").eq("id", Number(id)).single(),
-    supabase.from("ventas").select("id, comprobante, fecha, total, canal").eq("cliente_id", Number(id)).order("fecha", { ascending: false }),
+    supabase.from("ventas").select("id, comprobante, fecha, total, canal").eq("cliente_id", Number(id)).is("anulada_en", null).order("fecha", { ascending: false }),
     supabase.from("pedidos").select("id, comprobante, fecha, total, estado").eq("cliente_id", Number(id)).order("fecha", { ascending: false }),
     supabase.from("interacciones").select("*").eq("cliente_id", Number(id)).order("fecha", { ascending: false }),
-    supabase.from("v_venta_items").select("nombre, talle, cantidad").eq("cliente_id", Number(id)),
+    supabase.from("v_venta_items").select("nombre, talle, cantidad").eq("cliente_id", Number(id)).eq("anulada", false),
   ]);
   if (!c) notFound();
 

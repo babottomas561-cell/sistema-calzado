@@ -3,18 +3,21 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { crearCliente } from "@/lib/supabase/server";
 import { fechaHora, pesos, porcentaje } from "@/lib/formato";
-import { CircleCheck, Plus } from "lucide-react";
+import { Ban, CircleCheck, Plus } from "lucide-react";
 import Volver from "@/components/Volver";
 import { exigir } from "@/lib/exigir";
+import { puede } from "@/lib/permisos";
+import { esDeHoy, MOTIVOS_ANULACION } from "@/lib/ventas";
+import AnularVenta from "./AnularVenta";
 
 export default async function Venta({ params, searchParams }: {
   params: Promise<{ id: string }>; searchParams: Promise<{ nueva?: string }>;
 }) {
-  await exigir("ventas.registrar", "ventas.ver_todas");
+  const { permisos } = await exigir("ventas.registrar", "ventas.ver_todas");
   const [{ id }, { nueva }] = await Promise.all([params, searchParams]);
   const supabase = await crearCliente();
   const [{ data: v }, { data: items }, { data: presupuesto }] = await Promise.all([
-    supabase.from("ventas").select("*, clientes(id, nombre, telefono), vendedor:perfiles(nombre), pagos(base, ajuste_pct, ajuste, monto, cuotas, referencia, medios_pago(nombre))").eq("id", Number(id)).single(),
+    supabase.from("ventas").select("*, clientes(id, nombre, telefono), vendedor:perfiles!ventas_usuario_id_fkey(nombre), anulo:perfiles!ventas_anulada_por_fkey(nombre), pagos(base, ajuste_pct, ajuste, monto, cuotas, referencia, medios_pago(nombre))").eq("id", Number(id)).single(),
     supabase.from("v_venta_items").select("id, nombre, marca, talle, color, cantidad, precio_unitario, descuento_promo, promocion, subtotal").eq("venta_id", Number(id)),
     supabase.from("presupuestos").select("id, comprobante").eq("venta_id", Number(id)).maybeSingle(),
   ]);
@@ -22,6 +25,8 @@ export default async function Venta({ params, searchParams }: {
   const cliente = v.clientes as { id: number; nombre: string; telefono: string | null } | null;
   const pagos = v.pagos as unknown as { base: number; ajuste_pct: number; ajuste: number; monto: number; cuotas: number; referencia: string | null; medios_pago: { nombre: string } }[];
   const cobrado = pagos.reduce((s, p) => s + Number(p.base), 0);
+  const anulada = !!v.anulada_en;
+  const puedeAnular = !anulada && esDeHoy(v.fecha) && puede(permisos, "ventas.anular");
   const saldo = Number(v.subtotal) - Number(v.descuento) - Number(v.descuento_promociones) - cobrado;   // lo que no se cobró (cuenta corriente)
 
   return (
@@ -29,9 +34,20 @@ export default async function Venta({ params, searchParams }: {
       {nueva && <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-semibold text-ok"><CircleCheck size={18} /> Venta registrada. El stock ya se descontó.</div>}
       <div className="flex items-center justify-between">
         <Volver href="/admin/ventas">Ventas</Volver>
-        <Link href="/admin/ventas/nueva" className="boton-sec"><Plus size={16} /> Otra venta</Link>
+        <div className="flex items-center gap-1">
+          {puedeAnular && <AnularVenta venta={v.id} comprobante={v.comprobante ?? ""} dePedido={!!v.pedido_id} dePresupuesto={!!presupuesto} />}
+          <Link href="/admin/ventas/nueva" className="boton-sec"><Plus size={16} /> Otra venta</Link>
+        </div>
       </div>
-      <div className="tarjeta space-y-4">
+      {anulada && (
+        <div className="flex gap-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm">
+          <Ban size={18} className="mt-0.5 shrink-0 text-error" />
+          <div><p className="font-semibold text-error">Venta anulada · {MOTIVOS_ANULACION[v.motivo_anulacion ?? "otro"]}</p>
+            <p className="text-texto-2">{fechaHora(v.anulada_en!)}{(v.anulo as { nombre: string | null } | null)?.nombre ? ` · la anuló ${(v.anulo as { nombre: string | null }).nombre}` : ""}. El stock volvió y no cuenta en los informes.</p>
+            {v.comentario_anulacion && <p className="mt-1">«{v.comentario_anulacion}»</p>}</div>
+        </div>
+      )}
+      <div className={`tarjeta space-y-4 ${anulada ? "opacity-60" : ""}`}>
         <div className="flex justify-between">
           <div><p className="text-xs font-semibold uppercase tracking-wide text-texto-2">Comprobante de venta</p>
           <h1 className="text-xl font-bold"><span className="font-mono">{v.comprobante}</span></h1><p className="text-sm text-texto-2">{fechaHora(v.fecha)}{v.vendedor ? ` · vendió ${(v.vendedor as { nombre: string | null }).nombre ?? "—"}` : ""}</p></div>

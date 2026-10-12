@@ -13,7 +13,7 @@ export type Tipo = (typeof TIPOS)[number];
 export const INFO_TIPO: Record<Tipo, { nombre: string; icono: LucideIcon; ayuda: string }> = {
   portada: { nombre: "Portada", icono: LayoutTemplate, ayuda: "Lo primero que se ve: una campaña a pantalla completa (foto o video) o fotos del catálogo en movimiento." },
   cinta: { nombre: "Cinta que corre", icono: Megaphone, ayuda: "Una franja con frases y marcas que se desliza sola." },
-  accesos: { nombre: "Accesos", icono: PanelsTopLeft, ayuda: "Tarjetas grandes con foto que llevan a una parte de la tienda (Mujer, Hombre, Calzado…)." },
+  accesos: { nombre: "Accesos", icono: PanelsTopLeft, ayuda: "Fotos grandes que llevan a una parte de la tienda (Remeras, Camisas, Calzado…)." },
   productos: { nombre: "Vidriera", icono: ShoppingBag, ayuda: "Una fila de productos: los más vendidos, lo nuevo, lo que está en promoción o los que elijas." },
   promociones: { nombre: "Promociones", icono: Megaphone, ayuda: "Una franja de color con las promociones vigentes de la tienda. Si no hay ninguna, no aparece." },
   banner: { nombre: "Banner con foto", icono: Images, ayuda: "Una foto o video grande a lo ancho con un texto y un botón. Ideal para una temporada o un lanzamiento." },
@@ -92,11 +92,11 @@ export function leerContenido<T extends Tipo>(tipo: T, x: Json): Contenido[T] {
 export const NUEVA: { [K in Tipo]: { titulo: string | null; bajada?: string; boton_texto?: string; boton_enlace?: string; contenido: Contenido[K] } } = {
   portada: { titulo: "Nueva temporada", boton_texto: "Entrar a la tienda", boton_enlace: "/tienda", contenido: { estilo: "foto", marca_gigante: true } },
   cinta: { titulo: null, contenido: { frases: ["Reservá online", "Retirá sin cargo en el local"], marcas: true } },
-  accesos: { titulo: "Elegí por dónde empezar", boton_texto: "Ver todo", boton_enlace: "/tienda", contenido: { tarjetas: [{ titulo: "Mujer", filtro: { genero: "Mujer" } }, { titulo: "Hombre", filtro: { genero: "Hombre" } }] } },
+  accesos: { titulo: "Elegí por dónde empezar", boton_texto: "Ver todo", boton_enlace: "/tienda", contenido: { tarjetas: [{ titulo: "Remeras", filtro: { categoria: "Remera" } }, { titulo: "Camisas", filtro: { categoria: "Camisa" } }] } },
   productos: { titulo: "Lo nuevo", boton_texto: "Ver toda la tienda", boton_enlace: "/tienda", contenido: { criterio: "nuevos", cantidad: 8, productos: [] } },
   promociones: { titulo: "Ahora en la tienda", boton_texto: "Ver las prendas", boton_enlace: "/tienda", contenido: {} },
   banner: { titulo: "Llegó la nueva colección", bajada: "Pasá a verla al local o reservala online.", boton_texto: "Ver la colección", boton_enlace: "/tienda", contenido: { alineacion: "izquierda" } },
-  editorial: { titulo: "Para salir esta noche", bajada: "Vestidos, sacos y zapatos para cualquier ocasión.", boton_texto: "Ver la selección", boton_enlace: "/tienda", contenido: { lado: "izquierda", fondo: "claro", antetitulo: "La edición de la semana" } },
+  editorial: { titulo: "Para salir esta noche", bajada: "Camisas, sacos y jeans para cualquier ocasión.", boton_texto: "Ver la selección", boton_enlace: "/tienda", contenido: { lado: "izquierda", fondo: "claro", antetitulo: "La edición de la semana" } },
   pasos: { titulo: "Comprar es así de simple", contenido: { pasos: [{ titulo: "Elegí", texto: "Sumá lo que te guste al carrito." }, { titulo: "Reservá", texto: "Te lo guardamos y coordinamos por WhatsApp." }] } },
   local: { titulo: "Pasá a probártelo", bajada: "Te esperamos en el local.", boton_texto: "Entrar a la tienda", boton_enlace: "/tienda", contenido: {} },
 };

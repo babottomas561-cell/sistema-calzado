@@ -1109,17 +1109,23 @@ isOneToOne: false
                   ]
                 },"ventas": {
                   Row: {
-                    "ajuste_medio_pago": number,"canal": string,"cliente_id": number | null,"comprobante": string | null,"deposito_id": number,"descuento": number,"descuento_promociones": number,"fecha": string,"id": number,"notas": string | null,"numero": number | null,"pedido_id": number | null,"punto_venta": number,"subtotal": number,"total": number,"usuario_id": string | null,"vendedor_id": string | null
+                    "ajuste_medio_pago": number,"anulada_en": string | null,"anulada_por": string | null,"canal": string,"cliente_id": number | null,"comentario_anulacion": string | null,"comprobante": string | null,"deposito_id": number,"descuento": number,"descuento_promociones": number,"fecha": string,"id": number,"motivo_anulacion": string | null,"notas": string | null,"numero": number | null,"pedido_id": number | null,"punto_venta": number,"subtotal": number,"total": number,"usuario_id": string | null,"vendedor_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "ajuste_medio_pago"?: number,"canal"?: string,"cliente_id"?: number | null,"comprobante"?: never,"deposito_id": number,"descuento"?: number,"descuento_promociones"?: number,"fecha"?: string,"id"?: never,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal": number,"total": number,"usuario_id"?: string | null,"vendedor_id"?: string | null
+                    "ajuste_medio_pago"?: number,"anulada_en"?: string | null,"anulada_por"?: string | null,"canal"?: string,"cliente_id"?: number | null,"comentario_anulacion"?: string | null,"comprobante"?: never,"deposito_id": number,"descuento"?: number,"descuento_promociones"?: number,"fecha"?: string,"id"?: never,"motivo_anulacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal": number,"total": number,"usuario_id"?: string | null,"vendedor_id"?: string | null
                   }
                   Update: {
-                    "ajuste_medio_pago"?: number,"canal"?: string,"cliente_id"?: number | null,"comprobante"?: never,"deposito_id"?: number,"descuento"?: number,"descuento_promociones"?: number,"fecha"?: string,"id"?: never,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number,"usuario_id"?: string | null,"vendedor_id"?: string | null
+                    "ajuste_medio_pago"?: number,"anulada_en"?: string | null,"anulada_por"?: string | null,"canal"?: string,"cliente_id"?: number | null,"comentario_anulacion"?: string | null,"comprobante"?: never,"deposito_id"?: number,"descuento"?: number,"descuento_promociones"?: number,"fecha"?: string,"id"?: never,"motivo_anulacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number,"usuario_id"?: string | null,"vendedor_id"?: string | null
                   }
                   Relationships: [
                     {
+      foreignKeyName: "ventas_anulada_por_fkey"
+      columns: ["anulada_por"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "ventas_cliente_id_fkey"
       columns: ["cliente_id"]
 isOneToOne: false
@@ -1272,7 +1278,7 @@ isOneToOne: false
                   ]
                 },"v_venta_items": {
                   Row: {
-                    "canal": string | null,"cantidad": number | null,"cliente_id": number | null,"color": string | null,"costo_unitario": number | null,"descuento_promo": number | null,"fecha": string | null,"id": number | null,"marca": string | null,"margen": number | null,"nombre": string | null,"precio_unitario": number | null,"producto_id": number | null,"promocion": string | null,"promocion_id": number | null,"subtotal": number | null,"talle": string | null,"variante_id": number | null,"venta_id": number | null
+                    "anulada": boolean | null,"canal": string | null,"cantidad": number | null,"cliente_id": number | null,"color": string | null,"costo_unitario": number | null,"descuento_promo": number | null,"fecha": string | null,"id": number | null,"marca": string | null,"margen": number | null,"nombre": string | null,"precio_unitario": number | null,"producto_id": number | null,"promocion": string | null,"promocion_id": number | null,"subtotal": number | null,"talle": string | null,"variante_id": number | null,"venta_id": number | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -1403,6 +1409,9 @@ isOneToOne: false
                            },
 "anular_presupuesto":
 { Args: { "p_presupuesto": number }; Returns: undefined
+                           },
+"anular_venta":
+{ Args: { "p_comentario"?: string,"p_motivo": string,"p_venta": number }; Returns: undefined
                            },
 "asignar_rol":
 { Args: { "p_email": string,"p_rol": number }; Returns: string

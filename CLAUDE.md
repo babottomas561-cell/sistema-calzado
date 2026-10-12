@@ -1,7 +1,8 @@
 # Sistema de calzado — leer antes de tocar nada
 
-Sistema de gestión + tienda online para un local de **calzado y ropa**. Lo usa el dueño
-desde el celular. Hay dos caras sobre la misma base:
+Sistema de gestión + tienda online para un local de **ropa masculina** (más que nada de hombre, con
+calzado y accesorios). Lo usa el dueño desde el celular. Los ejemplos, la demo y los textos por defecto
+piensan en ropa de hombre. Hay dos caras sobre la misma base:
 
 - **Tienda** (`/`): catálogo público, registro, carrito, pedidos y seguimiento del pedido.
 - **Panel** (`/admin`, solo equipo): vender, compras, stock, pedidos, clientes (CRM),
@@ -43,6 +44,7 @@ una API de Next.** Lo que ya pisamos:
    | `ajustar_stock(p_variante, p_stock_nuevo, p_motivo, p_deposito)` | inventario, rotura, pérdida (con motivo obligatorio) |
    | `crear_pedido(p_items, p_entrega, p_direccion, p_medio_pago, p_notas, p_cliente, p_canal)` | pedido web: **reserva** stock; el precio y el % del medio de pago los pone la base, no el navegador |
    | `cambiar_estado_pedido(p_pedido, p_estado, p_comentario, p_pagos, p_motivo)` | `entregado` → se convierte en venta (respeta el % prometido); `cancelado` (motivo obligatorio) → libera la reserva |
+   | `anular_venta(p_venta, p_motivo, p_comentario)` | solo el mismo día y con `ventas.anular`: vuelve el stock (movimiento `anulacion`), la venta queda anulada y deja de contar; su pedido vuelve a estar listo (o se cancela si el cliente se arrepintió) y su presupuesto, vigente. Las pantallas y vistas que suman ventas filtran `anulada_en is null` |
    | `cancelar_mi_pedido(p_pedido, p_motivo, p_comentario)` | el cliente cancela el suyo mientras esté pendiente o confirmado. Los *listo para retirar* vencen solos a los `dias_retiro` (pg_cron, `vencer_pedidos_sin_retirar()`) |
 
    Se llaman con `supabase.rpc("registrar_venta", { p_items: [...], ... })`. Los parámetros
