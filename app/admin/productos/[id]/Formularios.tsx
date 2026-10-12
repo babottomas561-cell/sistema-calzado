@@ -2,11 +2,12 @@
 // Los tres formularios de la ficha: editar datos, agregar talles/colores y ajustar stock.
 import { useActionState } from "react";
 import { actualizarProducto, agregarVariantes, ajustarStock } from "../acciones";
+import { moverAFallados } from "../../fallados/acciones";
 import CamposProducto, { type Maestros } from "../CamposProducto";
 import ElegirTallesColores, { type Color, type Talle } from "../ElegirTallesColores";
 import { CircleCheck } from "lucide-react";
 
-type Variante = { id: number; talle: string; color: string; stock: number; sku: string | null };
+type Variante = { id: number; talle: string; color: string; stock: number; disponible: number; sku: string | null };
 type Producto = { id: number; codigo: string; nombre: string; marca_id: number | null; categoria_id: number | null; subcategoria_id: number | null; genero: string | null; descripcion: string | null;
   escala: string; temporada: string | null; material: string | null; imagen_url: string | null; precio_compra: number; precio_venta: number; activo: boolean; publicado_web: boolean };
 
@@ -23,6 +24,7 @@ export default function Formularios({ producto, variantes, maestros, talles, col
   const [eDatos, aDatos, cDatos] = useActionState(actualizarProducto, {});
   const [eVar, aVar, cVar] = useActionState(agregarVariantes, {});
   const [eAj, aAj, cAj] = useActionState(ajustarStock, {});
+  const [eFa, aFa, cFa] = useActionState(moverAFallados, {});
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
@@ -56,6 +58,21 @@ export default function Formularios({ producto, variantes, maestros, talles, col
         </div>
         <Mensaje e={eAj} />
         <button className="boton-sec" disabled={cAj || variantes.length === 0}>Ajustar</button>
+      </form>}
+
+      {ajusta && <form action={aFa} className="tarjeta space-y-3">
+        <h2 className="font-semibold">Mover a fallados</h2>
+        <p className="text-xs text-texto-2">Algo roto, manchado o que vino mal: se aparta (no se vende) y queda en la <a href="/admin/fallados" className="text-marca">bandeja de fallados</a> hasta que se arregla, se devuelve al proveedor o se da de baja.</p>
+        <input type="hidden" name="producto_id" value={producto.id} />
+        <select name="variante_id" required className="campo">
+          {variantes.filter((v) => v.disponible > 0).map((v) => <option key={v.id} value={v.id}>Talle {v.talle} · {v.color} (disponibles {v.disponible})</option>)}
+        </select>
+        <div className="grid grid-cols-[6rem_1fr] gap-3">
+          <div><label className="etiqueta">Cuántas</label><input name="cantidad" type="number" min="1" defaultValue={1} required className="campo" /></div>
+          <div><label className="etiqueta">Qué tiene</label><input name="motivo" required placeholder="Costura abierta, mancha, suela despegada…" className="campo" /></div>
+        </div>
+        <Mensaje e={eFa} />
+        <button className="boton-sec" disabled={cFa || !variantes.some((v) => v.disponible > 0)}>Mover a fallados</button>
       </form>}
     </div>
   );

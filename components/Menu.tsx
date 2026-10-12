@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   BadgePercent, BookUser, Boxes, ChartBar, ExternalLink, FileText, PackageSearch, ShieldCheck, Tags, House, LogOut, Menu as IconoMenu, MessageCircleMore, Package, PackagePlus,
-  Plus, Receipt, Settings2, ShoppingBag, Store, Truck, Users, X, type LucideIcon,
+  PackageX, Plus, Receipt, Settings2, ShoppingBag, Store, Truck, Users, X, type LucideIcon,
 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { puede, type Permiso } from "@/lib/permisos";
@@ -25,6 +25,7 @@ const GRUPOS: { titulo?: string; items: Item[] }[] = [
     { href: "/admin/stock", texto: "Stock", icono: Boxes, permisos: ["stock.ver"] },
     { href: "/admin/precios", texto: "Precios", icono: Tags, permisos: ["precios.editar", "proveedores.gestionar"] },
     { href: "/admin/promociones", texto: "Promociones", icono: BadgePercent, permisos: ["promociones.gestionar"] },
+    { href: "/admin/fallados", texto: "Fallados", icono: PackageX, permisos: ["stock.ver"] },
     { href: "/admin/reposicion", texto: "Reposición", icono: PackageSearch, permisos: ["compras.registrar", "stock.ver"] },
   ] },
   { titulo: "Análisis", items: [{ href: "/admin/informes", texto: "Informes", icono: ChartBar, permisos: ["informes.ventas", "informes.stock"] }] },

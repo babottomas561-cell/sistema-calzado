@@ -153,6 +153,11 @@ calcula por la fecha. Se escribe solo por esas funciones (permiso `ventas.regist
 
 ## Stock
 
+Los depósitos tienen `vendible`: «Local» vende, «Fallados» no (un trigger frena ahí ventas, compras, ajustes y
+reservas). `v_stock` y `v_catalogo` cuentan solo los que venden. `fallados` guarda cada tanda apartada (motivo, costo
+de ese momento, origen) hasta su salida: `arreglado`, `proveedor` (crédito a su costo) o `baja` (pérdida).
+Tipos de movimiento: `venta`, `compra`, `ajuste`, `anulacion`, `transferencia`, `devolucion_proveedor`, `baja`.
+
 `stock(variante, depósito)` tiene `cantidad` y `reservado` (comprometido en pedidos web).
 `disponible = cantidad − reservado`. Solo lo mueven las funciones (`registrar_venta`,
 `registrar_compra`, `ajustar_stock`, `crear_pedido`, `cambiar_estado_pedido`), y cada movimiento

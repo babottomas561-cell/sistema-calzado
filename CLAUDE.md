@@ -45,13 +45,16 @@ una API de Next.** Lo que ya pisamos:
    | `crear_pedido(p_items, p_entrega, p_direccion, p_medio_pago, p_notas, p_cliente, p_canal)` | pedido web: **reserva** stock; el precio y el % del medio de pago los pone la base, no el navegador |
    | `cambiar_estado_pedido(p_pedido, p_estado, p_comentario, p_pagos, p_motivo)` | `entregado` → se convierte en venta (respeta el % prometido); `cancelado` (motivo obligatorio) → libera la reserva |
    | `anular_venta(p_venta, p_motivo, p_comentario)` | solo el mismo día y con `ventas.anular`: vuelve el stock (movimiento `anulacion`), la venta queda anulada y deja de contar; su pedido vuelve a estar listo (o se cancela si el cliente se arrepintió) y su presupuesto, vigente. Las pantallas y vistas que suman ventas filtran `anulada_en is null` |
+   | `mover_a_fallados(p_variante, p_cantidad, p_motivo)` · `resolver_fallado(p_fallado, p_salida, p_cantidad, p_proveedor, p_nota)` | aparta lo roto en «Fallados» (no se vende) y lo resuelve: `arreglado` (vuelve), `proveedor` (crédito a su costo) o `baja` (pérdida). Permiso `stock.ajustar` |
    | `cancelar_mi_pedido(p_pedido, p_motivo, p_comentario)` | el cliente cancela el suyo mientras esté pendiente o confirmado. Los *listo para retirar* vencen solos a los `dias_retiro` (pg_cron, `vencer_pedidos_sin_retirar()`) |
 
    Se llaman con `supabase.rpc("registrar_venta", { p_items: [...], ... })`. Los parámetros
    llevan prefijo `p_`.
 
 2. **`disponible = cantidad − reservado`.** Para vender o mostrar en la tienda se usa
-   `disponible`, no `cantidad`. Lo calculan las vistas `v_stock` y `v_catalogo`.
+   `disponible`, no `cantidad`. Lo calculan las vistas `v_stock` y `v_catalogo`, **solo con los depósitos que
+   venden** (`depositos.vendible`). «Fallados» no vende: un trigger frena ventas, compras, ajustes y reservas ahí;
+   lo fallado se ve en `v_fallados` y se mueve con `mover_a_fallados()` / `resolver_fallado()`.
 
 3. **Nunca escribir un `id` a mano.** Todos los `id` son `generated always as identity`.
    Lo que ve la gente es el **`codigo`**, y si viene vacío lo genera la base:
@@ -152,6 +155,7 @@ app/admin/             panel del equipo (el layout verifica que sea staff; cada 
   compras/nueva/       cargar factura de compra POR CURVA: cabecera, grilla talle×color por modelo,
                        un costo por modelo, control contra el total de la factura, alta rápida de artículos
   stock/  pedidos/  clientes/  seguimientos/  proveedores/
+  fallados/            bandeja de fallados: lo apartado por roto, y su salida (arreglado, al proveedor, baja)
   reposicion/          pedido sugerido por talle según el ritmo de venta (reposicion_sugerida), copiable a WhatsApp
   precios/             ajuste masivo de precios de venta y compra (ajustar_precios), historial y deshacer
   tienda/              tienda online: secciones de la portada (orden, ocultar, editar, fotos) y datos de la tienda

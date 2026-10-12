@@ -20,6 +20,9 @@ export default async function StockValorizado({ searchParams }: { searchParams: 
   const { por: p = "rubro" } = await searchParams;
   const por = (p in POR ? p : "rubro") as Por;
   const supabase = await crearCliente();
+  // Lo fallado no está en v_stock (no se vende): se muestra aparte
+  const { data: fallados } = await supabase.from("v_fallados").select("cantidad, valor_costo").eq("estado", "pendiente");
+  const fall = { unidades: (fallados ?? []).reduce((s, f) => s + (f.cantidad ?? 0), 0), costo: (fallados ?? []).reduce((s, f) => s + Number(f.valor_costo ?? 0), 0) };
   const filas = await leerTodo((a, b) => supabase.from("v_stock")
     .select("variante_id, producto_id, codigo, nombre, marca, categoria, talle, talle_orden, color, escala, genero, temporada, linea, stock, precio_compra, precio_venta")
     .order("variante_id").range(a, b));
@@ -81,6 +84,10 @@ export default async function StockValorizado({ searchParams }: { searchParams: 
             <div className="text-xl font-bold tabular-nums md:text-2xl">{k.valor}</div><div className="text-xs text-texto-2">{k.detalle}</div></div>
         ))}
       </div>
+      {fall.unidades > 0 && (
+        <p className="text-sm text-texto-2">Aparte, hay <b>{numero(fall.unidades)} {fall.unidades === 1 ? "unidad" : "unidades"} en fallados</b>{conCostos ? ` (${pesos(fall.costo)} a costo)` : ""} que no se cuentan acá porque no están a la venta.{" "}
+          <Link href="/admin/fallados" className="text-marca">Ver la bandeja</Link></p>
+      )}
 
       {(sinCosto.length > 0 || sinPrecio.length > 0) && (
         <div className="space-y-1 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-alerta">

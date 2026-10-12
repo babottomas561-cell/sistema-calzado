@@ -12,21 +12,27 @@ import Volver from "@/components/Volver";
 import GrillaStock, { LeyendaStock } from "@/components/GrillaStock";
 import { exigir } from "@/lib/exigir";
 
+// Cómo se nombra cada tipo de movimiento de stock en el historial
+const TIPO_MOV: Record<string, string> = { venta: "Venta", compra: "Compra", ajuste: "Ajuste", anulacion: "Anulación", transferencia: "Traspaso",
+  devolucion_proveedor: "Al proveedor", baja: "Baja" };
+
 export default async function Producto({ params }: { params: Promise<{ id: string }> }) {
   const { permisos } = await exigir("costos.ver");
   const { id } = await params;
   const supabase = await crearCliente();
-  const [{ data: p }, { data: filas }, { data: movimientos }, maestros, { data: precios }, { data: proveedores }, { data: imagenes }] = await Promise.all([
+  const [{ data: p }, { data: filas }, { data: movimientos }, maestros, { data: precios }, { data: proveedores }, { data: imagenes }, { data: fallados }] = await Promise.all([
     supabase.from("productos").select("*, marcas(nombre), categorias(nombre), subcategorias(nombre)").eq("id", Number(id)).single(),
     supabase.from("v_stock").select("variante_id, talle, talle_orden, color, color_hex, sku, stock, reservado, disponible, stock_minimo").eq("producto_id", Number(id)),
-    supabase.from("movimientos_stock").select("id, fecha, tipo, cantidad, motivo, venta_id, compra_id, ventas(comprobante), compras(comprobante), variantes!inner(producto_id, talles(nombre), colores(nombre))")
+    supabase.from("movimientos_stock").select("id, fecha, tipo, cantidad, motivo, venta_id, compra_id, ventas(comprobante), compras(comprobante), depositos(nombre, vendible), variantes!inner(producto_id, talles(nombre), colores(nombre))")
       .eq("variantes.producto_id", Number(id)).order("fecha", { ascending: false }).limit(30),
     leerMaestros(),
     supabase.from("producto_proveedores").select("id, proveedor_id, codigo_proveedor, precio_lista, bonificacion_pct, precio_compra, principal, actualizado_en, proveedores(nombre)")
       .eq("producto_id", Number(id)).order("precio_compra"),
     supabase.from("proveedores").select("id, nombre").order("nombre"),
     supabase.from("producto_imagenes").select("id, url, principal").eq("producto_id", Number(id)).order("orden").order("id"),
+    supabase.from("v_fallados").select("cantidad").eq("producto_id", Number(id)).eq("estado", "pendiente"),
   ]);
+  const enFallados = (fallados ?? []).reduce((s, f) => s + (f.cantidad ?? 0), 0);
   if (!p) notFound();
 
   // Una fila por variante (con un solo depósito, v_stock ya trae una fila por variante)
@@ -43,6 +49,7 @@ export default async function Producto({ params }: { params: Promise<{ id: strin
       <div><Volver href="/admin/productos">Productos</Volver>
         <h1 className="text-2xl font-bold"><span className="mr-2 font-mono text-lg text-texto-2">{p.codigo}</span>{p.nombre}</h1>
         <p className="text-sm text-texto-2">{[marca, categoria, subcategoria, p.genero].filter(Boolean).join(" · ")} · {total} unidades en stock
+          {enFallados > 0 && <> · <Link href="/admin/fallados" className="font-semibold text-alerta">{enFallados} en fallados</Link></>}
           {p.publicado_web ? <> · <a href={`/producto/${p.id}`} target="_blank" className="text-marca">ver en la tienda <ExternalLink size={13} className="inline" /></a></> : " · no publicado en la tienda"}</p></div>
 
       <Fotos productoId={p.id} imagenes={imagenes ?? []} />
@@ -69,7 +76,7 @@ export default async function Producto({ params }: { params: Promise<{ id: strin
               const v = { talle: mv.talles.nombre, color: mv.colores.nombre };
               return (
                 <tr key={m.id}>
-                  <td>{fechaHora(m.fecha)}</td><td>{v.talle} · {v.color}</td><td className="capitalize">{m.tipo}</td>
+                  <td>{fechaHora(m.fecha)}</td><td>{v.talle} · {v.color}</td><td className="capitalize">{TIPO_MOV[m.tipo] ?? m.tipo}{(m.depositos as unknown as { nombre: string; vendible: boolean } | null)?.vendible === false && <span className="chip ml-1 bg-amber-100 text-alerta">{(m.depositos as unknown as { nombre: string }).nombre}</span>}</td>
                   <td className={`text-right font-semibold ${m.cantidad > 0 ? "text-ok" : "text-error"}`}>{m.cantidad > 0 ? "+" : ""}{m.cantidad}</td>
                   <td>{m.venta_id ? <Link href={`/admin/ventas/${m.venta_id}`} className="font-mono text-marca">Venta {(m.ventas as unknown as { comprobante: string } | null)?.comprobante}</Link>
                     : m.compra_id ? <Link href={`/admin/compras/${m.compra_id}`} className="font-mono text-marca">Ingreso {(m.compras as unknown as { comprobante: string } | null)?.comprobante}</Link> : m.motivo}</td>

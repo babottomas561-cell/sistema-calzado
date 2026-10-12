@@ -57,6 +57,12 @@ isOneToOne: false
       foreignKeyName: "ajuste_precio_items_producto_id_fkey"
       columns: ["producto_id"]
 isOneToOne: false
+      referencedRelation: "v_fallados"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "ajuste_precio_items_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
       referencedRelation: "v_promos_tienda"
       referencedColumns: ["producto_id"]
     },{
@@ -239,17 +245,91 @@ isOneToOne: false
                   ]
                 },"depositos": {
                   Row: {
-                    "activo": boolean,"id": number,"nombre": string
+                    "activo": boolean,"id": number,"nombre": string,"vendible": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "activo"?: boolean,"id"?: never,"nombre": string
+                    "activo"?: boolean,"id"?: never,"nombre": string,"vendible"?: boolean
                   }
                   Update: {
-                    "activo"?: boolean,"id"?: never,"nombre"?: string
+                    "activo"?: boolean,"id"?: never,"nombre"?: string,"vendible"?: boolean
                   }
                   Relationships: [
                     
+                  ]
+                },"fallados": {
+                  Row: {
+                    "cantidad": number,"costo_unitario": number,"deposito_origen_id": number,"estado": string,"fecha": string,"id": number,"motivo": string,"nota": string | null,"origen": string,"proveedor_id": number | null,"resuelto_en": string | null,"resuelto_por": string | null,"usuario_id": string | null,"variante_id": number,"venta_id": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cantidad": number,"costo_unitario"?: number,"deposito_origen_id": number,"estado"?: string,"fecha"?: string,"id"?: never,"motivo": string,"nota"?: string | null,"origen": string,"proveedor_id"?: number | null,"resuelto_en"?: string | null,"resuelto_por"?: string | null,"usuario_id"?: string | null,"variante_id": number,"venta_id"?: number | null
+                  }
+                  Update: {
+                    "cantidad"?: number,"costo_unitario"?: number,"deposito_origen_id"?: number,"estado"?: string,"fecha"?: string,"id"?: never,"motivo"?: string,"nota"?: string | null,"origen"?: string,"proveedor_id"?: number | null,"resuelto_en"?: string | null,"resuelto_por"?: string | null,"usuario_id"?: string | null,"variante_id"?: number,"venta_id"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "fallados_deposito_origen_id_fkey"
+      columns: ["deposito_origen_id"]
+isOneToOne: false
+      referencedRelation: "depositos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fallados_deposito_origen_id_fkey"
+      columns: ["deposito_origen_id"]
+isOneToOne: false
+      referencedRelation: "v_stock"
+      referencedColumns: ["deposito_id"]
+    },{
+      foreignKeyName: "fallados_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "proveedores"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fallados_resuelto_por_fkey"
+      columns: ["resuelto_por"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fallados_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fallados_variante_id_fkey"
+      columns: ["variante_id"]
+isOneToOne: false
+      referencedRelation: "v_catalogo"
+      referencedColumns: ["variante_id"]
+    },{
+      foreignKeyName: "fallados_variante_id_fkey"
+      columns: ["variante_id"]
+isOneToOne: false
+      referencedRelation: "v_stock"
+      referencedColumns: ["variante_id"]
+    },{
+      foreignKeyName: "fallados_variante_id_fkey"
+      columns: ["variante_id"]
+isOneToOne: false
+      referencedRelation: "variantes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fallados_venta_id_fkey"
+      columns: ["venta_id"]
+isOneToOne: false
+      referencedRelation: "v_hechos_ventas"
+      referencedColumns: ["venta_id"]
+    },{
+      foreignKeyName: "fallados_venta_id_fkey"
+      columns: ["venta_id"]
+isOneToOne: false
+      referencedRelation: "ventas"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"inicio_secciones": {
                   Row: {
@@ -709,6 +789,12 @@ isOneToOne: false
       foreignKeyName: "producto_imagenes_producto_id_fkey"
       columns: ["producto_id"]
 isOneToOne: false
+      referencedRelation: "v_fallados"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "producto_imagenes_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
       referencedRelation: "v_promos_tienda"
       referencedColumns: ["producto_id"]
     },{
@@ -748,6 +834,12 @@ isOneToOne: false
       columns: ["producto_id"]
 isOneToOne: false
       referencedRelation: "v_catalogo"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "producto_proveedores_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_fallados"
       referencedColumns: ["producto_id"]
     },{
       foreignKeyName: "producto_proveedores_producto_id_fkey"
@@ -842,6 +934,12 @@ isOneToOne: false
       columns: ["producto_id"]
 isOneToOne: false
       referencedRelation: "v_catalogo"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "promocion_alcances_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_fallados"
       referencedColumns: ["producto_id"]
     },{
       foreignKeyName: "promocion_alcances_producto_id_fkey"
@@ -1035,6 +1133,12 @@ isOneToOne: false
       foreignKeyName: "variantes_producto_id_fkey"
       columns: ["producto_id"]
 isOneToOne: false
+      referencedRelation: "v_fallados"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "variantes_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
       referencedRelation: "v_promos_tienda"
       referencedColumns: ["producto_id"]
     },{
@@ -1174,6 +1278,56 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"v_fallados": {
+                  Row: {
+                    "cantidad": number | null,"cargado_por": string | null,"codigo": string | null,"color": string | null,"color_hex": string | null,"costo_unitario": number | null,"estado": string | null,"fecha": string | null,"id": number | null,"imagen_url": string | null,"marca": string | null,"motivo": string | null,"nombre": string | null,"nota": string | null,"origen": string | null,"producto_id": number | null,"proveedor": string | null,"proveedor_id": number | null,"proveedor_principal": string | null,"proveedor_principal_id": number | null,"resuelto_en": string | null,"resuelto_por": string | null,"sku": string | null,"talle": string | null,"talle_orden": number | null,"valor_costo": number | null,"variante_id": number | null,"venta_comprobante": string | null,"venta_id": number | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "fallados_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "proveedores"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fallados_variante_id_fkey"
+      columns: ["variante_id"]
+isOneToOne: false
+      referencedRelation: "v_catalogo"
+      referencedColumns: ["variante_id"]
+    },{
+      foreignKeyName: "fallados_variante_id_fkey"
+      columns: ["variante_id"]
+isOneToOne: false
+      referencedRelation: "v_stock"
+      referencedColumns: ["variante_id"]
+    },{
+      foreignKeyName: "fallados_variante_id_fkey"
+      columns: ["variante_id"]
+isOneToOne: false
+      referencedRelation: "variantes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fallados_venta_id_fkey"
+      columns: ["venta_id"]
+isOneToOne: false
+      referencedRelation: "v_hechos_ventas"
+      referencedColumns: ["venta_id"]
+    },{
+      foreignKeyName: "fallados_venta_id_fkey"
+      columns: ["venta_id"]
+isOneToOne: false
+      referencedRelation: "ventas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "producto_proveedores_proveedor_id_fkey"
+      columns: ["proveedor_principal_id"]
+isOneToOne: false
+      referencedRelation: "proveedores"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"v_hechos_ventas": {
                   Row: {
                     "anio": number | null,"articulo": string | null,"canal": string | null,"cantidad": number | null,"cliente": string | null,"cliente_codigo": number | null,"cliente_origen": string | null,"color": string | null,"comprobante": string | null,"costo": number | null,"costo_unitario": number | null,"deposito": string | null,"descuento_promo": number | null,"dia": string | null,"dia_semana": number | null,"escala": string | null,"fecha": string | null,"genero": string | null,"id": number | null,"importe": number | null,"importe_neto": number | null,"linea": string | null,"marca": string | null,"margen": number | null,"margen_neto": number | null,"material": string | null,"mes": number | null,"modelo": string | null,"precio_unitario": number | null,"promocion": string | null,"promocion_id": number | null,"rubro": string | null,"rubro_codigo": string | null,"sku": string | null,"subrubro": string | null,"talle": string | null,"talle_orden": number | null,"temporada": string | null,"vendedor": string | null,"vendedor_id": string | null,"venta_id": number | null,"vino_de_pedido": boolean | null
@@ -1211,6 +1365,12 @@ isOneToOne: false
       columns: ["producto_id"]
 isOneToOne: false
       referencedRelation: "v_catalogo"
+      referencedColumns: ["producto_id"]
+    },{
+      foreignKeyName: "producto_imagenes_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "v_fallados"
       referencedColumns: ["producto_id"]
     },{
       foreignKeyName: "producto_imagenes_producto_id_fkey"
@@ -1440,6 +1600,9 @@ isOneToOne: false
 "crear_presupuesto":
 { Args: { "p_canal"?: string,"p_cliente"?: number,"p_descuento"?: number,"p_items": Json,"p_medio_pago"?: number,"p_notas"?: string,"p_validez_dias"?: number }; Returns: number
                            },
+"deposito_fallados":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "deposito_principal":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
@@ -1470,6 +1633,9 @@ isOneToOne: false
               "descuento_max_pct": number,"permisos": (string)[],"rol": string
             }[]
                            },
+"mover_a_fallados":
+{ Args: { "p_cantidad": number,"p_deposito"?: number,"p_motivo": string,"p_variante": number }; Returns: number
+                           },
 "orden_escala":
 { Args: { "p_escala": string }; Returns: number
                            },
@@ -1495,6 +1661,9 @@ isOneToOne: false
 { Args: { "p_dias_cobertura"?: number,"p_dias_ventas"?: number }; Returns: {
               "codigo": string,"color": string,"color_hex": string,"costo_unitario": number,"disponible": number,"marca": string,"nombre": string,"producto_id": number,"proveedor": string,"proveedor_id": number,"sugerido": number,"talle": string,"talle_orden": number,"variante_id": number,"vendidos": number
             }[]
+                           },
+"resolver_fallado":
+{ Args: { "p_cantidad"?: number,"p_fallado": number,"p_nota"?: string,"p_proveedor"?: number,"p_salida": string }; Returns: number
                            },
 "retirar_hasta":
 { Args: { "p_pedido": number }; Returns: string
