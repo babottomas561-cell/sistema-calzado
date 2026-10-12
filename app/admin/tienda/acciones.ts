@@ -3,6 +3,7 @@
 // controla la base (permiso tienda.editar); acá se valida la forma de cada sección (lib/inicio.ts).
 import { revalidatePath } from "next/cache";
 import { crearCliente } from "@/lib/supabase/server";
+import { sirveParaBotones } from "@/lib/color";
 import { enlaceValido, leerContenido, NUEVA, TIPOS, type Tipo } from "@/lib/inicio";
 
 export type Estado = { error?: string; ok?: string };
@@ -138,4 +139,29 @@ export async function guardarIcono(url: string | null, ruta: string | null): Pro
   if (antes?.icono_ruta && antes.icono_ruta !== ruta) await borrarFoto(supabase, antes.icono_ruta);
   refrescar();
   return { ok: url ? "Ícono guardado (en la pestaña se ve al recargar)" : "Volvió a la inicial de la tienda" };
+}
+
+// Logo de la tienda (claro, o el de fondo oscuro para la cabecera sobre una foto): lo sube el navegador al bucket «tienda»
+// y acá se guarda y se borra el anterior. Sin url = volver al nombre en letras.
+export async function guardarLogo(cual: "claro" | "oscuro", url: string | null, ruta: string | null): Promise<Estado> {
+  const supabase = await crearCliente();
+  if (url && !url.startsWith("https://") && !url.startsWith("http://127.0.0.1") && !url.startsWith("http://localhost")) return { error: "La imagen no es válida" };
+  const { data: antes } = await supabase.from("configuracion_tienda").select("logo_ruta, logo_oscuro_ruta").single();
+  const { error } = await supabase.from("configuracion_tienda").update(
+    cual === "claro" ? { logo_url: url, logo_ruta: ruta } : { logo_oscuro_url: url, logo_oscuro_ruta: ruta }).eq("unica", true);
+  if (error) return { error: error.message };
+  const rutaVieja = cual === "claro" ? antes?.logo_ruta : antes?.logo_oscuro_ruta;
+  if (rutaVieja && rutaVieja !== ruta) await borrarFoto(supabase, rutaVieja);
+  refrescar();
+  return { ok: url ? "Logo guardado" : "Volvió al nombre en letras" };
+}
+
+// Color de la marca (#rrggbb): vacío = el de siempre. Tiene que dejar leer el texto blanco de los botones.
+export async function guardarColor(hex: string | null): Promise<Estado> {
+  if (hex !== null && !sirveParaBotones(hex)) return { error: "Ese color es muy claro: el texto blanco de los botones no se lee. Elegí uno más oscuro." };
+  const supabase = await crearCliente();
+  const { error } = await supabase.from("configuracion_tienda").update({ color_marca: hex }).eq("unica", true);
+  if (error) return { error: error.message };
+  refrescar();
+  return { ok: hex ? "Color guardado" : "Volvió al color de siempre" };
 }

@@ -7,6 +7,7 @@ import { exigir } from "@/lib/exigir";
 import { leerContenido, type Seccion, type Tipo } from "@/lib/inicio";
 import FormTienda from "./FormTienda";
 import IconoTienda from "./IconoTienda";
+import IdentidadTienda from "./IdentidadTienda";
 import ListaSecciones from "./ListaSecciones";
 
 export default async function TiendaOnline() {
@@ -14,7 +15,7 @@ export default async function TiendaOnline() {
   const supabase = await crearCliente();
   const [{ data: secciones }, { data: tienda }, { data: catalogo }] = await Promise.all([
     supabase.from("inicio_secciones").select("id, tipo, orden, visible, titulo, bajada, boton_texto, boton_enlace, imagen_url, imagen_ruta, contenido").order("orden").order("id"),
-    supabase.from("configuracion_tienda").select("icono_url, nombre, avisos, aviso_enlace, instagram, whatsapp, direccion_retiro, horario, dias_retiro, dias_cambio, dias_saldo").single(),
+    supabase.from("configuracion_tienda").select("icono_url, logo_url, logo_oscuro_url, color_marca, nombre, avisos, aviso_enlace, instagram, whatsapp, direccion_retiro, horario, dias_retiro, dias_cambio, dias_saldo").single(),
     supabase.from("v_catalogo").select("producto_id, nombre, marca, categoria, genero, linea, imagen_url"),
   ]);
   const lista = (secciones ?? []).map((s) => ({ ...s, tipo: s.tipo as Tipo, contenido: leerContenido(s.tipo as Tipo, s.contenido) })) as Seccion[];
@@ -42,6 +43,13 @@ export default async function TiendaOnline() {
           <p className="text-sm text-texto-2">En este orden, de arriba hacia abajo. Con el ojo la ocultás sin borrarla.</p></div>
         <ListaSecciones secciones={lista} opciones={opciones} />
       </section>
+
+      {tienda && (
+        <section className="space-y-4 overflow-hidden rounded-xl border border-borde bg-white p-5 shadow-sm">
+          <div><h2 className="font-semibold">Identidad</h2><p className="text-sm text-texto-2">El logo y el color de tu marca: se ven en la tienda, en el panel y en los mails.</p></div>
+          <IdentidadTienda logo={tienda.logo_url} logoOscuro={tienda.logo_oscuro_url} color={tienda.color_marca} />
+        </section>
+      )}
 
       <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
         <div className="border-b border-borde px-5 py-4"><h2 className="font-semibold">Datos de la tienda</h2>

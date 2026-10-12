@@ -216,6 +216,13 @@ una API de Next.** Lo que ya pisamos:
     la tienda) y **los tiene que revisar un abogado**. El botón de arrepentimiento (`/arrepentimiento`, público, 10 días) llama a
     `registrar_arrepentimiento()` y devuelve un código; solo se vincula a un pedido si el email coincide con el de ese cliente.
 
+21. **Identidad de la tienda** (`/admin/tienda` → Identidad, `tienda.editar`): `configuracion_tienda.logo_url` / `logo_oscuro_url` (este
+    último solo para la cabecera transparente sobre una campaña con foto: `.logo-claro` / `.logo-oscuro` en `globals.css`) y
+    `color_marca` (`#rrggbb`). Los logos se achican en el navegador y van al bucket `tienda`. El color pisa `--color-marca` en el panel y
+    en la tienda desde `app/layout.tsx` (`lib/color.ts`, `cssMarca`): solo se aplica si el texto blanco se lee sobre él (contraste ≥ 4,5).
+    Los mails usan el mismo color y logo (`_correo_plantilla`; se reaplican con `cuentas_aplicar()` al guardar en Integraciones → Correo).
+    No escribir `#1d4ed8` ni `blue-800` a mano: usar `bg-marca` / `bg-marca-oscuro`.
+
 ---
 
 ## Dónde está cada cosa

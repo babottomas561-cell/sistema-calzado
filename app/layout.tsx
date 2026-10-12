@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { datosTienda } from "@/lib/tienda";
+import { cssMarca } from "@/lib/color";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { nombre, icono_url } = await datosTienda();
@@ -11,9 +12,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // El color de la marca que eligió el local pisa el de siempre (solo si el texto blanco se lee sobre él)
+  const css = cssMarca((await datosTienda()).color_marca);
   return (
     <html lang="es">
+      <head>{css && <style dangerouslySetInnerHTML={{ __html: css }} />}</head>
       <body className="min-h-screen antialiased">{children}</body>
     </html>
   );

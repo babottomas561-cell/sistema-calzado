@@ -6,13 +6,13 @@ import { crearCliente } from "@/lib/supabase/server";
 
 export async function GET() {
   const supabase = await crearCliente();
-  const { data } = await supabase.from("configuracion_tienda").select("nombre, icono_url").single();
+  const { data } = await supabase.from("configuracion_tienda").select("nombre, icono_url, color_marca").single();
   if (data?.icono_url) return NextResponse.redirect(data.icono_url, { status: 307 });
   const inicial = (data?.nombre ?? "M").trim().charAt(0).toUpperCase() || "M";
   return new ImageResponse(
     (
       <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center",
-        background: "#1d4ed8", color: "white", fontSize: 120, fontWeight: 800, borderRadius: 40 }}>{inicial}</div>
+        background: data?.color_marca ?? "#1d4ed8", color: "white", fontSize: 120, fontWeight: 800, borderRadius: 40 }}>{inicial}</div>
     ),
     { width: 180, height: 180, headers: { "Cache-Control": "public, max-age=3600" } },
   );

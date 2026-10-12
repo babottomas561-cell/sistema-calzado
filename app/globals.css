@@ -8,6 +8,7 @@
 @theme {
   --color-marca: #1d4ed8;
   --color-marca-suave: #dbeafe;
+  --color-marca-oscuro: #1e40af;   /* hover de los botones del panel (si el local elige un color, se oscurece ese) */
   --color-fondo: #f5f6f8;
   --color-borde: #e5e7eb;
   --color-texto-2: #6b7280;
@@ -24,7 +25,7 @@ body { background: var(--color-fondo); color: #111827; }
 /* Piezas reutilizables */
 @layer components {
   .tarjeta { @apply rounded-xl border border-borde bg-white p-4 shadow-sm; }
-  .boton { @apply inline-flex items-center justify-center gap-2 rounded-lg bg-marca px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:opacity-50; }
+  .boton { @apply inline-flex items-center justify-center gap-2 rounded-lg bg-marca px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-marca-oscuro disabled:opacity-50; }
   .boton-sec { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-borde bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50; }
   .campo { @apply w-full rounded-lg border border-borde bg-white px-3 py-2.5 text-sm outline-none focus:border-marca focus:ring-2 focus:ring-marca-suave; }
   .etiqueta { @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-texto-2; }
@@ -132,3 +133,8 @@ body { background: var(--color-fondo); color: #111827; }
 /* Cabecera transparente sobre la campaña: los hover pasan a un velo blanco (el gris claro no se vería) */
 .tienda header[data-transparente] :is(a, button):hover { background: rgb(255 255 255 / 0.16); }
 .tienda header[data-sin-marca] .marca-cabecera { opacity: 0; pointer-events: none; }
+
+/* Logo de la tienda: si hay una versión para fondo oscuro, se usa solo con la cabecera transparente sobre la campaña */
+.logo-oscuro { display: none; }
+.tienda header[data-transparente] .logo-claro:not(:only-child) { display: none; }
+.tienda header[data-transparente] .logo-oscuro { display: block; }

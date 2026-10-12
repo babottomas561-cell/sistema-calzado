@@ -48,7 +48,7 @@ const GRUPOS: { titulo?: string; items: Item[] }[] = [
 ];
 const TODAS = ["/admin/ventas/nueva", ...GRUPOS.flatMap((g) => g.items.map((i) => i.href))];
 
-export default function Menu({ nombre, email, rolEquipo, permisos, salir }: { nombre: string; email: string; rolEquipo: string | null; permisos: string[]; salir: () => Promise<void> }) {
+export default function Menu({ logo, nombre, email, rolEquipo, permisos, salir }: { logo?: string | null; nombre: string; email: string; rolEquipo: string | null; permisos: string[]; salir: () => Promise<void> }) {
   const ruta = usePathname();
   const grupos = GRUPOS.map((g) => ({ ...g, items: g.items.filter((i) => !i.permisos.length || puede(permisos, ...i.permisos)) })).filter((g) => g.items.length);
   const vende = puede(permisos, "ventas.registrar");
@@ -61,17 +61,17 @@ export default function Menu({ nombre, email, rolEquipo, permisos, salir }: { no
     <>
       {/* Barra superior en el celular */}
       <div className="sticky top-0 z-20 flex items-center justify-between border-b border-borde bg-white/95 px-4 py-2.5 backdrop-blur md:hidden">
-        <Logo nombre={nombre} />
+        <Logo nombre={nombre} imagen={logo} />
         <button onClick={() => setAbierto(!abierto)} className="grid h-9 w-9 place-items-center rounded-lg border border-borde" aria-label="Menú">
           {abierto ? <X size={18} /> : <IconoMenu size={18} />}
         </button>
       </div>
 
       <aside className={`${abierto ? "flex" : "hidden"} fixed inset-0 top-[57px] z-10 flex-col overflow-y-auto bg-white md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:border-r md:border-borde`}>
-        <div className="hidden px-5 pb-4 pt-5 md:block"><Logo nombre={nombre} /></div>
+        <div className="hidden px-5 pb-4 pt-5 md:block"><Logo nombre={nombre} imagen={logo} /></div>
         {vende && <div className="px-3 pt-3 md:pt-0">
           <Link href="/admin/ventas/nueva" onClick={() => setAbierto(false)}
-            className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition ${actual === "/admin/ventas/nueva" ? "bg-blue-800" : "bg-marca hover:bg-blue-800"}`}>
+            className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition ${actual === "/admin/ventas/nueva" ? "bg-marca-oscuro" : "bg-marca hover:bg-marca-oscuro"}`}>
             <Plus size={18} strokeWidth={2.4} /> Nueva venta
           </Link>
         </div>}

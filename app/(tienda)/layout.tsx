@@ -28,7 +28,7 @@ export default async function LayoutTienda({ children }: { children: React.React
       <Avisos avisos={tienda.avisos ?? []} enlace={tienda.aviso_enlace} />
       <Cabecera sobreCampana={sobreCampana} marcaGigante={portada?.marca_gigante !== false}>
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:px-6">
-          <Link href="/" className="marca-cabecera mr-auto transition-opacity duration-300" aria-label={`${tienda.nombre}: inicio`}><Marca nombre={tienda.nombre} /></Link>
+          <Link href="/" className="marca-cabecera mr-auto transition-opacity duration-300" aria-label={`${tienda.nombre}: inicio`}><Marca nombre={tienda.nombre} logo={tienda.logo_url} logoOscuro={tienda.logo_oscuro_url} /></Link>
           <nav className="flex items-center text-sm font-semibold">
             <Link href="/tienda" className="inline-flex h-11 items-center rounded-sm px-2.5 hover:bg-marca-suave sm:px-3">Tienda</Link>
             <Link href="/tienda#buscar" aria-label="Buscar" className="grid h-11 w-11 place-items-center rounded-sm hover:bg-marca-suave"><Search size={22} strokeWidth={1.8} /></Link>
@@ -43,7 +43,7 @@ export default async function LayoutTienda({ children }: { children: React.React
       <main className="mx-auto max-w-7xl px-4 pb-16 pt-5 sm:px-6">{children}</main>
       <footer className="border-t border-borde bg-marca-suave">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1.2fr_1fr_1fr]">
-          <div><Marca nombre={tienda.nombre} /><p className="mt-3 max-w-xs text-sm text-texto-2">Elegí tu prenda, reservala online y retirala en el local o recibila en tu casa.</p></div>
+          <div><Marca nombre={tienda.nombre} logo={tienda.logo_url} /><p className="mt-3 max-w-xs text-sm text-texto-2">Elegí tu prenda, reservala online y retirala en el local o recibila en tu casa.</p></div>
           <div className="space-y-2 text-sm">
             <p className="font-bold">Retiro en el local</p>
             {contacto?.direccion_retiro && <p className="flex gap-2 text-texto-2"><MapPin size={16} className="mt-0.5 shrink-0" />{contacto.direccion_retiro}</p>}

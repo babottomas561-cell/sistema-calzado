@@ -18,7 +18,7 @@ export default async function LayoutAdmin({ children }: { children: React.ReactN
 
   return (
     <div className="md:flex">
-      <Menu nombre={tienda.nombre} email={user.email ?? ""} rolEquipo={rolEquipo} permisos={permisos} salir={salir} />
+      <Menu logo={tienda.logo_url} nombre={tienda.nombre} email={user.email ?? ""} rolEquipo={rolEquipo} permisos={permisos} salir={salir} />
       <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 px-4 py-5 md:px-8 md:py-8">{children}</main>
     </div>
   );
