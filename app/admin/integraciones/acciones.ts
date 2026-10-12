@@ -239,3 +239,38 @@ export async function probarCorreo(): Promise<Estado> {
   if (error) return { error: error.message.includes("rate") ? "Ya se mandó uno hace un momento: esperá un minuto y probá de nuevo" : error.message };
   return { ok: `Te mandamos un mail de prueba a ${user.email} (es el de «cambiar contraseña»; no hace falta usarlo). Si llega, el correo anda. Revisá también spam.` };
 }
+
+// ── Instagram: las últimas publicaciones en la portada ──
+// El token se verifica contra Meta dentro de la base (tiene que ser una cuenta profesional) y no se vuelve a leer.
+export async function conectarInstagram(_: Estado, f: FormData): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("guardar_instagram", { p_token: texto(f, "token", 1000) });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout"); revalidatePath("/", "layout");
+  const r = data as { usuario: string; publicaciones: number };
+  return { ok: `Conectado: @${r.usuario}. Copiamos ${r.publicaciones} ${r.publicaciones === 1 ? "publicación" : "publicaciones"}.` };
+}
+
+export async function sincronizarInstagram(): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("instagram_sincronizar");
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout"); revalidatePath("/", "layout");
+  return { ok: `Actualizado: ${data} ${data === 1 ? "publicación" : "publicaciones"}` };
+}
+
+export async function desconectarInstagram(): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("instagram_desconectar");
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout"); revalidatePath("/", "layout");
+  return { ok: "Instagram desconectado" };
+}
+
+export async function mostrarPublicacion(id: number, visible: boolean): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("instagram_mostrar", { p_id: id, p_visible: visible });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones/instagram"); revalidatePath("/", "layout");
+  return { ok: visible ? "Se muestra en la tienda" : "Oculta de la tienda" };
+}

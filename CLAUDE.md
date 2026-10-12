@@ -223,6 +223,16 @@ una API de Next.** Lo que ya pisamos:
     Los mails usan el mismo color y logo (`_correo_plantilla`; se reaplican con `cuentas_aplicar()` al guardar en Integraciones → Correo).
     No escribir `#1d4ed8` ni `blue-800` a mano: usar `bg-marca` / `bg-marca-oscuro`.
 
+22. **Instagram** (`/admin/integraciones/instagram`, `tienda.editar`): muestra las últimas publicaciones del local en la portada (sección
+    `instagram` de `inicio_secciones`). Usa «Instagram API with Instagram Login» de Meta: **la cuenta tiene que ser profesional**
+    (`guardar_instagram()` lo verifica contra Meta y lo rechaza si no), no hace falta página de Facebook y alcanza con el acceso estándar
+    (cada local usa su propia app de Meta). El token vive en `integraciones` (`ig_*`, regla 16: nadie lo lee; `estado_instagram()` solo
+    dice si está), dura 60 días y `_instagram_renovar()` lo renueva solo. La tienda **no llama a Meta**: pg_cron copia cada 3 horas las
+    últimas publicaciones a `instagram_posts` (`_instagram_tarea()`), que lee la tienda; el dueño puede ocultar una (`visible`). Los links de
+    las fotos de Meta vencen a los pocos días: por eso el refresco frecuente. Manual: `docs/integraciones/instagram.md`. Lucide no trae íconos
+    de marcas: usar `components/IconoInstagram.tsx`. Recibir DMs o publicar desde el panel quedan pendientes (Meta no deja claro si el
+    acceso estándar alcanza para mensajes de público: probarlo antes de prometerlo).
+
 ---
 
 ## Dónde está cada cosa

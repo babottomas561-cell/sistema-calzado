@@ -6,7 +6,7 @@ import { useActionState, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Check, ImagePlus, LoaderCircle, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { crearClienteNavegador } from "@/lib/supabase/navegador";
 import { achicarFoto } from "@/lib/fotos";
-import { CRITERIOS, ESTILOS_PORTADA, FONDOS, INFO_TIPO, esVideo, type Contenido, type Filtro, type Seccion, type Tarjeta, type Tipo } from "@/lib/inicio";
+import { CANTIDADES_INSTAGRAM, CRITERIOS, ESTILOS_PORTADA, FONDOS, INFO_TIPO, esVideo, type Contenido, type Filtro, type Seccion, type Tarjeta, type Tipo } from "@/lib/inicio";
 import { guardarSeccion, type Estado } from "./acciones";
 
 export type Opciones = { generos: string[]; lineas: string[]; rubros: string[]; productos: { id: number; nombre: string; marca: string | null; imagen: string | null }[] };
@@ -93,7 +93,7 @@ export default function EditorSeccion({ s, opciones }: { s: Seccion; opciones: O
   const info = INFO_TIPO[s.tipo];
   // Qué campos comunes usa cada tipo
   const usa = {
-    titulo: s.tipo !== "cinta", bajada: ["portada", "banner", "editorial", "local", "accesos", "productos"].includes(s.tipo),
+    titulo: s.tipo !== "cinta", bajada: ["portada", "banner", "editorial", "local", "accesos", "productos", "instagram"].includes(s.tipo),
     boton: !["cinta", "pasos"].includes(s.tipo), foto: s.tipo === "banner" || s.tipo === "editorial" || (s.tipo === "portada" && (c as Contenido["portada"]).estilo === "foto"),
   };
 
@@ -191,6 +191,12 @@ export default function EditorSeccion({ s, opciones }: { s: Seccion; opciones: O
               <textarea value={x.texto} onChange={(e) => cambiar({ ...x, texto: e.target.value })} maxLength={200} rows={2} placeholder="Qué hace el cliente" className="campo" aria-label="Texto del paso" />
             </>} /></div>
       ); }
+      case "instagram": { const p = c as Contenido["instagram"]; return <>
+        <div><label className="etiqueta">Cuántas publicaciones</label>
+          <select value={p.cantidad} onChange={(e) => setC({ ...p, cantidad: Number(e.target.value) })} className="campo">
+            {CANTIDADES_INSTAGRAM.map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
+        <p className="rounded-xl bg-gray-50 px-3 py-2.5 text-sm text-texto-2">Las fotos salen de tu Instagram, conectado en <a href="/admin/integraciones/instagram" className="font-semibold text-marca underline">Integraciones → Instagram</a>. Si todavía no está conectado, la sección muestra solo el botón (si cargaste tu usuario en Datos de la tienda).</p>
+      </>; }
       case "local": return <p className="rounded-xl bg-gray-50 px-3 py-2.5 text-sm text-texto-2">La dirección, el horario y el WhatsApp salen de <b>Datos de la tienda</b>, más abajo en esta misma pantalla.</p>;
       default: return null;
     }
@@ -220,7 +226,7 @@ export default function EditorSeccion({ s, opciones }: { s: Seccion; opciones: O
               <textarea name="bajada" defaultValue={s.bajada ?? ""} maxLength={300} rows={2} className="campo" /></div>}
             {usa.boton && <div className="grid grid-cols-2 gap-3">
               <div><label className="etiqueta">Texto del botón</label><input name="boton_texto" defaultValue={s.boton_texto ?? ""} maxLength={40} placeholder="Ver todo" className="campo" /></div>
-              <div><label className="etiqueta">Lleva a</label><input name="boton_enlace" defaultValue={s.boton_enlace ?? ""} placeholder="/tienda" className="campo" /></div>
+              <div><label className="etiqueta">Lleva a</label><input name="boton_enlace" defaultValue={s.boton_enlace ?? ""} placeholder={s.tipo === "instagram" ? "Vacío: tu Instagram" : "/tienda"} className="campo" /></div>
             </div>}
             {propio()}
             {estado.error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-error">{estado.error}</p>}

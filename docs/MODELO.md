@@ -205,3 +205,16 @@ El trigger `antes_de_registrarse` en `auth.users` hace cumplir las reglas aunque
 
 Funciones: `publicar_documento()`, `legales_completos()`, `documentos_pendientes()`, `aceptar_documentos_compra()`,
 `registrar_arrepentimiento()` (anon), `resolver_arrepentimiento()`.
+
+
+## Instagram
+
+| tabla / columna | para qué |
+|---|---|
+| `integraciones.ig_*` | token de Instagram (nadie lo lee), usuario, tipo de cuenta, vencimiento, última copia y último error |
+| `instagram_posts` | copia de las últimas publicaciones (imagen, link, texto, fecha, `visible`). La tienda lee las visibles |
+| `inicio_secciones.tipo = 'instagram'` | la sección de la portada (`contenido.cantidad`: 4, 6, 8 o 12) |
+
+Funciones: `guardar_instagram()` (verifica que sea cuenta profesional), `instagram_sincronizar()`, `instagram_mostrar()`,
+`instagram_desconectar()`, `estado_instagram()`. Internas: `_instagram_get()`, `_instagram_sincronizar()`, `_instagram_renovar()`,
+`_instagram_tarea()` (pg_cron cada 3 horas).

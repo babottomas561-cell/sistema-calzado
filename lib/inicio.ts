@@ -2,11 +2,12 @@
 // y cómo se lee sin romperse. Lo usan la landing (app/(tienda)/page.tsx) y el editor del panel
 // (/admin/tienda). La base solo exige que `contenido` sea un objeto: la forma la cuida este archivo,
 // y todo lo que no cuadra se reemplaza por un valor por defecto en vez de tirar error en la tienda.
+import { IconoInstagram } from "@/components/IconoInstagram";
 import {
   BookOpen, Images, LayoutTemplate, ListOrdered, MapPin, Megaphone, PanelsTopLeft, ShoppingBag, type LucideIcon,
 } from "lucide-react";
 
-export const TIPOS = ["portada", "cinta", "accesos", "productos", "promociones", "banner", "editorial", "pasos", "local"] as const;
+export const TIPOS = ["portada", "cinta", "accesos", "productos", "promociones", "banner", "editorial", "instagram", "pasos", "local"] as const;
 export type Tipo = (typeof TIPOS)[number];
 
 // Para el panel: nombre, ícono y qué es cada tipo, en palabras del dueño
@@ -18,6 +19,7 @@ export const INFO_TIPO: Record<Tipo, { nombre: string; icono: LucideIcon; ayuda:
   promociones: { nombre: "Promociones", icono: Megaphone, ayuda: "Una franja de color con las promociones vigentes de la tienda. Si no hay ninguna, no aparece." },
   banner: { nombre: "Banner con foto", icono: Images, ayuda: "Una foto o video grande a lo ancho con un texto y un botón. Ideal para una temporada o un lanzamiento." },
   editorial: { nombre: "Editorial 50/50", icono: BookOpen, ayuda: "Una foto grande de un lado y el texto de una colección del otro, como en las revistas de moda." },
+  instagram: { nombre: "Instagram", icono: IconoInstagram, ayuda: "Las últimas publicaciones de tu Instagram y un botón para seguirte. Se conecta en Integraciones → Instagram." },
   pasos: { nombre: "Cómo comprar", icono: ListOrdered, ayuda: "Los pasos para comprar, numerados." },
   local: { nombre: "El local", icono: MapPin, ayuda: "Dirección, horario y WhatsApp (salen de los datos de la tienda)." },
 };
@@ -34,6 +36,9 @@ export type Fondo = keyof typeof FONDOS;
 export const ESTILOS_PORTADA = { foto: "Campaña: foto o video a pantalla completa", columnas: "Fotos del catálogo en movimiento" } as const;
 export type EstiloPortada = keyof typeof ESTILOS_PORTADA;
 
+// Cuántas publicaciones de Instagram se muestran (la grilla queda pareja con cualquiera de estas)
+export const CANTIDADES_INSTAGRAM = [4, 6, 8, 12];
+
 export type Contenido = {
   portada: { estilo: EstiloPortada; antetitulo?: string; marca_gigante: boolean };
   cinta: { frases: string[]; marcas: boolean };
@@ -42,6 +47,7 @@ export type Contenido = {
   promociones: Record<string, never>;
   banner: { alineacion: "izquierda" | "centro" };
   editorial: { lado: "izquierda" | "derecha"; fondo: Fondo; antetitulo?: string };
+  instagram: { cantidad: number };
   pasos: { pasos: Paso[] };
   local: Record<string, never>;
 };
@@ -81,6 +87,7 @@ export function leerContenido<T extends Tipo>(tipo: T, x: Json): Contenido[T] {
     banner: () => ({ alineacion: o.alineacion === "centro" ? "centro" : "izquierda" }),
     editorial: () => ({ lado: o.lado === "derecha" ? "derecha" : "izquierda", fondo: (Object.keys(FONDOS) as Fondo[]).includes(o.fondo as Fondo) ? (o.fondo as Fondo) : "claro",
       antetitulo: txt(o.antetitulo, 60) || undefined }),
+    instagram: () => ({ cantidad: CANTIDADES_INSTAGRAM.includes(Math.round(Number(o.cantidad))) ? Math.round(Number(o.cantidad)) : 6 }),
     pasos: () => ({ pasos: lista(o.pasos).map((p) => { const a = obj(p); return { titulo: txt(a.titulo, 40), texto: txt(a.texto, 200) }; })
       .filter((p) => p.titulo).slice(0, 6) }),
     local: () => ({}),
@@ -97,6 +104,7 @@ export const NUEVA: { [K in Tipo]: { titulo: string | null; bajada?: string; bot
   promociones: { titulo: "Ahora en la tienda", boton_texto: "Ver las prendas", boton_enlace: "/tienda", contenido: {} },
   banner: { titulo: "Llegó la nueva colección", bajada: "Pasá a verla al local o reservala online.", boton_texto: "Ver la colección", boton_enlace: "/tienda", contenido: { alineacion: "izquierda" } },
   editorial: { titulo: "Para salir esta noche", bajada: "Camisas, sacos y jeans para cualquier ocasión.", boton_texto: "Ver la selección", boton_enlace: "/tienda", contenido: { lado: "izquierda", fondo: "claro", antetitulo: "La edición de la semana" } },
+  instagram: { titulo: "Seguinos en Instagram", bajada: "Lo que llega y cómo se usa, todas las semanas.", boton_texto: "Seguinos", contenido: { cantidad: 6 } },
   pasos: { titulo: "Comprar es así de simple", contenido: { pasos: [{ titulo: "Elegí", texto: "Sumá lo que te guste al carrito." }, { titulo: "Reservá", texto: "Te lo guardamos y coordinamos por WhatsApp." }] } },
   local: { titulo: "Pasá a probártelo", bajada: "Te esperamos en el local.", boton_texto: "Entrar a la tienda", boton_enlace: "/tienda", contenido: {} },
 };

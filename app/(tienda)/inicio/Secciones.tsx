@@ -1,13 +1,15 @@
 // Cada tipo de sección de la portada. Son componentes de servidor: el movimiento es CSS
 // (ver "PORTADA" en globals.css) y lo único con JavaScript es el Carrusel.
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Asterisk, Clock, MapPin, MessageCircle } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Asterisk, Clock, GalleryHorizontal, MapPin, MessageCircle, Play } from "lucide-react";
+import { IconoInstagram } from "@/components/IconoInstagram";
 import { enlaceFiltro, type Contenido, type Seccion } from "@/lib/inicio";
 import TarjetaProducto, { type Modelo } from "../TarjetaProducto";
 import Carrusel from "./Carrusel";
 import Medio from "./Medio";
 
 export type ModeloInicio = Modelo & { genero: string | null; linea: string | null; creado: string };
+export type PostInstagram = { id: number; tipo: string; imagen_url: string; permalink: string; descripcion: string | null };
 export type Contacto = { whatsapp: string | null; direccion_retiro: string | null; horario: string | null; instagram: string | null };
 
 const titular = "font-extrabold leading-[0.95] tracking-[-0.045em]";
@@ -260,6 +262,41 @@ export function Editorial({ s }: { s: Seccion<"editorial"> }) {
   );
 }
 
+// ── Instagram ─────────────────────────────────────────────────────────
+// Las últimas publicaciones de la cuenta del local (la base las copia cada 3 horas: Integraciones → Instagram) pegadas
+// de borde a borde, y el botón para seguirlos. Sin publicaciones, queda solo el botón si hay un usuario cargado.
+const COLUMNAS_INSTAGRAM: Record<number, string> = { 4: "grid-cols-2 md:grid-cols-4", 6: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6", 8: "grid-cols-2 md:grid-cols-4", 12: "grid-cols-3 md:grid-cols-6" };
+export function Instagram({ s, posts, usuario }: { s: Seccion<"instagram">; posts: PostInstagram[]; usuario: string | null }) {
+  const enlace = s.boton_enlace || (usuario ? `https://instagram.com/${usuario}` : null);
+  if (!posts.length && !enlace) return null;
+  return (
+    <section aria-label="Instagram" className="space-y-8">
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3" data-revelar>
+        <div className="max-w-2xl space-y-3">
+          {usuario && <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.14em] text-texto-2"><IconoInstagram size={17} strokeWidth={1.8} aria-hidden /> @{usuario}</p>}
+          {s.titulo && <h2 className={h2}>{s.titulo}</h2>}
+          {s.bajada && <p className="serif text-[1.45rem] italic leading-snug text-texto-2">{s.bajada}</p>}
+        </div>
+        {enlace && <Boton href={enlace}>{s.boton_texto || "Seguinos"} <Flecha /></Boton>}
+      </div>
+      {posts.length > 0 && (
+        <ul className={`sangrado grid gap-0.5 ${COLUMNAS_INSTAGRAM[posts.length >= 12 ? 12 : posts.length >= 8 ? 8 : posts.length >= 6 ? 6 : 4]}`}>
+          {posts.map((p, i) => (
+            <li key={p.id} data-revelar="foto" style={{ "--i": i % 6 } as React.CSSProperties}>
+              <a href={p.permalink} target="_blank" rel="noopener" className="group relative block aspect-square overflow-hidden bg-marca-suave">
+                <img src={p.imagen_url} alt={p.descripcion?.slice(0, 120) || "Publicación de Instagram"} loading="lazy" decoding="async" referrerPolicy="no-referrer"
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-[1.05] motion-reduce:transition-none" />
+                {p.tipo === "VIDEO" && <span className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-black/55 text-white" aria-label="Video"><Play size={15} fill="currentColor" aria-hidden /></span>}
+                {p.tipo === "CAROUSEL_ALBUM" && <span className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-black/55 text-white" aria-label="Varias fotos"><GalleryHorizontal size={15} aria-hidden /></span>}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 // ── Cómo comprar ──────────────────────────────────────────────────────
 export function Pasos({ s }: { s: Seccion<"pasos"> }) {
   const pasos = s.contenido.pasos;
@@ -295,6 +332,7 @@ export function Local({ s, contacto, tienda }: { s: Seccion<"local">; contacto: 
           <div className="flex flex-wrap gap-3 pt-1">
             {s.boton_texto && s.boton_enlace && <Boton href={s.boton_enlace} variante="blanco">{s.boton_texto} <Flecha /></Boton>}
             {contacto?.whatsapp && <Boton href={`https://wa.me/${contacto.whatsapp}`} variante="borde-blanco"><MessageCircle size={18} /> WhatsApp</Boton>}
+            {contacto?.instagram && <Boton href={`https://instagram.com/${contacto.instagram}`} variante="borde-blanco"><IconoInstagram size={18} /> Instagram</Boton>}
           </div>
         </div>
         <ul className="space-y-5 text-[0.95rem]" data-revelar style={{ "--i": 1 } as React.CSSProperties}>

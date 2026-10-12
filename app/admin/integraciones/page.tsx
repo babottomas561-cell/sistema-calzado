@@ -2,6 +2,7 @@
 // tiene su pantalla (whatsapp/, ia/, mercadopago/, envios/) con su manual paso a paso adentro (docs/integraciones/).
 // Lo ve quien tiene el permiso «Tienda online».
 import Link from "next/link";
+import { IconoInstagram } from "@/components/IconoInstagram";
 import { ChevronRight, CreditCard, Globe, Mail, MessageCircle, Sparkles, Truck, type LucideIcon } from "lucide-react";
 import { crearCliente } from "@/lib/supabase/server";
 import { exigir } from "@/lib/exigir";
@@ -37,6 +38,7 @@ export default async function Integraciones() {
   ]);
   // El dominio solo lo ve el Administrador (sin el permiso, la base no devuelve filas)
   const { data: principal } = admin ? await supabase.from("dominios").select("nombre").eq("principal", true).maybeSingle() : { data: null };
+  const { data: instagram } = await supabase.rpc("estado_instagram");
   const { data: correo } = admin ? await supabase.rpc("estado_correo") : { data: null };
   const wa = e as { meta_lista?: boolean; gemini?: string | null; ia_prueba?: { estado: string } | null } | null;
   const cuenta = (mp as { cuenta?: { ok: boolean; prueba?: boolean } | null } | null)?.cuenta;
@@ -68,6 +70,12 @@ export default async function Integraciones() {
           estados={[
             !cuenta ? { texto: "Falta conectar", tono: "falta" } : !cuenta.ok ? { texto: "No conecta", tono: "falta" } : cuenta.prueba ? { texto: "Cuenta de prueba", tono: "falta" } : { texto: "Conectado", tono: "ok" },
             { texto: MODO[(t?.mp_modo ?? "no") as keyof typeof MODO], tono: t?.mp_modo && t.mp_modo !== "no" ? "ok" : "apagado" },
+          ]} />
+        <Tarjeta href="/admin/integraciones/instagram" icono={IconoInstagram} titulo="Instagram"
+          para="Mostrar las últimas publicaciones de tu Instagram en la portada de la tienda. Necesita una cuenta profesional."
+          estados={[
+            (instagram as { conectado?: boolean } | null)?.conectado ? { texto: `@${(instagram as { usuario?: string }).usuario}`, tono: "ok" } : { texto: "Falta conectar", tono: "falta" },
+            ...((instagram as { error?: string | null } | null)?.error ? [{ texto: "Hay un error", tono: "falta" as const }] : []),
           ]} />
         <Tarjeta href="/admin/integraciones/envios" icono={Truck} titulo="Envíos"
           para="Zonas de Tucumán con su precio, el Uber de cada pedido y lo que costó (va a Gastos). Uber Direct y Andreani, cuando haya acceso."

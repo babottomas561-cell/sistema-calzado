@@ -1,8 +1,9 @@
 // Tienda online: lo que ven los clientes. Identidad propia (ver .tienda en globals.css), aislada del panel.
 import Link from "next/link";
 import { Bricolage_Grotesque, Instrument_Serif } from "next/font/google";
-import { AtSign, CircleUserRound, Clock, MapPin, MessageCircle, Search } from "lucide-react";
+import { CircleUserRound, Clock, MapPin, MessageCircle, Search } from "lucide-react";
 import BotonCarrito from "@/components/BotonCarrito";
+import { IconoInstagram } from "@/components/IconoInstagram";
 import Marca from "@/components/Marca";
 import { crearCliente, usuarioActual } from "@/lib/supabase/server";
 import { datosLegales, datosTienda } from "@/lib/tienda";
@@ -54,7 +55,7 @@ export default async function LayoutTienda({ children }: { children: React.React
             {contacto?.whatsapp
               ? <a href={`https://wa.me/${contacto.whatsapp}`} className="inline-flex min-h-11 items-center gap-2 font-semibold underline underline-offset-4"><MessageCircle size={17} /> Escribinos por WhatsApp</a>
               : <p className="text-texto-2">Consultanos en el local.</p>}
-            {tienda.instagram && <a href={`https://instagram.com/${tienda.instagram}`} target="_blank" rel="noopener" className="flex min-h-11 items-center gap-2 font-semibold underline underline-offset-4"><AtSign size={17} /> {tienda.instagram}</a>}
+            {tienda.instagram && <a href={`https://instagram.com/${tienda.instagram}`} target="_blank" rel="noopener" className="flex min-h-11 items-center gap-2 font-semibold underline underline-offset-4"><IconoInstagram size={17} /> @{tienda.instagram}</a>}
           </div>
         </div>
         <div className="border-t border-borde px-4 py-5 text-center text-xs text-texto-2">

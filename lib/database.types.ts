@@ -755,16 +755,30 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"integraciones": {
+                },"instagram_posts": {
                   Row: {
-                    "actualizado_en": string,"actualizado_por": string | null,"andreani_clave": string | null,"andreani_cliente": string | null,"andreani_contrato": string | null,"andreani_prueba": Json | null,"andreani_usuario": string | null,"correo_aplicado_en": string | null,"correo_aplicado_error": string | null,"gemini_api_key": string | null,"ia_modelos_error": string | null,"ia_modelos_req": number | null,"ia_modelos_revisado": string | null,"ia_ultima_prueba": number | null,"mp_access_token": string | null,"mp_cuenta": Json | null,"mp_webhook_secret": string | null,"sitio_original": string | null,"sitio_url": string | null,"smtp_clave": string | null,"smtp_email": string | null,"smtp_host": string | null,"smtp_nombre": string | null,"smtp_puerto": number | null,"smtp_usuario": string | null,"supabase_ref": string | null,"supabase_token": string | null,"uber_client_id": string | null,"uber_client_secret": string | null,"uber_customer_id": string | null,"uber_prueba": Json | null,"unica": boolean,"vercel_equipo": string | null,"vercel_proyecto": string | null,"vercel_token": string | null,"wa_access_token": string | null,"wa_app_secret": string | null,"wa_phone_number_id": string | null,"wa_verify_token": string,"wa_waba_id": string | null
+                    "actualizado_en": string,"descripcion": string | null,"id": number,"ig_id": string,"imagen_url": string,"permalink": string,"publicado_en": string,"tipo": string,"visible": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"actualizado_por"?: string | null,"andreani_clave"?: string | null,"andreani_cliente"?: string | null,"andreani_contrato"?: string | null,"andreani_prueba"?: Json | null,"andreani_usuario"?: string | null,"correo_aplicado_en"?: string | null,"correo_aplicado_error"?: string | null,"gemini_api_key"?: string | null,"ia_modelos_error"?: string | null,"ia_modelos_req"?: number | null,"ia_modelos_revisado"?: string | null,"ia_ultima_prueba"?: number | null,"mp_access_token"?: string | null,"mp_cuenta"?: Json | null,"mp_webhook_secret"?: string | null,"sitio_original"?: string | null,"sitio_url"?: string | null,"smtp_clave"?: string | null,"smtp_email"?: string | null,"smtp_host"?: string | null,"smtp_nombre"?: string | null,"smtp_puerto"?: number | null,"smtp_usuario"?: string | null,"supabase_ref"?: string | null,"supabase_token"?: string | null,"uber_client_id"?: string | null,"uber_client_secret"?: string | null,"uber_customer_id"?: string | null,"uber_prueba"?: Json | null,"unica"?: boolean,"vercel_equipo"?: string | null,"vercel_proyecto"?: string | null,"vercel_token"?: string | null,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
+                    "actualizado_en"?: string,"descripcion"?: string | null,"id"?: never,"ig_id": string,"imagen_url": string,"permalink": string,"publicado_en": string,"tipo": string,"visible"?: boolean
                   }
                   Update: {
-                    "actualizado_en"?: string,"actualizado_por"?: string | null,"andreani_clave"?: string | null,"andreani_cliente"?: string | null,"andreani_contrato"?: string | null,"andreani_prueba"?: Json | null,"andreani_usuario"?: string | null,"correo_aplicado_en"?: string | null,"correo_aplicado_error"?: string | null,"gemini_api_key"?: string | null,"ia_modelos_error"?: string | null,"ia_modelos_req"?: number | null,"ia_modelos_revisado"?: string | null,"ia_ultima_prueba"?: number | null,"mp_access_token"?: string | null,"mp_cuenta"?: Json | null,"mp_webhook_secret"?: string | null,"sitio_original"?: string | null,"sitio_url"?: string | null,"smtp_clave"?: string | null,"smtp_email"?: string | null,"smtp_host"?: string | null,"smtp_nombre"?: string | null,"smtp_puerto"?: number | null,"smtp_usuario"?: string | null,"supabase_ref"?: string | null,"supabase_token"?: string | null,"uber_client_id"?: string | null,"uber_client_secret"?: string | null,"uber_customer_id"?: string | null,"uber_prueba"?: Json | null,"unica"?: boolean,"vercel_equipo"?: string | null,"vercel_proyecto"?: string | null,"vercel_token"?: string | null,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
+                    "actualizado_en"?: string,"descripcion"?: string | null,"id"?: never,"ig_id"?: string,"imagen_url"?: string,"permalink"?: string,"publicado_en"?: string,"tipo"?: string,"visible"?: boolean
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"integraciones": {
+                  Row: {
+                    "actualizado_en": string,"actualizado_por": string | null,"andreani_clave": string | null,"andreani_cliente": string | null,"andreani_contrato": string | null,"andreani_prueba": Json | null,"andreani_usuario": string | null,"correo_aplicado_en": string | null,"correo_aplicado_error": string | null,"gemini_api_key": string | null,"ia_modelos_error": string | null,"ia_modelos_req": number | null,"ia_modelos_revisado": string | null,"ia_ultima_prueba": number | null,"ig_conectado_en": string | null,"ig_error": string | null,"ig_renovado_en": string | null,"ig_sincronizado_en": string | null,"ig_tipo_cuenta": string | null,"ig_token": string | null,"ig_token_vence": string | null,"ig_usuario": string | null,"ig_usuario_id": string | null,"mp_access_token": string | null,"mp_cuenta": Json | null,"mp_webhook_secret": string | null,"sitio_original": string | null,"sitio_url": string | null,"smtp_clave": string | null,"smtp_email": string | null,"smtp_host": string | null,"smtp_nombre": string | null,"smtp_puerto": number | null,"smtp_usuario": string | null,"supabase_ref": string | null,"supabase_token": string | null,"uber_client_id": string | null,"uber_client_secret": string | null,"uber_customer_id": string | null,"uber_prueba": Json | null,"unica": boolean,"vercel_equipo": string | null,"vercel_proyecto": string | null,"vercel_token": string | null,"wa_access_token": string | null,"wa_app_secret": string | null,"wa_phone_number_id": string | null,"wa_verify_token": string,"wa_waba_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"andreani_clave"?: string | null,"andreani_cliente"?: string | null,"andreani_contrato"?: string | null,"andreani_prueba"?: Json | null,"andreani_usuario"?: string | null,"correo_aplicado_en"?: string | null,"correo_aplicado_error"?: string | null,"gemini_api_key"?: string | null,"ia_modelos_error"?: string | null,"ia_modelos_req"?: number | null,"ia_modelos_revisado"?: string | null,"ia_ultima_prueba"?: number | null,"ig_conectado_en"?: string | null,"ig_error"?: string | null,"ig_renovado_en"?: string | null,"ig_sincronizado_en"?: string | null,"ig_tipo_cuenta"?: string | null,"ig_token"?: string | null,"ig_token_vence"?: string | null,"ig_usuario"?: string | null,"ig_usuario_id"?: string | null,"mp_access_token"?: string | null,"mp_cuenta"?: Json | null,"mp_webhook_secret"?: string | null,"sitio_original"?: string | null,"sitio_url"?: string | null,"smtp_clave"?: string | null,"smtp_email"?: string | null,"smtp_host"?: string | null,"smtp_nombre"?: string | null,"smtp_puerto"?: number | null,"smtp_usuario"?: string | null,"supabase_ref"?: string | null,"supabase_token"?: string | null,"uber_client_id"?: string | null,"uber_client_secret"?: string | null,"uber_customer_id"?: string | null,"uber_prueba"?: Json | null,"unica"?: boolean,"vercel_equipo"?: string | null,"vercel_proyecto"?: string | null,"vercel_token"?: string | null,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
+                  }
+                  Update: {
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"andreani_clave"?: string | null,"andreani_cliente"?: string | null,"andreani_contrato"?: string | null,"andreani_prueba"?: Json | null,"andreani_usuario"?: string | null,"correo_aplicado_en"?: string | null,"correo_aplicado_error"?: string | null,"gemini_api_key"?: string | null,"ia_modelos_error"?: string | null,"ia_modelos_req"?: number | null,"ia_modelos_revisado"?: string | null,"ia_ultima_prueba"?: number | null,"ig_conectado_en"?: string | null,"ig_error"?: string | null,"ig_renovado_en"?: string | null,"ig_sincronizado_en"?: string | null,"ig_tipo_cuenta"?: string | null,"ig_token"?: string | null,"ig_token_vence"?: string | null,"ig_usuario"?: string | null,"ig_usuario_id"?: string | null,"mp_access_token"?: string | null,"mp_cuenta"?: Json | null,"mp_webhook_secret"?: string | null,"sitio_original"?: string | null,"sitio_url"?: string | null,"smtp_clave"?: string | null,"smtp_email"?: string | null,"smtp_host"?: string | null,"smtp_nombre"?: string | null,"smtp_puerto"?: number | null,"smtp_usuario"?: string | null,"supabase_ref"?: string | null,"supabase_token"?: string | null,"uber_client_id"?: string | null,"uber_client_secret"?: string | null,"uber_customer_id"?: string | null,"uber_prueba"?: Json | null,"unica"?: boolean,"vercel_equipo"?: string | null,"vercel_proyecto"?: string | null,"vercel_token"?: string | null,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -2226,6 +2240,21 @@ isOneToOne: false
 "_ia_procesar_modelos":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"_instagram_get":
+{ Args: { "p_ruta": string,"p_token": string }; Returns: Json
+                           },
+"_instagram_motivo":
+{ Args: { "p_resp": Json }; Returns: string
+                           },
+"_instagram_renovar":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"_instagram_sincronizar":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"_instagram_tarea":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "_mover_stock":
 { Args: { "p_cantidad": number,"p_compra"?: number,"p_deposito": number,"p_motivo"?: string,"p_tipo": string,"p_variante": number,"p_venta"?: number }; Returns: undefined
                            },
@@ -2422,6 +2451,9 @@ isOneToOne: false
 "estado_envios":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"estado_instagram":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "estado_integraciones":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -2443,6 +2475,9 @@ isOneToOne: false
 "guardar_envios_credenciales":
 { Args: { "p_andreani_clave"?: string,"p_andreani_cliente"?: string,"p_andreani_contrato"?: string,"p_andreani_usuario"?: string,"p_quitar"?: (string)[],"p_uber_client_id"?: string,"p_uber_client_secret"?: string,"p_uber_customer_id"?: string }; Returns: undefined
                            },
+"guardar_instagram":
+{ Args: { "p_token": string }; Returns: Json
+                           },
 "guardar_integraciones":
 { Args: { "p_access_token"?: string,"p_app_secret"?: string,"p_gemini_api_key"?: string,"p_phone_number_id"?: string,"p_quitar"?: (string)[],"p_waba_id"?: string }; Returns: undefined
                            },
@@ -2457,6 +2492,15 @@ isOneToOne: false
                            },
 "ia_revisar_modelos":
 { Args: { "p_pedir"?: boolean }; Returns: undefined
+                           },
+"instagram_desconectar":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"instagram_mostrar":
+{ Args: { "p_id": number,"p_visible": boolean }; Returns: undefined
+                           },
+"instagram_sincronizar":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "invitacion_info":
 { Args: { "p_token": string }; Returns: Json
