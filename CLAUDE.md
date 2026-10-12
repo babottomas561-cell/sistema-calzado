@@ -181,6 +181,32 @@ una API de Next.** Lo que ya pisamos:
     `_generar_gastos_fijos()` con pg_cron) y automáticos (`_sumar_gasto_automatico()`, no se tocan a mano). En dólares
     guardan **una copia** de la cotización. Informes → Resultado: ventas − costo − fallados de baja − gastos = neta.
 
+18. **Un solo producto, código compartido y versiones controladas.** Este repositorio es el producto
+    **Sistema para locales comerciales**. Todos los comercios usan el mismo código y reciben versiones
+    identificables del producto; **nunca se crea una copia del repositorio modificada a mano para un cliente**.
+    Las diferencias entre instalaciones se resuelven, en este orden, como configuración del negocio, módulo
+    opcional reutilizable o mejora general del producto. Una necesidad exclusiva solo puede implementarse como
+    integración aislada cuando no corresponda incorporarla al producto y no debe bifurcar su núcleo. Cada
+    instalación puede quedar temporalmente en una versión anterior para desplegar por etapas, pero debe conservarse
+    qué versión tiene, qué migraciones requiere y cómo volver atrás. Primero se prueba una versión, después se publica
+    en una instalación piloto y, tras verificarla, se despliega al resto. Otros rubros (por ejemplo, peluquerías)
+    serán productos separados: podrán reutilizar componentes comunes más adelante, pero no deben forzarse dentro
+    del modelo de datos ni de las pantallas de este sistema. La automatización de instalaciones y la plataforma
+    central se construirán después de completar y validar este producto.
+
+19. **Cuentas y correo configurables** (`/admin/equipo/cuentas`, `/admin/integraciones/correo`, `equipo.administrar`):
+    `configuracion_cuentas` (una fila, la lee el público: sin secretos) dice quién puede registrarse (`abierto` / `invitacion`), qué
+    datos pide el formulario (teléfono, documento, nacimiento, dirección: no / opcional / obligatorio), la contraseña, dominios de
+    email permitidos/bloqueados, términos y la confirmación de email (obligatoria de fábrica). Las reglas las hace cumplir la
+    base: `_registro_error()` (la usa `validar_registro()` antes de crear la cuenta, para mostrar el motivo, y el trigger
+    `antes_de_registrarse` en `auth.users`, que no se puede saltear). `invitaciones_cuenta` = links de un solo uso atados a un
+    email y con rol opcional (`crear_invitacion`, `invitacion_info`): sirven aunque el registro esté cerrado y las usa
+    `_nuevo_usuario`. El SMTP del local (Resend) está en `integraciones` (regla 16); `cuentas_aplicar()` le pasa a Supabase Auth,
+    por su API, el SMTP, `mailer_autoconfirm`, las reglas de contraseña y las plantillas (`_correo_plantilla`, con el nombre de la
+    tienda). Los links de los mails van a `/auth/confirmar?token_hash=…&type=…` (`app/auth/confirmar/route.ts`, `verifyOtp`): andan
+    desde otro dispositivo. Hay reenviar mail, «Olvidé mi contraseña» (`/olvide-clave`, `/nueva-clave`). Nunca usar `disable_signup`
+    de Supabase (frena también las invitaciones): el cierre es el trigger. Manual: `docs/integraciones/correo.md`.
+
 ---
 
 ## Dónde está cada cosa

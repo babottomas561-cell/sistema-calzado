@@ -18,11 +18,11 @@
           <p style="margin:0 0 20px 0;font-size:15px;line-height:1.55;color:#374151;">¡Hola! Gracias por crear tu cuenta en <b>Mi Calzado</b>. Tocá el botón para confirmar tu email y ya vas a poder hacer pedidos y seguirlos desde tu cuenta.</p>
         </td></tr>
         <tr><td style="padding:0 28px;">
-          <a href="{{ .ConfirmationURL }}" style="display:block;background:#1d4ed8;color:#ffffff;text-decoration:none;text-align:center;font-weight:600;font-size:16px;padding:14px 20px;border-radius:10px;">Confirmar mi email</a>
+          <a href="{{ .SiteURL }}/auth/confirmar?token_hash={{ .TokenHash }}&type=signup" style="display:block;background:#1d4ed8;color:#ffffff;text-decoration:none;text-align:center;font-weight:600;font-size:16px;padding:14px 20px;border-radius:10px;">Confirmar mi email</a>
         </td></tr>
         <tr><td style="padding:20px 28px 28px 28px;">
           <p style="margin:0 0 12px 0;font-size:13px;line-height:1.5;color:#6b7280;">Si no creaste una cuenta en Mi Calzado, ignorá este mail: sin confirmar, la cuenta no se activa.</p>
-          <p style="margin:0;font-size:12px;line-height:1.5;color:#9ca3af;">Si el botón no funciona, copiá este link en el navegador:<br><span style="word-break:break-all;color:#6b7280;">{{ .ConfirmationURL }}</span></p>
+          <p style="margin:0;font-size:12px;line-height:1.5;color:#9ca3af;">Si el botón no funciona, copiá este link en el navegador:<br><span style="word-break:break-all;color:#6b7280;">{{ .SiteURL }}/auth/confirmar?token_hash={{ .TokenHash }}&amp;type=signup</span></p>
         </td></tr>
       </table>
       <p style="margin:16px 0 0 0;font-size:12px;color:#9ca3af;">Mi Calzado · Envíos y retiro en el local</p>

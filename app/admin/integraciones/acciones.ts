@@ -214,3 +214,28 @@ export async function guardarHosting(_: Estado, f: FormData): Promise<Estado> {
   revalidatePath("/admin/integraciones", "layout");
   return { ok: "Conexión técnica guardada" };
 }
+
+// Correo (SMTP del local): se guarda, y la base se lo pasa a Supabase Auth junto con las plantillas con el nombre de la tienda
+export async function guardarCorreo(_: Estado, f: FormData): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("guardar_correo", {
+    p_host: texto(f, "host", 100), p_puerto: Number(f.get("puerto")) || undefined, p_usuario: texto(f, "usuario", 200),
+    p_clave: texto(f, "clave", 300), p_email: texto(f, "email", 200), p_nombre: texto(f, "nombre", 100),
+  });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  const { data, error: errAplicar } = await supabase.rpc("cuentas_aplicar");
+  if (errAplicar) return { error: `Se guardó, pero ${errAplicar.message}` };
+  if (!(data as { aplicado: boolean }).aplicado) return { ok: "Guardado. Falta la conexión técnica con Supabase (Integraciones → Dominio → Conexión técnica) para que el correo se aplique." };
+  return { ok: "Guardado y aplicado: Supabase ya manda los mails por tu servidor de correo" };
+}
+
+// Mail de prueba: se pide el cambio de contraseña de quien está logueado, que sale por el mismo camino que el de un cliente
+export async function probarCorreo(): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.email) return { error: "No se pudo saber tu email" };
+  const { error } = await supabase.auth.resetPasswordForEmail(user.email);
+  if (error) return { error: error.message.includes("rate") ? "Ya se mandó uno hace un momento: esperá un minuto y probá de nuevo" : error.message };
+  return { ok: `Te mandamos un mail de prueba a ${user.email} (es el de «cambiar contraseña»; no hace falta usarlo). Si llega, el correo anda. Revisá también spam.` };
+}

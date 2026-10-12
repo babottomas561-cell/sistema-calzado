@@ -178,3 +178,17 @@ queda en `movimientos_stock`. Siempre: `stock.cantidad = Σ movimientos`.
 | equipo (`perfiles.rol = 'staff'` + `rol_id`) | lo que su rol permite (`tiene_permiso('…')`); los costos solo con `costos.ver` |
 | cliente registrado | su ficha, sus pedidos (con sus renglones y su seguimiento) |
 | cualquiera (sin cuenta) | `v_catalogo` (sin costos), los `medios_pago` habilitados en la tienda, las `inicio_secciones` visibles y `configuracion_tienda` |
+
+
+## Cuentas de clientes y correo
+
+| tabla | para qué |
+|---|---|
+| `configuracion_cuentas` (una fila, lectura pública) | registro abierto o por invitación, datos que pide el formulario, contraseña, dominios de email, términos y confirmación de email |
+| `invitaciones_cuenta` | links de un solo uso (`token`) atados a un email, con rol opcional; vencen a los 7 días. Solo el Administrador las ve |
+| `perfiles.terminos_aceptados_en` | cuándo aceptó los términos |
+| `integraciones.smtp_*` | el servidor de correo del local (nadie lo lee; `estado_correo()` muestra los últimos 4) |
+
+Funciones: `validar_registro()` (anon), `invitacion_info()` (anon, requiere el token), `crear_invitacion()`, `anular_invitacion()`,
+`guardar_correo()`, `estado_correo()` y `cuentas_aplicar()` (pasa a Supabase Auth: confirmación, contraseña, SMTP y plantillas).
+El trigger `antes_de_registrarse` en `auth.users` hace cumplir las reglas aunque se salteen el formulario.

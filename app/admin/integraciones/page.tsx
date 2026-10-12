@@ -2,7 +2,7 @@
 // tiene su pantalla (whatsapp/, ia/, mercadopago/, envios/) con su manual paso a paso adentro (docs/integraciones/).
 // Lo ve quien tiene el permiso «Tienda online».
 import Link from "next/link";
-import { ChevronRight, CreditCard, Globe, MessageCircle, Sparkles, Truck, type LucideIcon } from "lucide-react";
+import { ChevronRight, CreditCard, Globe, Mail, MessageCircle, Sparkles, Truck, type LucideIcon } from "lucide-react";
 import { crearCliente } from "@/lib/supabase/server";
 import { exigir } from "@/lib/exigir";
 
@@ -37,6 +37,7 @@ export default async function Integraciones() {
   ]);
   // El dominio solo lo ve el Administrador (sin el permiso, la base no devuelve filas)
   const { data: principal } = admin ? await supabase.from("dominios").select("nombre").eq("principal", true).maybeSingle() : { data: null };
+  const { data: correo } = admin ? await supabase.rpc("estado_correo") : { data: null };
   const wa = e as { meta_lista?: boolean; gemini?: string | null; ia_prueba?: { estado: string } | null } | null;
   const cuenta = (mp as { cuenta?: { ok: boolean; prueba?: boolean } | null } | null)?.cuenta;
   const MODO = { no: "No cobra online", opcional: "Cobro online opcional", obligatorio: "Solo pago online" } as const;
@@ -74,6 +75,9 @@ export default async function Integraciones() {
         {admin && <Tarjeta href="/admin/integraciones/dominio" icono={Globe} titulo="Dominio propio"
           para="Que la tienda se vea en tu propia dirección (mitienda.com.ar). Comprás el dominio y lo conectás desde acá."
           estados={[principal ? { texto: principal.nombre, tono: "ok" } : { texto: "Usa la dirección de Vercel", tono: "apagado" }]} />}
+        {admin && <Tarjeta href="/admin/integraciones/correo" icono={Mail} titulo="Correo"
+          para="Los mails que recibe el cliente (confirmar su cuenta, cambiar la contraseña) salen por tu propio servidor, con el nombre de tu tienda."
+          estados={[(correo as { smtp?: boolean } | null)?.smtp ? { texto: "Conectado", tono: "ok" } : { texto: "Falta conectar", tono: "falta" }]} />}
       </div>
     </div>
   );

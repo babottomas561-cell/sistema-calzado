@@ -1,39 +1,33 @@
-"use client";
+// Crear cuenta: el formulario lo arma la configuración del local (/admin/equipo/cuentas): qué datos pide,
+// si hace falta una invitación y las reglas de la contraseña. Las reglas las hace cumplir la base.
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { Suspense, useActionState } from "react";
-import { CircleCheck } from "lucide-react";
-import { registrarse } from "../ingresar/acciones";
+import { Lock } from "lucide-react";
+import { crearCliente } from "@/lib/supabase/server";
+import { leerConfigCuentas } from "@/lib/cuentas";
+import Formulario from "./Formulario";
 
-function Formulario() {
-  const volver = useSearchParams().get("volver") ?? "";
-  const [estado, accion, cargando] = useActionState(registrarse, {});
-  // React vacía el formulario después de enviarlo: con la key, cada campo se vuelve a crear con lo
-  // que había escrito (defaultValue solo no alcanza, el reset llega después)
-  const v = estado.valores ?? {};
-  if (estado.ok) return (
+export default async function Registro({ searchParams }: { searchParams: Promise<{ invitacion?: string; volver?: string }> }) {
+  const { invitacion, volver } = await searchParams;
+  const supabase = await crearCliente();
+  const config = await leerConfigCuentas(supabase);
+  const { data: inv } = invitacion ? await supabase.rpc("invitacion_info", { p_token: invitacion }) : { data: null };
+  const invitada = inv as { email: string; rol: string | null } | null;
+
+  if (invitacion && !invitada) return (
     <div className="tarjeta mx-auto max-w-sm space-y-3 p-6 text-center">
-      <CircleCheck size={40} className="mx-auto text-ok" />
-      <h1 className="text-xl font-bold">Revisá tu email</h1>
-      <p className="text-sm text-texto-2">{estado.ok}</p>
+      <Lock size={36} className="mx-auto text-alerta" />
+      <h1 className="text-xl font-bold">La invitación venció</h1>
+      <p className="text-sm text-texto-2">Este link ya se usó o pasó su fecha. Pedile al local que te mande uno nuevo.</p>
       <Link href="/ingresar" className="boton w-full">Ir a ingresar</Link>
     </div>
   );
-  return (
-    <form action={accion} className="tarjeta mx-auto max-w-sm space-y-4 p-6">
-      <div><h1 className="text-xl font-bold">Crear cuenta</h1><p className="text-sm text-texto-2">Para hacer pedidos y seguirlos.</p></div>
-      <input type="hidden" name="volver" value={volver} />
-      <div><label className="etiqueta">Nombre y apellido</label><input name="nombre" required autoComplete="name" key={`nombre-${v.intento}`} defaultValue={v.nombre} className="campo" /></div>
-      <div><label className="etiqueta">Email</label><input name="email" type="email" required autoComplete="email" key={`email-${v.intento}`} defaultValue={v.email} className="campo" /></div>
-      <div><label className="etiqueta">Teléfono (WhatsApp)</label><input name="telefono" type="tel" autoComplete="tel" key={`telefono-${v.intento}`} defaultValue={v.telefono} className="campo" /></div>
-      <div><label className="etiqueta">Contraseña</label><input name="clave" type="password" required minLength={8} autoComplete="new-password" className="campo" /></div>
-      {estado.error && <p className="text-sm text-error">{estado.error}</p>}
-      <button className="boton w-full" disabled={cargando}>{cargando ? "Creando…" : "Crear cuenta"}</button>
-      <p className="text-center text-sm">¿Ya tenés cuenta? <Link href={`/ingresar${volver ? `?volver=${encodeURIComponent(volver)}` : ""}`} className="font-semibold text-marca">Ingresá</Link></p>
-    </form>
+  if (config.registro === "invitacion" && !invitada) return (
+    <div className="tarjeta mx-auto max-w-sm space-y-3 p-6 text-center">
+      <Lock size={36} className="mx-auto text-texto-2" />
+      <h1 className="text-xl font-bold">Cuentas por invitación</h1>
+      <p className="text-sm text-texto-2">Por ahora solo se puede crear una cuenta con una invitación del local. Si ya tenés cuenta, ingresá.</p>
+      <Link href="/ingresar" className="boton w-full">Ingresar</Link>
+    </div>
   );
-}
-
-export default function Registro() {
-  return <Suspense><Formulario /></Suspense>;
+  return <Formulario config={config} invitacion={invitada ? { token: invitacion!, email: invitada.email, rol: invitada.rol } : null} volver={volver ?? ""} />;
 }

@@ -12,6 +12,9 @@ const MENSAJES: Record<string, string> = {
   email_not_confirmed: "Todavía no confirmaste tu email. Buscá el mail que te mandamos (fijate en spam) y tocá el link.",
   invalid_credentials: "Email o contraseña incorrectos.",
   signup_disabled: "Por ahora no se pueden crear cuentas nuevas.",
+  otp_expired: "El link venció o ya se usó. Pedí uno nuevo.",
+  same_password: "La contraseña nueva tiene que ser distinta de la anterior.",
+  user_not_found: "No encontramos esa cuenta.",
 };
 
 export function errorAuth(error: AuthError) {

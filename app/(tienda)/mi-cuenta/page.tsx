@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { crearCliente, usuarioActual } from "@/lib/supabase/server";
-import { Wallet } from "lucide-react";
+import { CircleCheck, Wallet } from "lucide-react";
 import { dia, fecha, pesos } from "@/lib/formato";
 import { ESTADOS } from "@/lib/estados-pedido";
 import MisDatos from "./MisDatos";
@@ -14,7 +14,8 @@ async function salir() {
   redirect("/");
 }
 
-export default async function MiCuenta() {
+export default async function MiCuenta({ searchParams }: { searchParams: Promise<{ confirmado?: string; clave?: string }> }) {
+  const { confirmado, clave } = await searchParams;
   const { supabase, user } = await usuarioActual();
   if (!user) redirect("/ingresar?volver=/mi-cuenta");
   // La base solo devuelve SU ficha (v_mi_ficha, sin lo interno del CRM) y SUS pedidos (Row Level Security)
@@ -30,6 +31,10 @@ export default async function MiCuenta() {
       <section className="space-y-3">
         <div className="flex items-center justify-between"><h1 className="text-3xl font-extrabold tracking-[-0.035em]">Hola, {ficha?.nombre?.split(" ")[0] ?? "!"}</h1>
           <form action={salir}><button className="text-sm font-semibold text-marca">Cerrar sesión</button></form></div>
+        {(confirmado || clave) && (
+          <p className="flex items-center gap-2 rounded-sm border border-borde bg-green-50 p-3 text-sm text-ok" role="status">
+            <CircleCheck size={18} /> {confirmado ? "¡Email confirmado! Tu cuenta ya está lista." : "Listo: cambiaste tu contraseña."}</p>
+        )}
         {saldo > 0 && (
           <div className="flex items-start gap-3 rounded-sm border border-borde bg-marca-suave p-4">
             <Wallet size={22} className="mt-0.5 shrink-0" />
