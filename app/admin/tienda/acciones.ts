@@ -135,3 +135,27 @@ export async function guardarTienda(_: Estado, f: FormData): Promise<Estado> {
   refrescar();
   return { ok: "Datos de la tienda guardados" };
 }
+
+// Claves de Meta y de Gemini: se guardan en la base (guardar_integraciones) y no se vuelven a leer.
+// Un campo vacío no toca lo que había; «quitar» borra esa clave.
+export async function guardarConexiones(_: Estado, f: FormData): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("guardar_integraciones", {
+    p_phone_number_id: texto(f, "phone_number_id", 30), p_waba_id: texto(f, "waba_id", 30),
+    p_access_token: texto(f, "access_token", 1000), p_app_secret: texto(f, "app_secret", 200),
+    p_gemini_api_key: texto(f, "gemini_api_key", 200),
+    p_quitar: f.getAll("quitar").map(String),
+  });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/tienda");
+  return { ok: "Conexiones guardadas" };
+}
+
+// Manda la plantilla de prueba de Meta («hello_world») a un número: si llega, la conexión anda
+export async function probarWhatsApp(_: Estado, f: FormData): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("wa_mensaje_prueba", { p_telefono: texto(f, "telefono", 30) });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/tienda");
+  return { ok: "Mensaje de prueba enviado: en unos segundos aparece abajo si Meta lo aceptó" };
+}

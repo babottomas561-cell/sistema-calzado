@@ -146,6 +146,17 @@ una API de Next.** Lo que ya pisamos:
     y en el editor. Si la portada es una campaña (`estilo: foto`), la cabecera flota transparente encima
     (`app/(tienda)/marco/Cabecera.tsx`). Tipografía: Bricolage (titulares) + Instrument Serif (`.serif`, frases). El movimiento es **CSS** (bloque «PORTADA» de `globals.css`), siempre dentro de
     `prefers-reduced-motion: no-preference` y sin esconder contenido si el navegador no lo soporta.
+16. **Claves de servicios externos (WhatsApp de Meta, Gemini): en la base, nunca legibles.** Se cargan en
+    `/admin/tienda` → Conexiones y van a `integraciones`, una tabla **sin lectura para nadie**
+    (`guardar_integraciones()` escribe; `estado_integraciones()` solo dice si están, con los últimos 4).
+    **Nunca** en `configuracion_tienda` (la lee el público) **ni en variables de Vercel**. Lo que manda el local
+    sale **desde la base** con `pg_net` (`_wa_enviar`: avisos de pedidos por trigger, mensaje de prueba); el webhook
+    `app/api/whatsapp` le pasa el cuerpo crudo y la firma a `wa_recibir()`, que la verifica (HMAC con el secreto
+    de la app) y recién ahí devuelve los mensajes; `wa_responder()` solo le contesta a quien escribió en ese aviso.
+    Lo que cobra Meta se suma solo a `gastos` (`whatsapp_cobros`, una vez por mensaje).
+17. **Gastos** (`/admin/gastos`, permiso `gastos.gestionar`): a mano, fijos por mes (`gastos_fijos`, los genera
+    `_generar_gastos_fijos()` con pg_cron) y automáticos (`_sumar_gasto_automatico()`, no se tocan a mano). En dólares
+    guardan **una copia** de la cotización. Informes → Resultado: ventas − costo − fallados de baja − gastos = neta.
 
 ---
 
@@ -229,4 +240,5 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
 - No usar la `service_role` key en el código de la app (saltea toda la seguridad). La app usa
   solo la *publishable key* y la sesión del usuario.
 - No subir `.env.local` (está en `.gitignore`).
+- No guardar una clave (token, secreto, API key) en una tabla con lectura ni en el código: va a `integraciones` (regla 16).
 - No `select *` desde la tienda sobre tablas con costos: la tienda lee `v_catalogo`.

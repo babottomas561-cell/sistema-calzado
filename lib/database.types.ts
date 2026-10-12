@@ -2,7 +2,7 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
-
+  
   "graphql_public": {
           Tables: {
             [_ in never]: never
@@ -129,7 +129,7 @@ isOneToOne: false
                     "codigo"?: string,"id"?: never,"linea"?: string,"nombre"?: string
                   }
                   Relationships: [
-
+                    
                   ]
                 },"clientes": {
                   Row: {
@@ -143,7 +143,7 @@ isOneToOne: false
                     "acepta_promos"?: boolean,"codigo"?: number,"creado_en"?: string,"direccion"?: string | null,"documento"?: string | null,"email"?: string | null,"etiquetas"?: (string)[],"fecha_nacimiento"?: string | null,"id"?: never,"localidad"?: string | null,"nombre"?: string,"notas"?: string | null,"origen"?: string | null,"telefono"?: string | null,"usuario_id"?: string | null
                   }
                   Relationships: [
-
+                    
                   ]
                 },"colores": {
                   Row: {
@@ -157,7 +157,7 @@ isOneToOne: false
                     "codigo"?: string,"hex"?: string | null,"id"?: never,"nombre"?: string
                   }
                   Relationships: [
-
+                    
                   ]
                 },"compra_items": {
                   Row: {
@@ -243,17 +243,17 @@ isOneToOne: false
                   ]
                 },"configuracion_gastos": {
                   Row: {
-                    "dolar": number,"dolar_actualizado": string,"id": boolean
+                    "dolar": number,"dolar_actualizado": string,"id": boolean,"wa_precio_authentication": number,"wa_precio_marketing": number,"wa_precio_utility": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "dolar"?: number,"dolar_actualizado"?: string,"id"?: boolean
+                    "dolar"?: number,"dolar_actualizado"?: string,"id"?: boolean,"wa_precio_authentication"?: number,"wa_precio_marketing"?: number,"wa_precio_utility"?: number
                   }
                   Update: {
-                    "dolar"?: number,"dolar_actualizado"?: string,"id"?: boolean
+                    "dolar"?: number,"dolar_actualizado"?: string,"id"?: boolean,"wa_precio_authentication"?: number,"wa_precio_marketing"?: number,"wa_precio_utility"?: number
                   }
                   Relationships: [
-
+                    
                   ]
                 },"configuracion_tienda": {
                   Row: {
@@ -267,7 +267,7 @@ isOneToOne: false
                     "aviso_enlace"?: string | null,"avisos"?: (string)[],"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
                   }
                   Relationships: [
-
+                    
                   ]
                 },"creditos_proveedor": {
                   Row: {
@@ -331,7 +331,7 @@ isOneToOne: false
                     "activo"?: boolean,"id"?: never,"nombre"?: string,"vendible"?: boolean
                   }
                   Relationships: [
-
+                    
                   ]
                 },"devolucion_items": {
                   Row: {
@@ -495,7 +495,7 @@ isOneToOne: false
                     "activo"?: boolean,"id"?: never,"nombre"?: string,"orden"?: number
                   }
                   Relationships: [
-
+                    
                   ]
                 },"gastos": {
                   Row: {
@@ -585,7 +585,27 @@ isOneToOne: false
                     "actualizado_en"?: string,"bajada"?: string | null,"boton_enlace"?: string | null,"boton_texto"?: string | null,"contenido"?: NonNullable<Json>,"id"?: never,"imagen_ruta"?: string | null,"imagen_url"?: string | null,"orden"?: number,"tipo"?: string,"titulo"?: string | null,"visible"?: boolean
                   }
                   Relationships: [
-
+                    
+                  ]
+                },"integraciones": {
+                  Row: {
+                    "actualizado_en": string,"actualizado_por": string | null,"gemini_api_key": string | null,"unica": boolean,"wa_access_token": string | null,"wa_app_secret": string | null,"wa_phone_number_id": string | null,"wa_verify_token": string,"wa_waba_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"gemini_api_key"?: string | null,"unica"?: boolean,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
+                  }
+                  Update: {
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"gemini_api_key"?: string | null,"unica"?: boolean,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "integraciones_actualizado_por_fkey"
+      columns: ["actualizado_por"]
+isOneToOne: false
+      referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"interacciones": {
                   Row: {
@@ -631,7 +651,7 @@ isOneToOne: false
                     "codigo"?: string,"id"?: never,"nombre"?: string
                   }
                   Relationships: [
-
+                    
                   ]
                 },"medios_pago": {
                   Row: {
@@ -645,7 +665,7 @@ isOneToOne: false
                     "activo"?: boolean,"ajuste_pct"?: number,"codigo"?: string,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre"?: string,"orden"?: number,"tipo"?: string
                   }
                   Relationships: [
-
+                    
                   ]
                 },"movimientos_stock": {
                   Row: {
@@ -721,7 +741,7 @@ isOneToOne: false
                     "punto_venta"?: number,"tipo"?: string,"ultimo"?: number
                   }
                   Relationships: [
-
+                    
                   ]
                 },"pagos": {
                   Row: {
@@ -895,7 +915,7 @@ isOneToOne: false
                     "codigo"?: string,"descripcion"?: string | null,"grupo"?: string,"id"?: never,"nombre"?: string,"orden"?: number
                   }
                   Relationships: [
-
+                    
                   ]
                 },"presupuesto_items": {
                   Row: {
@@ -1235,7 +1255,7 @@ isOneToOne: false
                     "codigo"?: number,"creado_en"?: string,"documento"?: string | null,"email"?: string | null,"id"?: never,"nombre"?: string,"notas"?: string | null,"telefono"?: string | null
                   }
                   Relationships: [
-
+                    
                   ]
                 },"roles": {
                   Row: {
@@ -1249,7 +1269,7 @@ isOneToOne: false
                     "activo"?: boolean,"creado_en"?: string,"descripcion"?: string | null,"descuento_max_pct"?: number | null,"id"?: never,"nombre"?: string,"permisos"?: (string)[],"todos"?: boolean
                   }
                   Relationships: [
-
+                    
                   ]
                 },"saldos_cliente": {
                   Row: {
@@ -1389,7 +1409,7 @@ isOneToOne: false
                     "id"?: never,"nombre"?: string,"orden"?: number,"tipo"?: string
                   }
                   Relationships: [
-
+                    
                   ]
                 },"variantes": {
                   Row: {
@@ -1553,6 +1573,40 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"whatsapp_cobros": {
+                  Row: {
+                    "categoria": string,"fecha": string,"message_id": string,"precio_usd": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "categoria": string,"fecha"?: string,"message_id": string,"precio_usd": number
+                  }
+                  Update: {
+                    "categoria"?: string,"fecha"?: string,"message_id"?: string,"precio_usd"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"whatsapp_envios": {
+                  Row: {
+                    "detalle": string | null,"fecha": string,"id": number,"pedido_id": number | null,"request_id": number | null,"telefono": string,"tipo": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "detalle"?: string | null,"fecha"?: string,"id"?: never,"pedido_id"?: number | null,"request_id"?: number | null,"telefono": string,"tipo": string
+                  }
+                  Update: {
+                    "detalle"?: string | null,"fecha"?: string,"id"?: never,"pedido_id"?: number | null,"request_id"?: number | null,"telefono"?: string,"tipo"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "whatsapp_envios_pedido_id_fkey"
+      columns: ["pedido_id"]
+isOneToOne: false
+      referencedRelation: "pedidos"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -1562,7 +1616,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Relationships: [
-
+                    
                   ]
                 },"v_credito_proveedores": {
                   Row: {
@@ -1570,7 +1624,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Relationships: [
-
+                    
                   ]
                 },"v_creditos": {
                   Row: {
@@ -1660,7 +1714,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Relationships: [
-
+                    
                   ]
                 },"v_imagenes_tienda": {
                   Row: {
@@ -1718,7 +1772,7 @@ isOneToOne: false
                            "acepta_promos"?: boolean | null,"codigo"?: number | null,"direccion"?: string | null,"documento"?: string | null,"email"?: string | null,"fecha_nacimiento"?: string | null,"id"?: number | null,"localidad"?: string | null,"nombre"?: string | null,"telefono"?: string | null
                          }
                         Relationships: [
-
+                    
                   ]
                 },"v_mi_saldo": {
                   Row: {
@@ -1726,7 +1780,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Relationships: [
-
+                    
                   ]
                 },"v_mis_pedido_items": {
                   Row: {
@@ -1754,7 +1808,7 @@ isOneToOne: false
                            "cantidad"?: number | null,"costo"?: never,"dia"?: never
                          }
                         Relationships: [
-
+                    
                   ]
                 },"v_promos_tienda": {
                   Row: {
@@ -1762,7 +1816,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Relationships: [
-
+                    
                   ]
                 },"v_saldo_clientes": {
                   Row: {
@@ -1790,7 +1844,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Relationships: [
-
+                    
                   ]
                 },"v_venta_items": {
                   Row: {
@@ -1942,6 +1996,12 @@ isOneToOne: false
 "_vincular_cliente":
 { Args: { "p_usuario": unknown }; Returns: undefined
                            },
+"_wa_enviar":
+{ Args: { "p_detalle"?: string,"p_mensaje": Json,"p_pedido"?: number,"p_telefono": string,"p_tipo": string }; Returns: number
+                           },
+"_wa_firma_valida":
+{ Args: { "p_firma": string,"p_payload": string }; Returns: boolean
+                           },
 "actualizar_mi_ficha":
 { Args: { "p_acepta_promos"?: boolean,"p_direccion"?: string,"p_documento"?: string,"p_fecha_nacimiento"?: string,"p_localidad"?: string,"p_nombre": string,"p_telefono"?: string }; Returns: undefined
                            },
@@ -2020,11 +2080,17 @@ isOneToOne: false
 "es_staff":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"estado_integraciones":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "etiqueta_promocion":
 { Args: { "p_lleva": number,"p_paga": number,"p_pct": number,"p_tipo": string }; Returns: string
                            },
 "generar_gastos_fijos":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"guardar_integraciones":
+{ Args: { "p_access_token"?: string,"p_app_secret"?: string,"p_gemini_api_key"?: string,"p_phone_number_id"?: string,"p_quitar"?: (string)[],"p_waba_id"?: string }; Returns: undefined
                            },
 "mas_vendidos_tienda":
 { Args: { "p_dias"?: number }; Returns: {
@@ -2097,6 +2163,23 @@ isOneToOne: false
                            },
 "ventas_para_cambio":
 { Args: { "p_buscar": string }; Returns: Json
+                           },
+"wa_envios_recientes":
+{ Args: { "p_limite"?: number }; Returns: {
+              "detalle": string,"error": string,"estado": string,"fecha": string,"id": number,"telefono": string,"tipo": string
+            }[]
+                           },
+"wa_mensaje_prueba":
+{ Args: { "p_telefono": string }; Returns: number
+                           },
+"wa_recibir":
+{ Args: { "p_firma": string,"p_payload": string }; Returns: Json
+                           },
+"wa_responder":
+{ Args: { "p_firma": string,"p_para": string,"p_payload": string,"p_texto": string }; Returns: boolean
+                           },
+"wa_verificar_token":
+{ Args: { "p_token": string }; Returns: boolean
                            }
           }
           Enums: {
@@ -2216,11 +2299,11 @@ export type CompositeTypes<
 export const Constants = {
   "graphql_public": {
           Enums: {
-
+            
           }
         },"public": {
           Enums: {
-
+            
           }
         }
 } as const

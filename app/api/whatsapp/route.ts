@@ -1,108 +1,55 @@
 // Webhook para Meta WhatsApp Cloud API.
 // Documentación: https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks
-
-import { createHmac, timingSafeEqual } from "node:crypto";
+//
+// Las claves NO están acá ni en Vercel: se cargan en el panel (Tienda online → Conexiones) y viven en la base, que
+// nadie puede leer. Este webhook le pasa a la base el cuerpo crudo y la firma de Meta: la base verifica la firma,
+// registra lo cobrado, marca leído y devuelve los mensajes (y la clave de la IA si el bot está activo). Las respuestas
+// también las manda la base, y solo a quien escribió en ese mismo aviso firmado.
 import { after, NextRequest, NextResponse } from "next/server";
-import { enviarMensajeTexto, marcarMensajeLeido } from "@/lib/whatsapp/meta";
-import { procesarMensajeConIA } from "@/lib/whatsapp/bot";
 import { createClient } from "@supabase/supabase-js";
+import { procesarMensajeConIA } from "@/lib/whatsapp/bot";
 import type { Database } from "@/lib/database.types";
-
-function getSupabaseClient() {
-  return createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-  );
-}
 
 export const maxDuration = 30;
 
-function firmaValida(payload: string, firma: string | null) {
-  const secreto = process.env.WHATSAPP_APP_SECRET;
-  if (!secreto || !firma?.startsWith("sha256=")) return false;
-  const esperada = Buffer.from(createHmac("sha256", secreto).update(payload).digest("hex"));
-  const recibida = Buffer.from(firma.slice(7));
-  return esperada.length === recibida.length && timingSafeEqual(esperada, recibida);
-}
+const base = () => createClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
 
-async function procesarMensaje(body: Record<string, unknown>) {
-  const entry = (body.entry as Array<Record<string, unknown>> | undefined)?.[0];
-  const changes = (entry?.changes as Array<Record<string, unknown>> | undefined)?.[0];
-  const value = changes?.value as Record<string, unknown> | undefined;
-  const message = (value?.messages as Array<Record<string, unknown>> | undefined)?.[0];
+type Recibido = { ok: boolean; mensajes?: { de: string; id: string; texto: string }[]; bot_activo?: boolean; gemini_api_key?: string | null };
 
-  if (!message || message.type !== "text") return;
-  const from = typeof message.from === "string" ? message.from : "";
-  const messageId = typeof message.id === "string" ? message.id : "";
-  const textoEntrante = (message.text as { body?: unknown } | undefined)?.body;
-  if (!from || typeof textoEntrante !== "string" || !textoEntrante.trim()) return;
-
-  console.log(`[Webhook WhatsApp] Mensaje de texto recibido de ${from}.`);
-  if (messageId) await marcarMensajeLeido(messageId);
-
-  const supabase = getSupabaseClient();
-  const { data: config } = await supabase
-    .from("configuracion_tienda")
-    .select("wa_bot_activo")
-    .single();
-
-  if (config?.wa_bot_activo === false) {
-    console.log("[Webhook WhatsApp] Bot de IA desactivado en la configuración.");
-    return;
-  }
-
-  const respuesta = await procesarMensajeConIA(textoEntrante, from);
-  if (respuesta) await enviarMensajeTexto(from, respuesta);
-}
-
-/**
- * Verificación del Webhook por parte de Meta (GET).
- */
+// Verificación del webhook (Meta la hace una vez, al configurarlo)
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const mode = searchParams.get("hub.mode");
-  const token = searchParams.get("hub.verify_token");
-  const challenge = searchParams.get("hub.challenge");
-
-  const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
-
-  if (mode === "subscribe" && token && challenge) {
-    if (token === verifyToken) {
-      console.log("[Webhook WhatsApp] Webhook verificado correctamente.");
-      return new NextResponse(challenge, { status: 200 });
-    } else {
-      console.warn("[Webhook WhatsApp] Token de verificación inválido:", token);
-      return new NextResponse("Token de verificación incorrecto", { status: 403 });
-    }
-  }
-
-  return new NextResponse("Parámetros de verificación faltantes", { status: 400 });
+  const q = request.nextUrl.searchParams;
+  const [modo, token, desafio] = [q.get("hub.mode"), q.get("hub.verify_token"), q.get("hub.challenge")];
+  if (modo !== "subscribe" || !token || !desafio) return new NextResponse("Faltan parámetros de verificación", { status: 400 });
+  const { data: valido } = await base().rpc("wa_verificar_token", { p_token: token });
+  return valido ? new NextResponse(desafio, { status: 200 }) : new NextResponse("Token de verificación incorrecto", { status: 403 });
 }
 
-/**
- * Recepción de eventos y mensajes entrantes de WhatsApp (POST).
- */
+// Mensajes y avisos de estado
 export async function POST(request: NextRequest) {
-  try {
-    const payload = await request.text();
-    if (!firmaValida(payload, request.headers.get("x-hub-signature-256"))) {
-      console.warn("[Webhook WhatsApp] Firma inválida o WHATSAPP_APP_SECRET ausente.");
-      return NextResponse.json({ status: "invalid_signature" }, { status: 401 });
-    }
-
-    const body = JSON.parse(payload) as Record<string, unknown>;
-
-    if (body.object !== "whatsapp_business_account") {
-      return NextResponse.json({ status: "ignored" }, { status: 200 });
-    }
-
-    after(() => procesarMensaje(body).catch((error) => {
-      console.error("[Webhook WhatsApp] Error procesando mensaje:", error);
-    }));
-
-    return NextResponse.json({ status: "accepted" }, { status: 200 });
-  } catch (error) {
-    console.error("[Webhook WhatsApp] Error procesando webhook:", error);
-    return NextResponse.json({ status: "error" }, { status: 200 });
+  const cuerpo = await request.text();
+  const firma = request.headers.get("x-hub-signature-256") ?? "";
+  const supabase = base();
+  const { data, error } = await supabase.rpc("wa_recibir", { p_payload: cuerpo, p_firma: firma });
+  const r = data as Recibido | null;
+  if (error) {
+    console.error("[Webhook WhatsApp] Error de la base:", error.message);
+    return NextResponse.json({ status: "error" }, { status: 200 });   // 200: si no, Meta reintenta en loop
   }
+  if (!r?.ok) return NextResponse.json({ status: "invalid_signature" }, { status: 401 });
+
+  if (r.bot_activo && r.mensajes?.length) {
+    // Se contesta después de responderle a Meta (tiene que recibir el 200 rápido)
+    after(async () => {
+      for (const m of r.mensajes ?? []) {
+        try {
+          const respuesta = await procesarMensajeConIA(m.texto, m.de, r.gemini_api_key ?? null);
+          if (respuesta) await supabase.rpc("wa_responder", { p_payload: cuerpo, p_firma: firma, p_para: m.de, p_texto: respuesta });
+        } catch (e) {
+          console.error("[Webhook WhatsApp] Error contestando:", e);
+        }
+      }
+    });
+  }
+  return NextResponse.json({ status: "accepted" }, { status: 200 });
 }

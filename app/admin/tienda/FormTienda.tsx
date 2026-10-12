@@ -22,9 +22,7 @@ type Tienda = {
   wa_idioma_plantilla?: string | null;
 };
 
-type Integracion = { meta: boolean; gemini: boolean; webhook: string };
-
-export default function FormTienda({ tienda, integracion }: { tienda: Tienda; integracion: Integracion }) {
+export default function FormTienda({ tienda }: { tienda: Tienda }) {
   const [estado, accion, cargando] = useActionState(guardarTienda, {});
   return (
     <form action={accion} className="grid gap-4 px-5 py-4 sm:grid-cols-2">
@@ -47,12 +45,6 @@ export default function FormTienda({ tienda, integracion }: { tienda: Tienda; in
           <p className="text-xs text-texto-2">Número de atención y funciones automáticas del bot y notificaciones.</p>
         </div>
 
-        <div className="grid gap-2 rounded-lg border border-borde bg-white p-3 text-xs sm:grid-cols-2">
-          <p><span className={integracion.meta ? "text-ok" : "text-alerta"}>{integracion.meta ? "Configurado" : "Falta configurar"}</span><br />Conexión con Meta WhatsApp</p>
-          <p><span className={integracion.gemini ? "text-ok" : "text-alerta"}>{integracion.gemini ? "Configurado" : "Falta configurar"}</span><br />Asistente de Gemini</p>
-          <p className="break-all text-texto-2 sm:col-span-2">Webhook para Meta: <b className="text-texto">{integracion.webhook}</b></p>
-          {(!integracion.meta || !integracion.gemini) && <p className="text-alerta sm:col-span-2">Las claves privadas se cargan como secretos del servidor. Hasta completarlas, el panel conserva la configuración pero no activa la conexión externa.</p>}
-        </div>
 
         <div>
           <label className="etiqueta">WhatsApp para los pedidos y atención</label>

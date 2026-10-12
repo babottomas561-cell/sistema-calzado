@@ -215,11 +215,11 @@ Reglas clave:
 4. Mantené respuestas breves y directas aptas para WhatsApp (máximo 3 párrafos cortos, podés usar emojis con moderación).
 5. Si no sabés algo o el cliente pide hablar con un humano o coordinar algo especial, decile amablemente que el equipo del local le va a responder a la brevedad.`;
 
-export async function procesarMensajeConIA(mensajeUsuario: string, telefonoRemitente: string): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
+// La clave de Gemini la entrega la base (wa_recibir) solo con un aviso de Meta firmado y el bot activo
+export async function procesarMensajeConIA(mensajeUsuario: string, telefonoRemitente: string, apiKey: string | null): Promise<string> {
 
   if (!apiKey) {
-    console.warn("[Bot WhatsApp] Sin GEMINI_API_KEY configurada. Respuesta por defecto.");
+    console.warn("[Bot WhatsApp] Sin clave de Gemini cargada en el panel. Respuesta por defecto.");
     return "¡Hola! Gracias por comunicarte con nuestro local. Recibimos tu mensaje y un miembro de nuestro equipo te va a responder en breve.";
   }
 

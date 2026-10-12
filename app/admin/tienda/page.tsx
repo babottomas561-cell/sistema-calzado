@@ -6,15 +6,20 @@ import { exigir } from "@/lib/exigir";
 import { leerContenido, type Seccion, type Tipo } from "@/lib/inicio";
 import FormTienda from "./FormTienda";
 import ListaSecciones from "./ListaSecciones";
+import Conexiones, { type EstadoConexiones } from "./Conexiones";
 
 export default async function TiendaOnline() {
   await exigir("tienda.editar");
   const supabase = await crearCliente();
-  const [{ data: secciones }, { data: tienda }, { data: catalogo }] = await Promise.all([
+  const [{ data: secciones }, { data: tienda }, { data: catalogo }, { data: conexiones }, { data: envios }] = await Promise.all([
     supabase.from("inicio_secciones").select("id, tipo, orden, visible, titulo, bajada, boton_texto, boton_enlace, imagen_url, imagen_ruta, contenido").order("orden").order("id"),
     supabase.from("configuracion_tienda").select("nombre, avisos, aviso_enlace, instagram, whatsapp, direccion_retiro, horario, dias_retiro, dias_cambio, dias_saldo, wa_bot_activo, wa_notificaciones_pedidos, wa_plantilla_estado, wa_idioma_plantilla").single(),
     supabase.from("v_catalogo").select("producto_id, nombre, marca, categoria, genero, linea, imagen_url"),
+    supabase.rpc("estado_integraciones"),
+    supabase.rpc("wa_envios_recientes", { p_limite: 10 }),
   ]);
+  // La dirección que se pega en Meta (la de producción; en local, la de esta compu)
+  const webhook = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}/api/whatsapp` : "http://localhost:3000/api/whatsapp";
   const lista = (secciones ?? []).map((s) => ({ ...s, tipo: s.tipo as Tipo, contenido: leerContenido(s.tipo as Tipo, s.contenido) })) as Seccion[];
 
   // Opciones para "a dónde lleva" y para elegir productos a mano: lo que hay publicado
@@ -41,11 +46,13 @@ export default async function TiendaOnline() {
       <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
         <div className="border-b border-borde px-5 py-4"><h2 className="font-semibold">Datos de la tienda</h2>
           <p className="text-sm text-texto-2">Nombre, avisos, redes y lo que ve el cliente al hacer un pedido.</p></div>
-        {tienda && <FormTienda tienda={tienda} integracion={{
-          meta: Boolean(process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID && process.env.WHATSAPP_VERIFY_TOKEN && process.env.WHATSAPP_APP_SECRET),
-          gemini: Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY),
-          webhook: process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}/api/whatsapp` : "/api/whatsapp",
-        }} />}
+        {tienda && <FormTienda tienda={tienda} />}
+      </section>
+
+      <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
+        <div className="border-b border-borde px-5 py-4"><h2 className="font-semibold">Conexiones: WhatsApp e IA</h2>
+          <p className="text-sm text-texto-2">Las claves de Meta y de Gemini. Quedan guardadas en la base y nadie las puede volver a leer: acá solo se ve si están cargadas.</p></div>
+        {conexiones && <Conexiones estado={conexiones as EstadoConexiones} webhook={webhook} envios={envios ?? []} />}
       </section>
     </div>
   );
