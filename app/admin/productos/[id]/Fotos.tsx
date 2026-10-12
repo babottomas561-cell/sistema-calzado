@@ -4,25 +4,10 @@
 import { useRef, useState, useTransition } from "react";
 import { ArrowLeft, ArrowRight, ImagePlus, LoaderCircle, Star, Trash2 } from "lucide-react";
 import { crearClienteNavegador } from "@/lib/supabase/navegador";
+import { achicarFoto } from "@/lib/fotos";
 import { borrarImagen, marcarPrincipal, moverImagen, registrarImagenes, type Estado } from "../acciones";
 
 export type Imagen = { id: number; url: string; principal: boolean };
-
-// Las fotos del celular pesan 3-6 MB: se achican antes de subir. 1600 px de lado alcanza para
-// verla grande en la tienda; JPEG al 82 % deja cada foto en ~150-300 KB (carga rápido con datos móviles).
-const LADO_MAXIMO = 1600;
-const CALIDAD = 0.82;
-
-async function achicarFoto(archivo: File): Promise<Blob> {
-  const imagen = await createImageBitmap(archivo);
-  const escala = Math.min(1, LADO_MAXIMO / Math.max(imagen.width, imagen.height));
-  const lienzo = document.createElement("canvas");
-  lienzo.width = Math.round(imagen.width * escala);
-  lienzo.height = Math.round(imagen.height * escala);
-  lienzo.getContext("2d")!.drawImage(imagen, 0, 0, lienzo.width, lienzo.height);
-  imagen.close();
-  return new Promise((ok, mal) => lienzo.toBlob((b) => (b ? ok(b) : mal(new Error("No se pudo procesar la foto"))), "image/jpeg", CALIDAD));
-}
 
 export default function Fotos({ productoId, imagenes }: { productoId: number; imagenes: Imagen[] }) {
   const entrada = useRef<HTMLInputElement>(null);

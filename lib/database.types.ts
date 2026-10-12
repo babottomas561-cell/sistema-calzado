@@ -225,14 +225,14 @@ isOneToOne: false
                   ]
                 },"configuracion_tienda": {
                   Row: {
-                    "bajada_inicio": string,"direccion_retiro": string | null,"horario": string | null,"id": number,"nombre": string,"titulo_inicio": string,"unica": boolean,"whatsapp": string | null
+                    "aviso": string | null,"aviso_enlace": string | null,"direccion_retiro": string | null,"horario": string | null,"id": number,"instagram": string | null,"nombre": string,"unica": boolean,"whatsapp": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "bajada_inicio"?: string,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"nombre"?: string,"titulo_inicio"?: string,"unica"?: boolean,"whatsapp"?: string | null
+                    "aviso"?: string | null,"aviso_enlace"?: string | null,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
                   }
                   Update: {
-                    "bajada_inicio"?: string,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"nombre"?: string,"titulo_inicio"?: string,"unica"?: boolean,"whatsapp"?: string | null
+                    "aviso"?: string | null,"aviso_enlace"?: string | null,"direccion_retiro"?: string | null,"horario"?: string | null,"id"?: never,"instagram"?: string | null,"nombre"?: string,"unica"?: boolean,"whatsapp"?: string | null
                   }
                   Relationships: [
                     
@@ -247,6 +247,20 @@ isOneToOne: false
                   }
                   Update: {
                     "activo"?: boolean,"id"?: never,"nombre"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"inicio_secciones": {
+                  Row: {
+                    "actualizado_en": string,"bajada": string | null,"boton_enlace": string | null,"boton_texto": string | null,"contenido": NonNullable<Json>,"id": number,"imagen_ruta": string | null,"imagen_url": string | null,"orden": number,"tipo": string,"titulo": string | null,"visible": boolean
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actualizado_en"?: string,"bajada"?: string | null,"boton_enlace"?: string | null,"boton_texto"?: string | null,"contenido"?: NonNullable<Json>,"id"?: never,"imagen_ruta"?: string | null,"imagen_url"?: string | null,"orden"?: number,"tipo": string,"titulo"?: string | null,"visible"?: boolean
+                  }
+                  Update: {
+                    "actualizado_en"?: string,"bajada"?: string | null,"boton_enlace"?: string | null,"boton_texto"?: string | null,"contenido"?: NonNullable<Json>,"id"?: never,"imagen_ruta"?: string | null,"imagen_url"?: string | null,"orden"?: number,"tipo"?: string,"titulo"?: string | null,"visible"?: boolean
                   }
                   Relationships: [
                     
@@ -1148,7 +1162,7 @@ isOneToOne: false
           Views: {
             "v_catalogo": {
                   Row: {
-                    "categoria": string | null,"color": string | null,"color_hex": string | null,"descripcion": string | null,"disponible": number | null,"escala": string | null,"genero": string | null,"imagen_url": string | null,"marca": string | null,"material": string | null,"nombre": string | null,"precio": number | null,"producto_id": number | null,"talle": string | null,"talle_orden": number | null,"temporada": string | null,"variante_id": number | null
+                    "categoria": string | null,"color": string | null,"color_hex": string | null,"creado_en": string | null,"descripcion": string | null,"disponible": number | null,"escala": string | null,"genero": string | null,"imagen_url": string | null,"linea": string | null,"marca": string | null,"material": string | null,"nombre": string | null,"precio": number | null,"producto_id": number | null,"talle": string | null,"talle_orden": number | null,"temporada": string | null,"variante_id": number | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -1410,6 +1424,11 @@ isOneToOne: false
                            },
 "etiqueta_promocion":
 { Args: { "p_lleva": number,"p_paga": number,"p_pct": number,"p_tipo": string }; Returns: string
+                           },
+"mas_vendidos_tienda":
+{ Args: { "p_dias"?: number }; Returns: {
+              "producto_id": number
+            }[]
                            },
 "mi_cliente_id":
 { Args: Record<PropertyKey, never>; Returns: number

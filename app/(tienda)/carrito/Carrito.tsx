@@ -32,7 +32,7 @@ export default function Carrito({ medios, conWhatsApp }: { medios: MedioPago[]; 
 
   if (!cargado) return <div className="py-16" aria-busy="true" />;
   if (items.length === 0) return (
-    <div className="mx-auto max-w-sm py-20 text-center"><p className="text-2xl font-extrabold tracking-tight">Tu carrito está vacío</p><p className="mt-2 text-texto-2">Elegí algo que te guste y reservalo para retirarlo o recibirlo.</p><Link href="/" className="boton mt-6">Ver el catálogo</Link></div>
+    <div className="mx-auto max-w-sm py-20 text-center"><p className="text-2xl font-extrabold tracking-tight">Tu carrito está vacío</p><p className="mt-2 text-texto-2">Elegí algo que te guste y reservalo para retirarlo o recibirlo.</p><Link href="/tienda" className="boton mt-6">Ver el catálogo</Link></div>
   );
 
   return (
@@ -66,7 +66,7 @@ export default function Carrito({ medios, conWhatsApp }: { medios: MedioPago[]; 
         {/* "Te falta 1 unidad para el 2×1" */}
         {(cot?.sugerencias ?? []).map((g) => (
           <p key={g.promocion} className="flex items-center gap-2 rounded-sm bg-acento-suave px-4 py-3 text-sm">
-            <BadgePercent size={18} className="shrink-0 text-acento" /> <span>Sumá <b>{g.faltan} {g.faltan === 1 ? "unidad" : "unidades"}</b> más y aprovechás <b>{g.promocion}</b>. <Link href="/" className="font-semibold underline">Ver el catálogo</Link></span></p>
+            <BadgePercent size={18} className="shrink-0 text-acento" /> <span>Sumá <b>{g.faltan} {g.faltan === 1 ? "unidad" : "unidades"}</b> más y aprovechás <b>{g.promocion}</b>. <Link href="/tienda" className="font-semibold underline">Ver el catálogo</Link></span></p>
         ))}
       </section>
       <form action={accion} className="tarjeta h-fit space-y-5 lg:sticky lg:top-24">

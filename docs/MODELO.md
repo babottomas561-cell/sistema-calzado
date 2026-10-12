@@ -81,6 +81,18 @@ desmarca la anterior; si se borra la principal, pasa a serlo la primera que qued
 copian la url de la principal a `productos.imagen_url`, que es lo que usan `v_catalogo`, el carrito
 y las vistas previas. La tienda ve la galería por `v_imagenes_tienda` (solo productos publicados).
 
+## Portada de la tienda (landing)
+
+La página de inicio (`/`) se arma con `inicio_secciones`: cada fila es una sección con su `tipo`
+(`portada`, `cinta`, `accesos`, `productos`, `promociones`, `banner`, `pasos`, `local`), su `orden`,
+`visible`, textos (`titulo`, `bajada`, `boton_texto`, `boton_enlace`), una foto opcional (`imagen_url`,
+`imagen_ruta` en el bucket público `tienda`) y lo propio del tipo en `contenido` (jsonb: tarjetas de
+accesos, pasos, frases de la cinta, criterio de la vidriera…). La forma de `contenido` la valida
+`lib/inicio.ts` (`leerContenido`), que nunca falla: lo que no cuadra vuelve a un valor por defecto.
+Se edita en `/admin/tienda` con el permiso `tienda.editar`, igual que `configuracion_tienda` (nombre,
+aviso de arriba, Instagram, WhatsApp, dirección y horario). La vidriera «más vendidos» usa
+`mas_vendidos_tienda()`: devuelve solo el orden de los artículos publicados, no cantidades ni montos.
+
 ## Precios
 
 | dónde | qué es |
@@ -152,4 +164,4 @@ queda en `movimientos_stock`. Siempre: `stock.cantidad = Σ movimientos`.
 |---|---|
 | equipo (`perfiles.rol = 'staff'` + `rol_id`) | lo que su rol permite (`tiene_permiso('…')`); los costos solo con `costos.ver` |
 | cliente registrado | su ficha, sus pedidos (con sus renglones y su seguimiento) |
-| cualquiera (sin cuenta) | `v_catalogo` (sin costos) y los `medios_pago` habilitados en la tienda |
+| cualquiera (sin cuenta) | `v_catalogo` (sin costos), los `medios_pago` habilitados en la tienda, las `inicio_secciones` visibles y `configuracion_tienda` |

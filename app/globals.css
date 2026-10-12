@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Sale del ancho de la página: de borde a borde (la tienda corta el sobrante con overflow-x: clip).
+   Es una utilidad para poder usarla con variantes: max-md:sangrado */
+@utility sangrado { margin-inline: calc(50% - 50vw); }
+
 /* Colores del sistema: cambiarlos acá cambia toda la app */
 @theme {
   --color-marca: #1d4ed8;
@@ -77,3 +81,48 @@ body { background: var(--color-fondo); color: #111827; }
   .tienda .aparece { animation: aparece 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
   @keyframes aparece { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 }
+
+/* ───────────────────────────────────────────────────────────────────────────
+   PORTADA (/): movimiento. Todo CSS, sin librerías ni JavaScript:
+   - las columnas de fotos y la cinta corren con @keyframes (la lista va duplicada y se mueve -50 %);
+   - "aparecer al scrollear" usa scroll-driven animations (animation-timeline: view()). Donde el
+     navegador no las tiene, el contenido se ve quieto y completo (nunca queda escondido).
+   - con "reducir movimiento" del sistema, nada se mueve.
+   ─────────────────────────────────────────────────────────────────────────── */
+.tienda { overflow-x: clip; }                       /* que lo "sangrado" no genere scroll de costado */
+.tienda .borde-difuso-y { mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent); }
+.tienda .borde-difuso-x { mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent); }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Columnas de fotos y cintas que corren */
+  .tienda .sube { animation: sube var(--dur, 60s) linear infinite; }
+  .tienda .baja { animation: sube var(--dur, 60s) linear infinite reverse; }
+  .tienda .corre { animation: corre var(--dur, 40s) linear infinite; }
+  .tienda .corre-inv { animation: corre var(--dur, 40s) linear infinite reverse; }
+  .tienda .pausa-hover:hover :is(.sube, .baja, .corre, .corre-inv) { animation-play-state: paused; }
+
+  /* Título de la portada: las palabras suben de a una al cargar */
+  .tienda .palabra { display: inline-block; animation: palabra 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 70ms + 80ms); }
+  .tienda .entra { animation: aparece 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: var(--d, 0.4s); }
+  /* Foto de portada: un zoom lento hacia atrás */
+  .tienda .acerca { animation: acerca 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+  @supports (animation-timeline: view()) {
+    /* Aparece al entrar en pantalla (--i escalona varios hermanos) */
+    .tienda [data-revelar] { animation: aparece linear both; animation-timeline: view();
+      animation-range: entry calc(var(--i, 0) * 6%) entry calc(70% + var(--i, 0) * 6%); }
+    /* La foto se destapa de abajo hacia arriba */
+    .tienda [data-revelar="foto"] { animation-name: destapa; }
+    /* Fondo que se mueve más lento que la página (parallax) */
+    .tienda .paralaje { animation: paralaje linear both; animation-timeline: view(); }
+    /* Número de paso que crece al pasar */
+    .tienda [data-revelar="numero"] { animation-name: numero; }
+  }
+}
+@keyframes sube { to { transform: translateY(-50%); } }
+@keyframes corre { to { transform: translateX(-50%); } }
+@keyframes palabra { from { opacity: 0; transform: translateY(0.45em) rotate(2deg); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes acerca { from { transform: scale(1.12); } to { transform: scale(1); } }
+@keyframes destapa { from { clip-path: inset(18% 0 0 0); opacity: 0.4; transform: translateY(24px); } to { clip-path: inset(0); opacity: 1; transform: none; } }
+@keyframes paralaje { from { transform: translateY(-12%) scale(1.15); } to { transform: translateY(12%) scale(1.15); } }
+@keyframes numero { from { opacity: 0; transform: translateY(40%) scale(0.85); } to { opacity: 1; transform: none; } }

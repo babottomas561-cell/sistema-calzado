@@ -22,8 +22,8 @@ export default async function Producto({ params }: { params: Promise<{ id: strin
   return (
     <div className="space-y-5 pb-24 lg:pb-0">
       <nav aria-label="Ubicación" className="flex min-h-11 flex-wrap items-center gap-1 text-sm text-texto-2">
-        <Link href="/" className="inline-flex min-h-11 items-center hover:text-marca">Inicio</Link><ChevronRight size={14} />
-        {p.categoria && <><Link href={`/?categoria=${encodeURIComponent(p.categoria)}#catalogo`} className="inline-flex min-h-11 items-center hover:text-marca">{p.categoria}</Link><ChevronRight size={14} /></>}
+        <Link href="/tienda" className="inline-flex min-h-11 items-center hover:text-marca">Tienda</Link><ChevronRight size={14} />
+        {p.categoria && <><Link href={`/tienda?categoria=${encodeURIComponent(p.categoria)}#catalogo`} className="inline-flex min-h-11 items-center hover:text-marca">{p.categoria}</Link><ChevronRight size={14} /></>}
         <span className="font-semibold text-marca">{p.nombre}</span>
       </nav>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-14">

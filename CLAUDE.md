@@ -125,16 +125,21 @@ una API de Next.** Lo que ya pisamos:
     calzado y el de jeans son talles distintos): para buscar uno, `buscar_talle(nombre, escala)`. Los informes
     agrupan «por talle» con la escala (`lib/escalas.ts`, `rotuloTalle`) para no mezclarlos.
 14. **Línea del rubro.** Cada rubro es de una línea (`categorias.linea`: Calzado, Ropa, Accesorios): separa los
-    totales en informes y stock (`v_hechos_ventas`, `v_stock` traen `linea`, `escala`, `temporada`). La ropa
-    suma `productos.temporada` y `productos.material` (opcionales). Textos de la tienda (nombre, portada) en
-    `configuracion_tienda`, se editan en Tablas → Tienda; nada de «calzado» escrito a mano en las pantallas.
+    totales en informes y stock (`v_hechos_ventas`, `v_stock`, `v_catalogo` traen `linea`). La ropa
+    suma `productos.temporada` y `productos.material` (opcionales). Nada de «calzado» escrito a mano en las pantallas.
+15. **La portada la arma el dueño.** La landing (`/`) son las `inicio_secciones` que se editan en
+    `/admin/tienda` (permiso `tienda.editar`); los datos de la tienda (nombre, aviso, Instagram, WhatsApp, local)
+    están en `configuracion_tienda`, en la misma pantalla. Un tipo de sección nuevo se suma en el `check` de la
+    tabla, en `lib/inicio.ts` (tipo, `INFO_TIPO`, `leerContenido`, `NUEVA`), en `app/(tienda)/inicio/Secciones.tsx`
+    y en el editor. El movimiento es **CSS** (bloque «PORTADA» de `globals.css`), siempre dentro de
+    `prefers-reduced-motion: no-preference` y sin esconder contenido si el navegador no lo soporta.
 
 ---
 
 ## Dónde está cada cosa
 
 ```
-app/(tienda)/          tienda pública: catálogo, producto, carrito, ingresar/registro, mi-cuenta
+app/(tienda)/          tienda pública: portada (page.tsx + inicio/), catálogo, producto, carrito, ingresar/registro, mi-cuenta
 app/admin/             panel del equipo (el layout verifica que sea staff; cada página, su permiso con exigir())
   equipo/              personas del equipo y roles con sus permisos
   productos/           alta con desplegables + talles/colores tildables; ficha con grilla talle×color
@@ -145,6 +150,7 @@ app/admin/             panel del equipo (el layout verifica que sea staff; cada 
   stock/  pedidos/  clientes/  seguimientos/  proveedores/
   reposicion/          pedido sugerido por talle según el ritmo de venta (reposicion_sugerida), copiable a WhatsApp
   precios/             ajuste masivo de precios de venta y compra (ajustar_precios), historial y deshacer
+  tienda/              tienda online: secciones de la portada (orden, ocultar, editar, fotos) y datos de la tienda
   tablas/              maestros: rubros/subrubros, marcas, colores (muestra), talles (orden), medios de pago
 components/            Menu (íconos lucide), Logo, Volver, SelectorVariantes (venta), Contactos…
 lib/supabase/server.ts crearCliente() tipado y usuarioActual() → { supabase, user, rol, nombre }
@@ -154,6 +160,8 @@ lib/formato.ts         pesos(), porcentaje(), fecha(), inicioDe() con zona -03:0
 lib/permisos.ts       tipo Permiso y puede() (menú) · lib/exigir.ts: exigir('permiso') al principio de cada página
 lib/medios.ts          MedioPago, textoMedio(), ajusteDe() (mismo redondeo que la base)
 lib/carrito.ts         carrito en localStorage
+lib/inicio.ts          tipos de sección de la portada, su contenido y cómo se lee sin romperse
+lib/fotos.ts           achicarFoto(): las fotos se achican en el navegador antes de subirlas
 proxy.ts               refresca la sesión; /admin exige staff; /mi-cuenta exige login
 supabase/migrations/   el esquema (una migración por cambio)
 supabase/seed.sql      datos de ejemplo SOLO para la base local
@@ -167,7 +175,7 @@ supabase/seed.sql      datos de ejemplo SOLO para la base local
 npm run db:start     # base local en Docker (la primera vez tarda)
 npm run db:reset     # rehace la base: migraciones + seed.sql
 npm run db:tipos     # regenera lib/database.types.ts — después de CADA cambio de esquema
-npm run db:test      # pruebas de la base (supabase/tests): ventas, compras, pedidos, fotos, seguridad
+npm run db:test      # pruebas de la base (supabase/tests): ventas, compras, pedidos, fotos, portada, seguridad
 npm run dev          # http://localhost:3000
 npm run revisar      # tsc + eslint + build: tiene que pasar antes de dar algo por terminado
 ```
