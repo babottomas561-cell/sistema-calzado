@@ -10,7 +10,8 @@ export const TITULO_ESCALA: Record<string, string> = {
 };
 // Prefijo para filtros de la tienda ("Talle", "Talle niños", "Talle ropa"…)
 export const FILTRO_ESCALA: Record<string, string> = {
-  Adulto: "Talle", Niños: "Talle niños", Bebé: "Talle bebé", "Ropa letras": "Talle ropa", "Ropa números": "Talle ropa (número)", Único: "Único",
+  Adulto: "Talle de calzado", Niños: "Talle de calzado niños", Bebé: "Talle de calzado bebé",
+  "Ropa letras": "Talle de ropa", "Ropa números": "Talle de pantalón o jean", Único: "Talle único",
 };
 export const ordenEscala = (e: string | null | undefined) => { const i = ESCALAS.indexOf(e as Escala); return i < 0 ? 99 : i; };
 // Para informes: el «38» de calzado y el de jeans son talles distintos, así que se muestran con su escala

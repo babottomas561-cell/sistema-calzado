@@ -24,11 +24,11 @@ export default async function MiCuenta() {
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
       <section className="space-y-3">
-        <div className="flex items-center justify-between"><h1 className="text-2xl font-bold">Hola, {ficha?.nombre?.split(" ")[0] ?? "!"}</h1>
+        <div className="flex items-center justify-between"><h1 className="text-3xl font-extrabold tracking-[-0.035em]">Hola, {ficha?.nombre?.split(" ")[0] ?? "!"}</h1>
           <form action={salir}><button className="text-sm font-semibold text-marca">Cerrar sesión</button></form></div>
         <h2 className="font-semibold">Mis pedidos</h2>
         {(pedidos ?? []).map((p) => (
-          <Link key={p.id} href={`/mi-cuenta/pedidos/${p.id}`} className="flex items-center justify-between rounded-xl border border-borde bg-white p-4 hover:border-marca">
+          <Link key={p.id} href={`/mi-cuenta/pedidos/${p.id}`} className="flex items-center justify-between rounded-sm border border-borde bg-white p-4 hover:border-marca">
             <div><div className="font-semibold">Pedido <span className="font-mono">{p.comprobante}</span></div><div className="text-sm text-texto-2">{fecha(p.fecha)} · {p.entrega === "envio" ? "Envío" : "Retiro"}</div></div>
             <div className="text-right"><span className={`chip ${ESTADOS[p.estado].color}`}>{ESTADOS[p.estado].texto}</span><div className="mt-1 font-semibold">{pesos(p.total)}</div></div>
           </Link>

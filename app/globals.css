@@ -10,6 +10,8 @@
   --color-ok: #059669;
   --color-alerta: #d97706;
   --color-error: #dc2626;
+  --color-acento: #dc4a26;          /* solo la tienda lo usa (promociones); su valor fino está en .tienda */
+  --color-acento-suave: #fdeee9;
   --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
@@ -26,4 +28,52 @@ body { background: var(--color-fondo); color: #111827; }
   .tabla th { @apply border-b border-borde px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-texto-2; }
   .tabla td { @apply border-b border-gray-100 px-3 py-2.5; }
   .chip { @apply inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold; }
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   TIENDA PÚBLICA: identidad propia, aislada del panel (/admin no la usa).
+   Papel blanco, tinta casi negra y un solo acento bermellón para promociones.
+   Re-definir --color-marca acá cambia bg-marca / text-marca / border-marca solo
+   dentro de .tienda, así las pantallas de la tienda se re-visten sin tocar el panel.
+   ─────────────────────────────────────────────────────────────────────────── */
+.tienda {
+  --color-marca: oklch(0.2 0.012 280);          /* tinta: botones principales, activos */
+  --color-marca-suave: oklch(0.955 0.004 280);  /* fondo de selección */
+  --color-fondo: oklch(0.975 0.002 280);
+  --color-borde: oklch(0.9 0.004 280);
+  --color-texto-2: oklch(0.45 0.01 280);        /* ≥ 7:1 sobre blanco */
+  --color-ok: oklch(0.48 0.12 160);             /* ahorro: verde profundo, 5:1 sobre blanco */
+  --color-alerta: oklch(0.5 0.13 60);
+  --color-error: oklch(0.52 0.19 27);
+  --color-acento: oklch(0.57 0.205 32);         /* bermellón: promociones */
+  --color-acento-suave: oklch(0.96 0.025 35);
+  font-family: var(--font-tienda), ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #fff;
+  color: oklch(0.2 0.012 280);
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+}
+.tienda h1, .tienda h2, .tienda h3 { text-wrap: balance; letter-spacing: -0.02em; }
+.tienda p { text-wrap: pretty; }
+
+/* Piezas de formulario y botones de la tienda: rectas, altas (táctiles) y sin sombra */
+.tienda .boton { @apply min-h-12 rounded-sm px-6 text-[0.95rem] tracking-[0.01em] hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca; }
+.tienda .boton-sec { @apply min-h-12 rounded-sm border-marca bg-transparent px-6 text-[0.95rem] text-marca hover:bg-marca-suave focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca; }
+.tienda .campo { @apply min-h-12 rounded-sm border-gray-300 px-3.5 text-base focus:border-marca focus:ring-2 focus:ring-gray-200; }
+.tienda .tarjeta { @apply rounded-sm border-borde p-5 shadow-none; }
+.tienda .etiqueta { @apply text-[0.78rem] tracking-[0.04em]; }
+
+/* Foco visible en todo lo interactivo de la tienda */
+.tienda a:focus-visible, .tienda button:focus-visible, .tienda summary:focus-visible, .tienda input:focus-visible, .tienda select:focus-visible {
+  outline: 2px solid oklch(0.2 0.012 280); outline-offset: 2px;
+}
+
+/* Tira de categorías: se desliza con el dedo, sin barra */
+.tienda .tira { scrollbar-width: none; -ms-overflow-style: none; }
+.tienda .tira::-webkit-scrollbar { display: none; }
+
+/* Entrada suave de las tarjetas (solo si el usuario no pidió menos movimiento) */
+@media (prefers-reduced-motion: no-preference) {
+  .tienda .aparece { animation: aparece 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  @keyframes aparece { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 }

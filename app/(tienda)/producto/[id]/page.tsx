@@ -1,8 +1,9 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ChevronRight, MapPin, Truck } from "lucide-react";
 import { crearCliente } from "@/lib/supabase/server";
 import ElegirVariante from "./ElegirVariante";
 import Galeria from "./Galeria";
-import Volver from "@/components/Volver";
 
 export default async function Producto({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -17,24 +18,39 @@ export default async function Producto({ params }: { params: Promise<{ id: strin
   ]);
   if (!data?.length) notFound();
   const p = data[0];
+  const fotos = (imagenes ?? []).map((i) => i.url ?? "").filter(Boolean);
   return (
-    <div className="space-y-4">
-      <Volver href="/">Volver al catálogo</Volver>
-      <div className="grid gap-6 md:grid-cols-2">
-        <Galeria fotos={(imagenes ?? []).map((i) => i.url ?? "").filter(Boolean)} nombre={p.nombre ?? ""} />
-        <div className="space-y-4">
-          <div><div className="text-sm uppercase tracking-wide text-texto-2">{p.marca} · {p.categoria}{p.genero ? ` · ${p.genero}` : ""}</div>
-            <h1 className="text-2xl font-bold md:text-3xl">{p.nombre}</h1></div>
+    <div className="space-y-5 pb-24 lg:pb-0">
+      <nav aria-label="Ubicación" className="flex min-h-11 flex-wrap items-center gap-1 text-sm text-texto-2">
+        <Link href="/" className="inline-flex min-h-11 items-center hover:text-marca">Inicio</Link><ChevronRight size={14} />
+        {p.categoria && <><Link href={`/?categoria=${encodeURIComponent(p.categoria)}#catalogo`} className="inline-flex min-h-11 items-center hover:text-marca">{p.categoria}</Link><ChevronRight size={14} /></>}
+        <span className="font-semibold text-marca">{p.nombre}</span>
+      </nav>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-14">
+        <Galeria fotos={fotos} nombre={p.nombre ?? ""} />
+        <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-texto-2">{[p.marca, p.genero].filter(Boolean).join(" · ")}</p>
+            <h1 className="text-[clamp(1.7rem,4vw,2.4rem)] font-extrabold leading-[1.05] tracking-[-0.035em]">{p.nombre}</h1>
+          </div>
           {(promos ?? []).map((pr) => (
-            <div key={pr.promocion_id} className="flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-ok">
-              <span className="rounded-md bg-ok px-2 py-0.5 text-xs font-bold text-white">{pr.etiqueta}</span>
+            <div key={pr.promocion_id} className="flex items-start gap-3 rounded-sm bg-acento-suave px-4 py-3 text-sm">
+              <span className="rounded-sm bg-acento px-2 py-1 text-xs font-bold leading-none text-white">{pr.etiqueta}</span>
               <span><b>{pr.nombre}</b>{pr.mezcla ? ". Podés combinarlo con otros modelos de la promo." : "."}
-                {pr.hasta && <span className="block text-xs opacity-80">Hasta el {new Date(new Date(pr.hasta).getTime() - 1).toLocaleDateString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" })}</span>}</span>
+                {pr.hasta && <span className="block text-xs text-texto-2">Hasta el {new Date(new Date(pr.hasta).getTime() - 1).toLocaleDateString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" })}</span>}</span>
             </div>
           ))}
-          {p.descripcion && <p className="text-gray-700">{p.descripcion}</p>}
-          {(p.temporada || p.material) && <p className="text-sm text-texto-2">{[p.material && `Material: ${p.material}`, p.temporada].filter(Boolean).join(" · ")}</p>}
-          <ElegirVariante variantes={data as never} mejorMedio={medios?.[0] ?? null} />
+          <ElegirVariante variantes={data as never} mejorMedio={medios?.[0] ?? null} imagen={fotos[0] ?? null} />
+          <ul className="space-y-2.5 border-t border-borde pt-5 text-sm text-texto-2">
+            <li className="flex gap-3"><MapPin size={18} className="mt-0.5 shrink-0" /> Retirás en el local sin costo.</li>
+            <li className="flex gap-3"><Truck size={18} className="mt-0.5 shrink-0" /> También enviamos a tu domicilio.</li>
+          </ul>
+          {(p.descripcion || p.temporada || p.material) && (
+            <div className="space-y-2 border-t border-borde pt-5 text-[0.95rem]">
+              {p.descripcion && <p className="max-w-prose">{p.descripcion}</p>}
+              {(p.temporada || p.material) && <p className="text-sm text-texto-2">{[p.material && `Material: ${p.material}`, p.temporada].filter(Boolean).join(" · ")}</p>}
+            </div>
+          )}
         </div>
       </div>
     </div>
