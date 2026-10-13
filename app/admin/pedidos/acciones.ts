@@ -51,3 +51,13 @@ export async function registrarPago(_: Estado, f: FormData): Promise<Estado> {
   revalidatePath("/admin/pedidos", "layout");
   return { ok: "Pago registrado" };
 }
+
+// Avance de un toque desde la lista (confirmar, marcar armado). Entregar (cobra) y cancelar (pide motivo) se hacen adentro del pedido.
+export async function avanzarPedido(pedido: number, estado: string): Promise<Estado> {
+  if (!["confirmado", "preparado"].includes(estado)) return { error: "Eso se hace adentro del pedido" };
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("cambiar_estado_pedido", { p_pedido: pedido, p_estado: estado, p_pagos: [] });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/pedidos", "layout");
+  return {};
+}

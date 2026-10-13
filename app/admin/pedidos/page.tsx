@@ -1,61 +1,34 @@
-// Pedidos de la tienda y de otros canales, por estado.
-import Link from "next/link";
-import { crearCliente } from "@/lib/supabase/server";
-import { fechaHora, pesos } from "@/lib/formato";
-import ListaMovil, { FilaMovil } from "@/components/ListaMovil";
-import { ESTADOS } from "@/lib/estados-pedido";
+// Pedidos de la tienda y de otros canales, ordenados por lo que hay que hacer: atender (pendientes y confirmados), preparar, entregar y cerrados.
+// Cada pedido dice cuánto hace que espera, si ya pagó y cómo se entrega; lo simple (confirmar, preparar) se hace desde la lista.
 import { exigir } from "@/lib/exigir";
+import ListaPedidos, { type FilaPedido } from "./ListaPedidos";
 
-const VISTAS = { activos: ["pendiente", "confirmado", "preparado", "enviado", "listo_retiro"], cerrados: ["entregado", "cancelado"] } as const;
+const GRUPOS = {
+  atender: ["pendiente", "confirmado"], preparar: ["preparado"], entregar: ["enviado", "listo_retiro"], cerrados: ["entregado", "cancelado"],
+} as const;
+type Grupo = keyof typeof GRUPOS;
 
 export default async function Pedidos({ searchParams }: { searchParams: Promise<{ ver?: string }> }) {
-  await exigir("pedidos.gestionar");
-  const { ver = "activos" } = await searchParams;
-  const vista = ver === "cerrados" ? "cerrados" : "activos";
-  const supabase = await crearCliente();
-  const { data: pedidos, error } = await supabase.from("pedidos")
-    .select("id, comprobante, fecha, total, estado, canal, entrega, clientes(nombre), medios_pago(nombre)")
-    .in("estado", [...VISTAS[vista]]).order("fecha", { ascending: vista === "activos" }).limit(300);
-
+  const { supabase } = await exigir("pedidos.gestionar");
+  const { ver } = await searchParams;
+  const [{ data: activos, error }, { data: cerrados }, { data: tienda }] = await Promise.all([
+    supabase.from("pedidos").select("id, comprobante, fecha, total, costo_envio, estado, canal, entrega, direccion_envio, pagado_online, clientes(nombre, telefono), medios_pago(nombre)")
+      .in("estado", ["pendiente", "confirmado", "preparado", "enviado", "listo_retiro"]).order("fecha", { ascending: true }).limit(500),
+    supabase.from("pedidos").select("id, comprobante, fecha, total, costo_envio, estado, canal, entrega, direccion_envio, pagado_online, clientes(nombre, telefono), medios_pago(nombre)")
+      .in("estado", ["entregado", "cancelado"]).order("fecha", { ascending: false }).limit(150),
+    supabase.from("configuracion_tienda").select("nombre").maybeSingle(),
+  ]);
+  const aFila = (p: NonNullable<typeof activos>[number]): FilaPedido => {
+    const c = p.clientes as unknown as { nombre: string; telefono: string | null } | null;
+    return { id: p.id, comprobante: p.comprobante ?? "", fecha: p.fecha, total: Number(p.total) + Number(p.costo_envio ?? 0), estado: p.estado, canal: p.canal, envio: p.entrega === "envio",
+      direccion: p.direccion_envio, pagado: !!p.pagado_online, cliente: c?.nombre ?? "—", telefono: c?.telefono ?? null, medio: (p.medios_pago as unknown as { nombre: string } | null)?.nombre ?? "" };
+  };
+  const filas = [...(activos ?? []), ...(cerrados ?? [])].map(aFila);
+  const inicial: Grupo = ver && ver in GRUPOS ? (ver as Grupo) : (["atender", "preparar", "entregar"] as Grupo[]).find((g) => filas.some((f) => (GRUPOS[g] as readonly string[]).includes(f.estado))) ?? "atender";
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Pedidos</h1>
-      <div className="flex gap-2">
-        {(["activos", "cerrados"] as const).map((k) => (
-          <Link key={k} href={`/admin/pedidos?ver=${k}`} className={`rounded-lg border px-3 py-1.5 text-sm capitalize ${k === vista ? "border-marca bg-marca-suave font-semibold text-marca" : "border-borde bg-white"}`}>{k}</Link>
-        ))}
-      </div>
       {error && <p className="text-error">{error.message}</p>}
-      <ListaMovil vacio={pedidos?.length === 0 && `No hay pedidos ${vista}.`}>
-        {(pedidos ?? []).map((p) => (
-          <FilaMovil key={p.id} href={`/admin/pedidos/${p.id}`}
-            titulo={(p.clientes as unknown as { nombre: string }).nombre}
-            detalle={<>{fechaHora(p.fecha)} · <span className="font-mono">{p.comprobante}</span></>}
-            extra={<><span className={`chip ${ESTADOS[p.estado].color}`}>{ESTADOS[p.estado].texto}</span>
-              <span className="chip bg-gray-100">{p.entrega === "envio" ? "Envío" : "Retira"}</span>
-              <span className="chip bg-gray-100 text-texto-2">{(p.medios_pago as unknown as { nombre: string }).nombre}</span></>}
-            valor={<span className="font-bold">{pesos(p.total)}</span>} />
-        ))}
-      </ListaMovil>
-      <div className="tarjeta hidden overflow-x-auto p-0 md:block">
-        <table className="tabla">
-          <thead><tr><th>Pedido</th><th>Fecha</th><th>Cliente</th><th>Estado</th><th>Entrega</th><th>Pago</th><th className="text-right">Total</th></tr></thead>
-          <tbody>
-            {(pedidos ?? []).map((p) => (
-              <tr key={p.id}>
-                <td><Link href={`/admin/pedidos/${p.id}`} className="font-mono font-semibold text-marca">{p.comprobante}</Link></td>
-                <td>{fechaHora(p.fecha)}</td>
-                <td>{(p.clientes as unknown as { nombre: string }).nombre}<div className="text-xs text-texto-2">{p.canal}</div></td>
-                <td><span className={`chip ${ESTADOS[p.estado].color}`}>{ESTADOS[p.estado].texto}</span></td>
-                <td>{p.entrega === "envio" ? "Envío" : "Retira"}</td>
-                <td>{(p.medios_pago as unknown as { nombre: string }).nombre}</td>
-                <td className="text-right font-semibold">{pesos(p.total)}</td>
-              </tr>
-            ))}
-            {pedidos?.length === 0 && <tr><td colSpan={7} className="py-8 text-center text-texto-2">No hay pedidos {vista}.</td></tr>}
-          </tbody>
-        </table>
-      </div>
+      <ListaPedidos filas={filas} grupos={GRUPOS} inicial={inicial} tienda={tienda?.nombre ?? "el local"} />
     </div>
   );
 }
