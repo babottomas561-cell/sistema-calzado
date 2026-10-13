@@ -213,8 +213,12 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
           )}
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h1 className="text-2xl font-bold">Nueva venta</h1>
+            <span className="flex flex-wrap gap-2">
+            <Link href="/admin/ventas?periodo=hoy&mias=1" className="boton-sec min-h-10 whitespace-nowrap" title="Lo que vendiste hoy: reimprimir, mandar o anular">
+              <ReceiptText size={16} strokeWidth={1.8} /> Mis ventas de hoy</Link>
             <button type="button" onClick={() => setCambio("")} className="boton-sec min-h-10 whitespace-nowrap" title="Cambio o devolución (F6). También: escaneá el ticket del cliente">
               <ArrowLeftRight size={16} strokeWidth={1.8} /> Cambio o devolución <kbd className="ml-1 hidden rounded border border-borde bg-white px-1 text-[11px] font-sans text-texto-2 lg:inline">F6</kbd></button>
+            </span>
           </div>
           {cambio !== null && <CambioRapido inicial={cambio} alCerrar={() => setCambio(null)} />}
           <Paso n={1} titulo="Agregá lo que se lleva" listo={items.length > 0}>

@@ -1,5 +1,5 @@
 // Catálogo del menú del panel (lo usan el menú y la pantalla de módulos).
-import { BadgePercent, BookText, Boxes, ChartBar, FileText, House, MessageCircleMore, Package, PackagePlus, PackageSearch, PackageX, Plug, Printer, Receipt, Scale, ScanBarcode, Settings2, ShieldCheck, ShoppingBag, Store, Tags, Truck, Undo2, Users, Wallet, type LucideIcon, FileCheck2 } from "lucide-react";
+import { BadgePercent, BookText, Boxes, ChartBar, FileText, House, MessageCircleMore, Package, PackagePlus, PackageSearch, PackageX, Plug, Printer, Receipt, Scale, ScanBarcode, Settings2, ShieldCheck, ShoppingBag, Store, Tags, Truck, Undo2, Users, Wallet, type LucideIcon } from "lucide-react";
 import type { Permiso } from "@/lib/permisos";
 
 // El menú del panel. Cada ítem aparece si la persona tiene alguno de sus permisos (la base controla igual lo que puede hacer),
@@ -12,7 +12,6 @@ export const GRUPOS: { titulo?: string; items: Item[] }[] = [
     { href: "/admin/ventas", texto: "Ventas", icono: Receipt, permisos: ["ventas.registrar", "ventas.ver_todas"], fijo: true },
     { href: "/admin/devoluciones", texto: "Cambios y devol.", icono: Undo2, permisos: ["ventas.registrar", "ventas.ver_todas"] },
     { href: "/admin/presupuestos", texto: "Presupuestos", icono: FileText, permisos: ["ventas.registrar", "ventas.ver_todas"] },
-    { href: "/admin/facturas", texto: "Facturas", icono: FileCheck2, permisos: ["facturas.ver"] },
     { href: "/admin/pedidos", texto: "Pedidos", icono: ShoppingBag, permisos: ["pedidos.gestionar"] },
     { href: "/admin/arrepentimientos", texto: "Arrepentimientos", icono: Scale, permisos: ["pedidos.gestionar"] },
     { href: "/admin/compras", texto: "Compras", icono: PackagePlus, permisos: ["compras.registrar"] },
