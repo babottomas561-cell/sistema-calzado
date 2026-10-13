@@ -44,4 +44,6 @@ export const GRUPOS: { titulo?: string; items: Item[] }[] = [
   ] },
 ];
 
+// La configuración se junta en un solo ítem del menú (las pantallas siguen en GRUPOS: sirven para buscar, favoritos y módulos)
+export const CONFIGURACION = { href: "/admin/configuracion", texto: "Configuración", icono: Settings2, permisos: [] as Permiso[] };
 export const ITEMS = GRUPOS.flatMap((g) => g.items);

@@ -63,6 +63,20 @@ export function rangoAnterior(periodo: Periodo, r: Rango): Rango {
   return { desde: sumarDias(r.desde, -n), hasta: sumarDias(r.desde, -1) };
 }
 
+// El mismo período, un año antes (para comparar temporadas: julio contra julio, no contra junio). El 29/02 pasa al 28/02.
+export const rangoAnioAnterior = (r: Rango): Rango => ({ desde: sumarMeses(r.desde, -12), hasta: sumarMeses(r.hasta, -12) });
+
+// Día de la semana (0 = lunes … 6 = domingo) y hora (0-23) de un instante, en hora argentina
+export const DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"] as const;
+const formatoAR = new Intl.DateTimeFormat("en-US", { timeZone: "America/Argentina/Buenos_Aires", weekday: "short", hour: "numeric", hourCycle: "h23" });
+const ABREV = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+export function diaYHora(iso: string): { dia: number; hora: number } {
+  const partes = formatoAR.formatToParts(new Date(iso));
+  const dia = ABREV.indexOf(partes.find((p) => p.type === "weekday")?.value ?? "");
+  const hora = Number(partes.find((p) => p.type === "hour")?.value ?? 0);
+  return { dia: dia < 0 ? 0 : dia, hora: hora % 24 };
+}
+
 // Para filtrar timestamps en la base: desde las 00:00 de "desde" hasta antes de las 00:00 del día siguiente a "hasta"
 export const limites = (r: Rango) => ({ gte: `${r.desde}T00:00:00-03:00`, lt: `${sumarDias(r.hasta, 1)}T00:00:00-03:00` });
 

@@ -6,9 +6,9 @@ import { useEffect, useState } from "react";
 import { BookUser, Check, ChevronDown, Eye, EyeOff, ExternalLink, KeyRound, LockKeyhole, LogOut, Menu as IconoMenu, PanelLeftClose, PanelLeftOpen, Plus, Search, SlidersHorizontal, Star, X } from "lucide-react";
 import Logo from "@/components/Logo";
 import { puede } from "@/lib/permisos";
-import { GRUPOS, type Item } from "@/lib/menu";
+import { CONFIGURACION, GRUPOS, type Item } from "@/lib/menu";
 
-const TODAS = ["/admin/ventas/nueva", ...GRUPOS.flatMap((g) => g.items.map((i) => i.href))];
+const TODAS = ["/admin/ventas/nueva", "/admin/configuracion", ...GRUPOS.flatMap((g) => g.items.map((i) => i.href))];
 const normalizar = (texto: string) => texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 type Props = {
@@ -48,7 +48,8 @@ export default function Menu({ version, logo, nombre, email, rolEquipo, permisos
   const visibles = gruposPermitidos.map((g) => ({ ...g, items: personalizando || textoBusqueda ? g.items : g.items.filter((i) => !ocultos.includes(i.href)) }));
   const favoritosVisibles = personalizando ? [] : visibles.flatMap((g) => g.items).filter((i) => favoritos.includes(i.href));
   const grupos = [...(favoritosVisibles.length && !textoBusqueda ? [{ titulo: "Favoritos", items: favoritosVisibles, esFavoritos: true }] : []),
-    ...visibles.map((g) => ({ ...g, esFavoritos: false }))]
+    // «Configuración» queda como un solo ítem (al buscar o personalizar se ven las pantallas de adentro)
+    ...visibles.map((g) => ({ ...g, esFavoritos: false, items: g.titulo === "Configuración" && !personalizando && !textoBusqueda && g.items.length ? [{ ...CONFIGURACION, hijos: g.items.map((i) => i.href) } as Item & { hijos: string[] }] : g.items }))]
     .map((grupo) => ({ ...grupo, items: textoBusqueda ? grupo.items.filter((item) => normalizar(item.texto).includes(textoBusqueda)) : grupo.items }))
     .filter((grupo) => grupo.items.length);
 
@@ -136,7 +137,7 @@ export default function Menu({ version, logo, nombre, email, rolEquipo, permisos
               </button>}
               {(compacto || textoBusqueda || !g.titulo || !plegados.includes(g.titulo)) && g.items.map((item) => {
                 const { href, texto, icono: Icono } = item;
-                const activo = href === actual;
+                const activo = href === actual || (href === CONFIGURACION.href && !!(item as Item & { hijos?: string[] }).hijos?.includes(actual ?? ""));
                 const oculto = ocultos.includes(href);
                 if (personalizando) {
                   return sePuedeOcultar(item) ? (

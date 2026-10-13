@@ -3,9 +3,10 @@
 // Importes NETOS: con el descuento manual y el ajuste por medio de pago ya prorrateados
 // (v_hechos_ventas), los mismos que suman el Inicio y la pantalla de Ventas.
 import { LINEAS, ordenEscala, rotuloTalle } from "@/lib/escalas";
+import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { crearCliente } from "@/lib/supabase/server";
-import { diasDe, diasEntre, leerTodo, limites, PERIODOS, rangoAnterior, rangoDe, type Periodo, type Rango } from "@/lib/informes";
+import { diasDe, diasEntre, leerTodo, limites, PERIODOS, rangoAnioAnterior, rangoAnterior, rangoDe, type Periodo, type Rango } from "@/lib/informes";
 import { diaArgentina, numero, pesos } from "@/lib/formato";
 import BotonCSV from "@/components/BotonCSV";
 import Desglose, { Agrupar, type FilaDesglose } from "../Desglose";
@@ -31,7 +32,7 @@ function Variacion({ actual, anterior }: { actual: number; anterior: number }) {
   return <span className={`inline-flex items-center gap-0.5 font-semibold ${v >= 0 ? "text-ok" : "text-error"}`}><Icono size={14} strokeWidth={2.2} />{v >= 0 ? "+" : ""}{v} %</span>;
 }
 
-export default async function InformeVentas({ searchParams }: { searchParams: Promise<{ periodo?: string; desde?: string; hasta?: string; por?: string }> }) {
+export default async function InformeVentas({ searchParams }: { searchParams: Promise<{ periodo?: string; desde?: string; hasta?: string; por?: string; vs?: string }> }) {
   const { permisos } = await exigir("informes.ventas");
   // Sin "Ver costos" la base devuelve la ganancia vacía: no se muestra
   const conCostos = permisos.includes("costos.ver_ganancia");
@@ -40,7 +41,9 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
   const por = (sp.por && sp.por in POR ? sp.por : "modelo") as Por;
   const hoy = diaArgentina();
   const rango = rangoDe(periodo, hoy, sp.desde, sp.hasta);
-  const anterior = rangoAnterior(periodo, rango);
+  // Comparar con el período anterior (por defecto) o con el mismo período del año pasado (en ropa, la temporada engaña: julio contra junio)
+  const vsAnio = sp.vs === "anio";
+  const anterior = vsAnio ? rangoAnioAnterior(rango) : rangoAnterior(periodo, rango);
   const [l, la] = [limites(rango), limites(anterior)];
 
   const supabase = await crearCliente();
@@ -135,27 +138,35 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
       : `${numero(g.unidades)} unidades · ${g.ventas.size} venta${g.ventas.size === 1 ? "" : "s"}${conCostos ? ` · ganancia ${pesos(g.ganancia)} (${margenPct(g.ganancia, g.vendido)} %)` : ""}`,
   }));
 
-  const params = periodo === "rango" ? `&periodo=rango&desde=${rango.desde}&hasta=${rango.hasta}` : `&periodo=${periodo}`;
+  const params = (periodo === "rango" ? `&periodo=rango&desde=${rango.desde}&hasta=${rango.hasta}` : `&periodo=${periodo}`) + (vsAnio ? "&vs=anio" : "");
+  const periodoUrl = periodo === "rango" ? `periodo=rango&desde=${rango.desde}&hasta=${rango.hasta}` : `periodo=${periodo}`;
+  const base = `/admin/informes/ventas?${periodoUrl}&por=${por}`;
   const kpis = [
     { titulo: "Vendido", valor: pesos(act.vendido), extra: <Variacion actual={act.vendido} anterior={ant.vendido} /> },
     ...(conCostos ? [{ titulo: "Ganancia bruta", valor: pesos(act.ganancia), extra: <span className="text-texto-2">{margenPct(act.ganancia, act.vendido)} % de lo vendido</span> }] : []),
     { titulo: "Ventas", valor: numero(act.ventas), extra: <Variacion actual={act.ventas} anterior={ant.ventas} /> },
     { titulo: "Unidades", valor: numero(act.unidades), extra: <Variacion actual={act.unidades} anterior={ant.unidades} /> },
     { titulo: "Ticket promedio", valor: pesos(act.ventas ? act.vendido / act.ventas : 0), extra: <span className="text-texto-2">{act.ventas ? `${(act.unidades / act.ventas).toFixed(1).replace(".", ",")} unidades por venta` : "—"}</span> },
-    { titulo: ajustes <= 0 ? "Descuentos" : "Recargos", valor: pesos(Math.abs(ajustes)), extra: <span className="text-texto-2">manuales y por medio de pago</span> },
-    ...(enPromos > 0 ? [{ titulo: "En promociones", valor: pesos(enPromos), extra: <span className="text-texto-2">lo que se resignó (2×1, % off…)</span> }] : []),
+    { titulo: ajustes <= 0 ? "Descuentos" : "Recargos", valor: pesos(Math.abs(ajustes)), extra: <span className="text-texto-2">manuales y por medio de pago · ver por vendedor</span>, href: `/admin/informes/vendedores?${periodoUrl}` },
+    ...(enPromos > 0 ? [{ titulo: "En promociones", valor: pesos(enPromos), extra: <span className="text-texto-2">lo que se resignó · ver el detalle</span>, href: `/admin/informes/promociones?${periodoUrl}` }] : []),
   ];
 
   return (
     <div className="space-y-4">
-      <SelectorPeriodo base="/admin/informes/ventas" periodo={periodo} rango={rango} extra={`&por=${por}`} />
-      <p className="text-sm text-texto-2">Del <b className="text-gray-900">{textoRango(rango, hoy.slice(0, 4))}</b> · comparado con el {textoRango(anterior, hoy.slice(0, 4))}</p>
+      <SelectorPeriodo base="/admin/informes/ventas" periodo={periodo} rango={rango} extra={`&por=${por}${vsAnio ? "&vs=anio" : ""}`} />
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-texto-2">
+        <span>Del <b className="text-gray-900">{textoRango(rango, hoy.slice(0, 4))}</b> · comparado con {vsAnio ? "el mismo período del año pasado" : "el período anterior"} ({textoRango(anterior, hoy.slice(0, 4))})</span>
+        <span className="inline-flex gap-1" role="group" aria-label="Con qué comparar">
+          <Link href={`${base}`} className={`rounded-full border px-2.5 py-0.5 text-xs ${!vsAnio ? "border-marca bg-marca-suave font-semibold text-marca" : "border-borde bg-white"}`}>Período anterior</Link>
+          <Link href={`${base}&vs=anio`} className={`rounded-full border px-2.5 py-0.5 text-xs ${vsAnio ? "border-marca bg-marca-suave font-semibold text-marca" : "border-borde bg-white"}`}>Año pasado</Link>
+        </span>
+      </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
-        {kpis.map((k) => (
-          <div key={k.titulo} className="tarjeta"><div className="etiqueta">{k.titulo}</div>
-            <div className="text-lg font-bold tabular-nums md:text-xl">{k.valor}</div><div className="text-xs">{k.extra}</div></div>
-        ))}
+        {kpis.map((k) => {
+          const contenido = <><div className="etiqueta">{k.titulo}</div><div className="text-lg font-bold tabular-nums md:text-xl">{k.valor}</div><div className="text-xs">{k.extra}</div></>;
+          return "href" in k && k.href ? <Link key={k.titulo} href={k.href} className="tarjeta transition hover:border-marca">{contenido}</Link> : <div key={k.titulo} className="tarjeta">{contenido}</div>;
+        })}
       </div>
 
       <GraficoVentas titulo={porMes ? "Evolución por mes" : "Evolución por día"} puntos={[...puntos.values()]} anteriores={[...puntosAnteriores.values()]} conCostos={conCostos} />
