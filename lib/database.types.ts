@@ -2982,6 +2982,9 @@ isOneToOne: false
 "es_staff":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"estado_configuracion":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "estado_correo":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -3054,6 +3057,11 @@ isOneToOne: false
 "impresion_de":
 { Args: { "p_usuario"?: string }; Returns: {
               "copias": number,"formato": string,"modo": string
+            }[]
+                           },
+"informe_clientes":
+{ Args: { "p_desde": string,"p_hasta": string }; Returns: {
+              "cliente_id": number,"codigo": number,"compras_periodo": number,"compras_total": number,"nombre": string,"primera_compra": string,"telefono": string,"ultima_compra": string,"unidades_periodo": number,"vendido_periodo": number
             }[]
                            },
 "iniciar_contabilidad":
