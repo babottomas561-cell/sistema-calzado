@@ -3,6 +3,7 @@
 // único y que la grilla entre en la hoja; acá se traducen los errores. Solo quien edita Tablas.
 import { revalidatePath } from "next/cache";
 import { crearCliente } from "@/lib/supabase/server";
+import type { Json } from "@/lib/database.types";
 import { esFormato } from "@/lib/comprobante";
 
 export type Estado = { error?: string; ok?: string };
@@ -76,24 +77,47 @@ export async function usarPlantilla(id: number): Promise<Estado> {
 }
 
 // Cómo salen los comprobantes: papel, qué llevan, textos, copias y qué pasa al vender (automática, opcional o manual)
+// Los comprobantes que pueden tener formato propio (los mismos que CLAVES_COMPROBANTE de lib/comprobante y que acepta la base)
+const CLAVES = ["factura", "nota_credito", "interno", "presupuesto", "devolucion"];
+
 export async function guardarComprobantes(_: Estado, f: FormData): Promise<Estado> {
-  const formato = String(f.get("formato") ?? "");
+  // Llega todo armado: lo general y lo propio de cada comprobante (las solapas de la pantalla)
+  let c: Record<string, unknown>, porTipo: Record<string, Record<string, unknown>>;
+  try { c = JSON.parse(String(f.get("config") ?? "{}")); porTipo = JSON.parse(String(f.get("por_tipo") ?? "{}")); } catch { return { error: "No se pudo leer la configuración" }; }
+  const formato = String(c.formato ?? "");
   if (!esFormato(formato)) return { error: "Elegí el papel en el que se imprime" };
-  const modo = String(f.get("modo") ?? "");
+  const modo = String(c.modo ?? "");
   if (!["automatica", "opcional", "manual"].includes(modo)) return { error: "Elegí qué pasa al confirmar una venta" };
-  const letra = String(f.get("letra") ?? "normal");
-  const copias = Math.round(num(f, "copias"));
+  const letra = String(c.letra ?? "normal");
+  const copias = Math.round(Number(c.copias));
   if (!(copias >= 1 && copias <= 5)) return { error: "Las copias van de 1 a 5" };
-  const pie = String(f.get("pie") ?? "").trim(), leyenda = String(f.get("leyenda") ?? "").trim(), encabezado = String(f.get("encabezado") ?? "").trim();
+  const txt = (x: unknown) => String(x ?? "").trim();
+  const pie = txt(c.pie), leyenda = txt(c.leyenda), encabezado = txt(c.encabezado);
   if (pie.length > 200 || leyenda.length > 200) return { error: "El mensaje final y la aclaración pueden tener hasta 200 letras" };
   if (encabezado.length > 160) return { error: "La línea de arriba puede tener hasta 160 letras" };
   if (!leyenda) return { error: "Dejá una aclaración: dice que este comprobante no es una factura" };
+  // Lo propio de cada comprobante: solo los campos conocidos y con valores válidos
+  const limpio: Record<string, Record<string, unknown>> = {};
+  for (const [clave, p] of Object.entries(porTipo)) {
+    if (!CLAVES.includes(clave) || !p || typeof p !== "object") continue;
+    const o: Record<string, unknown> = {};
+    if (esFormato(p.formato)) o.formato = p.formato;
+    if (["chica", "normal", "grande"].includes(String(p.letra))) o.letra = p.letra;
+    const cp = Math.round(Number(p.copias)); if (cp >= 1 && cp <= 5) o.copias = cp;
+    for (const b of ["logo", "datos_legales", "qr", "barras", "mostrar_cliente", "mostrar_vendedor", "mostrar_marca"]) if (typeof p[b] === "boolean") o[b] = p[b];
+    for (const t of ["encabezado", "pie", "leyenda"]) if (typeof p[t] === "string" && (clave !== "factura" && clave !== "nota_credito" || t !== "leyenda")) {
+      const v = txt(p[t]); if (v.length > 200) return { error: "Los textos de cada comprobante pueden tener hasta 200 letras" };
+      o[t] = v || null;
+    }
+    limpio[clave] = o;
+  }
   const supabase = await crearCliente();
   const { data, error } = await supabase.from("configuracion_impresion").update({
     comprobante_formato: formato, modo_impresion: modo, comprobante_letra: ["chica", "normal", "grande"].includes(letra) ? letra : "normal",
-    comprobante_logo: si(f, "logo"), comprobante_datos_legales: si(f, "datos_legales"), comprobante_qr: si(f, "qr"), comprobante_codigo_barras: si(f, "barras"),
-    comprobante_mostrar_cliente: si(f, "mostrar_cliente"), comprobante_mostrar_vendedor: si(f, "mostrar_vendedor"), comprobante_mostrar_marca: si(f, "mostrar_marca"),
+    comprobante_logo: c.logo === true, comprobante_datos_legales: c.datos_legales === true, comprobante_qr: c.qr === true, comprobante_codigo_barras: c.barras === true,
+    comprobante_mostrar_cliente: c.mostrar_cliente === true, comprobante_mostrar_vendedor: c.mostrar_vendedor === true, comprobante_mostrar_marca: c.mostrar_marca === true,
     comprobante_encabezado: encabezado || null, comprobante_pie: pie || null, comprobante_leyenda: leyenda, comprobante_copias: copias, comprobante_configurado: true,
+    por_tipo: limpio as unknown as NonNullable<Json>,
   }).eq("unica", true).select("unica").maybeSingle();
   if (error) return { error: error.code === "42501" ? "No tenés permiso para cambiar la configuración de impresión" : error.message };
   if (!data) return { error: "No tenés permiso para cambiar la configuración de impresión" };

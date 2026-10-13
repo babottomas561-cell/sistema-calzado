@@ -39,6 +39,7 @@ const lineasFiscales = (c: Doc): string[] => {
     "Régimen de Transparencia Fiscal al Consumidor (Ley 27.743)",
     ...(ivaContenido != null ? [`IVA contenido: ${pesos(ivaContenido)}`] : []),
     `CAE ${f.cae} · Vto. ${f.cae_vence ? fechaCorta(f.cae_vence) : ""}`,
+    ...(f.asociada ? [`Corrige: ${f.asociada}`] : []),
     ...(f.nota_credito?.estado === "autorizada" ? [`Anulada con nota de crédito ${f.nota_credito.letra} ${f.nota_credito.comprobante} (CAE ${f.nota_credito.cae})`] : []),
   ];
 };

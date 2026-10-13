@@ -7,7 +7,8 @@ import Link from "next/link";
 import { CircleAlert, CircleCheck, Minus, Plus, Printer } from "lucide-react";
 import Comprobante from "@/components/Comprobante";
 import {
-  comprobanteDeEjemplo, cssDePagina, FORMATOS, LETRAS, MM_A_PX, MODOS_IMPRESION, type Emisor, type FormatoComprobante, type LetraComprobante, type ModoImpresion,
+  CLAVES_COMPROBANTE, comprobanteDeEjemplo, cssDePagina, FORMATOS, LETRAS, MM_A_PX, MODOS_IMPRESION, NOMBRE_CLAVE,
+  type ClaveComprobante, type Emisor, type FormatoComprobante, type LetraComprobante, type ModoImpresion,
 } from "@/lib/comprobante";
 import { guardarComprobantes, type Estado } from "./acciones";
 
@@ -15,6 +16,11 @@ export type ConfigInicial = {
   formato: FormatoComprobante; modo: ModoImpresion; letra: LetraComprobante; logo: boolean; datos_legales: boolean; qr: boolean; barras: boolean;
   mostrar_cliente: boolean; mostrar_vendedor: boolean; mostrar_marca: boolean; encabezado: string; pie: string; leyenda: string; copias: number; configurado: boolean;
 };
+// Lo propio de un comprobante (lo que no está, sale como el general)
+type Propio = Partial<Omit<ConfigInicial, "modo" | "configurado">>;
+export type PorTipo = Partial<Record<ClaveComprobante, Propio>>;
+const CAMPOS_PROPIOS = ["formato", "letra", "logo", "datos_legales", "qr", "barras", "mostrar_cliente", "mostrar_vendedor", "mostrar_marca", "encabezado", "pie", "leyenda", "copias"] as const;
+const esFiscal = (k: ClaveComprobante | "general") => k === "factura" || k === "nota_credito";
 
 const URL_EJEMPLO = "https://mitienda.com.ar/comprobante/a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6";
 
@@ -43,11 +49,30 @@ function Opciones<T extends string>({ nombre, valor, opciones, alCambiar, column
   );
 }
 
-export default function ConfigComprobantes({ inicial, emisor, faltanLegales }: { inicial: ConfigInicial; emisor: Emisor; faltanLegales: boolean }) {
-  const [f, setF] = useState<ConfigInicial>(inicial);
+export default function ConfigComprobantes({ inicial, porTipo: porTipoInicial, emisor, faltanLegales }: { inicial: ConfigInicial; porTipo: PorTipo; emisor: Emisor; faltanLegales: boolean }) {
+  const [general, setGeneral] = useState<ConfigInicial>(inicial);
+  const [porTipo, setPorTipo] = useState<PorTipo>(porTipoInicial);
+  const [clave, setClave] = useState<ClaveComprobante | "general">("general");
   const [estado, accion, guardando] = useActionState<Estado, FormData>(guardarComprobantes, {});
-  const poner = <K extends keyof ConfigInicial>(k: K, v: ConfigInicial[K]) => setF((x) => ({ ...x, [k]: v }));
-  const cambios = JSON.stringify(f) !== JSON.stringify(inicial);
+  const propio = clave === "general" ? null : porTipo[clave] ?? null;
+  // Lo que se ve y se edita: el general, o el general con lo propio de este comprobante encima
+  const f: ConfigInicial = { ...general, ...(propio ?? {}) };
+  const poner = <K extends keyof ConfigInicial>(k: K, v: ConfigInicial[K]) => {
+    if (clave === "general") setGeneral((x) => ({ ...x, [k]: v }));
+    else setPorTipo((p) => ({ ...p, [clave]: { ...(p[clave] ?? {}), [k]: v } }));
+  };
+  // «Propio»: arranca con lo general (todo editable); «Igual que el general»: se borra lo propio
+  const usarPropio = (si: boolean) => {
+    if (clave === "general") return;
+    setPorTipo((p) => {
+      const n = { ...p };
+      if (si) n[clave] = Object.fromEntries(CAMPOS_PROPIOS.filter((c) => !(esFiscal(clave) && c === "leyenda")).map((c) => [c, general[c]])) as Propio;
+      else delete n[clave];
+      return n;
+    });
+  };
+  const editable = clave === "general" || !!propio;
+  const cambios = JSON.stringify(general) !== JSON.stringify(inicial) || JSON.stringify(porTipo) !== JSON.stringify(porTipoInicial);
 
   // El ejemplo lleva datos inventados donde el local todavía no cargó los suyos, para que se vea cómo queda cada cosa
   const conEjemplo: Emisor = faltanLegales
@@ -56,7 +81,7 @@ export default function ConfigComprobantes({ inicial, emisor, faltanLegales }: {
   const ejemplo = comprobanteDeEjemplo(conEjemplo, {
     formato: f.formato, logo: f.logo, datos_legales: f.datos_legales, qr: f.qr, barras: f.barras, copias: f.copias, modo: f.modo, configurado: true, letra: f.letra,
     encabezado: f.encabezado.trim() || null, mostrar_cliente: f.mostrar_cliente, mostrar_vendedor: f.mostrar_vendedor, mostrar_marca: f.mostrar_marca,
-  }, { leyenda: f.leyenda.trim() || null, pie: f.pie.trim() || null });
+  }, { leyenda: f.leyenda.trim() || null, pie: f.pie.trim() || null }, clave === "general" ? "interno" : clave);
 
   // Vista previa: que entre en la columna; y el alto del ticket, para la prueba de impresión
   const caja = useRef<HTMLDivElement>(null);
@@ -91,6 +116,29 @@ export default function ConfigComprobantes({ inicial, emisor, faltanLegales }: {
         )}
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-start">
           <form action={accion} className="tarjeta space-y-6">
+            <input type="hidden" name="config" value={JSON.stringify(general)} />
+            <input type="hidden" name="por_tipo" value={JSON.stringify(porTipo)} />
+            {/* Cada comprobante puede tener su formato: el general vale para los que no tienen uno propio */}
+            <div className="-mx-1 flex gap-1 overflow-x-auto px-1 sin-barra" role="tablist" aria-label="Qué comprobante">
+              {(["general", ...CLAVES_COMPROBANTE] as const).map((k) => (
+                <button key={k} type="button" role="tab" aria-selected={clave === k} onClick={() => setClave(k)}
+                  className={`shrink-0 rounded-lg px-3 py-2 text-sm font-medium transition ${clave === k ? "bg-marca text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}>
+                  {k === "general" ? "Para todos" : NOMBRE_CLAVE[k].nombre}{k !== "general" && porTipo[k] && <span className={`ml-1.5 rounded px-1 text-[10px] font-bold uppercase ${clave === k ? "bg-white/25" : "bg-marca-suave text-marca"}`}>propio</span>}
+                </button>
+              ))}
+            </div>
+            {clave !== "general" && (
+              <div className="space-y-2 rounded-lg bg-gray-50 p-3">
+                <p className="text-sm text-texto-2">{NOMBRE_CLAVE[clave].detalle}</p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-borde bg-white p-2.5 text-sm has-[:checked]:border-marca has-[:checked]:bg-marca-suave">
+                    <input type="radio" checked={!propio} onChange={() => usarPropio(false)} className="h-4 w-4 accent-[var(--color-marca)]" /> <b>Igual que el general</b></label>
+                  <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-borde bg-white p-2.5 text-sm has-[:checked]:border-marca has-[:checked]:bg-marca-suave">
+                    <input type="radio" checked={!!propio} onChange={() => usarPropio(true)} className="h-4 w-4 accent-[var(--color-marca)]" /> <b>Con su propio formato</b></label>
+                </div>
+              </div>
+            )}
+            <fieldset disabled={!editable} className="space-y-6 disabled:opacity-60">
             <fieldset className="space-y-2">
               <legend className="mb-1 text-sm font-semibold">Papel de tu impresora</legend>
               <Opciones nombre="formato" valor={f.formato} alCambiar={(v) => poner("formato", v)}
@@ -98,12 +146,12 @@ export default function ConfigComprobantes({ inicial, emisor, faltanLegales }: {
               <p className="text-xs text-texto-2">Es el que se usa siempre. Si alguna vez hace falta otro (por ejemplo, una hoja A4 para un cliente), se cambia en ese comprobante.</p>
             </fieldset>
 
-            <fieldset className="space-y-2">
+            {clave === "general" && <fieldset className="space-y-2">
               <legend className="mb-1 text-sm font-semibold">Al confirmar una venta</legend>
               <Opciones nombre="modo" valor={f.modo} alCambiar={(v) => poner("modo", v)}
                 opciones={(Object.keys(MODOS_IMPRESION) as ModoImpresion[]).map((k) => ({ valor: k, titulo: MODOS_IMPRESION[k].nombre, detalle: MODOS_IMPRESION[k].detalle }))} />
               {f.modo === "automatica" && <p className="text-xs text-texto-2">El navegador igual muestra su ventana de impresión. Para que salga sin preguntar, mirá «Impresión sin ventana» en la ayuda de abajo.</p>}
-            </fieldset>
+            </fieldset>}
 
             <fieldset className="space-y-2">
               <legend className="mb-1 text-sm font-semibold">Qué lleva</legend>
@@ -129,11 +177,12 @@ export default function ConfigComprobantes({ inicial, emisor, faltanLegales }: {
                 <label className="etiqueta" htmlFor="c-pie">Mensaje al final</label>
                 <input id="c-pie" name="pie" maxLength={200} value={f.pie} onChange={(e) => poner("pie", e.target.value)} placeholder="¡Gracias por tu compra!" className="campo" />
               </div>
-              <div>
+              {!esFiscal(clave) && <div>
                 <label className="etiqueta" htmlFor="c-leyenda">Aclaración legal</label>
                 <input id="c-leyenda" name="leyenda" maxLength={200} required value={f.leyenda} onChange={(e) => poner("leyenda", e.target.value)} className="campo" />
                 <p className="mt-0.5 text-[11px] text-texto-2">Este comprobante no es una factura de ARCA. Si además das factura aparte, dejalo aclarado acá.</p>
-              </div>
+              </div>}
+              {esFiscal(clave) && <p className="text-xs text-texto-2">La factura y la nota de crédito llevan siempre lo que pide ARCA (letra, CAE, QR y la leyenda de transparencia fiscal): acá se elige el resto.</p>}
               <div className="flex flex-wrap items-end gap-6">
                 <div>
                   <span className="etiqueta" id="c-letra">Tamaño de letra</span>
@@ -154,6 +203,8 @@ export default function ConfigComprobantes({ inicial, emisor, faltanLegales }: {
                   </div>
                 </div>
               </div>
+            </fieldset>
+
             </fieldset>
 
             <div className="flex flex-wrap items-center gap-3 border-t border-borde pt-4">

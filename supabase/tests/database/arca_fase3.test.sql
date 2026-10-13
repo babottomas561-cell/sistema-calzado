@@ -89,7 +89,7 @@ update datos_legales set cuit = '20-12345678-6', razon_social = 'Mi Tienda SRL',
 update integraciones set sitio_url = 'https://tienda.test', arca_cert_homologacion = 'CERT', arca_cert_homologacion_vence = now() + interval '2 years',
   arca_clave_vault_id = vault.create_secret('LLAVE', 'arca_prueba_' || gen_random_uuid()) where unica;
 update clientes set documento = '30.123.456' where nombre = 'María González';
-select plan(21);
+select plan(26);
 
 set local role authenticated;
 select prueba.como_admin();
@@ -140,7 +140,14 @@ reset role;
 update facturas set proximo_intento = now() where devolucion_id = prueba.id('da');
 select ok(_facturas_reintentar() >= 1, 'la cola la manda');
 select is((select estado from facturas where devolucion_id = prueba.id('da')), 'autorizada', 'y sale autorizada');
+-- Su comprobante: la devolución se imprime como la nota de crédito, con el formato propio de las notas de crédito
+update configuracion_impresion set por_tipo = '{"nota_credito": {"formato": "a4", "copias": 2}, "factura": {"copias": 3}}';
 set local role authenticated; select prueba.como_admin();
+select is(comprobante_de('devolucion', prueba.id('da')) -> 'fiscal' ->> 'clase', 'nota_credito', 'la devolución se imprime como nota de crédito');
+select matches(comprobante_de('devolucion', prueba.id('da')) -> 'fiscal' ->> 'asociada', '^Factura A ', 'diciendo qué factura corrige');
+select is(comprobante_de('devolucion', prueba.id('da')) -> 'config' ->> 'formato', 'a4', 'con el papel propio de las notas de crédito');
+select is((comprobante_de('venta', prueba.id('va')) -> 'config' ->> 'copias')::int, 3, 'y la factura, con sus copias');
+select is(comprobante_de('venta', (select min(id) from ventas)) -> 'config' ->> 'clave', 'interno', 'una venta sin factura usa el formato del comprobante interno');
 insert into prueba.ids values ('db', prueba.devolver(prueba.id('va')));
 set constraints all immediate; set constraints all deferred;
 select is((select count(*) from facturas where factura_id = (prueba.f(prueba.id('va'))).id)::int, 2, 'otra devolución parcial de la misma factura, otra nota de crédito');

@@ -6,7 +6,7 @@ import { datosLegales, datosTienda } from "@/lib/tienda";
 import { esFormato, type LetraComprobante, type ModoImpresion } from "@/lib/comprobante";
 import { leerPlantilla } from "@/lib/etiquetas";
 import Ayuda from "@/components/Ayuda";
-import ConfigComprobantes from "./ConfigComprobantes";
+import ConfigComprobantes, { type PorTipo } from "./ConfigComprobantes";
 import PlantillasEtiqueta from "./PlantillasEtiqueta";
 import ImpresionPorPersona, { type Persona } from "./ImpresionPorPersona";
 import Link from "next/link";
@@ -57,7 +57,7 @@ export default async function PaginaImpresion({ searchParams }: { searchParams: 
       </nav>
 
       {seccion === "comprobantes" && conf && (
-        <ConfigComprobantes
+        <ConfigComprobantes porTipo={(conf.por_tipo ?? {}) as PorTipo}
           inicial={{
             formato: esFormato(conf.comprobante_formato) ? conf.comprobante_formato : "ticket80", modo: conf.modo_impresion as ModoImpresion, letra: conf.comprobante_letra as LetraComprobante,
             logo: conf.comprobante_logo, datos_legales: conf.comprobante_datos_legales, qr: conf.comprobante_qr, barras: conf.comprobante_codigo_barras,

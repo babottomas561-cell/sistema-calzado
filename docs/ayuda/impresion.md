@@ -83,3 +83,17 @@ Atajos en la compu: **F2** va al buscador y **F9** confirma la venta.
 
 Elegir la impresora o imprimir sin mostrar el cuadro de impresión no se puede desde una página web: la impresora la elige el
 navegador de cada equipo y la recuerda. Desde el celular, imprimí al PDF o a una impresora de red, o usá una compu del local.
+
+
+## Un formato para cada comprobante
+
+Arriba del formulario de **Comprobantes** hay una solapa por cada uno: **Para todos**, **Factura**, **Nota de crédito**, **Comprobante interno**,
+**Presupuesto** y **Devolución**.
+
+- **Para todos** es el formato general: lo usan todos los comprobantes que no tengan uno propio.
+- En la solapa de un comprobante elegís **Igual que el general** o **Con su propio formato**. Con su propio formato cambiás el papel, las copias,
+  qué lleva y los textos solo para ese. Por ejemplo: facturas en ticket de 80 mm con 2 copias y notas de crédito en hoja A4.
+- La **factura** y la **nota de crédito** llevan siempre lo que pide ARCA (letra, CAE, QR y la leyenda de transparencia fiscal); por eso en esas
+  solapas no está la «Aclaración legal».
+- Si una persona del equipo tiene su propio papel (**Por persona**), vale el suyo, salvo en los comprobantes que tienen formato propio.
+- La vista previa de cada solapa muestra ese comprobante con datos de ejemplo.

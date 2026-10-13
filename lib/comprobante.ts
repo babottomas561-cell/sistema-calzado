@@ -23,15 +23,27 @@ export const MODOS_IMPRESION: Record<ModoImpresion, { nombre: string; detalle: s
   opcional: { nombre: "Opcional", detalle: "Al confirmar, la caja pregunta: imprimir, mandarlo por WhatsApp o mail, o seguir sin comprobante." },
   manual: { nombre: "Manual", detalle: "No se ofrece nada al vender: se imprime o se manda después, desde la venta." },
 };
+// Cada comprobante puede tener su formato (Impresión → Comprobantes); lo que no se configura sale como el general
+export const CLAVES_COMPROBANTE = ["factura", "nota_credito", "interno", "presupuesto", "devolucion"] as const;
+export type ClaveComprobante = (typeof CLAVES_COMPROBANTE)[number];
+export const NOMBRE_CLAVE: Record<ClaveComprobante, { nombre: string; detalle: string }> = {
+  factura: { nombre: "Factura", detalle: "La factura de ARCA (A, B o C), con CAE y QR." },
+  nota_credito: { nombre: "Nota de crédito", detalle: "La de una anulación o una devolución de una venta facturada." },
+  interno: { nombre: "Comprobante interno", detalle: "Una venta sin factura («No válido como factura»)." },
+  presupuesto: { nombre: "Presupuesto", detalle: "Lo que se le pasa al cliente antes de comprar." },
+  devolucion: { nombre: "Devolución", detalle: "La constancia del saldo a favor de una venta sin factura." },
+};
 export type LetraComprobante = "chica" | "normal" | "grande";
 export const LETRAS: Record<LetraComprobante, { nombre: string; escala: number }> = { chica: { nombre: "Chica", escala: 0.88 }, normal: { nombre: "Normal", escala: 1 }, grande: { nombre: "Grande", escala: 1.15 } };
 export type ConfigComprobante = {
+  clave?: ClaveComprobante;
   formato: FormatoComprobante; logo: boolean; datos_legales: boolean; qr: boolean; barras: boolean; copias: number;
   modo: ModoImpresion; configurado: boolean; letra: LetraComprobante; encabezado: string | null;
   mostrar_cliente: boolean; mostrar_vendedor: boolean; mostrar_marca: boolean;
 };
 // La factura de ARCA de una venta (si tiene): con ella el comprobante pasa a ser fiscal (letra, CAE y QR de ARCA)
 export type Fiscal = {
+  clase?: "factura" | "nota_credito"; asociada?: string | null;
   estado: "pendiente" | "autorizada" | "rechazada" | "error" | "cancelada"; letra: "A" | "B" | "C"; codigo: string; comprobante: string | null; fecha: string;
   cae: string | null; cae_vence: string | null; receptor: string; doc_tipo: number; doc_nro: string; condicion_receptor: string; domicilio_receptor?: string | null;
   neto: number; iva: number; detalle_iva: { alicuota: number; base: number; iva: number }[]; total: number; iva_contenido_en_c: "leyenda" | "cero"; pruebas: boolean;
@@ -42,7 +54,7 @@ export type Fiscal = {
 // Autorizada = el comprobante es la factura; si no, sigue siendo el interno
 export const esFactura = (c: Comprobante) => c.fiscal?.estado === "autorizada";
 // Lo que se lee arriba: «Factura B» o el título interno
-export const tituloDe = (c: Comprobante) => (esFactura(c) ? `Factura ${c.fiscal!.letra}` : c.titulo);
+export const tituloDe = (c: Comprobante) => (esFactura(c) ? `${c.fiscal!.clase === "nota_credito" ? "Nota de crédito" : "Factura"} ${c.fiscal!.letra}` : c.titulo);
 export const numeroDe = (c: Comprobante) => (esFactura(c) && c.fiscal!.comprobante ? c.fiscal!.comprobante : c.numero);
 
 export type Comprobante = {
@@ -103,7 +115,23 @@ export function cssDePagina(formato: FormatoComprobante, altoMm?: number): strin
 
 // ── Vista previa en Impresión ─────────────────────────────────────────
 // Un comprobante inventado para ver cómo queda con lo que se prendió y apagó (nunca se guarda ni se manda)
-export function comprobanteDeEjemplo(emisor: Emisor, config: ConfigComprobante, textos: { leyenda: string | null; pie: string | null }): Comprobante {
+export function comprobanteDeEjemplo(emisor: Emisor, config: ConfigComprobante, textos: { leyenda: string | null; pie: string | null }, clave: ClaveComprobante = "interno"): Comprobante {
+  const base = ejemploBase(emisor, config, textos);
+  const fiscal = (clase: "factura" | "nota_credito"): Fiscal => ({
+    clase, estado: "autorizada", letra: "B", codigo: clase === "factura" ? "006" : "008", comprobante: clase === "factura" ? "00003-00000045" : "00003-00000012", fecha: base.fecha,
+    cae: "76123456789012", cae_vence: new Date(Date.now() + 10 * 864e5).toISOString().slice(0, 10), receptor: "A consumidor final", doc_tipo: 99, doc_nro: "0",
+    condicion_receptor: "Consumidor final", neto: 89669.42, iva: 18830.58, detalle_iva: [{ alicuota: 21, base: 89669.42, iva: 18830.58 }], total: 108500,
+    iva_contenido_en_c: "leyenda", pruebas: false, qr: "https://www.afip.gob.ar/fe/qr/?p=ejemplo", asociada: clase === "nota_credito" ? "Factura B 00003-00000045" : null,
+    emisor: { razon_social: emisor.razon_social, cuit: emisor.cuit, condicion_iva: emisor.condicion_iva, ingresos_brutos: null, inicio_actividades: null, domicilio: emisor.domicilio },
+    nota_credito: null,
+  });
+  if (clave === "factura") return { ...base, fiscal: fiscal("factura") };
+  if (clave === "nota_credito") return { ...base, tipo: "devolucion", titulo: "Devolución", numero: "DEV-0001-00000012", pagos: [], origen: "0001-00000123", fiscal: fiscal("nota_credito") };
+  if (clave === "presupuesto") return { ...base, tipo: "presupuesto", titulo: "Presupuesto", numero: "PRE-0001-00000034", pagos: [] };
+  if (clave === "devolucion") return { ...base, tipo: "devolucion", titulo: "Devolución", numero: "DEV-0001-00000012", pagos: [], origen: "0001-00000123" };
+  return base;
+}
+function ejemploBase(emisor: Emisor, config: ConfigComprobante, textos: { leyenda: string | null; pie: string | null }): Comprobante {
   return {
     tipo: "venta", titulo: "Comprobante de venta", numero: "0001-00000123", fecha: new Date().toISOString(), anulada: false, cliente: "María González", atendio: "Caro", origen: null,
     renglones: [

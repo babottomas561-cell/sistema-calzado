@@ -485,14 +485,14 @@ isOneToOne: false
                   ]
                 },"configuracion_impresion": {
                   Row: {
-                    "actualizado_en": string,"actualizado_por": string | null,"comprobante_codigo_barras": boolean,"comprobante_configurado": boolean,"comprobante_copias": number,"comprobante_datos_legales": boolean,"comprobante_encabezado": string | null,"comprobante_formato": string,"comprobante_letra": string,"comprobante_leyenda": string,"comprobante_logo": boolean,"comprobante_mostrar_cliente": boolean,"comprobante_mostrar_marca": boolean,"comprobante_mostrar_vendedor": boolean,"comprobante_pie": string | null,"comprobante_qr": boolean,"etiqueta_plantilla_id": number | null,"modo_impresion": string,"unica": boolean
+                    "actualizado_en": string,"actualizado_por": string | null,"comprobante_codigo_barras": boolean,"comprobante_configurado": boolean,"comprobante_copias": number,"comprobante_datos_legales": boolean,"comprobante_encabezado": string | null,"comprobante_formato": string,"comprobante_letra": string,"comprobante_leyenda": string,"comprobante_logo": boolean,"comprobante_mostrar_cliente": boolean,"comprobante_mostrar_marca": boolean,"comprobante_mostrar_vendedor": boolean,"comprobante_pie": string | null,"comprobante_qr": boolean,"etiqueta_plantilla_id": number | null,"modo_impresion": string,"por_tipo": NonNullable<Json>,"unica": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"actualizado_por"?: string | null,"comprobante_codigo_barras"?: boolean,"comprobante_configurado"?: boolean,"comprobante_copias"?: number,"comprobante_datos_legales"?: boolean,"comprobante_encabezado"?: string | null,"comprobante_formato"?: string,"comprobante_letra"?: string,"comprobante_leyenda"?: string,"comprobante_logo"?: boolean,"comprobante_mostrar_cliente"?: boolean,"comprobante_mostrar_marca"?: boolean,"comprobante_mostrar_vendedor"?: boolean,"comprobante_pie"?: string | null,"comprobante_qr"?: boolean,"etiqueta_plantilla_id"?: number | null,"modo_impresion"?: string,"unica"?: boolean
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"comprobante_codigo_barras"?: boolean,"comprobante_configurado"?: boolean,"comprobante_copias"?: number,"comprobante_datos_legales"?: boolean,"comprobante_encabezado"?: string | null,"comprobante_formato"?: string,"comprobante_letra"?: string,"comprobante_leyenda"?: string,"comprobante_logo"?: boolean,"comprobante_mostrar_cliente"?: boolean,"comprobante_mostrar_marca"?: boolean,"comprobante_mostrar_vendedor"?: boolean,"comprobante_pie"?: string | null,"comprobante_qr"?: boolean,"etiqueta_plantilla_id"?: number | null,"modo_impresion"?: string,"por_tipo"?: NonNullable<Json>,"unica"?: boolean
                   }
                   Update: {
-                    "actualizado_en"?: string,"actualizado_por"?: string | null,"comprobante_codigo_barras"?: boolean,"comprobante_configurado"?: boolean,"comprobante_copias"?: number,"comprobante_datos_legales"?: boolean,"comprobante_encabezado"?: string | null,"comprobante_formato"?: string,"comprobante_letra"?: string,"comprobante_leyenda"?: string,"comprobante_logo"?: boolean,"comprobante_mostrar_cliente"?: boolean,"comprobante_mostrar_marca"?: boolean,"comprobante_mostrar_vendedor"?: boolean,"comprobante_pie"?: string | null,"comprobante_qr"?: boolean,"etiqueta_plantilla_id"?: number | null,"modo_impresion"?: string,"unica"?: boolean
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"comprobante_codigo_barras"?: boolean,"comprobante_configurado"?: boolean,"comprobante_copias"?: number,"comprobante_datos_legales"?: boolean,"comprobante_encabezado"?: string | null,"comprobante_formato"?: string,"comprobante_letra"?: string,"comprobante_leyenda"?: string,"comprobante_logo"?: boolean,"comprobante_mostrar_cliente"?: boolean,"comprobante_mostrar_marca"?: boolean,"comprobante_mostrar_vendedor"?: boolean,"comprobante_pie"?: string | null,"comprobante_qr"?: boolean,"etiqueta_plantilla_id"?: number | null,"modo_impresion"?: string,"por_tipo"?: NonNullable<Json>,"unica"?: boolean
                   }
                   Relationships: [
                     {
@@ -2839,11 +2839,17 @@ isOneToOne: false
 "_mp_reembolsar":
 { Args: { "p_pedido": number }; Returns: undefined
                            },
+"_nota_credito_fiscal":
+{ Args: { "p_devolucion": number }; Returns: Json
+                           },
 "_pagado_con_promos":
 { Args: { "p_items": Json,"p_promos": (number)[] }; Returns: number
                            },
 "_pedir_http":
 { Args: { "p_cabeceras"?: Json,"p_cuerpo"?: string,"p_metodo": string,"p_tipo"?: string,"p_url": string }; Returns: Json
+                           },
+"_por_tipo_valido":
+{ Args: { "p": Json }; Returns: boolean
                            },
 "_promociones_vigentes":
 { Args: { "p_canal": string }; Returns: {
