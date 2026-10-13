@@ -23,7 +23,7 @@ function datos(tabla: Tabla, f: FormData) {
       // En pantalla se carga "descuento" o "recargo" en positivo; en la base, descuento = negativo
       ajuste_pct: (f.get("signo") === "descuento" ? -1 : 1) * Math.abs(Number(f.get("porcentaje") ?? 0)),
       cuotas: Math.max(1, Number(f.get("cuotas") ?? 1)), orden: Number(f.get("orden") ?? 0),
-      en_mostrador: f.get("en_mostrador") === "on", en_tienda: f.get("en_tienda") === "on", activo: f.get("activo") === "on",
+      en_mostrador: f.get("en_mostrador") === "on", en_tienda: f.get("en_tienda") === "on", siempre_factura: f.get("siempre_factura") === "on", activo: f.get("activo") === "on",
     };
   }
 }

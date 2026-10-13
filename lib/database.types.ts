@@ -1157,14 +1157,14 @@ isOneToOne: false
                   ]
                 },"medios_pago": {
                   Row: {
-                    "activo": boolean,"ajuste_pct": number,"codigo": string,"cuenta_id": number | null,"cuotas": number,"en_mostrador": boolean,"en_tienda": boolean,"es_saldo": boolean,"id": number,"nombre": string,"orden": number,"tipo": string
+                    "activo": boolean,"ajuste_pct": number,"codigo": string,"cuenta_id": number | null,"cuotas": number,"en_mostrador": boolean,"en_tienda": boolean,"es_saldo": boolean,"id": number,"nombre": string,"orden": number,"siempre_factura": boolean,"tipo": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "activo"?: boolean,"ajuste_pct"?: number,"codigo": string,"cuenta_id"?: number | null,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre": string,"orden"?: number,"tipo": string
+                    "activo"?: boolean,"ajuste_pct"?: number,"codigo": string,"cuenta_id"?: number | null,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre": string,"orden"?: number,"siempre_factura"?: boolean,"tipo": string
                   }
                   Update: {
-                    "activo"?: boolean,"ajuste_pct"?: number,"codigo"?: string,"cuenta_id"?: number | null,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre"?: string,"orden"?: number,"tipo"?: string
+                    "activo"?: boolean,"ajuste_pct"?: number,"codigo"?: string,"cuenta_id"?: number | null,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre"?: string,"orden"?: number,"siempre_factura"?: boolean,"tipo"?: string
                   }
                   Relationships: [
                     {
@@ -2745,6 +2745,9 @@ isOneToOne: false
                            },
 "_factura_coincide":
 { Args: { "f": Omit<Database["public"]['Tables']["facturas"]['Row'], Database["public"]['Tables']["facturas"]['ComputedFields']>,"p_xml": string }; Returns: boolean
+                           },
+"_factura_crear":
+{ Args: { "p_venta": number }; Returns: number
                            },
 "_factura_enviar":
 { Args: { "p_factura": number }; Returns: undefined

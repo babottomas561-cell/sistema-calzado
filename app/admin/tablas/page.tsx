@@ -2,7 +2,7 @@
 // medios de pago). Como en un ERP: cada una con su código corto, que arma el código de artículo y el SKU.
 // Se ven como listas limpias; se edita en una ventana (Editor).
 import Link from "next/link";
-import { CreditCard, Layers, Monitor, Palette, Plus, Ruler, Store, Tag } from "lucide-react";
+import { CreditCard, Layers, Monitor, Palette, Plus, Ruler, Store, Tag, FileCheck2 } from "lucide-react";
 import { crearCliente } from "@/lib/supabase/server";
 import { porcentaje } from "@/lib/formato";
 import Editor from "./Editor";
@@ -63,7 +63,7 @@ export default async function Tablas({ searchParams }: { searchParams: Promise<{
     supabase.from("marcas").select("id, codigo, nombre, productos(count)").order("nombre"),
     supabase.from("colores").select("id, codigo, nombre, hex, variantes(count)").order("nombre"),
     supabase.from("talles").select("id, nombre, orden, tipo, variantes(count)").order("orden"),
-    supabase.from("medios_pago").select("id, codigo, nombre, tipo, ajuste_pct, cuotas, en_mostrador, en_tienda, activo, orden, pagos(count)").eq("es_saldo", false).order("orden"),   // «Saldo a favor» es automático
+    supabase.from("medios_pago").select("id, codigo, nombre, tipo, ajuste_pct, cuotas, en_mostrador, en_tienda, siempre_factura, activo, orden, pagos(count)").eq("es_saldo", false).order("orden"),   // «Saldo a favor» es automático
   ]);
   const cantidades: Record<Clave, number> = { rubros: rubros.data?.length ?? 0, marcas: marcas.data?.length ?? 0,
     colores: colores.data?.length ?? 0, talles: talles.data?.length ?? 0, medios: medios.data?.length ?? 0 };
@@ -213,8 +213,8 @@ export default async function Tablas({ searchParams }: { searchParams: Promise<{
                       : <span className={`chip ${pct < 0 ? "bg-green-100 text-ok" : "bg-amber-100 text-alerta"}`}>{pct < 0 ? "Descuento" : "Recargo"} {porcentaje(Math.abs(pct)).replace("+", "")}</span>}</td>
                     <td><div className="flex gap-1.5">
                       {m.en_mostrador && <span className="chip gap-1 bg-gray-100 text-gray-700"><Store size={12} /> Local</span>}
-                      {m.en_tienda && <span className="chip gap-1 bg-blue-50 text-marca"><Monitor size={12} /> Tienda</span>}</div></td>
-                    <td className="py-1"><Editor key={`${m.id}-${m.nombre}-${pct}-${m.cuotas}-${m.en_mostrador}-${m.en_tienda}-${m.activo}-${m.orden}-${m.tipo}-${m.codigo}`}
+                      {m.en_tienda && <span className="chip gap-1 bg-blue-50 text-marca"><Monitor size={12} /> Tienda</span>}{m.siempre_factura && <span className="chip gap-1 bg-green-50 text-ok"><FileCheck2 size={12} /> Siempre con factura</span>}</div></td>
+                    <td className="py-1"><Editor key={`${m.id}-${m.nombre}-${pct}-${m.cuotas}-${m.en_mostrador}-${m.en_tienda}-${m.siempre_factura}-${m.activo}-${m.orden}-${m.tipo}-${m.codigo}`}
                       tabla="medios_pago" id={m.id} titulo="Editar medio de pago" enUso={usos(m.pagos)}><CamposMedio m={m} /></Editor></td>
                   </tr>
                 );
@@ -227,7 +227,7 @@ export default async function Tablas({ searchParams }: { searchParams: Promise<{
   );
 }
 
-type Medio = { codigo: string; nombre: string; tipo: string; ajuste_pct: number; cuotas: number; en_mostrador: boolean; en_tienda: boolean; activo: boolean; orden: number };
+type Medio = { codigo: string; nombre: string; tipo: string; ajuste_pct: number; cuotas: number; en_mostrador: boolean; en_tienda: boolean; siempre_factura: boolean; activo: boolean; orden: number };
 
 // Campos de un medio de pago. En pantalla el % va en positivo y se elige si es descuento o recargo.
 function CamposMedio({ m }: { m?: Medio }) {
@@ -251,6 +251,7 @@ function CamposMedio({ m }: { m?: Medio }) {
         <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-texto-2">Dónde se ofrece</legend>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="en_mostrador" defaultChecked={m?.en_mostrador ?? true} /> Al vender en el local</label>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="en_tienda" defaultChecked={m?.en_tienda ?? false} /> En la tienda online</label>
+        <label className="flex items-center gap-2 text-sm" title="Con factura de ARCA activa: si se cobra con este medio, la venta sale siempre con factura (la caja no deja elegir «Sin factura»)"><input type="checkbox" name="siempre_factura" defaultChecked={m?.siempre_factura ?? false} /> Siempre con factura</label>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="activo" defaultChecked={m?.activo ?? true} /> Activo</label>
       </fieldset>
       <input type="hidden" name="orden" value={m?.orden ?? 99} />

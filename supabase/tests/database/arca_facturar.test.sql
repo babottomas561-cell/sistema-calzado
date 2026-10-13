@@ -88,7 +88,7 @@ update datos_legales set cuit = '20-12345678-6', razon_social = 'Mi Tienda SRL',
 update integraciones set sitio_url = 'https://tienda.test', arca_cert_homologacion = 'CERT', arca_cert_homologacion_vence = now() + interval '2 years',
   arca_clave_vault_id = vault.create_secret('LLAVE', 'arca_prueba_' || gen_random_uuid()) where unica;
 update clientes set documento = '30.123.456' where nombre = 'María González';
-select plan(50);
+select plan(54);
 
 set local role authenticated;
 select prueba.como_admin();
@@ -210,6 +210,18 @@ insert into prueba.ids values ('v8', prueba.vender(prueba.var(2), 1, 20000));
 select is((facturar_venta(prueba.id('v8')) ->> 'letra'), 'C', 'un monotributista factura C');
 select ok((prueba.f(prueba.id('v8'))).iva = 0 and (prueba.f(prueba.id('v8'))).neto = (prueba.f(prueba.id('v8'))).total, 'sin IVA discriminado');
 select ok((select xml from prueba.llamadas where metodo = 'FECAESolicitar' order by id desc limit 1) !~ '<ar:Iva>', 'y sin detalle de alícuotas');
+
+-- ── Medio de pago «siempre con factura»: la base crea la factura al guardar la venta ──
+reset role; update medios_pago set siempre_factura = true where codigo = 'TRA'; set local role authenticated; select prueba.como_admin();
+insert into prueba.ids select 'vt', registrar_venta(jsonb_build_array(jsonb_build_object('variante_id', prueba.var(1), 'cantidad', 1, 'precio_unitario', 7000)),
+  jsonb_build_array(jsonb_build_object('medio_pago_id', prueba.medio('TRA'))));
+set constraints all immediate; set constraints all deferred;
+select is((prueba.f(prueba.id('vt'))).estado, 'pendiente', 'pagada con un medio «siempre con factura», la venta ya tiene su factura (la manda la cola)');
+select is(facturar_venta(prueba.id('vt')) ->> 'estado', 'autorizada', 'y si la caja pide facturar, manda esa misma (no hace otra)');
+select is((select count(*) from facturas where venta_id = prueba.id('vt'))::int, 1, 'una sola factura');
+insert into prueba.ids values ('ve', prueba.vender(prueba.var(1), 1, 7000));
+set constraints all immediate; set constraints all deferred;
+select is(prueba.f(prueba.id('ve')) is null or (prueba.f(prueba.id('ve'))).id is null, true, 'en efectivo, no se crea sola');
 
 -- ── Apagada ──
 select arca_activar(false);

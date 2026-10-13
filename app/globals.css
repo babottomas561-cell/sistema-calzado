@@ -76,6 +76,9 @@ body { background: var(--color-fondo); color: #111827; }
 /* Tira de categorías: se desliza con el dedo, sin barra */
 .tienda .tira { scrollbar-width: none; -ms-overflow-style: none; }
 .tienda .tira::-webkit-scrollbar { display: none; }
+/* Tiras que se deslizan con el dedo (filtros de la caja): sin la barra gris */
+.sin-barra { scrollbar-width: none; -ms-overflow-style: none; }
+.sin-barra::-webkit-scrollbar { display: none; }
 
 /* Entrada suave de las tarjetas (solo si el usuario no pidió menos movimiento) */
 @media (prefers-reduced-motion: no-preference) {

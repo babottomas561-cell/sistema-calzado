@@ -183,7 +183,7 @@ export default function SelectorVariantes({ filas: todas, alElegir, soloConStock
       {productoId === null ? (
         <>
           {caja && rubros.length > 1 && (
-            <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Rubros">
+            <div className="sin-barra -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Rubros">
               {[null, ...rubros].map((r) => (
                 <button key={r ?? "todos"} type="button" role="tab" aria-selected={rubro === r} onClick={() => setRubro(r)}
                   className={`h-9 shrink-0 rounded-full border px-3.5 text-sm font-medium transition-colors ${rubro === r ? "border-marca bg-marca text-white" : "border-borde bg-white text-gray-700 hover:bg-gray-50"}`}>{r ?? "Todo"}</button>
@@ -193,7 +193,7 @@ export default function SelectorVariantes({ filas: todas, alElegir, soloConStock
           {destacados.length > 0 && !busqueda && !rubro && (
             <div className="space-y-1.5">
               <p className="flex items-center gap-1.5 text-xs font-semibold text-texto-2"><Flame size={14} strokeWidth={1.8} className="text-marca" /> Lo que más se vende</p>
-              <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+              <div className="sin-barra -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
                 {destacados.map((d) => (
                   <button key={d.id} type="button" onClick={() => abrir(d)} className="flex h-12 max-w-56 shrink-0 items-center gap-2 rounded-full border border-borde bg-white py-1 pl-1 pr-3.5 text-left text-sm font-medium hover:border-marca">
                     <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-gray-100">

@@ -46,7 +46,7 @@ function Opcion({ icono: Icono, valor, activo, abierto, alAlternar }: { icono: L
 
 export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion }: {
   facturacion: { modo: "todas" | "elegir"; porDefecto: "fiscal" | "interna"; letra: string; pruebas: boolean; umbral: number } | null;
-  filas: FilaStock[]; clientes: Cliente[]; masVendidos: number[]; puedeCrearCliente: boolean; medios: (MedioCobro & { es_saldo?: boolean | null })[]; cambiaPrecio: boolean; descuentoMax: number | null;
+  filas: FilaStock[]; clientes: Cliente[]; masVendidos: number[]; puedeCrearCliente: boolean; medios: (MedioCobro & { es_saldo?: boolean | null; siempre_factura?: boolean | null })[]; cambiaPrecio: boolean; descuentoMax: number | null;
   impresion: { configurada: boolean; modo: string; puedeConfigurar: boolean };
 }) {
   const [items, setItems] = useState<Item[]>([]);
@@ -73,7 +73,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const [panel, setPanel] = useState(false);   // en el celular: el cobro a pantalla completa
   const [estado, accion, cargando] = useActionState(registrarVenta, {});
   // Con ARCA activa: «Factura» o «Comprobante interno» (si el local deja elegir; si no, siempre factura)
-  const [facturar, setFacturar] = useState(facturacion ? facturacion.modo === "todas" || facturacion.porDefecto === "fiscal" : false);
+  const [elegido, setFacturar] = useState(facturacion ? facturacion.modo === "todas" || facturacion.porDefecto === "fiscal" : false);
   const cliente = clientes.find((c) => c.id === clienteId) ?? null;
   const formulario = useRef<HTMLFormElement>(null);
   // «Saldo a favor» solo aparece si el cliente elegido tiene saldo (o si ya se eligió)
@@ -119,6 +119,9 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const usaSaldo = cobro.lineas.some((l) => medios.find((m) => m.id === l.medio_pago_id)?.es_saldo);
   const montoRecibido = Number(recibido.replace(/\./g, "").replace(",", ".")) || 0;
 
+  // Un medio «siempre con factura» (Tablas → Medios de pago) en el cobro: va con factura, sin opción (la base también lo hace cumplir)
+  const medioObliga = facturacion ? medios.find((m) => m.siempre_factura && cobro.lineas.some((l) => l.medio_pago_id === m.id)) ?? null : null;
+  const facturar = elegido || !!medioObliga;
   const sinDni = facturar && !!facturacion && cobro.total >= facturacion.umbral && !/^\d{7,8}$/.test((cliente?.documento ?? "").replace(/\D/g, ""));
   // Por qué no se puede confirmar (se dice, no solo se apaga el botón)
   const falta = !items.length ? "Agregá al menos un producto"
@@ -200,7 +203,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
           )}
           <h1 className="text-2xl font-bold">Nueva venta</h1>
           <Paso n={1} titulo="Agregá lo que se lleva" listo={items.length > 0}>
-            <span className="ml-auto hidden text-xs text-texto-2 lg:inline"><kbd className="rounded border border-borde bg-white px-1 font-sans">F2</kbd> buscar · <kbd className="rounded border border-borde bg-white px-1 font-sans">F9</kbd> confirmar{facturacion?.modo === "elegir" && <> · <kbd className="rounded border border-borde bg-white px-1 font-sans">F4</kbd> factura</>}</span>
+            <span className="ml-auto hidden whitespace-nowrap text-xs text-texto-2 xl:inline"><kbd className="rounded border border-borde bg-white px-1 font-sans">F2</kbd> buscar · <kbd className="rounded border border-borde bg-white px-1 font-sans">F9</kbd> confirmar{facturacion?.modo === "elegir" && <> · <kbd className="rounded border border-borde bg-white px-1 font-sans">F4</kbd> factura</>}</span>
           </Paso>
           <SelectorVariantes filas={filas} alElegir={agregar} soloConStock caja enVenta={enVenta} masVendidos={masVendidos} />
         </section>
@@ -464,24 +467,28 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
               </dl>
               {facturacion && facturacion.modo === "elegir" && (
                 <div role="radiogroup" aria-label="¿Con factura? (F4 cambia)" className="grid grid-cols-2 gap-1 rounded-lg bg-gray-100 p-1 text-sm">
-                  {([[true, `Con factura ${facturacion.letra}`], [false, "Sin factura"]] as const).map(([valor, texto]) => (
-                    <button key={texto} type="button" role="radio" aria-checked={facturar === valor} onClick={() => setFacturar(valor)}
-                      className={`flex min-h-9 items-center justify-center gap-1.5 rounded-md font-semibold transition ${facturar === valor ? "bg-white text-marca shadow-sm" : "text-gray-600 hover:text-gray-900"}`}>
+                  {([[true, `Factura ${facturacion.letra}`], [false, "Sin factura"]] as const).map(([valor, texto]) => (
+                    <button key={texto} type="button" role="radio" aria-checked={facturar === valor} onClick={() => setFacturar(valor)} disabled={!valor && !!medioObliga}
+                      className={`flex min-h-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-md font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${facturar === valor ? "bg-white text-marca shadow-sm" : "text-gray-600 hover:text-gray-900"}`}>
                       {valor ? <FileCheck2 size={15} strokeWidth={facturar === valor ? 2.2 : 1.8} /> : <ReceiptText size={15} strokeWidth={facturar === valor ? 2.2 : 1.8} />}{texto}
+                      {valor && facturacion.pruebas && <span className="rounded bg-amber-100 px-1 text-[10px] font-bold uppercase text-alerta" title="ARCA está en pruebas: la factura no tiene validez">prueba</span>}
                     </button>
                   ))}
                 </div>
               )}
+              {medioObliga && facturacion?.modo === "elegir" && <p className="flex items-center gap-1.5 text-xs text-texto-2"><FileCheck2 size={14} /> Con {medioObliga.nombre} va siempre con factura.</p>}
               {facturacion?.modo === "todas" && <p className="flex items-center gap-1.5 text-xs text-texto-2"><FileCheck2 size={14} /> Sale con Factura {facturacion.letra}{facturacion.pruebas ? " (pruebas de ARCA)" : ""}</p>}
-              {facturacion?.pruebas && facturacion.modo === "elegir" && facturar && <p className="text-xs text-alerta">ARCA está en pruebas: la factura no tiene validez.</p>}
               {facturar && <input type="hidden" name="factura" value="1" />}
               <input type="hidden" name="venta" value={venta} />
               {efectivo && montoRecibido >= efectivo.cobra && <input type="hidden" name="vuelto" value={vuelto(montoRecibido, efectivo.cobra)} />}
               {estado.error && <p role="alert" className="flex items-start gap-1.5 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-error"><CircleAlert size={16} className="mt-0.5 shrink-0" />{estado.error}</p>}
               <button className="boton min-h-14 w-full text-base" disabled={cargando || !!falta}>
                 <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20 text-xs font-bold" aria-hidden>3</span>
-                {cargando ? (facturar ? "Registrando y facturando…" : "Registrando…")
-                  : `${facturacion ? (facturar ? `Confirmar con Factura ${facturacion.letra}` : "Confirmar sin factura") : "Confirmar venta"}${items.length ? ` · ${pesos(cobro.total)}` : ""}`}
+                {cargando ? (facturar ? "Registrando y facturando…" : "Registrando…") : (
+                  <span className="flex flex-col items-center leading-tight">
+                    <span>Confirmar{items.length ? ` · ${pesos(cobro.total)}` : " venta"}</span>
+                    {facturacion && <span className="text-xs font-medium opacity-90">{facturar ? `con Factura ${facturacion.letra}` : "sin factura (comprobante interno)"}</span>}
+                  </span>)}
               </button>
               {falta && items.length > 0 && <p className="text-center text-xs text-texto-2">{falta}</p>}
             </div>
