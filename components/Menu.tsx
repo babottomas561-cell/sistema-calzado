@@ -3,55 +3,36 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BadgePercent, BookText, BookUser, Boxes, ChartBar, ChevronDown, ExternalLink, FileText, House, KeyRound, LogOut, Menu as IconoMenu, MessageCircleMore, Package, PackagePlus, PackageSearch, PackageX, PanelLeftClose, PanelLeftOpen, Plug, Plus, Printer, Receipt, Scale, ScanBarcode, Search, Settings2, ShieldCheck, ShoppingBag, Store, Tags, Truck, Undo2, Users, Wallet, X, type LucideIcon } from "lucide-react";
+import { BookUser, Check, ChevronDown, Eye, EyeOff, ExternalLink, KeyRound, LogOut, Menu as IconoMenu, PanelLeftClose, PanelLeftOpen, Plus, Search, SlidersHorizontal, Star, X } from "lucide-react";
 import Logo from "@/components/Logo";
-import { puede, type Permiso } from "@/lib/permisos";
+import { puede } from "@/lib/permisos";
+import { GRUPOS, type Item } from "@/lib/menu";
 
-// Cada ítem aparece si el usuario tiene alguno de sus permisos (la base controla igual lo que puede hacer)
-type Item = { href: string; texto: string; icono: LucideIcon; permisos: Permiso[] };
-const GRUPOS: { titulo?: string; items: Item[] }[] = [
-  { items: [{ href: "/admin", texto: "Inicio", icono: House, permisos: [] }] },
-  { titulo: "Operación", items: [
-    { href: "/admin/ventas", texto: "Ventas", icono: Receipt, permisos: ["ventas.registrar", "ventas.ver_todas"] },
-    { href: "/admin/devoluciones", texto: "Cambios y devol.", icono: Undo2, permisos: ["ventas.registrar", "ventas.ver_todas"] },
-    { href: "/admin/presupuestos", texto: "Presupuestos", icono: FileText, permisos: ["ventas.registrar", "ventas.ver_todas"] },
-    { href: "/admin/pedidos", texto: "Pedidos", icono: ShoppingBag, permisos: ["pedidos.gestionar"] },
-    { href: "/admin/arrepentimientos", texto: "Arrepentimientos", icono: Scale, permisos: ["pedidos.gestionar"] },
-    { href: "/admin/compras", texto: "Compras", icono: PackagePlus, permisos: ["compras.registrar"] },
-  ] },
-  { titulo: "Catálogo", items: [
-    { href: "/admin/productos", texto: "Productos", icono: Package, permisos: ["costos.ver"] },
-    { href: "/admin/stock", texto: "Stock", icono: Boxes, permisos: ["stock.ver"] },
-    { href: "/admin/etiquetas", texto: "Etiquetas", icono: ScanBarcode, permisos: ["stock.ver", "productos.editar"] },
-    { href: "/admin/precios", texto: "Precios", icono: Tags, permisos: ["precios.editar", "proveedores.gestionar"] },
-    { href: "/admin/promociones", texto: "Promociones", icono: BadgePercent, permisos: ["promociones.gestionar"] },
-    { href: "/admin/fallados", texto: "Fallados", icono: PackageX, permisos: ["stock.ver"] },
-    { href: "/admin/reposicion", texto: "Reposición", icono: PackageSearch, permisos: ["compras.registrar"] },
-  ] },
-  { titulo: "Análisis", items: [
-    { href: "/admin/informes", texto: "Informes", icono: ChartBar, permisos: ["informes.ventas", "informes.stock", "gastos.gestionar"] },
-    { href: "/admin/gastos", texto: "Gastos", icono: Wallet, permisos: ["gastos.gestionar"] },
-    { href: "/admin/contabilidad", texto: "Contabilidad", icono: BookText, permisos: ["contabilidad.ver", "contabilidad.configurar"] },
-  ] },
-  { titulo: "Contactos", items: [
-    { href: "/admin/clientes", texto: "Clientes", icono: Users, permisos: ["clientes.ver"] },
-    { href: "/admin/seguimientos", texto: "Seguimientos", icono: MessageCircleMore, permisos: ["clientes.ver"] },
-    { href: "/admin/proveedores", texto: "Proveedores", icono: Truck, permisos: ["proveedores.gestionar", "compras.registrar"] },
-  ] },
-  { titulo: "Configuración", items: [
-    { href: "/admin/tienda", texto: "Tienda online", icono: Store, permisos: ["tienda.editar"] },
-    { href: "/admin/integraciones", texto: "Integraciones", icono: Plug, permisos: ["tienda.editar"] },
-    { href: "/admin/tablas", texto: "Tablas", icono: Settings2, permisos: ["tablas.editar"] },
-    { href: "/admin/impresion", texto: "Impresión", icono: Printer, permisos: ["tablas.editar"] },
-    { href: "/admin/equipo", texto: "Equipo", icono: ShieldCheck, permisos: ["equipo.administrar"] },
-  ] },
-];
 const TODAS = ["/admin/ventas/nueva", ...GRUPOS.flatMap((g) => g.items.map((i) => i.href))];
 const normalizar = (texto: string) => texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-export default function Menu({ version, logo, nombre, email, rolEquipo, permisos, salir }: { version?: string; logo?: string | null; nombre: string; email: string; rolEquipo: string | null; permisos: string[]; salir: () => Promise<void> }) {
+type Props = {
+  version?: string; logo?: string | null; nombre: string; email: string; rolEquipo: string | null; permisos: string[]; salir: () => Promise<void>;
+  desactivados: string[];                       // módulos apagados en esta instalación (Equipo → Módulos)
+  favoritos: string[]; ocultos: string[];       // lo que eligió esta persona
+  guardarMenu: (favoritos: string[], ocultos: string[]) => Promise<void>;
+};
+
+export default function Menu({ version, logo, nombre, email, rolEquipo, permisos, salir, desactivados, favoritos: favoritosIniciales, ocultos: ocultosIniciales, guardarMenu }: Props) {
   const ruta = usePathname();
-  const gruposPermitidos = GRUPOS.map((g) => ({ ...g, items: g.items.filter((i) => !i.permisos.length || puede(permisos, ...i.permisos)) })).filter((g) => g.items.length);
+  // Lo que esta persona puede usar y la instalación tiene encendido (de acá sale también la lista para personalizar)
+  const gruposPermitidos = GRUPOS.map((g) => ({ ...g, items: g.items.filter((i) => (!i.permisos.length || puede(permisos, ...i.permisos)) && (i.fijo || !desactivados.includes(i.href))) })).filter((g) => g.items.length);
+  const [favoritos, setFavoritos] = useState(favoritosIniciales);
+  const [ocultos, setOcultos] = useState(ocultosIniciales);
+  const [personalizando, setPersonalizando] = useState(false);
+  const [errorMenu, setErrorMenu] = useState(false);
+  const guardar = (fav: string[], oc: string[]) => {
+    setFavoritos(fav); setOcultos(oc); setErrorMenu(false);
+    guardarMenu(fav, oc).catch(() => setErrorMenu(true));
+  };
+  const alternarFavorito = (href: string) => guardar(favoritos.includes(href) ? favoritos.filter((h) => h !== href) : [...favoritos, href], ocultos);
+  const alternarOculto = (href: string) => guardar(favoritos.filter((h) => h !== href), ocultos.includes(href) ? ocultos.filter((h) => h !== href) : [...ocultos, href]);
+  const sePuedeOcultar = (i: Item) => i.href !== "/admin";
   const vende = puede(permisos, "ventas.registrar");
   const [abierto, setAbierto] = useState(false);
   const [compacto, setCompacto] = useState(false);
@@ -62,7 +43,11 @@ export default function Menu({ version, logo, nombre, email, rolEquipo, permisos
     .sort((a, b) => b.length - a.length)[0];
   const itemActual = GRUPOS.flatMap((g) => g.items).find((item) => item.href === actual);
   const textoBusqueda = normalizar(busqueda.trim());
-  const grupos = gruposPermitidos
+  // Lo que se ve: sin lo que la persona ocultó (salvo al personalizar, que muestra todo para poder volver a prenderlo)
+  const visibles = gruposPermitidos.map((g) => ({ ...g, items: personalizando ? g.items : g.items.filter((i) => !ocultos.includes(i.href)) }));
+  const favoritosVisibles = personalizando ? [] : visibles.flatMap((g) => g.items).filter((i) => favoritos.includes(i.href));
+  const grupos = [...(favoritosVisibles.length && !textoBusqueda ? [{ titulo: "Favoritos", items: favoritosVisibles, esFavoritos: true }] : []),
+    ...visibles.map((g) => ({ ...g, esFavoritos: false }))]
     .map((grupo) => ({ ...grupo, items: textoBusqueda ? grupo.items.filter((item) => normalizar(item.texto).includes(textoBusqueda)) : grupo.items }))
     .filter((grupo) => grupo.items.length);
 
@@ -142,26 +127,48 @@ export default function Menu({ version, logo, nombre, email, rolEquipo, permisos
           </Link>
         </div>}
         <nav className="flex-1 overflow-y-auto px-3 py-3" aria-label="Administración">
-          {grupos.map((g, i) => (
-            <div key={i} className="mb-3">
+          {personalizando && <p className={`mb-3 rounded-lg bg-marca-suave px-3 py-2 text-xs text-gray-700 ${compacto ? "md:hidden" : ""}`}>Tocá el ojo para mostrar u ocultar una sección en <b>tu</b> menú. No cambia lo que podés hacer.</p>}
+          {grupos.map((g) => (
+            <div key={g.titulo ?? "inicio"} className="mb-3">
               {g.titulo && <button type="button" onClick={() => cambiarGrupo(g.titulo!)} className={`flex w-full items-center justify-between rounded px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 hover:text-gray-700 ${compacto ? "md:hidden" : ""}`} aria-expanded={textoBusqueda ? true : !plegados.includes(g.titulo)}>
-                {g.titulo}<ChevronDown size={14} className={`transition-transform ${textoBusqueda || !plegados.includes(g.titulo) ? "rotate-0" : "-rotate-90"}`} />
+                <span className="flex items-center gap-1.5">{g.esFavoritos && <Star size={12} className="fill-current" />}{g.titulo}</span><ChevronDown size={14} className={`transition-transform ${textoBusqueda || !plegados.includes(g.titulo) ? "rotate-0" : "-rotate-90"}`} />
               </button>}
-              {(compacto || textoBusqueda || !g.titulo || !plegados.includes(g.titulo)) && g.items.map(({ href, texto, icono: Icono }) => {
+              {(compacto || textoBusqueda || !g.titulo || !plegados.includes(g.titulo)) && g.items.map((item) => {
+                const { href, texto, icono: Icono } = item;
                 const activo = href === actual;
+                const oculto = ocultos.includes(href);
+                if (personalizando) {
+                  return sePuedeOcultar(item) ? (
+                    <button key={href} type="button" onClick={() => alternarOculto(href)} aria-pressed={!oculto} title={compacto ? texto : undefined}
+                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition hover:bg-gray-100 ${oculto ? "text-gray-400" : "text-gray-700"} ${compacto ? "md:justify-center" : ""}`}>
+                      <Icono size={18} strokeWidth={1.8} className="shrink-0" /><span className={`flex-1 ${oculto ? "line-through" : ""} ${compacto ? "md:hidden" : ""}`}>{texto}</span>
+                      {oculto ? <EyeOff size={16} className={`shrink-0 ${compacto ? "md:hidden" : ""}`} /> : <Eye size={16} className={`shrink-0 text-marca ${compacto ? "md:hidden" : ""}`} />}
+                    </button>
+                  ) : null;
+                }
+                const esFavorito = favoritos.includes(href);
                 return (
-                  <Link key={href} href={href} onClick={() => setAbierto(false)} aria-current={activo ? "page" : undefined}
-                    title={compacto ? texto : undefined}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${compacto ? "md:justify-center" : ""} ${activo ? "bg-marca-suave text-marca" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}>
-                    <Icono size={18} strokeWidth={activo ? 2.2 : 1.8} className="shrink-0" /><span className={compacto ? "md:hidden" : ""}>{texto}</span>
-                  </Link>
+                  <div key={`${g.esFavoritos ? "f" : "g"}-${href}`} className="group relative">
+                    <Link href={href} onClick={() => setAbierto(false)} aria-current={activo ? "page" : undefined}
+                      title={compacto ? texto : undefined}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${compacto ? "md:justify-center" : "pr-10"} ${activo ? "bg-marca-suave text-marca" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}>
+                      <Icono size={18} strokeWidth={activo ? 2.2 : 1.8} className="shrink-0" /><span className={compacto ? "md:hidden" : ""}>{texto}</span>
+                    </Link>
+                    {!compacto && <button type="button" onClick={() => alternarFavorito(href)} aria-pressed={esFavorito} aria-label={esFavorito ? `Sacar ${texto} de favoritos` : `Agregar ${texto} a favoritos`} title={esFavorito ? "Sacar de favoritos" : "Agregar a favoritos"}
+                      className={`absolute right-1.5 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-md transition hover:bg-gray-200 focus-visible:opacity-100 ${esFavorito ? "text-amber-500" : "text-gray-400 opacity-100 md:opacity-0 md:group-hover:opacity-100"}`}>
+                      <Star size={15} strokeWidth={1.8} className={esFavorito ? "fill-current" : ""} /></button>}
+                  </div>
                 );
               })}
             </div>
           ))}
           {!grupos.length && <p className="px-3 py-8 text-center text-sm text-texto-2">No encontramos esa sección.</p>}
         </nav>
+        {errorMenu && <p role="alert" className="px-4 pb-1 text-xs text-error">No se pudo guardar tu menú. Probá de nuevo.</p>}
         <div className="border-t border-borde px-3 py-3 text-sm">
+          <button type="button" onClick={() => setPersonalizando(!personalizando)} aria-pressed={personalizando} title={compacto ? "Personalizar mi menú" : undefined}
+            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 font-medium ${personalizando ? "bg-marca-suave text-marca" : "text-gray-600 hover:bg-gray-100"} ${compacto ? "md:justify-center" : ""}`}>
+            {personalizando ? <Check size={18} strokeWidth={2.2} /> : <SlidersHorizontal size={18} strokeWidth={1.8} />}<span className={compacto ? "md:hidden" : ""}>{personalizando ? "Listo" : "Personalizar mi menú"}</span></button>
           <a href="/" target="_blank" title={compacto ? "Ver la tienda" : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-600 hover:bg-gray-100 ${compacto ? "md:justify-center" : ""}`}>
             <ExternalLink size={18} strokeWidth={1.8} /><span className={compacto ? "md:hidden" : ""}>Ver la tienda</span></a>
           <Link href="/nueva-clave" onClick={() => setAbierto(false)} title={compacto ? "Cambiar contraseña" : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-600 hover:bg-gray-100 ${compacto ? "md:justify-center" : ""}`}>

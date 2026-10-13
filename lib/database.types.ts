@@ -1109,6 +1109,34 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"menu_usuario": {
+                  Row: {
+                    "favoritos": (string)[],"ocultos": (string)[],"usuario_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "favoritos"?: (string)[],"ocultos"?: (string)[],"usuario_id": string
+                  }
+                  Update: {
+                    "favoritos"?: (string)[],"ocultos"?: (string)[],"usuario_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"modulos_desactivados": {
+                  Row: {
+                    "clave": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "clave": string
+                  }
+                  Update: {
+                    "clave"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"movimientos_stock": {
                   Row: {
                     "cantidad": number,"compra_id": number | null,"deposito_id": number,"fecha": string,"id": number,"motivo": string | null,"tipo": string,"usuario_id": string | null,"variante_id": number,"venta_id": number | null
@@ -2810,6 +2838,9 @@ isOneToOne: false
 "comprobante_publico":
 { Args: { "p_token": string }; Returns: Json
                            },
+"configurar_modulos":
+{ Args: { "p_desactivados": (string)[] }; Returns: undefined
+                           },
 "consultar_pedido_whatsapp":
 { Args: { "p_comprobante": string,"p_telefono": string }; Returns: {
               "comprobante": string,"entrega": string,"estado": string,"total": number
@@ -2931,6 +2962,9 @@ isOneToOne: false
 "guardar_integraciones":
 { Args: { "p_access_token"?: string,"p_app_secret"?: string,"p_gemini_api_key"?: string,"p_phone_number_id"?: string,"p_quitar"?: (string)[],"p_waba_id"?: string }; Returns: undefined
                            },
+"guardar_menu_usuario":
+{ Args: { "p_favoritos": (string)[],"p_ocultos": (string)[] }; Returns: undefined
+                           },
 "guardar_mercadopago":
 { Args: { "p_access_token"?: string,"p_quitar"?: (string)[],"p_sitio_url"?: string,"p_webhook_secret"?: string }; Returns: undefined
                            },
@@ -2972,6 +3006,11 @@ isOneToOne: false
 "libro_diario":
 { Args: { "p_desde": string,"p_hasta": string }; Returns: {
               "anula_a": number,"asiento_id": number,"circuito": string,"concepto": string,"cuenta_codigo": string,"cuenta_nombre": string,"debe": number,"detalle": string,"fecha": string,"haber": number,"numero": number,"origen": string
+            }[]
+                           },
+"mas_vendidos_caja":
+{ Args: { "p_dias"?: number,"p_limite"?: number }; Returns: {
+              "producto_id": number,"unidades": number
             }[]
                            },
 "mas_vendidos_tienda":

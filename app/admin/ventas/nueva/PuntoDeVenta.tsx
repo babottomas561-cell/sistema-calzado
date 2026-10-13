@@ -9,12 +9,12 @@ import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeftRight, BadgePercent, Banknote, ChevronDown, CircleAlert, CreditCard, Gift, Minus, Plus, Printer, ScanBarcode, ShoppingBag, Smartphone,
-  SplitSquareHorizontal, Trash2, User, Wallet, X, type LucideIcon,
+  SplitSquareHorizontal, Trash2, User, UserPlus, Wallet, X, type LucideIcon,
 } from "lucide-react";
 import SelectorVariantes, { type FilaStock } from "@/components/SelectorVariantes";
 import { pesos, porcentaje } from "@/lib/formato";
 import { billetesSugeridos, calcularCobro, opcionesRedondeo, pagosParaLaBase, REPARTOS, totalCon, vuelto, type LineaPago, type MedioCobro } from "@/lib/cobro";
-import { cotizarMostrador, registrarVenta, type CotizacionMostrador } from "../acciones";
+import { cotizarMostrador, crearClienteRapido, registrarVenta, type CotizacionMostrador } from "../acciones";
 
 type Item = FilaStock & { cantidad: number; precio: number };
 type Cliente = { id: number; nombre: string; telefono: string | null; saldo: number };
@@ -45,8 +45,8 @@ function Opcion({ icono: Icono, valor, activo, abierto, alAlternar }: { icono: L
   );
 }
 
-export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, descuentoMax, impresion }: {
-  filas: FilaStock[]; clientes: Cliente[]; medios: (MedioCobro & { es_saldo?: boolean | null })[]; cambiaPrecio: boolean; descuentoMax: number | null;
+export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente }: {
+  filas: FilaStock[]; clientes: Cliente[]; masVendidos: number[]; puedeCrearCliente: boolean; medios: (MedioCobro & { es_saldo?: boolean | null })[]; cambiaPrecio: boolean; descuentoMax: number | null;
   impresion: { configurada: boolean; modo: string; puedeConfigurar: boolean };
 }) {
   const [items, setItems] = useState<Item[]>([]);
@@ -54,6 +54,14 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
   const [multiplo, setMultiplo] = useState<number | null>(null);
   const [recibido, setRecibido] = useState("");
   const [canal, setCanal] = useState("Local");
+  const [nuevos, setNuevos] = useState<Cliente[]>([]);   // clientes creados desde esta caja (la lista de la página no se vuelve a leer)
+  const clientes = useMemo(() => [...nuevos, ...clientesBase], [nuevos, clientesBase]);
+  const [altaCliente, setAltaCliente] = useState(false);
+  const [altaNombre, setAltaNombre] = useState("");
+  const [altaTelefono, setAltaTelefono] = useState("");
+  const [altaError, setAltaError] = useState("");
+  const [creando, setCreando] = useState(false);
+  const [referencias, setReferencias] = useState<Record<number, string>>({});   // n.º de cupón / operación por medio de pago
   const [clienteId, setClienteId] = useState<number | null>(null);
   const [buscaCliente, setBuscaCliente] = useState("");
   const [descuento, setDescuento] = useState(0);
@@ -122,9 +130,16 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
     return () => window.removeEventListener("keydown", alTeclear);
   }, []);
 
+  // Con tarjeta, transferencia o billetera se puede anotar el número de cupón / operación (opcional; la base lo guarda en el pago)
+  const pideReferencia = (m: MedioCobro & { es_saldo?: boolean | null }) => !m.es_saldo && !!m.tipo && m.tipo !== "Efectivo";
+  const textoReferencia = (m: MedioCobro) => (m.tipo === "Transferencia" ? "N.º de operación" : m.tipo === "Billetera" ? "N.º de operación" : "N.º de cupón");
+  const pagosConReferencia = pagosParaLaBase(cobro.lineas).map((p) => {
+    const r = (referencias[p.medio_pago_id] ?? "").trim();
+    return r ? { ...p, referencia: r } : p;
+  });
   const venta = JSON.stringify({
     items: items.map((i) => ({ variante_id: i.variante_id, cantidad: i.cantidad, precio_unitario: i.precio })),
-    pagos: pagosParaLaBase(cobro.lineas), canal, cliente_id: cliente?.id ?? null, descuento,
+    pagos: pagosConReferencia, canal, cliente_id: cliente?.id ?? null, descuento,
   });
 
   const elegirMedio = (i: number, id: number) => { setLineas((ls) => ls.map((l, j) => (j === i ? { ...l, medio_pago_id: id } : l))); setRecibido(""); };
@@ -139,6 +154,15 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
     if (!q) return clientes.slice(0, 6);
     return clientes.filter((c) => c.nombre.toLowerCase().includes(q) || (c.telefono ?? "").replace(/\D/g, "").includes(q.replace(/\D/g, "") || "~")).slice(0, 6);
   }, [buscaCliente, clientes]);
+
+  const crearCliente = async () => {
+    setCreando(true); setAltaError("");
+    const r = await crearClienteRapido(altaNombre, altaTelefono);
+    setCreando(false);
+    if (r.error || !r.cliente) { setAltaError(r.error ?? "No se pudo crear el cliente"); return; }
+    setNuevos((n) => [{ ...r.cliente!, saldo: 0 }, ...n]);
+    setClienteId(r.cliente.id); setAltaCliente(false); setAltaNombre(""); setAltaTelefono(""); setBuscaCliente(""); setAbierto(null);
+  };
 
   const porcentajesDescuento = [5, 10, 15, 20].filter((p) => descuentoMax === null || p <= descuentoMax);
 
@@ -159,7 +183,7 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
           <Paso n={1} titulo="Agregá lo que se lleva" listo={items.length > 0}>
             <span className="ml-auto hidden text-xs text-texto-2 lg:inline"><kbd className="rounded border border-borde bg-white px-1 font-sans">F2</kbd> buscar · <kbd className="rounded border border-borde bg-white px-1 font-sans">F9</kbd> confirmar</span>
           </Paso>
-          <SelectorVariantes filas={filas} alElegir={agregar} soloConStock caja enVenta={enVenta} />
+          <SelectorVariantes filas={filas} alElegir={agregar} soloConStock caja enVenta={enVenta} masVendidos={masVendidos} />
         </section>
 
         <form ref={formulario} action={accion} aria-label="Venta y cobro"
@@ -233,6 +257,26 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
                         ))}
                         {clientesFiltrados.length === 0 && <li className="px-2 py-2 text-sm text-texto-2">No hay clientes con «{buscaCliente}».</li>}
                       </ul>
+                      {puedeCrearCliente && !altaCliente && (
+                        <button type="button" onClick={() => {
+                          const q = buscaCliente.trim();
+                          if (/^[\d\s+()-]+$/.test(q) && q) setAltaTelefono(q); else if (q) setAltaNombre(q);
+                          setAltaCliente(true); setAltaError("");
+                        }} className="inline-flex items-center gap-1.5 text-sm font-medium text-marca"><UserPlus size={15} strokeWidth={1.8} /> Es un cliente nuevo</button>
+                      )}
+                      {altaCliente && (
+                        <div className="space-y-2 rounded-lg border border-borde p-3">
+                          <p className="text-sm font-semibold">Cliente nuevo</p>
+                          <input value={altaNombre} onChange={(e) => setAltaNombre(e.target.value)} placeholder="Nombre y apellido *" className="campo" aria-label="Nombre del cliente nuevo" autoFocus />
+                          <input value={altaTelefono} onChange={(e) => setAltaTelefono(e.target.value)} placeholder="Teléfono (para avisarle o mandarle el comprobante)" inputMode="tel" className="campo" aria-label="Teléfono del cliente nuevo" />
+                          {altaError && <p role="alert" className="text-sm font-medium text-error">{altaError}</p>}
+                          <div className="flex gap-2">
+                            <button type="button" onClick={crearCliente} disabled={creando || !altaNombre.trim()} className="boton min-h-10 flex-1">{creando ? "Guardando…" : "Guardar y usar"}</button>
+                            <button type="button" onClick={() => { setAltaCliente(false); setAltaError(""); }} className="boton-sec min-h-10" disabled={creando}>Cancelar</button>
+                          </div>
+                          <p className="text-xs text-texto-2">El resto de los datos se completa después en Clientes.</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>}
@@ -330,6 +374,14 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
                       className="inline-flex items-center gap-1 text-sm font-medium text-marca"><Plus size={15} /> Sumar otro medio</button>
                   </div>
                 )}
+
+                {/* Número de cupón / operación (opcional) para los medios que no son efectivo */}
+                {[...new Map(cobro.lineas.filter((l) => l.base > 0 && pideReferencia(l.medio)).map((l) => [l.medio.id, l.medio])).values()].map((m) => (
+                  <div key={m.id} className="space-y-1">
+                    <label htmlFor={`ref-${m.id}`} className="flex items-center gap-1.5 text-xs font-semibold text-texto-2"><CreditCard size={14} strokeWidth={1.8} /> {textoReferencia(m)} · {m.nombre} <span className="font-normal">(opcional)</span></label>
+                    <input id={`ref-${m.id}`} value={referencias[m.id] ?? ""} onChange={(e) => setReferencias((r) => ({ ...r, [m.id]: e.target.value }))} maxLength={40} inputMode="text" autoComplete="off" placeholder="Para encontrar el cobro después" className="campo" />
+                  </div>
+                ))}
 
                 {/* Efectivo: redondeo y vuelto */}
                 {efectivo && neto > 0 && (

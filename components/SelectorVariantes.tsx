@@ -5,7 +5,7 @@
 //   · sin lector: se busca por nombre, marca o código, se filtra por rubro y se toca el modelo y el talle (botones grandes).
 // En la caja (`caja`) además muestra fotos, cuántos hay de cada uno en la venta, se cierra solo al elegir y suena al agregar.
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { Camera, ChevronLeft, CircleAlert, CircleCheck, ImageOff, ScanBarcode, Search, Volume2, VolumeX, X } from "lucide-react";
+import { Camera, ChevronLeft, CircleAlert, CircleCheck, Flame, ImageOff, ScanBarcode, Search, Volume2, VolumeX, X } from "lucide-react";
 import { pesos } from "@/lib/formato";
 import { claveDeBusqueda, normalizarCodigo, pareceCodigoLeido } from "@/lib/codigos";
 import EscanerCamara, { type Aviso } from "@/components/EscanerCamara";
@@ -40,9 +40,10 @@ const avisosSonido = new Set<() => void>();
 const suscribirSonido = (f: () => void) => { avisosSonido.add(f); return () => { avisosSonido.delete(f); }; };
 const leerSonido = () => { try { return localStorage.getItem("caja.sonido") !== "no"; } catch { return true; } };
 
-export default function SelectorVariantes({ filas: todas, alElegir, soloConStock, caja = false, enVenta }: {
+export default function SelectorVariantes({ filas: todas, alElegir, soloConStock, caja = false, enVenta, masVendidos }: {
   filas: FilaStock[]; alElegir: (f: FilaStock) => void; soloConStock: boolean;
   caja?: boolean; enVenta?: Map<number, number>;   // en la caja: cuántas de cada variante ya están en la venta
+  masVendidos?: number[];   // en la caja: ids de los modelos más vendidos, en orden (se ofrecen a un toque)
 }) {
   // Al vender, lo que no tiene stock disponible directamente no aparece (ni el talle, ni el color,
   // ni el modelo si se quedó sin nada). Al comprar se ven todos: justamente es para reponer.
@@ -126,11 +127,19 @@ export default function SelectorVariantes({ filas: todas, alElegir, soloConStock
     return { productos: lista.slice(0, MAX_MODELOS), hayMas: lista.length > MAX_MODELOS };
   }, [filas, busqueda, rubro]);
 
+  // Los más vendidos que todavía tienen stock (con el mismo formato que la lista de modelos)
+  const destacados = useMemo(() => {
+    if (!caja || !masVendidos?.length) return [];
+    const porProducto = new Map<number, FilaStock[]>();
+    for (const f of filas) porProducto.set(f.producto_id, [...(porProducto.get(f.producto_id) ?? []), f]);
+    return masVendidos.flatMap((id) => { const v = porProducto.get(id); return v?.length ? [{ id, nombre: v[0].nombre, imagen: v[0].imagen_url ?? null, variantes: v }] : []; });
+  }, [caja, masVendidos, filas]);
+
   const variantes = filas.filter((f) => f.producto_id === productoId).sort((a, b) => ordenTalle(a, b) || a.color.localeCompare(b.color));
   const colores = [...new Set(variantes.map((v) => v.color))];
   const cuantas = (ids: number[]) => ids.reduce((s, id) => s + (enVenta?.get(id) ?? 0), 0);
   // Tocar un modelo: si tiene una sola variante con stock, se agrega directo
-  const abrir = (p: (typeof productos)[number]) => { if (caja && p.variantes.length === 1) elegir(p.variantes[0]); else setProductoId(p.id); };
+  const abrir = (p: { id: number; variantes: FilaStock[] }) => { if (caja && p.variantes.length === 1) elegir(p.variantes[0]); else setProductoId(p.id); };
 
   const cajaDeAviso = (
     <div className="min-h-6" aria-live="polite">
@@ -179,6 +188,20 @@ export default function SelectorVariantes({ filas: todas, alElegir, soloConStock
                 <button key={r ?? "todos"} type="button" role="tab" aria-selected={rubro === r} onClick={() => setRubro(r)}
                   className={`h-9 shrink-0 rounded-full border px-3.5 text-sm font-medium transition-colors ${rubro === r ? "border-marca bg-marca text-white" : "border-borde bg-white text-gray-700 hover:bg-gray-50"}`}>{r ?? "Todo"}</button>
               ))}
+            </div>
+          )}
+          {destacados.length > 0 && !busqueda && !rubro && (
+            <div className="space-y-1.5">
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-texto-2"><Flame size={14} strokeWidth={1.8} className="text-marca" /> Lo que más se vende</p>
+              <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+                {destacados.map((d) => (
+                  <button key={d.id} type="button" onClick={() => abrir(d)} className="flex h-12 max-w-56 shrink-0 items-center gap-2 rounded-full border border-borde bg-white py-1 pl-1 pr-3.5 text-left text-sm font-medium hover:border-marca">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-gray-100">
+                      {d.imagen ? <img src={d.imagen} alt="" loading="lazy" className="h-full w-full object-cover" /> : <ImageOff size={16} className="text-gray-300" />}</span>
+                    <span className="line-clamp-2 leading-tight">{d.nombre}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
           <div className={caja ? "grid grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-2.5" : "grid gap-2 sm:grid-cols-2"}>

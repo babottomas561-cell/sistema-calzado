@@ -46,3 +46,20 @@ export async function anularVenta(_: { error?: string; ok?: string }, f: FormDat
   revalidatePath("/admin", "layout"); revalidatePath("/", "layout");
   return { ok: "Venta anulada: el stock ya volvió" };
 }
+
+// Alta rápida de un cliente desde la caja (solo nombre y teléfono; el resto se completa después en Clientes). La base controla el permiso (clientes.editar).
+export async function crearClienteRapido(nombre: string, telefono: string): Promise<{ error?: string; cliente?: { id: number; nombre: string; telefono: string | null } }> {
+  const n = nombre.trim(), t = telefono.trim();
+  if (!n) return { error: "Falta el nombre" };
+  const supabase = await crearCliente();
+  if (t) {
+    const digitos = t.replace(/\D/g, "");
+    const { data: iguales } = await supabase.from("clientes").select("id, nombre, telefono").not("telefono", "is", null).limit(2000);
+    const ya = (iguales ?? []).find((c) => digitos.length >= 6 && (c.telefono ?? "").replace(/\D/g, "") === digitos);
+    if (ya) return { error: `Ya existe ${ya.nombre} con ese teléfono: buscalo en la lista` };
+  }
+  const { data, error } = await supabase.from("clientes").insert({ nombre: n, telefono: t || null }).select("id, nombre, telefono").single();
+  if (error) return { error: error.code === "42501" ? "No tenés permiso para crear clientes" : error.message };
+  revalidatePath("/admin/clientes");
+  return { cliente: data };
+}
