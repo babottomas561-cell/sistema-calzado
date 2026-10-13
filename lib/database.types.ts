@@ -293,6 +293,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"comprobante_envios": {
+                  Row: {
+                    "canal": string,"creado_en": string,"destino": string | null,"detalle": string | null,"documento_id": number,"enviado_por": string | null,"estado": string,"id": number,"tipo": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "canal": string,"creado_en"?: string,"destino"?: string | null,"detalle"?: string | null,"documento_id": number,"enviado_por"?: string | null,"estado": string,"id"?: never,"tipo": string
+                  }
+                  Update: {
+                    "canal"?: string,"creado_en"?: string,"destino"?: string | null,"detalle"?: string | null,"documento_id"?: number,"enviado_por"?: string | null,"estado"?: string,"id"?: never,"tipo"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"configuracion_cuentas": {
                   Row: {
                     "actualizado_en": string,"actualizado_por": string | null,"clave_exige_mayuscula": boolean,"clave_exige_numero": boolean,"clave_min": number,"confirmar_email": boolean,"direccion": string,"documento": string,"dominios_bloqueados": (string)[],"dominios_permitidos": (string)[],"exigir_terminos": boolean,"nacimiento": string,"ofrecer_novedades": boolean,"registro": string,"telefono": string,"terminos_url": string | null,"texto_confirmado": string | null,"texto_registro": string | null,"unica": boolean
@@ -323,14 +337,14 @@ isOneToOne: false
                   ]
                 },"configuracion_impresion": {
                   Row: {
-                    "actualizado_en": string,"actualizado_por": string | null,"etiqueta_plantilla_id": number | null,"unica": boolean
+                    "actualizado_en": string,"actualizado_por": string | null,"comprobante_codigo_barras": boolean,"comprobante_configurado": boolean,"comprobante_copias": number,"comprobante_datos_legales": boolean,"comprobante_encabezado": string | null,"comprobante_formato": string,"comprobante_letra": string,"comprobante_leyenda": string,"comprobante_logo": boolean,"comprobante_mostrar_cliente": boolean,"comprobante_mostrar_marca": boolean,"comprobante_mostrar_vendedor": boolean,"comprobante_pie": string | null,"comprobante_qr": boolean,"etiqueta_plantilla_id": number | null,"modo_impresion": string,"unica": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"actualizado_por"?: string | null,"etiqueta_plantilla_id"?: number | null,"unica"?: boolean
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"comprobante_codigo_barras"?: boolean,"comprobante_configurado"?: boolean,"comprobante_copias"?: number,"comprobante_datos_legales"?: boolean,"comprobante_encabezado"?: string | null,"comprobante_formato"?: string,"comprobante_letra"?: string,"comprobante_leyenda"?: string,"comprobante_logo"?: boolean,"comprobante_mostrar_cliente"?: boolean,"comprobante_mostrar_marca"?: boolean,"comprobante_mostrar_vendedor"?: boolean,"comprobante_pie"?: string | null,"comprobante_qr"?: boolean,"etiqueta_plantilla_id"?: number | null,"modo_impresion"?: string,"unica"?: boolean
                   }
                   Update: {
-                    "actualizado_en"?: string,"actualizado_por"?: string | null,"etiqueta_plantilla_id"?: number | null,"unica"?: boolean
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"comprobante_codigo_barras"?: boolean,"comprobante_configurado"?: boolean,"comprobante_copias"?: number,"comprobante_datos_legales"?: boolean,"comprobante_encabezado"?: string | null,"comprobante_formato"?: string,"comprobante_letra"?: string,"comprobante_leyenda"?: string,"comprobante_logo"?: boolean,"comprobante_mostrar_cliente"?: boolean,"comprobante_mostrar_marca"?: boolean,"comprobante_mostrar_vendedor"?: boolean,"comprobante_pie"?: string | null,"comprobante_qr"?: boolean,"etiqueta_plantilla_id"?: number | null,"modo_impresion"?: string,"unica"?: boolean
                   }
                   Relationships: [
                     {
@@ -539,6 +553,20 @@ isOneToOne: false
                   }
                   Update: {
                     "configurado"?: boolean,"creado_en"?: string,"error"?: string | null,"id"?: never,"nombre"?: string,"principal"?: boolean,"registros"?: NonNullable<Json>,"revisado_en"?: string | null,"verificado"?: boolean
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"enlaces_comprobante": {
+                  Row: {
+                    "creado_en": string,"creado_por": string | null,"documento_id": number,"id": number,"revocado": boolean,"tipo": string,"token": string,"ultima_vista": string | null,"vistas": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "creado_en"?: string,"creado_por"?: string | null,"documento_id": number,"id"?: never,"revocado"?: boolean,"tipo": string,"token"?: string,"ultima_vista"?: string | null,"vistas"?: number
+                  }
+                  Update: {
+                    "creado_en"?: string,"creado_por"?: string | null,"documento_id"?: number,"id"?: never,"revocado"?: boolean,"tipo"?: string,"token"?: string,"ultima_vista"?: string | null,"vistas"?: number
                   }
                   Relationships: [
                     
@@ -967,14 +995,14 @@ isOneToOne: false
                   ]
                 },"pagos": {
                   Row: {
-                    "ajuste": number,"ajuste_pct": number,"base": number,"cuotas": number,"fecha": string,"id": number,"medio_pago_id": number,"monto": number | null,"referencia": string | null,"venta_id": number
+                    "ajuste": number,"ajuste_pct": number,"base": number,"cuotas": number,"fecha": string,"id": number,"medio_pago_id": number,"monto": number | null,"redondeo": number,"referencia": string | null,"venta_id": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "ajuste"?: number,"ajuste_pct"?: number,"base": number,"cuotas"?: number,"fecha"?: string,"id"?: never,"medio_pago_id": number,"monto"?: never,"referencia"?: string | null,"venta_id": number
+                    "ajuste"?: number,"ajuste_pct"?: number,"base": number,"cuotas"?: number,"fecha"?: string,"id"?: never,"medio_pago_id": number,"monto"?: never,"redondeo"?: number,"referencia"?: string | null,"venta_id": number
                   }
                   Update: {
-                    "ajuste"?: number,"ajuste_pct"?: number,"base"?: number,"cuotas"?: number,"fecha"?: string,"id"?: never,"medio_pago_id"?: number,"monto"?: never,"referencia"?: string | null,"venta_id"?: number
+                    "ajuste"?: number,"ajuste_pct"?: number,"base"?: number,"cuotas"?: number,"fecha"?: string,"id"?: never,"medio_pago_id"?: number,"monto"?: never,"redondeo"?: number,"referencia"?: string | null,"venta_id"?: number
                   }
                   Relationships: [
                     {
@@ -2158,7 +2186,7 @@ isOneToOne: false
                   ]
                 },"v_stock": {
                   Row: {
-                    "categoria": string | null,"codigo": string | null,"codigo_barras": string | null,"color": string | null,"color_hex": string | null,"deposito": string | null,"deposito_id": number | null,"disponible": number | null,"escala": string | null,"genero": string | null,"linea": string | null,"marca": string | null,"nombre": string | null,"precio_compra": number | null,"precio_venta": number | null,"producto_id": number | null,"reservado": number | null,"sku": string | null,"stock": number | null,"stock_bajo": boolean | null,"stock_minimo": number | null,"talle": string | null,"talle_orden": number | null,"temporada": string | null,"valor_costo": number | null,"variante_id": number | null
+                    "categoria": string | null,"codigo": string | null,"codigo_barras": string | null,"color": string | null,"color_hex": string | null,"deposito": string | null,"deposito_id": number | null,"disponible": number | null,"escala": string | null,"genero": string | null,"imagen_url": string | null,"linea": string | null,"marca": string | null,"nombre": string | null,"precio_compra": number | null,"precio_venta": number | null,"producto_id": number | null,"reservado": number | null,"sku": string | null,"stock": number | null,"stock_bajo": boolean | null,"stock_minimo": number | null,"talle": string | null,"talle_orden": number | null,"temporada": string | null,"valor_costo": number | null,"variante_id": number | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -2237,6 +2265,27 @@ isOneToOne: false
 "_codigo_corto":
 { Args: { "p_largo"?: number,"p_nombre": string,"p_prefijo"?: string,"p_tabla": string }; Returns: string
                            },
+"_comprobante_acceso":
+{ Args: { "p_id": number,"p_tipo": string }; Returns: boolean
+                           },
+"_comprobante_devolucion":
+{ Args: { "p_id": number }; Returns: Json
+                           },
+"_comprobante_enlace":
+{ Args: { "p_id": number,"p_tipo": string }; Returns: Json
+                           },
+"_comprobante_json":
+{ Args: { "p_id": number,"p_tipo": string }; Returns: Json
+                           },
+"_comprobante_mail_html":
+{ Args: { "p_doc": Json,"p_url": string }; Returns: string
+                           },
+"_comprobante_presupuesto":
+{ Args: { "p_id": number }; Returns: Json
+                           },
+"_comprobante_venta":
+{ Args: { "p_id": number }; Returns: Json
+                           },
 "_correo_plantilla":
 { Args: { "p_color"?: string,"p_logo"?: string,"p_tienda": string,"p_tipo": string }; Returns: Json
                            },
@@ -2252,6 +2301,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "cliente_id": number,"id": number,"restante": number,"vence": string
             }[]
+                           },
+"_dinero":
+{ Args: { "p_monto": number }; Returns: string
                            },
 "_dominio_revisar":
 { Args: { "p_id": number }; Returns: undefined
@@ -2273,6 +2325,9 @@ isOneToOne: false
                            },
 "_hoy_ar":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"_html":
+{ Args: { "p_texto": string }; Returns: string
                            },
 "_ia_pedir_modelos":
 { Args: Record<PropertyKey, never>; Returns: number
@@ -2421,6 +2476,15 @@ isOneToOne: false
 "cancelar_mi_pedido":
 { Args: { "p_comentario"?: string,"p_motivo"?: string,"p_pedido": number }; Returns: undefined
                            },
+"comprobante_de":
+{ Args: { "p_con_enlace"?: boolean,"p_id": number,"p_tipo": string }; Returns: Json
+                           },
+"comprobante_mail_disponible":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"comprobante_publico":
+{ Args: { "p_token": string }; Returns: Json
+                           },
 "consultar_pedido_whatsapp":
 { Args: { "p_comprobante": string,"p_telefono": string }; Returns: {
               "comprobante": string,"entrega": string,"estado": string,"total": number
@@ -2473,6 +2537,9 @@ isOneToOne: false
                            },
 "dominio_revisar":
 { Args: { "p_id": number }; Returns: undefined
+                           },
+"enviar_comprobante_mail":
+{ Args: { "p_email": string,"p_id": number,"p_tipo": string }; Returns: Json
                            },
 "equipo":
 { Args: Record<PropertyKey, never>; Returns: {
@@ -2618,11 +2685,17 @@ isOneToOne: false
 "registrar_envio":
 { Args: { "p_costo_real"?: number,"p_notas"?: string,"p_pedido": number,"p_proveedor": string,"p_seguimiento"?: string }; Returns: undefined
                            },
+"registrar_envio_comprobante":
+{ Args: { "p_canal": string,"p_destino"?: string,"p_id": number,"p_tipo": string }; Returns: undefined
+                           },
 "registrar_pago_pedido":
 { Args: { "p_monto": number,"p_pedido": number,"p_referencia"?: string }; Returns: undefined
                            },
 "registrar_venta":
 { Args: { "p_canal"?: string,"p_cliente"?: number,"p_deposito"?: number,"p_descuento"?: number,"p_items": Json,"p_notas"?: string,"p_pagos"?: Json }; Returns: number
+                           },
+"renovar_enlace_comprobante":
+{ Args: { "p_id": number,"p_tipo": string }; Returns: Json
                            },
 "reposicion_sugerida":
 { Args: { "p_dias_cobertura"?: number,"p_dias_ventas"?: number }; Returns: {

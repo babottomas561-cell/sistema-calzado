@@ -10,6 +10,10 @@ export const fecha = (iso: string) =>
 export const fechaHora = (iso: string) =>
   new Date(iso).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 
+// Fecha y hora con el año, para los comprobantes: «14/10/2026 15:42»
+export const fechaCompleta = (iso: string) =>
+  new Date(iso).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }).replace(",", "");
+
 // Inicio del día y del mes en hora argentina (UTC-3 todo el año), como ISO, para filtrar en la base.
 // Funciona igual en la compu y en Vercel (que corre en UTC).
 export function inicioDe(periodo: "hoy" | "mes") {

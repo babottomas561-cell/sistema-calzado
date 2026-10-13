@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { crearCliente } from "@/lib/supabase/server";
 import { fechaHora, pesos, porcentaje } from "@/lib/formato";
-import { ArrowLeftRight, Ban, CircleCheck, Plus, Undo2 } from "lucide-react";
+import { ArrowLeftRight, Ban, CircleCheck, Plus, Printer, Undo2 } from "lucide-react";
 import { MOTIVOS_DEVOLUCION } from "@/lib/devoluciones";
 import Volver from "@/components/Volver";
 import { exigir } from "@/lib/exigir";
@@ -18,7 +18,7 @@ export default async function Venta({ params, searchParams }: {
   const [{ id }, { nueva, cambio }] = await Promise.all([params, searchParams]);
   const supabase = await crearCliente();
   const [{ data: v }, { data: items }, { data: presupuesto }, { data: devoluciones }, { data: deCambio }] = await Promise.all([
-    supabase.from("ventas").select("*, clientes(id, nombre, telefono), vendedor:perfiles!ventas_usuario_id_fkey(nombre), anulo:perfiles!ventas_anulada_por_fkey(nombre), pagos(base, ajuste_pct, ajuste, monto, cuotas, referencia, medios_pago(nombre))").eq("id", Number(id)).single(),
+    supabase.from("ventas").select("*, clientes(id, nombre, telefono), vendedor:perfiles!ventas_usuario_id_fkey(nombre), anulo:perfiles!ventas_anulada_por_fkey(nombre), pagos(base, ajuste_pct, ajuste, redondeo, monto, cuotas, referencia, medios_pago(nombre))").eq("id", Number(id)).single(),
     supabase.from("v_venta_items").select("id, nombre, marca, talle, color, cantidad, precio_unitario, descuento_promo, promocion, subtotal").eq("venta_id", Number(id)),
     supabase.from("presupuestos").select("id, comprobante").eq("venta_id", Number(id)).maybeSingle(),
     supabase.from("devoluciones").select("id, comprobante, fecha, motivo, total, venta_cambio_id, devolucion_items(cantidad)").eq("venta_id", Number(id)).order("fecha"),
@@ -27,8 +27,10 @@ export default async function Venta({ params, searchParams }: {
   ]);
   if (!v) notFound();
   const cliente = v.clientes as { id: number; nombre: string; telefono: string | null } | null;
-  const pagos = v.pagos as unknown as { base: number; ajuste_pct: number; ajuste: number; monto: number; cuotas: number; referencia: string | null; medios_pago: { nombre: string } }[];
+  const pagos = v.pagos as unknown as { base: number; ajuste_pct: number; ajuste: number; redondeo: number; monto: number; cuotas: number; referencia: string | null; medios_pago: { nombre: string } }[];
   const cobrado = pagos.reduce((s, p) => s + Number(p.base), 0);
+  const redondeo = pagos.reduce((s, p) => s + Number(p.redondeo ?? 0), 0);
+  const ajusteMedio = Number(v.ajuste_medio_pago) + redondeo;   // el descuento o recargo del medio, sin el redondeo del efectivo
   const anulada = !!v.anulada_en;
   const devs = devoluciones ?? [];
   const devueltas = devs.reduce((s, d) => s + (d.devolucion_items as { cantidad: number }[]).reduce((t, i) => t + i.cantidad, 0), 0);
@@ -39,7 +41,9 @@ export default async function Venta({ params, searchParams }: {
 
   return (
     <div className="mx-auto max-w-xl space-y-4">
-      {nueva && <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-semibold text-ok"><CircleCheck size={18} /> Venta registrada. El stock ya se descontó.</div>}
+      {nueva && <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-semibold text-ok">
+        <span className="flex items-center gap-2"><CircleCheck size={18} /> Venta registrada. El stock ya se descontó.</span>
+        <Link href={`/admin/comprobante/venta/${v.id}`} className="inline-flex items-center gap-1.5 underline underline-offset-2"><Printer size={15} strokeWidth={2} /> Imprimir o enviar el comprobante</Link></div>}
       {cambio && <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-semibold text-ok"><CircleCheck size={18} /> Cambio hecho: entró lo que trajo y salió lo que se llevó.</div>}
       {deCambio && <p className="rounded-lg bg-marca-suave px-3 py-2 text-sm text-marca"><ArrowLeftRight size={16} className="mr-1.5 inline align-[-3px]" />
         Es un cambio: devolución <Link href={`/admin/devoluciones/${deCambio.id}`} className="font-mono font-semibold">{deCambio.comprobante}</Link>
@@ -49,13 +53,12 @@ export default async function Venta({ params, searchParams }: {
         <Volver href="/admin/ventas">Ventas</Volver>
         <Link href="/admin/ventas/nueva" className="boton-sec"><Plus size={16} /> Otra venta</Link>
       </div>
-      {(puedeDevolver || puedeAnular) && (
-        <div className="flex flex-wrap items-center gap-1 rounded-lg border border-borde bg-white p-1">
-          {puedeDevolver && <Link href={`/admin/ventas/${v.id}/cambio`} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-marca hover:bg-marca-suave"><ArrowLeftRight size={16} /> Cambio</Link>}
-          {puedeDevolver && <Link href={`/admin/ventas/${v.id}/devolucion`} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-marca hover:bg-marca-suave"><Undo2 size={16} /> Devolución</Link>}
-          {puedeAnular && <span className="ml-auto"><AnularVenta venta={v.id} comprobante={v.comprobante ?? ""} dePedido={!!v.pedido_id} dePresupuesto={!!presupuesto} /></span>}
-        </div>
-      )}
+      <div className="flex flex-wrap items-center gap-1 rounded-lg border border-borde bg-white p-1">
+        <Link href={`/admin/comprobante/venta/${v.id}`} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-marca hover:bg-marca-suave"><Printer size={16} /> Imprimir o enviar</Link>
+        {puedeDevolver && <Link href={`/admin/ventas/${v.id}/cambio`} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-marca hover:bg-marca-suave"><ArrowLeftRight size={16} /> Cambio</Link>}
+        {puedeDevolver && <Link href={`/admin/ventas/${v.id}/devolucion`} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-marca hover:bg-marca-suave"><Undo2 size={16} /> Devolución</Link>}
+        {puedeAnular && <span className="ml-auto"><AnularVenta venta={v.id} comprobante={v.comprobante ?? ""} dePedido={!!v.pedido_id} dePresupuesto={!!presupuesto} /></span>}
+      </div>
       {anulada && (
         <div className="flex gap-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm">
           <Ban size={18} className="mt-0.5 shrink-0 text-error" />
@@ -84,8 +87,9 @@ export default async function Venta({ params, searchParams }: {
           <div className="flex justify-between text-texto-2"><span>Subtotal</span><span>{pesos(v.subtotal)}</span></div>
           {Number(v.descuento_promociones) > 0 && <div className="flex justify-between text-ok"><span>Promociones</span><span>−{pesos(v.descuento_promociones)}</span></div>}
           {Number(v.descuento) > 0 && <div className="flex justify-between text-ok"><span>Descuento</span><span>−{pesos(v.descuento)}</span></div>}
-          {Number(v.ajuste_medio_pago) !== 0 && <div className={`flex justify-between ${Number(v.ajuste_medio_pago) < 0 ? "text-ok" : "text-alerta"}`}>
-            <span>{Number(v.ajuste_medio_pago) < 0 ? "Descuento" : "Recargo"} por medio de pago</span><span>{Number(v.ajuste_medio_pago) < 0 ? "−" : "+"}{pesos(Math.abs(Number(v.ajuste_medio_pago)))}</span></div>}
+          {ajusteMedio !== 0 && <div className={`flex justify-between ${ajusteMedio < 0 ? "text-ok" : "text-alerta"}`}>
+            <span>{ajusteMedio < 0 ? "Descuento" : "Recargo"} por medio de pago</span><span>{ajusteMedio < 0 ? "−" : "+"}{pesos(Math.abs(ajusteMedio))}</span></div>}
+          {redondeo > 0 && <div className="flex justify-between text-ok"><span>Redondeo del efectivo</span><span>−{pesos(redondeo)}</span></div>}
           <div className="flex justify-between border-t border-borde pt-2 text-lg font-bold"><span>Total</span><span>{pesos(v.total)}</span></div>
           <div className="space-y-1 pt-2">{pagos.map((p, i) => (
             <div key={i} className="flex justify-between text-texto-2">

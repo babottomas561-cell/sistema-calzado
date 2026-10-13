@@ -257,6 +257,17 @@ una API de Next.** Lo que ya pisamos:
     imprimen pegado al borde. Desde la web no se puede elegir la impresora ni imprimir sin el cuadro del navegador. **Verificar la impresión generando un PDF con Chrome
     headless** (`--headless=new` + `Page.printToPDF`), no solo mirando la pantalla.
 
+
+25. **Comprobantes y caja** (`/admin/comprobante/<tipo>/<id>`, `/comprobante/<token>`, `/admin/impresion`): la base arma el comprobante de venta, presupuesto o devolución
+    (`comprobante_de`, sin costos ni notas; `components/Comprobante.tsx` lo dibuja en ticket 80/58 mm, A4 o pantalla). Link privado con token al azar
+    (`enlaces_comprobante`, nadie la lee: solo funciones; `renovar_enlace_comprobante` invalida el anterior); la página pública no indexa ni manda «referer».
+    Envío **manual**: WhatsApp por `wa.me` (`lib/telefono.ts`, `paraWhatsApp`), mail por la API de Resend desde la base (`enviar_comprobante_mail`, devuelve
+    `{ok, error}` y deja `comprobante_envios`). `configuracion_impresion`: papel, `modo_impresion` (automatica / opcional / manual), qué lleva, letra, textos y
+    `comprobante_configurado` (hasta guardar una vez, la caja avisa y no imprime). Todos dicen «No válido como factura». Un ticket pide a Chrome el alto medido
+    (`cssDePagina`). **Caja**: `lib/cobro.ts` hace la misma cuenta que `_registrar_venta` (reparto por % o monto, redondeo, vuelto) y tiene pruebas. El
+    **redondeo del efectivo** va en `p_pagos[].redondeo`: solo medios `tipo = 'Efectivo'`, hacia abajo, hasta 5 % y $ 1.000; queda dentro de `pagos.ajuste` (así
+    `monto` y `ventas.total` cuadran como siempre) y además en `pagos.redondeo` para mostrarlo aparte. El lector se toma aunque el foco no esté en el buscador.
+
 ---
 
 ## Dónde está cada cosa

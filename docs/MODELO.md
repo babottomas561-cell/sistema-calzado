@@ -230,3 +230,14 @@ Funciones: `guardar_instagram()` (verifica que sea cuenta profesional), `instagr
 
 Funciones: `generar_codigos_barras(p_variantes)` (códigos propios, EAN-13 que empieza en 200). Internas: `_gs1_digito()`, `_gs1_valido()`, `_variante_codigo_barras()` (trigger),
 `_plantilla_etiqueta_valida()` (que la grilla entre en la hoja). Ver la regla 24 de CLAUDE.md.
+
+## Comprobantes y cobro en la caja
+
+- `configuracion_impresion` (una fila): además de la plantilla de etiquetas, el papel de los comprobantes (`comprobante_formato`), `modo_impresion`
+  (automatica / opcional / manual), qué llevan (logo, datos del comercio, cliente, vendedor, marca, QR, código de barras), letra, textos y
+  `comprobante_configurado` (falso hasta que alguien guarda la configuración: la caja avisa y no imprime).
+- `enlaces_comprobante`: un token al azar por documento (venta, presupuesto o devolución) para verlo sin ingresar en `/comprobante/<token>`. Nadie lee la tabla:
+  solo `comprobante_de`, `comprobante_publico` y `renovar_enlace_comprobante`.
+- `comprobante_envios`: lo que se mandó por mail (enviado o error), por WhatsApp o copiando el link (abierto).
+- `pagos.redondeo`: lo que se bajó del efectivo para cobrar un número redondo. Ya está descontado en `pagos.ajuste`, así que `monto = base + ajuste` y
+  `ventas.total` cuadran igual que siempre.

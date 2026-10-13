@@ -44,6 +44,35 @@ etiqueta sale corrida, ajustá los márgenes o el tamaño en milímetros.
 > **Tip:** imprimí primero **una etiqueta de prueba** (la casilla *Solo una, de prueba*) y probá escanearla antes de imprimir
 > la tanda. Si el lector duda, hacé las barras más altas o usá una etiqueta más grande.
 
+## Comprobantes
+
+En **Impresión → Comprobantes** se configura una sola vez:
+
+- **El papel**: ticket de 80 mm, ticket de 58 mm u hoja A4. Es el que se usa siempre; en un comprobante puntual se puede cambiar.
+- **Qué pasa al confirmar una venta**:
+  - *Automática*: el comprobante sale solo por la impresora.
+  - *Opcional*: se abre el comprobante con los botones de imprimir, WhatsApp, mail y link; si no hace falta, «Otra venta».
+  - *Manual*: no se ofrece nada; se imprime o se manda después, desde la venta.
+- **Qué lleva**: logo (o el ícono de la tienda con el nombre), datos del comercio, cliente, quién atendió, marca, QR al comprobante digital y código de barras del número.
+- **Textos**: una línea debajo del logo (Instagram, horario), el mensaje final y la aclaración legal. Todos los comprobantes dicen **«No válido como factura»**.
+- **Letra** chica, normal o grande, y **copias**.
+
+Con **Imprimir una prueba** se ve cómo sale en tu impresora antes de vender. **Hasta que se guarda una vez, la caja avisa que falta configurar la impresión y no deja
+imprimir** (sí mandar por WhatsApp, mail o link).
+
+### Impresión sin ventana
+
+El navegador siempre muestra su ventana de impresión. En la compu de la caja se puede evitar: abrí Chrome con la opción `--kiosk-printing` (en el acceso directo,
+al final de «Destino»). Así, con el modo *Automática*, el comprobante sale directo por la impresora predeterminada.
+
+## La caja (Nueva venta)
+
+1. **Agregá lo que se lleva.** Con lector, pasá la prenda y se suma sola (aunque el cursor esté en otro lado; suena un «bip»). Sin lector, buscá por nombre o
+   tocá el producto (filtrá por rubro) y después el talle.
+2. **Elegí cómo paga.** Cada medio dice cuánto se cobra con él. Para pagar con dos medios, «Dividir el pago» (50/50, 70/30 o el % o el monto que quieras).
+   En efectivo se puede **redondear para abajo** (hasta el 5 % y nunca más de $ 1.000) y calcular el **vuelto**.
+3. **Confirmá.** El total y el botón siempre están a la vista. Si algo falta, abajo del botón dice qué.
+
 ## Qué no puede hacer una página web
 
 Elegir la impresora o imprimir sin mostrar el cuadro de impresión no se puede desde una página web: la impresora la elige el

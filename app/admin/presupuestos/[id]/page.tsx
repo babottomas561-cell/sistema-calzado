@@ -5,7 +5,8 @@ import { crearCliente } from "@/lib/supabase/server";
 import { fecha, pesos, porcentaje } from "@/lib/formato";
 import { ESTADOS_PRESUPUESTO, estadoVisible, hasta } from "@/lib/presupuesto";
 import { enlaceWhatsApp, mensajePresupuesto } from "@/lib/whatsapp";
-import { CircleCheck, MessageCircle } from "lucide-react";
+import { paraWhatsApp } from "@/lib/telefono";
+import { CircleCheck, MessageCircle, Printer } from "lucide-react";
 import Volver from "@/components/Volver";
 import Acciones from "./Acciones";
 import { exigir } from "@/lib/exigir";
@@ -36,9 +37,8 @@ export default async function Presupuesto({ params, searchParams }: {
     descuento: Number(p.descuento), ajuste_pct: Number(p.ajuste_pct), ajuste_medio_pago: Number(p.ajuste_medio_pago), total: Number(p.total), medio,
     valido_hasta: hasta(p.valido_hasta), notas: p.notas,
   });
-  // Al teléfono del cliente si lo tenemos (solo dígitos; sin código de país, se asume Argentina)
-  const digitos = c?.telefono?.replace(/\D/g, "") ?? "";
-  const numero = digitos ? (digitos.startsWith("54") ? digitos : `54${digitos.replace(/^0/, "")}`) : null;
+  // Al teléfono del cliente si lo tenemos (si no se reconoce, WhatsApp deja elegir el contacto)
+  const numero = paraWhatsApp(c?.telefono);
 
   return (
     <div className="mx-auto max-w-xl space-y-4">
@@ -84,6 +84,7 @@ export default async function Presupuesto({ params, searchParams }: {
       </div>
 
       <a href={enlaceWhatsApp(numero, mensaje)} target="_blank" rel="noreferrer" className="boton-sec w-full print:hidden"><MessageCircle size={16} /> Mandar por WhatsApp</a>
+      <Link href={`/admin/comprobante/presupuesto/${p.id}`} className="boton-sec w-full print:hidden"><Printer size={16} /> Imprimir o mandar el link del presupuesto</Link>
       {visible === "vigente" && <Acciones id={p.id} medios={medios ?? []} medioPresupuestado={p.medio_pago_id} total={Number(p.total)} />}
       {visible === "vencido" && <p className="rounded-lg bg-amber-50 p-3 text-sm text-alerta">Venció: los precios y promociones ya no se respetan. Hacé uno nuevo con los de hoy.</p>}
     </div>

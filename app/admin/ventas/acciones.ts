@@ -17,7 +17,10 @@ export async function registrarVenta(_: Estado, f: FormData): Promise<Estado> {
   });
   if (error) return { error: error.message };
   revalidatePath("/", "layout");
-  redirect(`/admin/ventas/${id}?nueva=1`);
+  // Qué pasa al confirmar (Impresión → Comprobantes): automática imprime sola, opcional ofrece imprimir o mandar, manual vuelve a la venta
+  const { data: impresion } = await supabase.from("configuracion_impresion").select("modo_impresion").maybeSingle();
+  const modo = impresion?.modo_impresion ?? "opcional";
+  redirect(modo === "manual" ? `/admin/ventas/${id}?nueva=1` : `/admin/comprobante/venta/${id}?nueva=1${modo === "automatica" ? "&imprimir=1" : ""}`);
 }
 
 // Promociones del mostrador para lo que se está por vender (las mismas que va a aplicar registrar_venta)

@@ -1,7 +1,7 @@
 // Comprobante de devolución: qué volvió, en qué estado, y el saldo a favor que dejó (con su vencimiento).
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CircleCheck, Wallet } from "lucide-react";
+import { CircleCheck, Printer, Wallet } from "lucide-react";
 import { crearCliente } from "@/lib/supabase/server";
 import { dia, fechaHora, pesos } from "@/lib/formato";
 import { exigir } from "@/lib/exigir";
@@ -26,7 +26,10 @@ export default async function ComprobanteDevolucion({ params, searchParams }: { 
   return (
     <div className="mx-auto max-w-xl space-y-4">
       {nueva && <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-semibold text-ok"><CircleCheck size={18} /> Devolución registrada. El stock ya volvió.</div>}
-      {venta ? <Volver href={`/admin/ventas/${venta.id}`}>Venta {venta.comprobante}</Volver> : <Volver href="/admin/devoluciones">Cambios y devoluciones</Volver>}
+      <div className="flex items-center justify-between gap-2">
+        {venta ? <Volver href={`/admin/ventas/${venta.id}`}>Venta {venta.comprobante}</Volver> : <Volver href="/admin/devoluciones">Cambios y devoluciones</Volver>}
+        <Link href={`/admin/comprobante/devolucion/${d.id}`} className="boton-sec"><Printer size={16} /> Imprimir o enviar</Link>
+      </div>
       <div className="tarjeta space-y-4">
         <div className="flex justify-between gap-3">
           <div><p className="text-xs font-semibold uppercase tracking-wide text-texto-2">Comprobante de devolución</p>

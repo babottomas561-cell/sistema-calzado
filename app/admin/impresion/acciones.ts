@@ -1,8 +1,9 @@
 "use server";
-// Impresión: crear, ajustar, duplicar y elegir las plantillas de etiquetas. La base valida los rangos, el nombre único y que la grilla
-// entre en la hoja; acá se traducen los errores. Solo quien edita Tablas.
+// Impresión: crear, ajustar, duplicar y elegir las plantillas de etiquetas, y cómo salen los comprobantes. La base valida los rangos, el nombre
+// único y que la grilla entre en la hoja; acá se traducen los errores. Solo quien edita Tablas.
 import { revalidatePath } from "next/cache";
 import { crearCliente } from "@/lib/supabase/server";
+import { esFormato } from "@/lib/comprobante";
 
 export type Estado = { error?: string; ok?: string };
 
@@ -72,4 +73,30 @@ export async function usarPlantilla(id: number): Promise<Estado> {
   if (!data) return { error: "No tenés permiso para cambiar la configuración de impresión" };
   refrescar();
   return { ok: "Esa plantilla es la que se propone al imprimir" };
+}
+
+// Cómo salen los comprobantes: papel, qué llevan, textos, copias y qué pasa al vender (automática, opcional o manual)
+export async function guardarComprobantes(_: Estado, f: FormData): Promise<Estado> {
+  const formato = String(f.get("formato") ?? "");
+  if (!esFormato(formato)) return { error: "Elegí el papel en el que se imprime" };
+  const modo = String(f.get("modo") ?? "");
+  if (!["automatica", "opcional", "manual"].includes(modo)) return { error: "Elegí qué pasa al confirmar una venta" };
+  const letra = String(f.get("letra") ?? "normal");
+  const copias = Math.round(num(f, "copias"));
+  if (!(copias >= 1 && copias <= 5)) return { error: "Las copias van de 1 a 5" };
+  const pie = String(f.get("pie") ?? "").trim(), leyenda = String(f.get("leyenda") ?? "").trim(), encabezado = String(f.get("encabezado") ?? "").trim();
+  if (pie.length > 200 || leyenda.length > 200) return { error: "El mensaje final y la aclaración pueden tener hasta 200 letras" };
+  if (encabezado.length > 160) return { error: "La línea de arriba puede tener hasta 160 letras" };
+  if (!leyenda) return { error: "Dejá una aclaración: dice que este comprobante no es una factura" };
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.from("configuracion_impresion").update({
+    comprobante_formato: formato, modo_impresion: modo, comprobante_letra: ["chica", "normal", "grande"].includes(letra) ? letra : "normal",
+    comprobante_logo: si(f, "logo"), comprobante_datos_legales: si(f, "datos_legales"), comprobante_qr: si(f, "qr"), comprobante_codigo_barras: si(f, "barras"),
+    comprobante_mostrar_cliente: si(f, "mostrar_cliente"), comprobante_mostrar_vendedor: si(f, "mostrar_vendedor"), comprobante_mostrar_marca: si(f, "mostrar_marca"),
+    comprobante_encabezado: encabezado || null, comprobante_pie: pie || null, comprobante_leyenda: leyenda, comprobante_copias: copias, comprobante_configurado: true,
+  }).eq("unica", true).select("unica").maybeSingle();
+  if (error) return { error: error.code === "42501" ? "No tenés permiso para cambiar la configuración de impresión" : error.message };
+  if (!data) return { error: "No tenés permiso para cambiar la configuración de impresión" };
+  revalidatePath("/admin/impresion"); revalidatePath("/admin/ventas/nueva");
+  return { ok: "Listo: así salen los comprobantes desde ahora" };
 }
