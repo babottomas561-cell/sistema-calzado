@@ -229,6 +229,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"bitacora": {
+                  Row: {
+                    "accion": string,"antes": Json | null,"despues": Json | null,"detalle": string,"entidad": string,"entidad_id": string | null,"fecha": string,"id": number,"modulo": string,"usuario_id": string | null,"usuario_nombre": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "accion": string,"antes"?: Json | null,"despues"?: Json | null,"detalle": string,"entidad": string,"entidad_id"?: string | null,"fecha"?: string,"id"?: never,"modulo": string,"usuario_id"?: string | null,"usuario_nombre": string
+                  }
+                  Update: {
+                    "accion"?: string,"antes"?: Json | null,"despues"?: Json | null,"detalle"?: string,"entidad"?: string,"entidad_id"?: string | null,"fecha"?: string,"id"?: never,"modulo"?: string,"usuario_id"?: string | null,"usuario_nombre"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"categorias": {
                   Row: {
                     "codigo": string,"cuenta_costo_id": number | null,"cuenta_venta_id": number | null,"id": number,"linea": string,"nombre": string
@@ -3089,6 +3103,9 @@ isOneToOne: false
                            },
 "registrar_asiento_manual":
 { Args: { "p_concepto": string,"p_fecha": string,"p_lineas": Json }; Returns: number
+                           },
+"registrar_bitacora":
+{ Args: { "p_accion": string,"p_antes"?: Json,"p_despues"?: Json,"p_detalle": string,"p_entidad": string,"p_entidad_id": string,"p_modulo": string }; Returns: undefined
                            },
 "registrar_cambio":
 { Args: { "p_cliente"?: number,"p_comentario"?: string,"p_devuelve": Json,"p_lleva": Json,"p_motivo"?: string,"p_pagos"?: Json,"p_venta": number }; Returns: Json
