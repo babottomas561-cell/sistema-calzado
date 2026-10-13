@@ -279,6 +279,11 @@ una API de Next.** Lo que ya pisamos:
     la ruta `/api/arca/firma` (firmador y pasarela sin secretos, solo hacia las direcciones de ARCA; `lib/arca/`), que la base llama con `_arca_app`.
     Las funciones que hablan con ARCA tienen `statement_timeout` propio (la API corta a los 8 s) y nunca lanzan errores después de guardar el acceso
     (ARCA no da otro mientras haya uno vigente). Bitácora en `arca_llamadas` (sin claves). Las pruebas simulan la ruta reemplazando `_pedir_http`.
+    **Fase 2 (facturar):** `facturar_venta` (permiso `facturas.emitir`, hijo de `ventas.registrar`) arma la factura B o C (`_factura_letra`; la A llega con la fase 3),
+    importes por alícuota (`_factura_importes`: lo cobrado + envío, prorrateado; IVA del renglón copiado al vender en `venta_items.alicuota_iva`, de artículo → rubro →
+    local) y la manda con `_factura_enviar`, que **nunca lanza**: numera con el último de ARCA (`FECompUltimoAutorizado`) bajo candado, y si ARCA ya tiene un número
+    que el sistema no guardó lo consulta (`FECompConsultar`) y lo adopta si coincide (nunca dos CAE por venta). Cola: pg_cron cada minuto (`_facturas_reintentar`);
+    las rechazadas esperan corrección. Anular una venta facturada crea la nota de crédito (trigger). El comprobante suma `fiscal` (letra, CAE, QR de ARCA).
 
 27. **Plan de cuentas** (`/admin/contabilidad`, `contabilidad.ver` / `contabilidad.configurar`; diseño en `docs/PLAN_DE_CUENTAS.md`). Fase A: `cuentas` (árbol por
     código; el padre y el tipo los pone la base; solo las imputables reciben movimientos; `clave` = las que usa el sistema, no se borran ni se desactivan),

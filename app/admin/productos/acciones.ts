@@ -27,6 +27,8 @@ function datosProducto(f: FormData) {
     descripcion: String(f.get("descripcion") ?? "").trim() || null,
     temporada: String(f.get("temporada") ?? "") || null,
     material: String(f.get("material") ?? "").trim() || null,
+    // IVA para la factura (vacío = el del rubro o el del local); si el campo no vino, no se toca
+    ...(f.has("alicuota_iva") ? { alicuota_iva: f.get("alicuota_iva") ? Number(f.get("alicuota_iva")) : null } : {}),
     // imagen_url no va acá: la mantiene la base (es la foto principal de producto_imagenes)
     precio_compra: num(f.get("precio_compra")),
     // Si el campo no vino (bloqueado por permisos), no se toca el precio de venta

@@ -9,7 +9,7 @@ import { CircleCheck, Pencil, Save, X } from "lucide-react";
 
 type Variante = { id: number; talle: string; color: string; stock: number; disponible: number; sku: string | null };
 type Producto = { id: number; codigo: string; nombre: string; marca_id: number | null; categoria_id: number | null; subcategoria_id: number | null; genero: string | null; descripcion: string | null;
-  escala: string; temporada: string | null; material: string | null; imagen_url: string | null; precio_compra: number; precio_venta: number; activo: boolean; publicado_web: boolean;
+  escala: string; temporada: string | null; material: string | null; alicuota_iva?: number | null; imagen_url: string | null; precio_compra: number; precio_venta: number; activo: boolean; publicado_web: boolean;
   marca?: string | null; categoria?: string | null; subcategoria?: string | null };
 
 function Mensaje({ e }: { e: { error?: string; ok?: string } }) {

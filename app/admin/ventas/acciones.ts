@@ -17,13 +17,20 @@ export async function registrarVenta(_: Estado, f: FormData): Promise<Estado> {
   });
   if (error) return { error: error.message };
   revalidatePath("/", "layout");
+  // Factura de ARCA: la venta ya quedó guardada; si ARCA no contesta, la factura queda en la cola y se reintenta sola
+  let factura = "";
+  if (f.get("factura") === "1") {
+    const { data: fac, error: errFac } = await supabase.rpc("facturar_venta", { p_venta: id });
+    const r = fac as { estado?: string } | null;
+    factura = errFac ? `&factura_error=${encodeURIComponent(errFac.message.slice(0, 200))}` : r?.estado && r.estado !== "autorizada" ? `&factura=${r.estado}` : "";
+  }
   // Qué pasa al confirmar (Impresión → Comprobantes): automática imprime sola, opcional ofrece imprimir o mandar, manual vuelve a la venta
   // (el de quien vende: cada persona del equipo puede tener el suyo)
   const { data: impresion } = await supabase.rpc("impresion_de");
   const modo = impresion?.[0]?.modo ?? "opcional";
   // El vuelto no se guarda: viaja para mostrárselo al cajero en la pantalla siguiente
   const vuelto = Math.max(0, Number(f.get("vuelto")) || 0);
-  const extra = vuelto > 0 ? `&vuelto=${vuelto}` : "";
+  const extra = (vuelto > 0 ? `&vuelto=${vuelto}` : "") + factura;
   redirect(modo === "manual" ? `/admin/ventas/${id}?nueva=1${extra}` : `/admin/comprobante/venta/${id}?nueva=1${extra}${modo === "automatica" ? "&imprimir=1" : ""}`);
 }
 
@@ -71,4 +78,26 @@ export async function autorizarDescuento(pin: string, monto: number): Promise<{ 
   if (error) return { ok: false, error: error.message };
   const r = data as { ok: boolean; autoriza?: string; error?: string; restantes?: number };
   return r.ok ? { ok: true, autoriza: r.autoriza } : { ok: false, error: r.restantes !== undefined ? `${r.error}. Te quedan ${r.restantes} intentos` : r.error };
+}
+
+// Factura de ARCA de una venta ya hecha (si se vendió con comprobante interno, o la factura quedó rechazada y se corrigió el dato)
+export async function facturarVenta(venta: number): Promise<{ error?: string; ok?: string }> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("facturar_venta", { p_venta: venta });
+  revalidatePath(`/admin/ventas/${venta}`);
+  if (error) return { error: error.message };
+  return resultadoFactura(data);
+}
+export async function reintentarFactura(factura: number, venta: number): Promise<{ error?: string; ok?: string }> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("reintentar_factura", { p_factura: factura });
+  revalidatePath(`/admin/ventas/${venta}`);
+  if (error) return { error: error.message };
+  return resultadoFactura(data);
+}
+function resultadoFactura(data: unknown): { error?: string; ok?: string } {
+  const r = data as { estado: string; letra: string; comprobante: string | null; error: string | null };
+  if (r.estado === "autorizada") return { ok: `Factura ${r.letra} ${r.comprobante} autorizada por ARCA` };
+  if (r.estado === "rechazada") return { error: r.error ?? "ARCA rechazó la factura" };
+  return { ok: "ARCA no contestó: la factura quedó en la cola y se reintenta sola en unos minutos" };
 }

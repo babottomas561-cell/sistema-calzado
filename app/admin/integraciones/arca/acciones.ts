@@ -72,3 +72,12 @@ export async function agregarPuntoPrueba(numero: number): Promise<Estado> {
   refrescar();
   return { ok: "Punto de venta agregado" };
 }
+
+// Paso 5: prender o apagar la facturación y cómo se usa en la caja. La base controla que esté todo listo.
+export async function activarFacturacion(activa: boolean, modo: "todas" | "elegir", serie: "fiscal" | "interna"): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("arca_activar", { p_activa: activa, p_modo: modo, p_serie: serie });
+  if (error) return { error: error.message };
+  revalidatePath("/admin", "layout");
+  return { ok: activa ? "Listo: la caja ya factura con ARCA" : "Facturación apagada: las ventas salen con comprobante interno" };
+}

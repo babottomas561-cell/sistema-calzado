@@ -10,6 +10,7 @@ import { exigir } from "@/lib/exigir";
 import { puede } from "@/lib/permisos";
 import { esDeHoy, MOTIVOS_ANULACION } from "@/lib/ventas";
 import AnularVenta from "./AnularVenta";
+import FacturaVenta, { type Factura } from "./FacturaVenta";
 
 export default async function Venta({ params, searchParams }: {
   params: Promise<{ id: string }>; searchParams: Promise<{ nueva?: string; cambio?: string; vuelto?: string }>;
@@ -17,14 +18,18 @@ export default async function Venta({ params, searchParams }: {
   const { permisos } = await exigir("ventas.registrar", "ventas.ver_todas");
   const [{ id }, { nueva, cambio, vuelto }] = await Promise.all([params, searchParams]);
   const supabase = await crearCliente();
-  const [{ data: v }, { data: items }, { data: presupuesto }, { data: devoluciones }, { data: deCambio }] = await Promise.all([
+  const [{ data: v }, { data: items }, { data: presupuesto }, { data: devoluciones }, { data: deCambio }, { data: facturas }, { data: fiscal }] = await Promise.all([
     supabase.from("ventas").select("*, clientes(id, nombre, telefono), vendedor:perfiles!ventas_usuario_id_fkey(nombre), anulo:perfiles!ventas_anulada_por_fkey(nombre), pagos(base, ajuste_pct, ajuste, redondeo, monto, cuotas, referencia, medios_pago(nombre))").eq("id", Number(id)).single(),
     supabase.from("v_venta_items").select("id, nombre, marca, talle, color, cantidad, precio_unitario, descuento_promo, promocion, subtotal").eq("venta_id", Number(id)),
     supabase.from("presupuestos").select("id, comprobante").eq("venta_id", Number(id)).maybeSingle(),
     supabase.from("devoluciones").select("id, comprobante, fecha, motivo, total, venta_cambio_id, devolucion_items(cantidad)").eq("venta_id", Number(id)).order("fecha"),
     // ¿Esta venta salió de un cambio? (la devolución que la originó)
     supabase.from("devoluciones").select("id, comprobante, venta_id, ventas!devoluciones_venta_id_fkey(comprobante)").eq("venta_cambio_id", Number(id)).maybeSingle(),
+    supabase.from("facturas").select("id, clase, letra, comprobante, estado, cae, cae_vence, total, ultimo_error, proximo_intento, ambiente").eq("venta_id", Number(id)).order("id"),
+    supabase.rpc("facturacion_caja"),
   ]);
+  const fac = fiscal as { activa: boolean; letra: string | null; puede: boolean } | null;
+  const autorizada = (facturas ?? []).some((f) => f.clase === "factura" && f.estado === "autorizada");
   if (!v) notFound();
   const cliente = v.clientes as { id: number; nombre: string; telefono: string | null } | null;
   const pagos = v.pagos as unknown as { base: number; ajuste_pct: number; ajuste: number; redondeo: number; monto: number; cuotas: number; referencia: string | null; medios_pago: { nombre: string } }[];
@@ -97,10 +102,11 @@ export default async function Venta({ params, searchParams }: {
               <span>{p.medios_pago.nombre}{Number(p.ajuste_pct) ? ` (${porcentaje(p.ajuste_pct)} sobre ${pesos(p.base)})` : ""}
                 {p.cuotas > 1 ? ` · ${p.cuotas} cuotas de ${pesos(Number(p.monto) / p.cuotas)}` : ""}{p.referencia ? ` · ${p.referencia}` : ""}</span>
               <span>{pesos(p.monto)}</span></div>))}</div>
-          <p className="pt-1 text-xs text-texto-2">Comprobante interno, sin validez fiscal.</p>
+          {!autorizada && <p className="pt-1 text-xs text-texto-2">Comprobante interno, sin validez fiscal.</p>}
           {saldo > 0.01 && <div className="flex justify-between rounded-lg bg-amber-50 px-2 py-1 font-semibold text-alerta"><span>Saldo sin cobrar</span><span>{pesos(saldo)}</span></div>}
         </div>
       </div>
+      <FacturaVenta venta={v.id} facturas={(facturas ?? []) as Factura[]} puedeFacturar={!!(fac?.activa && fac.puede)} letra={fac?.letra ?? null} anulada={anulada} />
       {devs.length > 0 && (
         <section className="tarjeta space-y-2">
           <h2 className="flex items-center gap-2 font-semibold"><Undo2 size={17} /> Devoluciones <span className="text-sm font-normal text-texto-2">({devueltas} de {vendidas} unidades)</span></h2>

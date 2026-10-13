@@ -30,7 +30,23 @@ export type ConfigComprobante = {
   modo: ModoImpresion; configurado: boolean; letra: LetraComprobante; encabezado: string | null;
   mostrar_cliente: boolean; mostrar_vendedor: boolean; mostrar_marca: boolean;
 };
+// La factura de ARCA de una venta (si tiene): con ella el comprobante pasa a ser fiscal (letra, CAE y QR de ARCA)
+export type Fiscal = {
+  estado: "pendiente" | "autorizada" | "rechazada" | "error" | "cancelada"; letra: "A" | "B" | "C"; codigo: string; comprobante: string | null; fecha: string;
+  cae: string | null; cae_vence: string | null; receptor: string; doc_tipo: number; doc_nro: string; condicion_receptor: string;
+  neto: number; iva: number; detalle_iva: { alicuota: number; base: number; iva: number }[]; total: number; iva_contenido_en_c: "leyenda" | "cero"; pruebas: boolean;
+  qr: string | null;
+  emisor: { razon_social: string | null; cuit: string | null; condicion_iva: string | null; ingresos_brutos: string | null; inicio_actividades: string | null; domicilio: string | null };
+  nota_credito: { estado: string; letra: string; codigo: string; comprobante: string | null; cae: string | null; cae_vence: string | null; fecha: string } | null;
+};
+// Autorizada = el comprobante es la factura; si no, sigue siendo el interno
+export const esFactura = (c: Comprobante) => c.fiscal?.estado === "autorizada";
+// Lo que se lee arriba: «Factura B» o el título interno
+export const tituloDe = (c: Comprobante) => (esFactura(c) ? `Factura ${c.fiscal!.letra}` : c.titulo);
+export const numeroDe = (c: Comprobante) => (esFactura(c) && c.fiscal!.comprobante ? c.fiscal!.comprobante : c.numero);
+
 export type Comprobante = {
+  fiscal?: Fiscal | null;
   tipo: TipoComprobante; titulo: string; numero: string; fecha: string; anulada: boolean;
   cliente: string | null; atendio: string | null; origen: string | null;
   renglones: Renglon[]; totales: { rotulo: string; monto: number; fuerte?: boolean }[]; pagos: PagoComprobante[]; saldo: number;

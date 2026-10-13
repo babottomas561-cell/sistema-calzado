@@ -2,8 +2,8 @@
 // Conectar el sistema con ARCA, en orden: datos fiscales → ambiente → certificado → probar y puntos de venta. Cada paso dice si está listo.
 // La llave privada nunca llega acá: la genera la app y queda en el Vault de la base; acá solo se ve el pedido de certificado (que no es secreto).
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
-import { CircleAlert, CircleCheck, Copy, Download, FlaskConical, Loader2, PlugZap, ShieldCheck, Store, Upload } from "lucide-react";
-import { agregarPuntoPrueba, cambiarAmbiente, generarPedido, guardarCertificado, guardarDatos, guardarPunto, probarPaso, type Estado, type Paso as PasoPrueba } from "./acciones";
+import { CircleAlert, CircleCheck, Copy, Download, FileCheck2, FlaskConical, Loader2, PlugZap, Power, ShieldCheck, Store, Upload } from "lucide-react";
+import { activarFacturacion, agregarPuntoPrueba, cambiarAmbiente, generarPedido, guardarCertificado, guardarDatos, guardarPunto, probarPaso, type Estado, type Paso as PasoPrueba } from "./acciones";
 
 export type EstadoArca = {
   ambiente: "homologacion" | "produccion"; activa: boolean;
@@ -12,6 +12,8 @@ export type EstadoArca = {
   sitio: boolean; llave: boolean; pedido_pendiente: boolean; csr: string | null;
   certificado: { homologacion: string | null; produccion: string | null }; certificado_vence: string | null;
   acceso_vigente: boolean; acceso_vence: string | null; ultimo_error: string | null; probado_en: string | null;
+  modo: "todas" | "elegir"; serie_por_defecto: "fiscal" | "interna"; letra: string | null;
+  facturas: { autorizadas: number; en_cola: number; rechazadas: number; ultima_rechazada: string | null };
 };
 export type PuntoVenta = { id: number; numero: number; nombre: string | null; activo: boolean; por_defecto: boolean; bloqueado: boolean; baja: string | null; tipo_arca: string | null };
 export type Llamada = { id: number; servicio: string; metodo: string; status: number | null; ms: number | null; ok: boolean; detalle: string | null; creado_en: string };
@@ -113,7 +115,7 @@ export default function Arca({ estado: e, puntos, llamadas }: { estado: EstadoAr
         {produccion ? <ShieldCheck size={20} className="shrink-0 text-ok" /> : <FlaskConical size={20} className="shrink-0 text-alerta" />}
         <p className="min-w-0 flex-1"><b>{produccion ? "Producción: ARCA de verdad." : "Pruebas (homologación)."}</b>{" "}
           {produccion ? "Lo que se facture tiene validez fiscal." : "Nada de lo que se haga acá tiene validez fiscal: sirve para probar sin riesgo."}
-          {" "}La facturación se activa en la próxima etapa; por ahora se conecta y se prueba.</p>
+          {" "}{e.activa ? `La facturación está activa: las ventas salen con Factura ${e.letra ?? ""}.` : "La facturación todavía no está activa (paso 5)."}</p>
       </div>
 
       <Paso n={1} titulo="Datos fiscales del comercio" listo={datosListos} detalle="Van en cada factura. La categoría frente al IVA decide la letra (A, B o C).">
@@ -241,6 +243,8 @@ export default function Arca({ estado: e, puntos, llamadas }: { estado: EstadoAr
         )}
       </Paso>
 
+      <Activar e={e} listo={datosListos && certificadoListo && puntos.some((p) => p.por_defecto && p.activo)} />
+
       {llamadas.length > 0 && (
         <details className="tarjeta text-sm">
           <summary className="cursor-pointer font-semibold">Últimas comunicaciones con ARCA</summary>
@@ -256,5 +260,52 @@ export default function Arca({ estado: e, puntos, llamadas }: { estado: EstadoAr
         </details>
       )}
     </div>
+  );
+}
+
+// Paso 5: prender la facturación y elegir cómo se usa en la caja
+function Activar({ e, listo }: { e: EstadoArca; listo: boolean }) {
+  const [modo, setModo] = useState(e.modo);
+  const [serie, setSerie] = useState(e.serie_por_defecto);
+  const [estado, setEstado] = useState<Estado>({});
+  const [guardando, hacer] = useTransition();
+  const guardar = (activa: boolean) => hacer(async () => setEstado(await activarFacturacion(activa, modo, serie)));
+  const opcion = (sel: boolean, texto: string, detalle: string, alElegir: () => void) => (
+    <label className={`flex cursor-pointer flex-col gap-0.5 rounded-lg border p-3 text-sm ${sel ? "border-marca bg-marca-suave/40 ring-1 ring-marca" : "border-borde hover:bg-gray-50"}`}>
+      <input type="radio" checked={sel} onChange={alElegir} className="sr-only" /><span className="font-semibold">{texto}</span><span className="text-texto-2">{detalle}</span>
+    </label>
+  );
+  return (
+    <Paso n={5} titulo="Activar la facturación" listo={e.activa}
+      detalle={e.letra ? `Con la categoría cargada, a un consumidor final le sale Factura ${e.letra}.` : "Falta la categoría frente al IVA (paso 1)."}>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {opcion(modo === "elegir", "La caja elige", "En cada venta: «Factura» o «Comprobante interno». Una venta interna se puede facturar después.", () => setModo("elegir"))}
+        {opcion(modo === "todas", "Todas con factura", "Cada venta sale con factura, sin preguntar.", () => setModo("todas"))}
+      </div>
+      {modo === "elegir" && (
+        <div className="flex flex-wrap items-center gap-3 text-sm"><span className="text-texto-2">En la caja viene marcado:</span>
+          {(["fiscal", "interna"] as const).map((x) => (
+            <label key={x} className="flex items-center gap-1.5"><input type="radio" name="serie" checked={serie === x} onChange={() => setSerie(x)} className="h-4 w-4 accent-[var(--color-marca)]" />
+              {x === "fiscal" ? `Factura ${e.letra ?? ""}` : "Comprobante interno"}</label>
+          ))}
+        </div>
+      )}
+      <div className="flex flex-wrap items-center gap-3">
+        {e.activa ? <>
+          <button type="button" disabled={guardando} onClick={() => guardar(true)} className="boton min-h-10"><FileCheck2 size={16} /> Guardar</button>
+          <button type="button" disabled={guardando} onClick={() => guardar(false)} className="boton-sec min-h-10"><Power size={16} /> Apagar la facturación</button>
+        </> : <button type="button" disabled={guardando || !listo} onClick={() => guardar(true)} className="boton min-h-11"><Power size={16} /> {guardando ? "Activando…" : "Activar la facturación"}</button>}
+        {!listo && !e.activa && <span className="text-sm text-texto-2">Primero completá los pasos 1 a 4.</span>}
+        <Mensaje estado={estado} />
+      </div>
+      {(e.facturas.autorizadas > 0 || e.facturas.en_cola > 0 || e.facturas.rechazadas > 0) && (
+        <div className="flex flex-wrap gap-2 border-t border-borde pt-3 text-sm">
+          <span className="rounded-full bg-green-50 px-2.5 py-1 font-semibold text-ok">{e.facturas.autorizadas} autorizadas</span>
+          {e.facturas.en_cola > 0 && <span className="rounded-full bg-amber-50 px-2.5 py-1 font-semibold text-alerta">{e.facturas.en_cola} en la cola (se reintentan solas)</span>}
+          {e.facturas.rechazadas > 0 && <span className="rounded-full bg-red-50 px-2.5 py-1 font-semibold text-error">{e.facturas.rechazadas} rechazadas</span>}
+          {e.facturas.ultima_rechazada && <p className="w-full text-xs text-error">Último rechazo: {e.facturas.ultima_rechazada}. Se corrige el dato y se reintenta desde la venta.</p>}
+        </div>
+      )}
+    </Paso>
   );
 }

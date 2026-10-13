@@ -43,6 +43,30 @@ Después volvé a **Probar la conexión** para traerlo, ponele un nombre y marc�
 
 **En pruebas** ARCA suele no listar puntos de venta: agregá uno a mano (cualquier número sirve).
 
+## 5. Activar la facturación
+
+Con los pasos 1 a 4 listos, tocá **Activar la facturación** y elegí cómo se usa en la caja:
+
+- **La caja elige:** en cada venta, el cajero marca **Factura** o **Sin factura (comprobante interno)**. Viene marcado lo que elijas acá.
+- **Todas con factura:** cada venta sale facturada, sin preguntar.
+
+Qué letra sale: si el local es **Responsable Inscripto**, Factura **B** al consumidor final; si es **Monotributo** o **Exento**, Factura **C**.
+(La Factura A para clientes inscriptos llega en la próxima etapa.)
+
+**En pruebas** las facturas salen con «Prueba de ARCA · sin validez»: hacé un par de ventas, mirá el comprobante y anulá una para ver la nota de crédito.
+Cuando todo ande, pasá a **producción** (paso 2), cargá el certificado de producción y su punto de venta, y volvé a activar.
+
+### Cómo funciona en el día a día
+
+- **Al vender con factura**, el sistema la pide a ARCA en el momento. El comprobante sale con la letra, el número, el **CAE** y el **QR de ARCA**.
+- **Si ARCA no contesta**, la venta se guarda igual y el comprobante dice «Factura en trámite». La factura queda en una cola y se manda sola
+  (al minuto, a los 2, a los 5…). Nunca se pide dos veces la misma: si un envío se cortó, el sistema se fija en ARCA antes de reintentar.
+- **Si ARCA la rechaza** (por ejemplo, un DNI mal cargado), queda «Rechazada» con el motivo. Se corrige el dato y se toca **Reintentar** en la venta.
+- **Una venta sin factura** se puede facturar después: en la venta, **Hacer Factura**, con la fecha de ese día.
+- **Anular una venta facturada** hace sola la **nota de crédito** por el total.
+- **DNI:** desde el monto que fija la norma (configurable), ARCA pide identificar al consumidor final: cargá el DNI en la ficha del cliente.
+- **IVA de cada artículo:** en la ficha del artículo (vacío = el del local, 21 % de fábrica).
+
 ## Si algo falla
 
 | Mensaje | Qué hacer |
@@ -52,6 +76,9 @@ Después volvé a **Probar la conexión** para traerlo, ponele un nombre y marc�
 | «ARCA ya dio un acceso que el sistema no tiene guardado» | Esperá: el acceso dura hasta 12 horas y después se puede pedir otro. |
 | «No hay puntos de venta para web services» | Creá uno en ARCA (paso 4) y volvé a probar. |
 | «Falta la dirección del sitio en la instalación» | Avisale a quien instaló el sistema. |
+| «ARCA: 10015 …» u otro código al facturar | ARCA rechazó un dato (casi siempre el documento del cliente). Corregilo y tocá **Reintentar** en la venta. |
+| «Para facturar $ … o más a consumidor final, ARCA pide el DNI» | Cargá el DNI en la ficha del cliente de esa venta y facturala desde la venta. |
+| Facturas «en la cola» que no salen | ARCA está caído o lento: se reintentan solas. Si pasa más de una hora, mirá «Últimas comunicaciones con ARCA». |
 
 ## Qué guarda el sistema
 

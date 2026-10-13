@@ -9,15 +9,14 @@ import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeftRight, BadgePercent, Banknote, ChevronDown, CircleAlert, CreditCard, Gift, KeyRound, Minus, Plus, Printer, ScanBarcode, ShieldCheck, ShoppingBag, Smartphone,
-  SplitSquareHorizontal, Trash2, User, UserPlus, Wallet, X, type LucideIcon,
-} from "lucide-react";
+  SplitSquareHorizontal, Trash2, User, UserPlus, Wallet, X, FileCheck2, ReceiptText, type LucideIcon } from "lucide-react";
 import SelectorVariantes, { type FilaStock } from "@/components/SelectorVariantes";
 import { pesos, porcentaje } from "@/lib/formato";
 import { billetesSugeridos, calcularCobro, opcionesRedondeo, pagosParaLaBase, REPARTOS, totalCon, vuelto, type LineaPago, type MedioCobro } from "@/lib/cobro";
 import { autorizarDescuento, cotizarMostrador, crearClienteRapido, registrarVenta, type CotizacionMostrador } from "../acciones";
 
 type Item = FilaStock & { cantidad: number; precio: number };
-type Cliente = { id: number; nombre: string; telefono: string | null; saldo: number };
+type Cliente = { id: number; nombre: string; telefono: string | null; saldo: number; documento?: string | null };
 const CANALES = ["Local", "Instagram", "WhatsApp", "Web"];
 
 // Un ícono por tipo de medio de pago (el tipo se elige en Tablas → Medios de pago)
@@ -45,7 +44,8 @@ function Opcion({ icono: Icono, valor, activo, abierto, alAlternar }: { icono: L
   );
 }
 
-export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente }: {
+export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion }: {
+  facturacion: { modo: "todas" | "elegir"; porDefecto: "fiscal" | "interna"; letra: string; pruebas: boolean; umbral: number } | null;
   filas: FilaStock[]; clientes: Cliente[]; masVendidos: number[]; puedeCrearCliente: boolean; medios: (MedioCobro & { es_saldo?: boolean | null })[]; cambiaPrecio: boolean; descuentoMax: number | null;
   impresion: { configurada: boolean; modo: string; puedeConfigurar: boolean };
 }) {
@@ -72,6 +72,8 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const [abierto, setAbierto] = useState<"cliente" | "descuento" | "canal" | null>(null);
   const [panel, setPanel] = useState(false);   // en el celular: el cobro a pantalla completa
   const [estado, accion, cargando] = useActionState(registrarVenta, {});
+  // Con ARCA activa: «Factura» o «Comprobante interno» (si el local deja elegir; si no, siempre factura)
+  const [facturar, setFacturar] = useState(facturacion ? facturacion.modo === "todas" || facturacion.porDefecto === "fiscal" : false);
   const cliente = clientes.find((c) => c.id === clienteId) ?? null;
   const formulario = useRef<HTMLFormElement>(null);
   // «Saldo a favor» solo aparece si el cliente elegido tiene saldo (o si ya se eligió)
@@ -117,23 +119,28 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const usaSaldo = cobro.lineas.some((l) => medios.find((m) => m.id === l.medio_pago_id)?.es_saldo);
   const montoRecibido = Number(recibido.replace(/\./g, "").replace(",", ".")) || 0;
 
+  const sinDni = facturar && !!facturacion && cobro.total >= facturacion.umbral && !/^\d{7,8}$/.test((cliente?.documento ?? "").replace(/\D/g, ""));
   // Por qué no se puede confirmar (se dice, no solo se apaga el botón)
   const falta = !items.length ? "Agregá al menos un producto"
     : pasaTope ? `Tu descuento máximo es ${pesos(topeDescuento ?? 0)}: para más, pedíselo a un encargado`
     : descuento > conPromos ? "El descuento es mayor que el total"
     : cobro.excedido ? "Las partes del pago suman más que el total"
     : usaSaldo && !cliente ? "Para cobrar con saldo a favor, elegí el cliente"
-    : !lineas.length ? "No hay medios de pago para el mostrador (se cargan en Tablas)" : null;
+    : !lineas.length ? "No hay medios de pago para el mostrador (se cargan en Tablas)"
+    // Desde el umbral de la norma, ARCA pide identificar al consumidor final: se avisa antes de cobrar (si no, la factura sale rechazada)
+    : sinDni ? `Para facturar ${pesos(facturacion!.umbral)} o más, ARCA pide el DNI: elegí el cliente (con su DNI cargado) o cobrá sin factura` : null;
 
   // Atajos para la compu de la caja: F2 va al buscador, F9 confirma la venta
   useEffect(() => {
     const alTeclear = (e: KeyboardEvent) => {
       if (e.key === "F2") { e.preventDefault(); document.querySelector<HTMLInputElement>('input[aria-label^="Buscar modelo"]')?.focus(); }
       if (e.key === "F9") { e.preventDefault(); formulario.current?.requestSubmit(); }
+      // F4: con factura / sin factura (solo si el local deja elegir)
+      if (e.key === "F4" && facturacion?.modo === "elegir") { e.preventDefault(); setFacturar((x) => !x); }
     };
     window.addEventListener("keydown", alTeclear);
     return () => window.removeEventListener("keydown", alTeclear);
-  }, []);
+  }, [facturacion?.modo]);
 
   // Con tarjeta, transferencia o billetera se puede anotar el número de cupón / operación (opcional; la base lo guarda en el pago)
   const pideReferencia = (m: MedioCobro & { es_saldo?: boolean | null }) => !m.es_saldo && !!m.tipo && m.tipo !== "Efectivo";
@@ -193,7 +200,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
           )}
           <h1 className="text-2xl font-bold">Nueva venta</h1>
           <Paso n={1} titulo="Agregá lo que se lleva" listo={items.length > 0}>
-            <span className="ml-auto hidden text-xs text-texto-2 lg:inline"><kbd className="rounded border border-borde bg-white px-1 font-sans">F2</kbd> buscar · <kbd className="rounded border border-borde bg-white px-1 font-sans">F9</kbd> confirmar</span>
+            <span className="ml-auto hidden text-xs text-texto-2 lg:inline"><kbd className="rounded border border-borde bg-white px-1 font-sans">F2</kbd> buscar · <kbd className="rounded border border-borde bg-white px-1 font-sans">F9</kbd> confirmar{facturacion?.modo === "elegir" && <> · <kbd className="rounded border border-borde bg-white px-1 font-sans">F4</kbd> factura</>}</span>
           </Paso>
           <SelectorVariantes filas={filas} alElegir={agregar} soloConStock caja enVenta={enVenta} masVendidos={masVendidos} />
         </section>
@@ -455,12 +462,26 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                   </div>
                 )}
               </dl>
+              {facturacion && facturacion.modo === "elegir" && (
+                <div role="radiogroup" aria-label="¿Con factura? (F4 cambia)" className="grid grid-cols-2 gap-1 rounded-lg bg-gray-100 p-1 text-sm">
+                  {([[true, `Con factura ${facturacion.letra}`], [false, "Sin factura"]] as const).map(([valor, texto]) => (
+                    <button key={texto} type="button" role="radio" aria-checked={facturar === valor} onClick={() => setFacturar(valor)}
+                      className={`flex min-h-9 items-center justify-center gap-1.5 rounded-md font-semibold transition ${facturar === valor ? "bg-white text-marca shadow-sm" : "text-gray-600 hover:text-gray-900"}`}>
+                      {valor ? <FileCheck2 size={15} strokeWidth={facturar === valor ? 2.2 : 1.8} /> : <ReceiptText size={15} strokeWidth={facturar === valor ? 2.2 : 1.8} />}{texto}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {facturacion?.modo === "todas" && <p className="flex items-center gap-1.5 text-xs text-texto-2"><FileCheck2 size={14} /> Sale con Factura {facturacion.letra}{facturacion.pruebas ? " (pruebas de ARCA)" : ""}</p>}
+              {facturacion?.pruebas && facturacion.modo === "elegir" && facturar && <p className="text-xs text-alerta">ARCA está en pruebas: la factura no tiene validez.</p>}
+              {facturar && <input type="hidden" name="factura" value="1" />}
               <input type="hidden" name="venta" value={venta} />
               {efectivo && montoRecibido >= efectivo.cobra && <input type="hidden" name="vuelto" value={vuelto(montoRecibido, efectivo.cobra)} />}
               {estado.error && <p role="alert" className="flex items-start gap-1.5 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-error"><CircleAlert size={16} className="mt-0.5 shrink-0" />{estado.error}</p>}
               <button className="boton min-h-14 w-full text-base" disabled={cargando || !!falta}>
                 <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20 text-xs font-bold" aria-hidden>3</span>
-                {cargando ? "Registrando…" : `Confirmar venta${items.length ? ` · ${pesos(cobro.total)}` : ""}`}
+                {cargando ? (facturar ? "Registrando y facturando…" : "Registrando…")
+                  : `${facturacion ? (facturar ? `Confirmar con Factura ${facturacion.letra}` : "Confirmar sin factura") : "Confirmar venta"}${items.length ? ` · ${pesos(cobro.total)}` : ""}`}
               </button>
               {falta && items.length > 0 && <p className="text-center text-xs text-texto-2">{falta}</p>}
             </div>

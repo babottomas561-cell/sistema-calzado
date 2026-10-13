@@ -5,7 +5,7 @@
 import CodigoBarras from "@/components/CodigoBarras";
 import CodigoQR from "@/components/CodigoQR";
 import { fechaCompleta, pesos, porcentaje } from "@/lib/formato";
-import { importeRenglon, LETRAS, type Comprobante as Doc, type FormatoComprobante } from "@/lib/comprobante";
+import { esFactura, importeRenglon, LETRAS, numeroDe, tituloDe, type Comprobante as Doc, type FormatoComprobante } from "@/lib/comprobante";
 
 export type Presentacion = FormatoComprobante | "pantalla";
 
@@ -16,7 +16,11 @@ const fila: React.CSSProperties = { display: "flex", justifyContent: "space-betw
 const num: React.CSSProperties = { whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" };
 
 // Los datos del comercio que van arriba, uno por renglón (solo los que se cargaron)
-const datosLegales = (c: Doc) => c.config.datos_legales
+const datosLegales = (c: Doc) => esFactura(c)
+  ? [c.fiscal!.emisor.razon_social, c.fiscal!.emisor.domicilio, c.fiscal!.emisor.cuit && `CUIT ${c.fiscal!.emisor.cuit}`, c.fiscal!.emisor.condicion_iva && `IVA ${c.fiscal!.emisor.condicion_iva}`,
+     c.fiscal!.emisor.ingresos_brutos && `Ingresos Brutos ${c.fiscal!.emisor.ingresos_brutos}`,
+     c.fiscal!.emisor.inicio_actividades && `Inicio de actividades ${fechaCorta(c.fiscal!.emisor.inicio_actividades)}`].filter((x): x is string => !!x)
+  : c.config.datos_legales
   ? [c.emisor.razon_social, c.emisor.cuit && `CUIT ${c.emisor.cuit}`, c.emisor.condicion_iva, c.emisor.domicilio, c.emisor.telefono && `Tel. ${c.emisor.telefono}`].filter((x): x is string => !!x)
   : [];
 const detallePago = (p: Doc["pagos"][number]) => [
@@ -25,6 +29,20 @@ const detallePago = (p: Doc["pagos"][number]) => [
 // El tamaño de letra elegido en Impresión (chica, normal, grande) agranda o achica todo el texto por igual
 const tam = (v: string, k: number) => v.replace(/^([\d.]+)/, (n) => String(Math.round(Number(n) * k * 10) / 10));
 const variante = (c: Doc, r: Doc["renglones"][number]) => r.variante + (c.config.mostrar_marca && r.marca ? ` · ${r.marca}` : "");
+const fechaCorta = (x: string) => new Date(x.length === 10 ? `${x}T12:00:00` : x).toLocaleDateString("es-AR");
+// Las líneas fiscales de abajo: transparencia fiscal, CAE y, si se anuló, la nota de crédito
+const lineasFiscales = (c: Doc): string[] => {
+  const f = c.fiscal;
+  if (!f || f.estado !== "autorizada") return [];
+  const ivaContenido = f.letra === "B" ? f.iva : f.letra === "C" && f.iva_contenido_en_c === "cero" ? 0 : null;
+  return [
+    "Régimen de Transparencia Fiscal al Consumidor (Ley 27.743)",
+    ...(ivaContenido != null ? [`IVA contenido: ${pesos(ivaContenido)}`] : []),
+    `CAE ${f.cae} · Vto. ${f.cae_vence ? fechaCorta(f.cae_vence) : ""}`,
+    ...(f.nota_credito?.estado === "autorizada" ? [`Anulada con nota de crédito ${f.nota_credito.letra} ${f.nota_credito.comprobante} (CAE ${f.nota_credito.cae})`] : []),
+  ];
+};
+const receptor = (c: Doc) => (esFactura(c) ? (c.fiscal!.doc_tipo === 99 ? "A consumidor final" : `${c.fiscal!.receptor} · ${c.fiscal!.doc_tipo === 80 ? "CUIT" : "DNI"} ${c.fiscal!.doc_nro} · ${c.fiscal!.condicion_receptor}`) : null);
 const rotuloAnulado = (c: Doc) => (c.tipo === "presupuesto" ? "PRESUPUESTO ANULADO" : "COMPROBANTE ANULADO");
 
 // ── Ticket (80 mm, 58 mm y la versión del celular) ─────────────────────────
@@ -55,13 +73,17 @@ function Ticket({ c, p, url }: { c: Doc; p: "ticket80" | "ticket58" | "pantalla"
       <hr style={raya} />
 
       {/* qué es */}
-      <div style={{ ...centro, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em" }}>{c.titulo}</div>
-      <div style={{ ...centro, fontFamily: MONO, fontWeight: 700, fontSize: e.grande }}>{c.numero}</div>
+      {esFactura(c) && <div style={{ ...centro, margin: "0 auto 1mm", width: "9mm", height: "9mm", lineHeight: "9mm", border: "0.5mm solid #000", fontSize: e.grande, fontWeight: 800 }}>{c.fiscal!.letra}</div>}
+      <div style={{ ...centro, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em" }}>{tituloDe(c)}{esFactura(c) && <span style={{ fontWeight: 400, fontSize: e.chico }}> · Cód. {c.fiscal!.codigo}</span>}</div>
+      <div style={{ ...centro, fontFamily: MONO, fontWeight: 700, fontSize: e.grande }}>{numeroDe(c)}</div>
       <div style={{ ...centro, fontSize: e.chico, color: e.tenue }}>{fechaCompleta(c.fecha)}</div>
-      <div style={{ ...centro, margin: "1.4mm auto 0", width: "fit-content", border: `1px solid ${e.raya === "#000" ? "#000" : "#9ca3af"}`, borderRadius: "1mm", padding: "0.4mm 2mm", fontSize: e.chico, fontWeight: 700, letterSpacing: "0.04em" }}>NO VÁLIDO COMO FACTURA</div>
+      {!esFactura(c) && <div style={{ ...centro, margin: "1.4mm auto 0", width: "fit-content", border: `1px solid ${e.raya === "#000" ? "#000" : "#9ca3af"}`, borderRadius: "1mm", padding: "0.4mm 2mm", fontSize: e.chico, fontWeight: 700, letterSpacing: "0.04em" }}>NO VÁLIDO COMO FACTURA</div>}
+      {c.fiscal && !esFactura(c) && c.fiscal.estado !== "cancelada" && <div style={{ ...centro, marginTop: "1mm", fontSize: e.chico, fontWeight: 700 }}>FACTURA EN TRÁMITE</div>}
+      {esFactura(c) && c.fiscal!.pruebas && <div style={{ ...centro, marginTop: "1mm", fontSize: e.chico, fontWeight: 700 }}>PRUEBA DE ARCA (HOMOLOGACIÓN) · SIN VALIDEZ</div>}
       {c.anulada && <div style={{ ...centro, border: "0.5mm solid #000", padding: "1mm", margin: "2mm 0 0", fontWeight: 800, letterSpacing: "0.08em" }}>{rotuloAnulado(c)}</div>}
       <div style={{ marginTop: "1.6mm", fontSize: e.chico }}>
-        {c.config.mostrar_cliente && c.cliente && <div><b>Cliente:</b> {c.cliente}</div>}
+        {receptor(c) && <div><b>Receptor:</b> {receptor(c)}</div>}
+        {c.config.mostrar_cliente && c.cliente && !(esFactura(c) && c.fiscal!.doc_tipo !== 99) && <div><b>Cliente:</b> {c.cliente}</div>}
         {c.origen && <div><b>Por la venta:</b> {c.origen}</div>}
         {c.config.mostrar_vendedor && c.atendio && <div><b>Te atendió:</b> {c.atendio}</div>}
       </div>
@@ -93,9 +115,16 @@ function Ticket({ c, p, url }: { c: Doc; p: "ticket80" | "ticket58" | "pantalla"
       <hr style={raya} />
 
       {/* cierre */}
+      {lineasFiscales(c).length > 0 && <div style={{ ...centro, fontSize: e.chico, marginBottom: "2mm" }}>{lineasFiscales(c).map((l, i) => <div key={i} style={l.startsWith("CAE") ? { fontWeight: 700, fontFamily: MONO } : undefined}>{l}</div>)}</div>}
       {c.pie && <div style={{ ...centro, fontWeight: 700 }}>{c.pie}</div>}
-      {c.leyenda && <div style={{ ...centro, fontSize: e.chico, color: e.tenue, marginTop: "1mm" }}>{c.leyenda}</div>}
-      {c.config.qr && url && (
+      {c.leyenda && !esFactura(c) && <div style={{ ...centro, fontSize: e.chico, color: e.tenue, marginTop: "1mm" }}>{c.leyenda}</div>}
+      {esFactura(c) && c.fiscal!.qr && (
+        <div style={{ ...centro, marginTop: "3mm", breakInside: "avoid" }}>
+          <div style={{ width: e.qr, margin: "0 auto" }}><CodigoQR texto={c.fiscal!.qr} /></div>
+          <div style={{ fontSize: e.chico, color: e.tenue }}>Comprobante autorizado por ARCA</div>
+        </div>
+      )}
+      {!esFactura(c) && c.config.qr && url && (
         <div style={{ ...centro, marginTop: "3mm", breakInside: "avoid" }}>
           <div style={{ width: e.qr, margin: "0 auto" }}><CodigoQR texto={url} /></div>
           <div style={{ fontSize: e.chico, color: e.tenue }}>Escaneá para ver tu comprobante digital</div>
@@ -136,17 +165,20 @@ function HojaA4({ c, url }: { c: Doc; url?: string | null }) {
             {legales.length > 0 && <div style={{ marginTop: "2mm", fontSize: pt(8.5) }}>{legales.map((l, i) => <div key={i}>{l}</div>)}</div>}
           </div>
           <div style={{ textAlign: "right", flexShrink: 0 }}>
-            <div style={{ fontSize: "9pt", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em" }}>{c.titulo}</div>
-            <div style={{ fontFamily: MONO, fontSize: "17pt", fontWeight: 700 }}>{c.numero}</div>
+            {esFactura(c) && <div style={{ display: "inline-block", width: "13mm", height: "13mm", lineHeight: "13mm", textAlign: "center", border: "0.6mm solid #000", fontSize: "22pt", fontWeight: 800, marginBottom: "1mm" }}>{c.fiscal!.letra}</div>}
+            <div style={{ fontSize: "9pt", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em" }}>{tituloDe(c)}{esFactura(c) && <span style={{ fontWeight: 400 }}> · Cód. {c.fiscal!.codigo}</span>}</div>
+            <div style={{ fontFamily: MONO, fontSize: "17pt", fontWeight: 700 }}>{numeroDe(c)}</div>
             <div style={{ fontSize: "9pt" }}>{fechaCompleta(c.fecha)}</div>
-            <div style={{ display: "inline-block", marginTop: "1.5mm", border: "0.3mm solid #000", padding: "0.5mm 2mm", fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.06em" }}>DOCUMENTO NO VÁLIDO COMO FACTURA</div>
+            {!esFactura(c) && <div style={{ display: "inline-block", marginTop: "1.5mm", border: "0.3mm solid #000", padding: "0.5mm 2mm", fontSize: "7.5pt", fontWeight: 700, letterSpacing: "0.06em" }}>DOCUMENTO NO VÁLIDO COMO FACTURA</div>}
+            {c.fiscal && !esFactura(c) && c.fiscal.estado !== "cancelada" && <div style={{ marginTop: "1mm", fontSize: "8pt", fontWeight: 700 }}>FACTURA EN TRÁMITE</div>}
+            {esFactura(c) && c.fiscal!.pruebas && <div style={{ marginTop: "1mm", fontSize: "8pt", fontWeight: 700 }}>PRUEBA DE ARCA · SIN VALIDEZ</div>}
           </div>
         </div>
         {c.anulada && <div style={{ textAlign: "center", border: "0.6mm solid #000", padding: "2mm", margin: "4mm 0 0", fontWeight: 800, letterSpacing: "0.12em", fontSize: "12pt" }}>{rotuloAnulado(c)}</div>}
 
-        {((c.config.mostrar_cliente && c.cliente) || c.origen || (c.config.mostrar_vendedor && c.atendio)) && (
+        {(receptor(c) || (c.config.mostrar_cliente && c.cliente) || c.origen || (c.config.mostrar_vendedor && c.atendio)) && (
           <div style={{ display: "flex", justifyContent: "space-between", gap: "8mm", padding: "3.5mm 0", fontSize: pt(9.5) }}>
-            <div>{c.config.mostrar_cliente && c.cliente && <div><b>Cliente:</b> {c.cliente}</div>}{c.origen && <div><b>Por la venta:</b> {c.origen}</div>}</div>
+            <div>{receptor(c) && <div><b>Receptor:</b> {receptor(c)}</div>}{c.config.mostrar_cliente && c.cliente && !(esFactura(c) && c.fiscal!.doc_tipo !== 99) && <div><b>Cliente:</b> {c.cliente}</div>}{c.origen && <div><b>Por la venta:</b> {c.origen}</div>}</div>
             {c.config.mostrar_vendedor && c.atendio && <div><b>Te atendió:</b> {c.atendio}</div>}
           </div>
         )}
@@ -186,12 +218,14 @@ function HojaA4({ c, url }: { c: Doc; url?: string | null }) {
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: "8mm", marginTop: "10mm", paddingTop: "4mm", borderTop: "0.3mm solid #000", breakInside: "avoid", pageBreakInside: "avoid" }}>
           <div style={{ flex: 1, fontSize: "8.5pt" }}>
+            {lineasFiscales(c).map((l, i) => <div key={i} style={l.startsWith("CAE") ? { fontWeight: 700, fontFamily: MONO, margin: "1mm 0" } : undefined}>{l}</div>)}
             {c.pie && <div style={{ fontSize: "11pt", fontWeight: 700, marginBottom: "1.5mm" }}>{c.pie}</div>}
-            {c.leyenda && <div>{c.leyenda}</div>}
+            {c.leyenda && !esFactura(c) && <div>{c.leyenda}</div>}
             {em.local && <div style={{ marginTop: "1mm" }}>{em.local}</div>}
           </div>
           {c.config.barras && <div style={{ width: "56mm" }}><CodigoBarras codigo={c.numero} tipo="code128" alto="12mm" /><div style={{ textAlign: "center", fontFamily: MONO, fontSize: "8pt", letterSpacing: "0.06em" }}>{c.numero}</div></div>}
-          {c.config.qr && url && <div style={{ width: "27mm", flexShrink: 0 }}><CodigoQR texto={url} /><div style={{ textAlign: "center", fontSize: "6.5pt" }}>Comprobante digital</div></div>}
+          {esFactura(c) && c.fiscal!.qr && <div style={{ width: "27mm", flexShrink: 0 }}><CodigoQR texto={c.fiscal!.qr} /><div style={{ textAlign: "center", fontSize: "6.5pt" }}>Autorizado por ARCA</div></div>}
+          {!esFactura(c) && c.config.qr && url && <div style={{ width: "27mm", flexShrink: 0 }}><CodigoQR texto={url} /><div style={{ textAlign: "center", fontSize: "6.5pt" }}>Comprobante digital</div></div>}
         </div>
       </td></tr></tbody>
     </table>

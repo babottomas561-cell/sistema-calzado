@@ -10,7 +10,7 @@ export type Subrubro = Opcion & { categoria_id: number };
 export type Maestros = { marcas: Opcion[]; categorias: Opcion[]; subcategorias: Subrubro[] };
 
 type P = { codigo?: string; nombre?: string; marca_id?: number | null; categoria_id?: number | null; subcategoria_id?: number | null;
-  genero?: string | null; escala?: string; temporada?: string | null; material?: string | null; descripcion?: string | null; precio_compra?: number; precio_venta?: number; publicado_web?: boolean };
+  genero?: string | null; escala?: string; temporada?: string | null; material?: string | null; alicuota_iva?: number | null; descripcion?: string | null; precio_compra?: number; precio_venta?: number; publicado_web?: boolean };
 
 // editaPrecio: sin "Cambiar precios de venta" el campo queda bloqueado (y no se manda: la base lo rechazaría)
 // escala: define qué talles puede tener (la base no deja mezclar). alCambiarEscala avisa al
@@ -61,13 +61,18 @@ export default function CamposProducto({ p = {}, maestros, editaPrecio = true, a
           </select>
           <p className="mt-0.5 text-[11px] text-texto-2">{bloquearEscala ? "Ya tiene talles: no se puede cambiar." : "Define qué talles puede tener (no se mezclan)."}</p></div>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <div><label className="etiqueta">Temporada</label>
           <select name="temporada" defaultValue={p.temporada ?? ""} className="campo">
             <option value="">—</option>{TEMPORADAS.map((t) => <option key={t}>{t}</option>)}
           </select></div>
         <div><label className="etiqueta">Material</label>
           <input name="material" defaultValue={p.material ?? ""} placeholder="Algodón, cuero, poliéster…" className="campo" /></div>
+        <div><label className="etiqueta">IVA</label>
+          <select name="alicuota_iva" defaultValue={p.alicuota_iva != null ? String(Number(p.alicuota_iva)) : ""} className="campo">
+            <option value="">Como su rubro</option>{[21, 10.5, 27, 5, 2.5, 0].map((a) => <option key={a} value={a}>{String(a).replace(".", ",")} %</option>)}
+          </select>
+          <p className="mt-0.5 text-[11px] text-texto-2">Para la factura de ARCA. Vacío = el del rubro o el del local.</p></div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div><label className="etiqueta">Precio de compra ($)</label><input name="precio_compra" type="number" min="0" step="0.01" defaultValue={p.precio_compra ?? ""} onChange={(e) => setCompra(Number(e.target.value))} className="campo" />
