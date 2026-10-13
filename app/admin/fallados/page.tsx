@@ -19,7 +19,7 @@ export default async function Fallados({ searchParams }: { searchParams: Promise
   const { permisos } = await exigir("stock.ver");
   const { ver } = await searchParams;
   const resueltos = ver === "resueltos";
-  const conCostos = puede(permisos, "costos.ver");
+  const conCostos = puede(permisos, "costos.ver_ganancia");
   const resuelve = puede(permisos, "stock.ajustar");
   const supabase = await crearCliente();
   const columnas = "id, fecha, producto_id, codigo, nombre, marca, imagen_url, talle, color, cantidad, origen, venta_id, venta_comprobante, motivo, estado, nota, proveedor, proveedor_principal_id, proveedor_principal, resuelto_en, resuelto_por, cargado_por, valor_costo";

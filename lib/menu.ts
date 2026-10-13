@@ -17,7 +17,7 @@ export const GRUPOS: { titulo?: string; items: Item[] }[] = [
     { href: "/admin/compras", texto: "Compras", icono: PackagePlus, permisos: ["compras.registrar"] },
   ] },
   { titulo: "Catálogo", items: [
-    { href: "/admin/productos", texto: "Productos", icono: Package, permisos: ["costos.ver"], fijo: true },
+    { href: "/admin/productos", texto: "Productos", icono: Package, permisos: ["costos.ver_precio_compra"], fijo: true },
     { href: "/admin/stock", texto: "Stock", icono: Boxes, permisos: ["stock.ver"], fijo: true },
     { href: "/admin/etiquetas", texto: "Etiquetas", icono: ScanBarcode, permisos: ["stock.ver", "productos.editar"] },
     { href: "/admin/precios", texto: "Precios", icono: Tags, permisos: ["precios.editar", "proveedores.gestionar"] },
@@ -38,9 +38,9 @@ export const GRUPOS: { titulo?: string; items: Item[] }[] = [
   { titulo: "Configuración", items: [
     { href: "/admin/tienda", texto: "Tienda online", icono: Store, permisos: ["tienda.editar"] },
     { href: "/admin/integraciones", texto: "Integraciones", icono: Plug, permisos: ["tienda.editar"] },
-    { href: "/admin/tablas", texto: "Tablas", icono: Settings2, permisos: ["tablas.editar"], fijo: true },
+    { href: "/admin/tablas", texto: "Tablas", icono: Settings2, permisos: ["tablas.editar", "tablas.catalogo", "tablas.medios_pago", "tablas.depositos"], fijo: true },
     { href: "/admin/impresion", texto: "Impresión", icono: Printer, permisos: ["tablas.editar"] },
-    { href: "/admin/equipo", texto: "Equipo", icono: ShieldCheck, permisos: ["equipo.administrar"], fijo: true },
+    { href: "/admin/equipo", texto: "Equipo", icono: ShieldCheck, permisos: ["equipo.administrar", "equipo.personas", "equipo.roles", "equipo.modulos", "equipo.cuentas"], fijo: true },
   ] },
 ];
 

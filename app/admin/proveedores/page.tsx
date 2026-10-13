@@ -12,8 +12,8 @@ const TIPO: Record<string, string> = { devolucion: "Fallado devuelto", descuento
 
 export default async function Proveedores() {
   const { permisos } = await exigir("proveedores.gestionar", "compras.registrar");
-  const veCredito = puede(permisos, "compras.registrar", "costos.ver");
-  const ajusta = puede(permisos, "proveedores.gestionar") && puede(permisos, "costos.ver");
+  const veCredito = puede(permisos, "compras.registrar", "costos.ver_precio_compra");
+  const ajusta = puede(permisos, "proveedores.gestionar") && puede(permisos, "costos.ver_precio_compra");
   const supabase = await crearCliente();
   const [{ data }, { data: creditos }, { data: movimientos }] = await Promise.all([
     supabase.from("proveedores").select("id, codigo, nombre, telefono, email, notas").order("nombre"),

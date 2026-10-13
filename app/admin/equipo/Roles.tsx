@@ -2,11 +2,14 @@
 // Roles: cada uno es un conjunto de permisos tildados y un tope de descuento.
 // El Administrador tiene todos los permisos siempre (la base no deja cambiarlo).
 import { useActionState, useState, useTransition } from "react";
-import { ChevronDown, CircleCheck, Plus, ShieldCheck, Trash2 } from "lucide-react";
+import { ChevronDown, CircleCheck, Eye, Plus, ShieldCheck, Trash2 } from "lucide-react";
+import { efectivos, puede } from "@/lib/permisos";
+import { GRUPOS } from "@/lib/menu";
 import { borrarRol, guardarRol, type Estado } from "./acciones";
 
 type Rol = { id: number; nombre: string; descripcion: string | null; todos: boolean; permisos: string[]; descuento_max_pct: number | null };
-type Permiso = { codigo: string; grupo: string; nombre: string; descripcion: string | null };
+type Permiso = { codigo: string; grupo: string; nombre: string; descripcion: string | null; padre: string | null };
+
 
 function Mensaje({ e }: { e: Estado }) {
   if (e.error) return <p className="text-sm text-error">{e.error}</p>;
@@ -22,6 +25,10 @@ function FormRol({ rol, permisos, alGuardar }: { rol?: Rol; permisos: Permiso[];
   }, {});
   const grupos = [...new Set(permisos.map((p) => p.grupo))];
   const admin = rol?.todos ?? false;
+  const [sel, setSel] = useState<Set<string>>(new Set(rol?.permisos ?? []));
+  const alternar = (c: string) => setSel((a) => { const n = new Set(a); if (n.has(c)) n.delete(c); else n.add(c); return n; });
+  const [verMenu, setVerMenu] = useState(false);
+  const efectivosSel = efectivos({ todos: admin, permisos: [...sel] }, permisos);
 
   return (
     <form action={accion} className="space-y-4">
@@ -39,18 +46,33 @@ function FormRol({ rol, permisos, alGuardar }: { rol?: Rol; permisos: Permiso[];
           {grupos.map((g) => (
             <fieldset key={g} className="space-y-1.5">
               <legend className="etiqueta">{g}</legend>
-              {permisos.filter((p) => p.grupo === g).map((p) => (
-                <label key={p.codigo} className="flex gap-2 text-sm">
-                  <input type="checkbox" name="permisos" value={p.codigo} defaultChecked={rol?.permisos.includes(p.codigo)} className="mt-0.5" />
-                  <span><span className="font-medium">{p.nombre}</span>{p.descripcion && <span className="block text-xs text-texto-2">{p.descripcion}</span>}</span>
-                </label>
-              ))}
+              {permisos.filter((p) => p.grupo === g && !p.padre).flatMap((p) => [p, ...permisos.filter((h) => h.padre === p.codigo)]).map((p) => {
+                const hijo = !!p.padre, incluido = hijo && sel.has(p.padre!);
+                return (
+                  <label key={p.codigo} className={`flex gap-2 text-sm ${hijo ? "ml-6" : ""} ${incluido ? "opacity-60" : ""}`}>
+                    <input type="checkbox" name="permisos" value={p.codigo} checked={sel.has(p.codigo) || incluido} disabled={incluido} onChange={() => alternar(p.codigo)} className="mt-0.5" />
+                    <span><span className="font-medium">{p.nombre}</span>{incluido && <span className="ml-1 text-xs text-texto-2">(incluido)</span>}{p.descripcion && <span className="block text-xs text-texto-2">{p.descripcion}</span>}</span>
+                  </label>
+                );
+              })}
             </fieldset>
           ))}
         </div>
       )}
       <Mensaje e={estado} />
-      <button className="boton" disabled={cargando}>{rol ? "Guardar rol" : "Crear rol"}</button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button className="boton" disabled={cargando}>{rol ? "Guardar rol" : "Crear rol"}</button>
+        <button type="button" onClick={() => setVerMenu(!verMenu)} className="boton-sec" aria-expanded={verMenu}><Eye size={16} /> {verMenu ? "Ocultar" : "¿Qué ve este rol?"}</button>
+      </div>
+      {verMenu && (
+        <div className="space-y-2 rounded-lg bg-gray-50 p-3 text-sm">
+          <p className="font-semibold">Con estos permisos, el menú muestra:</p>
+          {GRUPOS.map((g) => ({ ...g, items: g.items.filter((i) => !i.permisos.length || puede(efectivosSel, ...i.permisos)) })).filter((g) => g.items.length).map((g) => (
+            <p key={g.titulo ?? "inicio"}><span className="text-xs font-semibold uppercase tracking-wider text-gray-400">{g.titulo ?? "Base"}</span><br />{g.items.map((i) => i.texto).join(" · ")}</p>
+          ))}
+          <p className="text-xs text-texto-2">Es lo que el rol puede abrir; los módulos apagados en este local tampoco se ven. Lo que muestra cada pantalla depende además de sus permisos finos (por ejemplo, costos).</p>
+        </div>
+      )}
     </form>
   );
 }

@@ -34,7 +34,7 @@ function Variacion({ actual, anterior }: { actual: number; anterior: number }) {
 export default async function InformeVentas({ searchParams }: { searchParams: Promise<{ periodo?: string; desde?: string; hasta?: string; por?: string }> }) {
   const { permisos } = await exigir("informes.ventas");
   // Sin "Ver costos" la base devuelve la ganancia vacía: no se muestra
-  const conCostos = permisos.includes("costos.ver");
+  const conCostos = permisos.includes("costos.ver_ganancia");
   const sp = await searchParams;
   const periodo = (sp.periodo && sp.periodo in PERIODOS ? sp.periodo : "mes") as Periodo;
   const por = (sp.por && sp.por in POR ? sp.por : "modelo") as Por;

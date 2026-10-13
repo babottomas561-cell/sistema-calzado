@@ -18,7 +18,7 @@ const TIPO_MOV: Record<string, string> = { venta: "Venta", compra: "Compra", aju
   devolucion_proveedor: "Al proveedor", baja: "Baja" };
 
 export default async function Producto({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ editar?: string }> }) {
-  const { permisos } = await exigir("costos.ver");
+  const { permisos } = await exigir("costos.ver_precio_compra");
   const { id } = await params;
   const { editar } = await searchParams;
   const supabase = await crearCliente();

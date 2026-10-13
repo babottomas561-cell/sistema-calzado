@@ -7,7 +7,7 @@ import { sitio } from "../../integraciones/sitio";
 import Cuentas from "./Cuentas";
 
 export default async function PaginaCuentas() {
-  const { supabase } = await exigir("equipo.administrar");
+  const { supabase } = await exigir("equipo.administrar", "equipo.cuentas");
   const [config, { data: estadoCorreo }, { data: invitaciones }, { data: roles }, { data: principal }] = await Promise.all([
     leerConfigCuentas(supabase),
     supabase.rpc("estado_correo"),

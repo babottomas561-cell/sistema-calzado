@@ -53,7 +53,7 @@ const Codigo = ({ children }: { children: React.ReactNode }) =>
   <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-600">{children}</span>;
 
 export default async function Tablas({ searchParams }: { searchParams: Promise<{ t?: string }> }) {
-  await exigir("tablas.editar");
+  await exigir("tablas.editar", "tablas.catalogo", "tablas.medios_pago", "tablas.depositos");
   const { t } = await searchParams;
   const actual: Clave = PESTANAS.some((p) => p.clave === t) ? (t as Clave) : "rubros";
   const supabase = await crearCliente();

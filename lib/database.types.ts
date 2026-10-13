@@ -229,6 +229,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"autorizaciones": {
+                  Row: {
+                    "autoriza_id": string | null,"creada_en": string,"id": number,"monto": number,"ok": boolean,"para_usuario": string,"tipo": string,"usada_en": string | null,"vence_en": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "autoriza_id"?: string | null,"creada_en"?: string,"id"?: never,"monto": number,"ok": boolean,"para_usuario": string,"tipo": string,"usada_en"?: string | null,"vence_en": string
+                  }
+                  Update: {
+                    "autoriza_id"?: string | null,"creada_en"?: string,"id"?: never,"monto"?: number,"ok"?: boolean,"para_usuario"?: string,"tipo"?: string,"usada_en"?: string | null,"vence_en"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"bitacora": {
                   Row: {
                     "accion": string,"antes": Json | null,"despues": Json | null,"detalle": string,"entidad": string,"entidad_id": string | null,"fecha": string,"id": number,"modulo": string,"usuario_id": string | null,"usuario_nombre": string
@@ -1441,14 +1455,34 @@ isOneToOne: false
                   ]
                 },"permisos": {
                   Row: {
-                    "codigo": string,"descripcion": string | null,"grupo": string,"id": number,"nombre": string,"orden": number
+                    "codigo": string,"descripcion": string | null,"grupo": string,"id": number,"nombre": string,"orden": number,"padre": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "codigo": string,"descripcion"?: string | null,"grupo": string,"id"?: never,"nombre": string,"orden"?: number
+                    "codigo": string,"descripcion"?: string | null,"grupo": string,"id"?: never,"nombre": string,"orden"?: number,"padre"?: string | null
                   }
                   Update: {
-                    "codigo"?: string,"descripcion"?: string | null,"grupo"?: string,"id"?: never,"nombre"?: string,"orden"?: number
+                    "codigo"?: string,"descripcion"?: string | null,"grupo"?: string,"id"?: never,"nombre"?: string,"orden"?: number,"padre"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "permisos_padre_fkey"
+      columns: ["padre"]
+isOneToOne: false
+      referencedRelation: "permisos"
+      referencedColumns: ["codigo"]
+    }
+                  ]
+                },"pines_autorizacion": {
+                  Row: {
+                    "cambiado_en": string,"pin_hash": string,"usuario_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cambiado_en"?: string,"pin_hash": string,"usuario_id": string
+                  }
+                  Update: {
+                    "cambiado_en"?: string,"pin_hash"?: string,"usuario_id"?: string
                   }
                   Relationships: [
                     
@@ -2598,6 +2632,9 @@ isOneToOne: false
 "_comprobante_venta":
 { Args: { "p_id": number }; Returns: Json
                            },
+"_consumir_autorizacion":
+{ Args: { "p_monto": number,"p_tipo": string }; Returns: boolean
+                           },
 "_contra_asiento":
 { Args: { "p_asiento": number,"p_concepto": string,"p_fecha": string,"p_origen": string }; Returns: number
                            },
@@ -2839,6 +2876,9 @@ isOneToOne: false
 "asignar_rol":
 { Args: { "p_email": string,"p_rol": number }; Returns: string
                            },
+"autorizar_descuento":
+{ Args: { "p_monto": number,"p_pin": string }; Returns: Json
+                           },
 "borrar_cuenta":
 { Args: { "p_id": number }; Returns: undefined
                            },
@@ -2853,6 +2893,9 @@ isOneToOne: false
                            },
 "cambiar_mascara_cuentas":
 { Args: { "p_mascara": (number)[] }; Returns: undefined
+                           },
+"cambiar_mi_pin":
+{ Args: { "p_pin": string }; Returns: undefined
                            },
 "cancelar_mi_pedido":
 { Args: { "p_comentario"?: string,"p_motivo"?: string,"p_pedido": number }; Returns: undefined
@@ -3152,6 +3195,9 @@ isOneToOne: false
 { Args: { "p_hasta": string }; Returns: {
               "codigo": string,"debe": number,"haber": number,"nombre": string,"saldo_acreedor": number,"saldo_deudor": number,"tipo": string
             }[]
+                           },
+"tengo_pin":
+{ Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "tienda_pagos":
 { Args: Record<PropertyKey, never>; Returns: Json

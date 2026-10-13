@@ -6,7 +6,7 @@ import Volver from "@/components/Volver";
 import Modulos from "./Modulos";
 
 export default async function PaginaModulos() {
-  const { supabase } = await exigir("equipo.administrar");
+  const { supabase } = await exigir("equipo.administrar", "equipo.modulos");
   const { data } = await supabase.from("modulos").select("clave, nombre, fijo, depende, activo");
   const porClave = new Map((data ?? []).map((m) => [m.clave, m]));
   // Los grupos son los del menú; cada parte con su estado de la base

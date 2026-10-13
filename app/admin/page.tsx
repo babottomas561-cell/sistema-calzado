@@ -16,7 +16,9 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
   const todas = puede(permisos, "ventas.ver_todas", "informes.ventas");   // ve el negocio entero
   const vende = puede(permisos, "ventas.registrar");
   const veStock = puede(permisos, "stock.ver");
-  const veCostos = puede(permisos, "costos.ver");
+  const veGanancia = puede(permisos, "costos.ver_ganancia");
+  const veValorStock = puede(permisos, "costos.ver_valor_stock");
+  const veProductos = puede(permisos, "costos.ver_precio_compra");
   const hoy = inicioDe("hoy"), mes = inicioDe("mes");
 
   // La base ya filtra: sin "ver todas", ventas devuelve solo las propias
@@ -58,8 +60,8 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
       { titulo: todas ? "Vendido en el mes" : "Vendiste en el mes", valor: pesos(facturadoMes),
         detalle: todas ? `${new Set(items.map((i) => i.venta_id)).size} ventas · ${numero(paresMes)} unidades` : `${(ventasMes.data ?? []).length} ventas` },
     ] : []),
-    ...(todas && veCostos ? [{ titulo: "Ganancia bruta del mes", valor: pesos(margenMes), detalle: facturadoMes ? `${Math.round((margenMes / facturadoMes) * 100)}% sobre lo vendido` : "—" }] : []),
-    ...(veStock ? [{ titulo: "Stock", valor: `${numero(paresStock)} unidades`, detalle: veCostos ? `${pesos(valorStock)} a costo` : `${bajos.length} para reponer` }] : []),
+    ...(todas && veGanancia ? [{ titulo: "Ganancia bruta del mes", valor: pesos(margenMes), detalle: facturadoMes ? `${Math.round((margenMes / facturadoMes) * 100)}% sobre lo vendido` : "—" }] : []),
+    ...(veStock ? [{ titulo: "Stock", valor: `${numero(paresStock)} unidades`, detalle: veValorStock ? `${pesos(valorStock)} a costo` : `${bajos.length} para reponer` }] : []),
   ];
 
   return (
@@ -96,7 +98,7 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
             <ul className="divide-y divide-gray-100 text-sm">
               {bajos.slice(0, 8).map((v) => (
                 <li key={v.variante_id} className="flex justify-between py-2">
-                  <Link href={veCostos ? `/admin/productos/${v.producto_id}` : `/admin/stock?q=${encodeURIComponent(v.nombre ?? "")}`} className="hover:underline">{v.nombre} · {v.talle} · {v.color}</Link>
+                  <Link href={veProductos ? `/admin/productos/${v.producto_id}` : `/admin/stock?q=${encodeURIComponent(v.nombre ?? "")}`} className="hover:underline">{v.nombre} · {v.talle} · {v.color}</Link>
                   <span className={`chip ${v.disponible === 0 ? "bg-red-100 text-error" : "bg-amber-100 text-alerta"}`}>{v.disponible === 0 ? "sin stock" : `quedan ${v.disponible}`}</span>
                 </li>
               ))}

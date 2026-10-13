@@ -7,7 +7,7 @@ import { puede } from "@/lib/permisos";
 import ListaProductos, { type FilaProducto } from "./ListaProductos";
 
 export default async function Productos({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const { permisos } = await exigir("costos.ver");
+  const { permisos } = await exigir("costos.ver_precio_compra");
   const { q = "" } = await searchParams;
   const supabase = await crearCliente();
   let consulta = supabase.from("productos").select("id, codigo, nombre, genero, precio_venta, activo, publicado_web, marcas(nombre), categorias(nombre), variantes(stock(cantidad))").order("nombre");

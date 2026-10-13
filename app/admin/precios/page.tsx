@@ -6,7 +6,7 @@ import Historial, { type Ajuste } from "./Historial";
 
 export default async function Precios() {
   const { supabase, permisos } = await exigir("precios.editar", "proveedores.gestionar", "compras.registrar");
-  const veCostos = permisos.includes("costos.ver");
+  const veCostos = permisos.includes("costos.ver_precio_compra");
   const puedeVenta = permisos.includes("precios.editar");
   const puedeCompra = veCostos && (permisos.includes("proveedores.gestionar") || permisos.includes("compras.registrar"));
 

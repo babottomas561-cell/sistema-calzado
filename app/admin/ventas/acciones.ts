@@ -63,3 +63,12 @@ export async function crearClienteRapido(nombre: string, telefono: string): Prom
   revalidatePath("/admin/clientes");
   return { cliente: data };
 }
+
+// Autoriza en la caja un descuento por encima del tope con el PIN de un encargado (la base verifica el PIN, lo limita a 5 intentos y deja la autorización 10 minutos)
+export async function autorizarDescuento(pin: string, monto: number): Promise<{ ok: boolean; autoriza?: string; error?: string }> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("autorizar_descuento", { p_pin: pin.trim(), p_monto: monto });
+  if (error) return { ok: false, error: error.message };
+  const r = data as { ok: boolean; autoriza?: string; error?: string; restantes?: number };
+  return r.ok ? { ok: true, autoriza: r.autoriza } : { ok: false, error: r.restantes !== undefined ? `${r.error}. Te quedan ${r.restantes} intentos` : r.error };
+}

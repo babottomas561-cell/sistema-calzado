@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BookUser, Check, ChevronDown, Eye, EyeOff, ExternalLink, KeyRound, LogOut, Menu as IconoMenu, PanelLeftClose, PanelLeftOpen, Plus, Search, SlidersHorizontal, Star, X } from "lucide-react";
+import { BookUser, Check, ChevronDown, Eye, EyeOff, ExternalLink, KeyRound, LockKeyhole, LogOut, Menu as IconoMenu, PanelLeftClose, PanelLeftOpen, Plus, Search, SlidersHorizontal, Star, X } from "lucide-react";
 import Logo from "@/components/Logo";
 import { puede } from "@/lib/permisos";
 import { GRUPOS, type Item } from "@/lib/menu";
@@ -173,6 +173,8 @@ export default function Menu({ version, logo, nombre, email, rolEquipo, permisos
             {personalizando ? <Check size={18} strokeWidth={2.2} /> : <SlidersHorizontal size={18} strokeWidth={1.8} />}<span className={compacto ? "md:hidden" : ""}>{personalizando ? "Listo" : "Personalizar mi menú"}</span></button>
           <a href="/" target="_blank" title={compacto ? "Ver la tienda" : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-600 hover:bg-gray-100 ${compacto ? "md:justify-center" : ""}`}>
             <ExternalLink size={18} strokeWidth={1.8} /><span className={compacto ? "md:hidden" : ""}>Ver la tienda</span></a>
+          {puede(permisos, "ventas.autorizar") && <Link href="/admin/mi-cuenta" onClick={() => setAbierto(false)} title={compacto ? "Mi PIN de encargado" : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-600 hover:bg-gray-100 ${compacto ? "md:justify-center" : ""}`}>
+            <LockKeyhole size={18} strokeWidth={1.8} /><span className={compacto ? "md:hidden" : ""}>Mi PIN de encargado</span></Link>}
           <Link href="/nueva-clave" onClick={() => setAbierto(false)} title={compacto ? "Cambiar contraseña" : undefined} className={`flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-600 hover:bg-gray-100 ${compacto ? "md:justify-center" : ""}`}>
             <KeyRound size={18} strokeWidth={1.8} /><span className={compacto ? "md:hidden" : ""}>Cambiar contraseña</span></Link>
           <div className={`flex items-center gap-3 px-3 py-2 ${compacto ? "md:flex-col md:px-0" : ""}`}>

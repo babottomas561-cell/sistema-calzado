@@ -16,7 +16,7 @@ type Por = keyof typeof POR;
 export default async function StockValorizado({ searchParams }: { searchParams: Promise<{ por?: string }> }) {
   const { permisos } = await exigir("informes.stock");
   // Sin "Ver costos" la base devuelve el costo vacío: se valoriza solo a precio de venta
-  const conCostos = permisos.includes("costos.ver");
+  const conCostos = permisos.includes("costos.ver_valor_stock");
   const { por: p = "rubro" } = await searchParams;
   const por = (p in POR ? p : "rubro") as Por;
   const supabase = await crearCliente();

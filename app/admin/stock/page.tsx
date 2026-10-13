@@ -11,7 +11,8 @@ const FILTROS = { todo: "Todo", bajo: "Para reponer", sin: "Sin stock" } as cons
 
 export default async function Stock({ searchParams }: { searchParams: Promise<{ filtro?: string; q?: string }> }) {
   const { permisos } = await exigir("stock.ver");
-  const veCostos = permisos.includes("costos.ver");   // sin el permiso, la base devuelve el costo vacío
+  const veCostos = permisos.includes("costos.ver_valor_stock");   // sin el permiso, la base devuelve el valor a costo vacío
+  const veProductos = permisos.includes("costos.ver_precio_compra");   // la ficha del producto trae precios de compra
   const { filtro: f = "todo", q = "" } = await searchParams;
   const filtro = (f in FILTROS ? f : "todo") as keyof typeof FILTROS;
   const supabase = await crearCliente();
@@ -62,7 +63,7 @@ export default async function Stock({ searchParams }: { searchParams: Promise<{ 
         {modelos.map((m) => (
           <section key={m.id} className="tarjeta">
             <div className="mb-3 flex items-start justify-between gap-3">
-              <Link href={veCostos ? `/admin/productos/${m.id}` : `/admin/stock?q=${encodeURIComponent(m.nombre ?? "")}`} className="min-w-0">
+              <Link href={veProductos ? `/admin/productos/${m.id}` : `/admin/stock?q=${encodeURIComponent(m.nombre ?? "")}`} className="min-w-0">
                 <div className="truncate font-semibold text-marca hover:underline">{m.nombre}</div>
                 <div className="text-xs text-texto-2"><span className="font-mono">{m.codigo}</span>{m.marca ? ` · ${m.marca}` : ""}</div>
               </Link>

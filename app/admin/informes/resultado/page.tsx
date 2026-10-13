@@ -23,7 +23,7 @@ export default async function Resultado({ searchParams }: { searchParams: Promis
   const periodo = (sp.periodo && sp.periodo in PERIODOS ? sp.periodo : "mes") as Periodo;
   const rango = rangoDe(periodo, diaArgentina(), sp.desde, sp.hasta);
   // Sin ver costos ni ventas no hay resultado que mostrar (la base devolvería todo vacío)
-  if (!permisos.includes("costos.ver") || !permisos.includes("informes.ventas"))
+  if (!permisos.includes("costos.ver_ganancia") || !permisos.includes("informes.ventas"))
     return <p className="tarjeta text-sm text-texto-2">El resultado necesita además los permisos «Ver costos» y «Ventas por período». Ver solo los <Link href="/admin/gastos" className="text-marca">gastos</Link>.</p>;
 
   const l = limites(rango);

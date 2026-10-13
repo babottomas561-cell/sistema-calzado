@@ -4,13 +4,14 @@ import { LayoutGrid, ScrollText, UserPlus } from "lucide-react";
 import { exigir } from "@/lib/exigir";
 import Personas from "./Personas";
 import Roles from "./Roles";
+import Matriz from "./Matriz";
 
 export default async function Equipo() {
-  const { supabase, user } = await exigir("equipo.administrar");
+  const { supabase, user } = await exigir("equipo.administrar", "equipo.personas", "equipo.roles", "equipo.modulos", "equipo.cuentas");
   const [{ data: personas }, { data: roles }, { data: permisos }] = await Promise.all([
     supabase.rpc("equipo"),
     supabase.from("roles").select("id, nombre, descripcion, todos, permisos, descuento_max_pct, activo").order("todos", { ascending: false }).order("nombre"),
-    supabase.from("permisos").select("codigo, grupo, nombre, descripcion").order("orden"),
+    supabase.from("permisos").select("codigo, grupo, nombre, descripcion, padre").order("orden"),
   ]);
   const listaRoles = (roles ?? []).map((r) => ({ ...r, descuento_max_pct: r.descuento_max_pct === null ? null : Number(r.descuento_max_pct) }));
   return (
@@ -25,6 +26,7 @@ export default async function Equipo() {
         <Link href="/admin/equipo/cuentas" className="boton-sec"><UserPlus size={16} strokeWidth={1.8} /> Cuentas e invitaciones</Link>
       </div>
       <Personas personas={(personas ?? []).map((p) => ({ ...p, rol_id: Number(p.rol_id) }))} roles={listaRoles} yo={user!.id} />
+      <Matriz roles={listaRoles.filter((r) => r.activo)} permisos={permisos ?? []} />
       <Roles roles={listaRoles} permisos={permisos ?? []} usados={[...new Set((personas ?? []).map((p) => Number(p.rol_id)))]} />
     </div>
   );

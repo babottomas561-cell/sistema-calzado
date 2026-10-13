@@ -182,6 +182,22 @@ Cada etapa: migración nueva, pruebas pgTAP (incluida una que verifique que un r
   (mismo costo, entre depósitos de la misma empresa: sin efecto; entre empresas distintas: se resuelve con el contador, queda marcado).
 - Pantalla `/admin/transferencias` (módulo propio, apagable) y etiquetas/lista de preparación para imprimir.
 
-## 13. Qué sigue
+## 13. Avance
 
-Etapa 1: catálogo único de módulos + `_modulo_activo()` + bloqueo real + dependencias + chequeo de datos vigentes al apagar.
+- **Etapa 1 (módulos con bloqueo): hecha y publicada.**
+- **Etapa 2 (bitácora): hecha** (migración `20261018300000_bitacora`).
+- **Etapa 3 (permisos finos y PIN): hecha** (migraciones `20261018400000_permisos_finos` y `20261018500000_pin_encargado`):
+  - Padre → hijos: quien tiene el padre tiene todos sus hijos (nadie pierde nada); un rol nuevo puede tener solo algunos. `tiene_permiso()` y
+    `mi_equipo()` los expanden. Hechos: **costos** (`ver_precio_compra`, `ver_ganancia`, `ver_valor_stock`), **tablas** (`catalogo`, `medios_pago`,
+    `depositos`) y **equipo** (`personas`, `roles`, `modulos`, `cuentas`; integraciones, dominio y fiscal siguen con el padre).
+  - Las vistas, políticas y funciones pasaron al permiso fino que protegen (reescritas con una migración controlada y probada).
+  - Pantalla de Equipo: hijos anidados bajo su padre, «¿qué ve este rol?» y matriz de permisos por rol.
+  - **PIN de encargado**: permiso `ventas.autorizar` (Encargado), PIN con hash en `pines_autorizacion` (nadie lo lee), `autorizar_descuento()`
+    (5 intentos / 10 min), autorización de 10 minutos y de un solo uso consumida por `registrar_venta`, con registro en la bitácora. En la caja
+    aparece al pasar el tope; el PIN se pone en Mi PIN de encargado (`/admin/mi-cuenta`).
+  - **Diferido a propósito**: `productos.*` (crear/editar/publicar/fotos) porque exige una vista de productos sin costos (hoy la tabla `productos` solo la
+    lee quien ve precios de compra); `clientes.notas_internas`, `*.exportar` y `ventas.reimprimir` (todavía no existen esas funciones);
+    «Probar como…» (vista previa real con datos: hoy hay «¿qué ve este rol?», que muestra el menú); tope y PIN para devoluciones y presupuestos
+    (hoy solo descuentos de la caja).
+
+Siguen: etapa 4 (Configuración como entrada única con buscador), 5 (sucursales, alcance y transferencias), 6 (plantillas por rubro y «Primer día»).

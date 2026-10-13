@@ -8,13 +8,13 @@
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowLeftRight, BadgePercent, Banknote, ChevronDown, CircleAlert, CreditCard, Gift, Minus, Plus, Printer, ScanBarcode, ShoppingBag, Smartphone,
+  ArrowLeftRight, BadgePercent, Banknote, ChevronDown, CircleAlert, CreditCard, Gift, KeyRound, Minus, Plus, Printer, ScanBarcode, ShieldCheck, ShoppingBag, Smartphone,
   SplitSquareHorizontal, Trash2, User, UserPlus, Wallet, X, type LucideIcon,
 } from "lucide-react";
 import SelectorVariantes, { type FilaStock } from "@/components/SelectorVariantes";
 import { pesos, porcentaje } from "@/lib/formato";
 import { billetesSugeridos, calcularCobro, opcionesRedondeo, pagosParaLaBase, REPARTOS, totalCon, vuelto, type LineaPago, type MedioCobro } from "@/lib/cobro";
-import { cotizarMostrador, crearClienteRapido, registrarVenta, type CotizacionMostrador } from "../acciones";
+import { autorizarDescuento, cotizarMostrador, crearClienteRapido, registrarVenta, type CotizacionMostrador } from "../acciones";
 
 type Item = FilaStock & { cantidad: number; precio: number };
 type Cliente = { id: number; nombre: string; telefono: string | null; saldo: number };
@@ -65,6 +65,10 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const [clienteId, setClienteId] = useState<number | null>(null);
   const [buscaCliente, setBuscaCliente] = useState("");
   const [descuento, setDescuento] = useState(0);
+  const [autorizado, setAutorizado] = useState<{ monto: number; quien: string } | null>(null);   // descuento sobre el tope autorizado con el PIN de un encargado
+  const [pin, setPin] = useState("");
+  const [pinError, setPinError] = useState("");
+  const [validandoPin, setValidandoPin] = useState(false);
   const [abierto, setAbierto] = useState<"cliente" | "descuento" | "canal" | null>(null);
   const [panel, setPanel] = useState(false);   // en el celular: el cobro a pantalla completa
   const [estado, accion, cargando] = useActionState(registrarVenta, {});
@@ -102,7 +106,8 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const conPromos = Math.max(subtotal - promos, 0);
   const neto = Math.max(conPromos - descuento, 0);
   const topeDescuento = descuentoMax === null ? null : Math.floor((conPromos * descuentoMax) / 100);
-  const pasaTope = topeDescuento !== null && descuento > topeDescuento;
+  const autorizadoOk = !!autorizado && descuento <= autorizado.monto;
+  const pasaTope = topeDescuento !== null && descuento > topeDescuento && !autorizadoOk;
 
   const cobro = calcularCobro(neto, factor, lineas, medios, multiplo);
   const sinRedondeo = calcularCobro(neto, factor, lineas, medios, null);
@@ -155,6 +160,13 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
     return clientes.filter((c) => c.nombre.toLowerCase().includes(q) || (c.telefono ?? "").replace(/\D/g, "").includes(q.replace(/\D/g, "") || "~")).slice(0, 6);
   }, [buscaCliente, clientes]);
 
+  const pedirAutorizacion = async () => {
+    setValidandoPin(true); setPinError("");
+    const r = await autorizarDescuento(pin, descuento);
+    setValidandoPin(false);
+    if (!r.ok) { setPinError(r.error ?? "No se pudo autorizar"); return; }
+    setAutorizado({ monto: descuento, quien: r.autoriza ?? "un encargado" }); setPin("");
+  };
   const crearCliente = async () => {
     setCreando(true); setAltaError("");
     const r = await crearClienteRapido(altaNombre, altaTelefono);
@@ -293,7 +305,20 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                       <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-texto-2">$</span>
                       <input type="number" inputMode="numeric" min={0} value={descuento || ""} placeholder="Otro monto" onChange={(e) => setDescuento(Math.max(0, Number(e.target.value)))} className={`campo pl-7 ${pasaTope ? "border-error" : ""}`} aria-label="Descuento en pesos" />
                     </div>
-                    {topeDescuento !== null && <p className={`text-xs ${pasaTope ? "font-semibold text-error" : "text-texto-2"}`}>Tu tope es {descuentoMax} % ({pesos(topeDescuento)}){pasaTope ? ": para más, pedíselo a un encargado" : ""}</p>}
+                    {topeDescuento !== null && <p className={`text-xs ${pasaTope ? "font-semibold text-error" : "text-texto-2"}`}>Tu tope es {descuentoMax} % ({pesos(topeDescuento)}){pasaTope ? ": para más, pedí la autorización de un encargado con su PIN" : ""}</p>}
+                    {topeDescuento !== null && descuento > topeDescuento && autorizadoOk && autorizado && (
+                      <p className="flex items-center gap-1.5 rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-ok"><ShieldCheck size={16} /> Autorizado por {autorizado.quien} hasta {pesos(autorizado.monto)}</p>
+                    )}
+                    {pasaTope && (
+                      <div className="space-y-1.5 rounded-lg border border-borde p-3">
+                        <label htmlFor="pin-encargado" className="flex items-center gap-1.5 text-xs font-semibold text-texto-2"><KeyRound size={14} /> PIN del encargado</label>
+                        <div className="flex gap-2">
+                          <input id="pin-encargado" type="password" inputMode="numeric" autoComplete="off" maxLength={8} value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))} className="campo h-10 flex-1 tabular-nums tracking-widest" placeholder="••••" />
+                          <button type="button" onClick={pedirAutorizacion} disabled={validandoPin || pin.length < 4} className="boton min-h-10">{validandoPin ? "Verificando…" : "Autorizar"}</button>
+                        </div>
+                        {pinError && <p role="alert" className="text-xs font-medium text-error">{pinError}</p>}
+                      </div>
+                    )}
                   </div>
                 </div>}
                 {abierto === "canal" && <div>
