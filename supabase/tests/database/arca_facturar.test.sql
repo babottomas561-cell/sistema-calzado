@@ -88,7 +88,7 @@ update datos_legales set cuit = '20-12345678-6', razon_social = 'Mi Tienda SRL',
 update integraciones set sitio_url = 'https://tienda.test', arca_cert_homologacion = 'CERT', arca_cert_homologacion_vence = now() + interval '2 years',
   arca_clave_vault_id = vault.create_secret('LLAVE', 'arca_prueba_' || gen_random_uuid()) where unica;
 update clientes set documento = '30.123.456' where nombre = 'María González';
-select plan(54);
+select plan(58);
 
 set local role authenticated;
 select prueba.como_admin();
@@ -222,6 +222,21 @@ select is((select count(*) from facturas where venta_id = prueba.id('vt'))::int,
 insert into prueba.ids values ('ve', prueba.vender(prueba.var(1), 1, 7000));
 set constraints all immediate; set constraints all deferred;
 select is(prueba.f(prueba.id('ve')) is null or (prueba.f(prueba.id('ve'))).id is null, true, 'en efectivo, no se crea sola');
+
+-- ── Permisos por rol: quien factura pero no puede vender sin factura, factura todo ──
+reset role; update roles set permisos = array_remove(permisos, 'ventas.sin_factura') where nombre = 'Vendedor'; set local role authenticated;
+select prueba.como_vendedora();
+select is(facturacion_caja() ->> 'sin_factura', 'false', 'la caja sabe que la vendedora no puede vender sin factura');
+insert into prueba.ids values ('vs', prueba.vender(prueba.var(1), 1, 6000));
+set constraints all immediate; set constraints all deferred;
+select is((prueba.f(prueba.id('vs'))).estado, 'pendiente', 'su venta en efectivo queda con factura igual (la base la crea)');
+reset role; update roles set permisos = array_remove(permisos, 'facturas.emitir') where nombre = 'Vendedor'; set local role authenticated;
+select prueba.como_vendedora();
+select is(facturacion_caja() ->> 'puede', 'false', 'sin «Emitir facturas», la caja no muestra nada de factura');
+insert into prueba.ids values ('vn', prueba.vender(prueba.var(1), 1, 6000));
+set constraints all immediate; set constraints all deferred;
+select is(prueba.f(prueba.id('vn')) is null or (prueba.f(prueba.id('vn'))).id is null, true, 'y su venta sale sin factura');
+select prueba.como_admin();
 
 -- ── Apagada ──
 select arca_activar(false);
