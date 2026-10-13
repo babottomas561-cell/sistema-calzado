@@ -1,19 +1,20 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Boxes, Receipt, Scale, type LucideIcon } from "lucide-react";
+import { Boxes, Receipt, Scale, Users, type LucideIcon } from "lucide-react";
 
-const PESTANAS: { href: string; texto: string; icono: LucideIcon; permiso: string }[] = [
-  { href: "/admin/informes/ventas", texto: "Ventas", icono: Receipt, permiso: "informes.ventas" },
-  { href: "/admin/informes/stock", texto: "Stock valorizado", icono: Boxes, permiso: "informes.stock" },
-  { href: "/admin/informes/resultado", texto: "Resultado", icono: Scale, permiso: "gastos.gestionar" },
+const PESTANAS: { href: string; texto: string; icono: LucideIcon; permisos: string[] }[] = [
+  { href: "/admin/informes/ventas", texto: "Ventas", icono: Receipt, permisos: ["informes.ventas"] },
+  { href: "/admin/informes/stock", texto: "Stock valorizado", icono: Boxes, permisos: ["informes.stock"] },
+  { href: "/admin/informes/clientes", texto: "Clientes", icono: Users, permisos: ["informes.ventas", "clientes.ver"] },
+  { href: "/admin/informes/resultado", texto: "Resultado", icono: Scale, permisos: ["gastos.gestionar"] },
 ];
 
 export default function Pestanas({ permisos }: { permisos: string[] }) {
   const ruta = usePathname();
   return (
     <nav className="flex gap-1 overflow-x-auto border-b border-borde">
-      {PESTANAS.filter((t) => permisos.includes(t.permiso)).map(({ href, texto, icono: Icono }) => {
+      {PESTANAS.filter((t) => t.permisos.every((p) => permisos.includes(p))).map(({ href, texto, icono: Icono }) => {
         const activa = ruta.startsWith(href);
         return (
           <Link key={href} href={href} aria-current={activa ? "page" : undefined}

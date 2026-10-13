@@ -48,7 +48,7 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
     leerTodo((a, b) => supabase.from("v_hechos_ventas")
       .select("id, venta_id, dia, cantidad, importe, importe_neto, margen_neto, canal, rubro, marca, articulo, modelo, talle, talle_orden, escala, temporada, linea, genero, color, cliente, cliente_codigo, vendedor_id, vendedor, promocion_id, promocion, descuento_promo")
       .gte("fecha", l.gte).lt("fecha", l.lt).order("id").range(a, b)),
-    leerTodo((a, b) => supabase.from("v_hechos_ventas").select("id, venta_id, cantidad, importe_neto, margen_neto")
+    leerTodo((a, b) => supabase.from("v_hechos_ventas").select("id, venta_id, dia, cantidad, importe_neto, margen_neto")
       .gte("fecha", la.gte).lt("fecha", la.lt).order("id").range(a, b)),
     // Medio de pago va por pago (una venta puede pagarse con dos), no por artículo
     por === "medio" ? leerTodo((a, b) => supabase.from("pagos").select("id, venta_id, monto, ajuste, medios_pago(nombre), ventas!inner(fecha, anulada_en)")
@@ -71,12 +71,23 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
   const puntos = new Map<string, Punto & { ids: Set<number> }>();
   for (const d of diasDe(rango)) {
     const k = porMes ? d.slice(0, 7) : d;
-    if (!puntos.has(k)) puntos.set(k, { clave: k, etiqueta: porMes ? `${MESES[Number(d.slice(5, 7)) - 1]} ${d.slice(2, 4)}` : diaCorto(d), total: 0, ventas: 0, unidades: 0, ids: new Set() });
+    if (!puntos.has(k)) puntos.set(k, { clave: k, etiqueta: porMes ? `${MESES[Number(d.slice(5, 7)) - 1]} ${d.slice(2, 4)}` : diaCorto(d), total: 0, ventas: 0, unidades: 0, ganancia: 0, ids: new Set() });
   }
   for (const i of items) {
     const p = puntos.get(porMes ? (i.dia ?? "").slice(0, 7) : i.dia ?? "");
     if (!p) continue;
-    p.total += Number(i.importe_neto ?? 0); p.unidades += i.cantidad ?? 0; if (i.venta_id) p.ids.add(i.venta_id); p.ventas = p.ids.size;
+    p.total += Number(i.importe_neto ?? 0); p.ganancia += Number(i.margen_neto ?? 0); p.unidades += i.cantidad ?? 0; if (i.venta_id) p.ids.add(i.venta_id); p.ventas = p.ids.size;
+  }
+  const puntosAnteriores = new Map<string, Punto & { ids: Set<number> }>();
+  const diasAnteriores = diasDe(anterior);
+  for (const d of diasAnteriores) {
+    const k = porMes ? d.slice(0, 7) : d;
+    if (!puntosAnteriores.has(k)) puntosAnteriores.set(k, { clave: k, etiqueta: porMes ? `${MESES[Number(d.slice(5, 7)) - 1]} ${d.slice(2, 4)}` : diaCorto(d), total: 0, ventas: 0, unidades: 0, ganancia: 0, ids: new Set() });
+  }
+  for (const i of itemsAnt) {
+    const p = puntosAnteriores.get(porMes ? (i.dia ?? "").slice(0, 7) : i.dia ?? "");
+    if (!p) continue;
+    p.total += Number(i.importe_neto ?? 0); p.ganancia += Number(i.margen_neto ?? 0); p.unidades += i.cantidad ?? 0; if (i.venta_id) p.ids.add(i.venta_id); p.ventas = p.ids.size;
   }
 
   // ── Desglose ──
@@ -117,6 +128,7 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
   const columnas = esMedio ? [POR[por], "Ventas", "Cobrado"] : [POR[por], "Unidades", "Ventas", "Vendido", ...(conCostos ? ["Ganancia", "Margen"] : [])];
   const filas: FilaDesglose[] = lista.map(([k, g]) => ({
     clave: k || "—", etiqueta: g.etiqueta, principal: g.vendido, principalTexto: pesos(g.vendido),
+    buscarTexto: g.etiqueta, ordenValores: esMedio ? [g.ventas.size, g.vendido] : [g.unidades, g.ventas.size, g.vendido, ...(conCostos ? [g.ganancia, margenPct(g.ganancia, g.vendido)] : [])],
     celdas: esMedio ? [numero(g.ventas.size), pesos(g.vendido)]
       : [numero(g.unidades), numero(g.ventas.size), pesos(g.vendido), ...(conCostos ? [pesos(g.ganancia), `${margenPct(g.ganancia, g.vendido)} %`] : [])],
     detalle: esMedio ? `${g.ventas.size} venta${g.ventas.size === 1 ? "" : "s"}`
@@ -146,7 +158,7 @@ export default async function InformeVentas({ searchParams }: { searchParams: Pr
         ))}
       </div>
 
-      <GraficoVentas titulo={porMes ? "Vendido por mes" : "Vendido por día"} puntos={[...puntos.values()]} />
+      <GraficoVentas titulo={porMes ? "Evolución por mes" : "Evolución por día"} puntos={[...puntos.values()]} anteriores={[...puntosAnteriores.values()]} conCostos={conCostos} />
 
       <Agrupar base="/admin/informes/ventas" opciones={POR} actual={por} extra={params} />
 
