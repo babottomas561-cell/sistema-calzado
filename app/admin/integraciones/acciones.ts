@@ -4,6 +4,7 @@
 import { revalidatePath } from "next/cache";
 import { crearCliente } from "@/lib/supabase/server";
 import { leerMonto } from "@/lib/formato";
+import { limpiarClaveGmail, modoDe } from "@/lib/correo";
 import { diagnosticar, type Diagnostico, type Registro } from "@/lib/dns";
 
 type Estado = { error?: string; ok?: string };
@@ -216,12 +217,16 @@ export async function guardarHosting(_: Estado, f: FormData): Promise<Estado> {
   return { ok: "Conexión técnica guardada" };
 }
 
+// La contraseña de aplicación de Google se muestra en grupos de 4 con espacios: se guarda junta
+const limpiarClave = (clave: string | undefined, host: string | undefined) => (clave && modoDe(host) === "gmail" ? limpiarClaveGmail(clave) : clave);
+
 // Correo (SMTP del local): se guarda, y la base se lo pasa a Supabase Auth junto con las plantillas con el nombre de la tienda
 export async function guardarCorreo(_: Estado, f: FormData): Promise<Estado> {
   const supabase = await crearCliente();
   const { error } = await supabase.rpc("guardar_correo", {
     p_host: texto(f, "host", 100), p_puerto: Number(f.get("puerto")) || undefined, p_usuario: texto(f, "usuario", 200),
-    p_clave: texto(f, "clave", 300), p_email: texto(f, "email", 200), p_nombre: texto(f, "nombre", 100),
+    p_clave: limpiarClave(texto(f, "clave", 300), texto(f, "host", 100)), p_email: texto(f, "email", 200), p_nombre: texto(f, "nombre", 100),
+    p_sitio_url: sitio(),   // sin dominio propio es la de Vercel; la base solo la guarda si todavía no hay una (los mails de comprobantes por Gmail la usan)
   });
   if (error) return { error: error.message };
   revalidatePath("/admin/integraciones", "layout");

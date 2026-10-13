@@ -33,7 +33,7 @@ create function prueba.responder(p_url text, p_status int, p_cuerpo jsonb) retur
   insert into prueba.respuestas (metodo, url, status, cuerpo) values ('POST', p_url, p_status, p_cuerpo) $$;
 create function prueba.llamadas_a(p_url text) returns bigint language sql stable security definer set search_path = public as $$ select count(*) from prueba.llamadas where url = p_url $$;
 grant execute on all functions in schema prueba to anon, authenticated;
-select plan(48);
+select plan(67);
 
 -- ── Una venta con cliente, descuento y efectivo ──
 set local role authenticated;
@@ -97,8 +97,8 @@ select matches(comprobante_de('devolucion', prueba.id('devolucion')) ->> 'leyend
 select throws_ok($$ select comprobante_de('factura', 1) $$, 'Ese tipo de comprobante no existe', 'solo esos tres tipos');
 
 -- ── Mail (Resend simulado) ──
-select is(comprobante_mail_disponible() ->> 'disponible', 'false', 'sin Resend conectado, el mail no está disponible');
-select matches(comprobante_mail_disponible() ->> 'motivo', 'conectar Resend', 'y dice qué falta');
+select is(comprobante_mail_disponible() ->> 'disponible', 'false', 'sin correo conectado, el mail no está disponible');
+select matches(comprobante_mail_disponible() ->> 'motivo', 'conectar el correo', 'y dice qué falta');
 reset role;
 select prueba.config_mail('smtp.resend.com', null);
 set local role authenticated; select prueba.como_admin();
@@ -120,9 +120,9 @@ set local role authenticated; select prueba.como_admin();
 select is(enviar_comprobante_mail('venta', prueba.id('venta'), 'otro@correo.com') ->> 'error', 'El dominio milocal.com no está verificado', 'si Resend rechaza, se explica por qué (sin lanzar un error)');
 select is((select estado from comprobante_envios where canal = 'mail' order by id desc limit 1), 'error', 'y queda registrado como error');
 reset role;
-select prueba.config_mail('smtp.otro.com', 'https://milocal.com.ar');
+select prueba.config_mail(null, 'https://milocal.com.ar');
 set local role authenticated; select prueba.como_admin();
-select throws_like($$ select enviar_comprobante_mail('venta', prueba.id('venta'), 'otro@correo.com') $$, 'Para mandar comprobantes por mail hay que conectar Resend%', 'sin Resend conectado, avisa qué falta');
+select throws_like($$ select enviar_comprobante_mail('venta', prueba.id('venta'), 'otro@correo.com') $$, 'Para mandar comprobantes por mail hay que conectar el correo%', 'sin correo conectado, avisa qué falta');
 
 -- La vendedora también ve si está disponible (no trae ningún dato de la conexión); un cliente de la tienda, no
 select prueba.como_vendedora();
@@ -135,6 +135,59 @@ select prueba.como_admin();
 select registrar_envio_comprobante('venta', prueba.id('venta'), 'whatsapp', '+54 9 381 555-1234');
 select is((select estado from comprobante_envios where canal = 'whatsapp' order by id desc limit 1), 'abierto', 'WhatsApp queda como «abierto» (no se sabe si lo mandó)');
 select throws_ok($$ select registrar_envio_comprobante('venta', prueba.id('venta'), 'fax', null) $$, 'Canal inválido', 'solo WhatsApp o el link');
+
+-- ── Mail por Gmail (u otro servidor SMTP): lo manda la app, con el pedido firmado por la base ──
+select prueba.como_admin();
+reset role;
+create function prueba.firma_ultima() returns text language sql stable security definer set search_path = public as $$
+  select cabeceras ->> 'x-firma' from prueba.llamadas where url like '%/api/correo/enviar' order by id desc limit 1 $$;
+create function prueba.huella_ultima() returns text language sql stable security definer set search_path = public, extensions as $$
+  select encode(digest(convert_to(cuerpo, 'UTF8'), 'sha256'), 'hex') from prueba.llamadas where url like '%/api/correo/enviar' order by id desc limit 1 $$;
+create function prueba.marca_ultima() returns bigint language sql stable security definer set search_path = public as $$
+  select (cuerpo::jsonb ->> 'marca')::bigint from prueba.llamadas where url like '%/api/correo/enviar' order by id desc limit 1 $$;
+create function prueba.sitio() returns text language sql stable security definer set search_path = public as $$ select sitio_url from integraciones $$;
+grant execute on all functions in schema prueba to anon, authenticated;
+select prueba.config_mail('smtp.gmail.com', 'https://milocal.com.ar');
+select prueba.responder('https://milocal.com.ar/api/correo/enviar', 200, '{"ok":true}');
+set local role authenticated; select prueba.como_admin();
+select is(comprobante_mail_disponible() ->> 'disponible', 'true', 'con Gmail y el sitio cargados, el mail está disponible');
+select is(enviar_comprobante_mail('venta', prueba.id('venta'), 'cliente@correo.com') ->> 'ok', 'true', 'por Gmail el mail se manda');
+select is(prueba.llamadas_a('https://milocal.com.ar/api/correo/enviar'), 1::bigint, 'sale por la ruta de la app');
+select is((select estado from comprobante_envios where canal = 'mail' order by id desc limit 1), 'enviado', 'y queda registrado');
+select matches(prueba.firma_ultima(), '^[0-9a-f]{64}$', 'el pedido a la app lleva una firma');
+-- La app le pregunta a la base si el pedido es suyo (sin sesión: es lo que hace la ruta)
+set local role anon;
+select is(correo_verificar(prueba.huella_ultima(), prueba.marca_ultima(), prueba.firma_ultima()), true, 'la base reconoce su propia firma');
+select is(correo_verificar(prueba.huella_ultima(), prueba.marca_ultima(), repeat('0', 64)), false, 'una firma inventada no sirve');
+select is(correo_verificar(repeat('a', 64), prueba.marca_ultima(), prueba.firma_ultima()), false, 'ni cambiando el contenido del mail');
+select is(correo_verificar(prueba.huella_ultima(), prueba.marca_ultima() - 1000, prueba.firma_ultima()), false, 'ni un pedido viejo');
+select is(correo_verificar('corto', prueba.marca_ultima(), prueba.firma_ultima()), false, 'ni una huella mal formada');
+reset role;
+select prueba.responder('https://milocal.com.ar/api/correo/enviar', 200, '{"ok":false,"error":"El servidor de correo rechazó el usuario o la contraseña."}');
+set local role authenticated; select prueba.como_admin();
+select is(enviar_comprobante_mail('venta', prueba.id('venta'), 'otro@correo.com') ->> 'error', 'El servidor de correo rechazó el usuario o la contraseña.', 'si el servidor rechaza, se explica por qué');
+select is((select estado from comprobante_envios where canal = 'mail' order by id desc limit 1), 'error', 'y queda registrado como error');
+reset role;
+select prueba.responder('https://milocal.com.ar/api/correo/enviar', 401, '{"ok":false,"error":"Pedido sin firma válida"}');
+set local role authenticated; select prueba.como_admin();
+select is(enviar_comprobante_mail('venta', prueba.id('venta'), 'otro@correo.com') ->> 'error', 'Pedido sin firma válida', 'si la app no reconoce la firma, lo dice');
+reset role;
+select prueba.config_mail('smtp.gmail.com', 'https://sin-ruta.example.com');
+set local role authenticated; select prueba.como_admin();
+select matches(enviar_comprobante_mail('venta', prueba.id('venta'), 'otro@correo.com') ->> 'error', 'La app respondió 404', 'si la ruta no existe en el sitio, no se cuelga');
+reset role;
+select prueba.config_mail('smtp.gmail.com', null);
+set local role authenticated; select prueba.como_admin();
+select matches(comprobante_mail_disponible() ->> 'motivo', 'dirección del sitio', 'sin dirección del sitio, el mail por Gmail no está disponible');
+-- guardar_correo guarda la dirección del sitio solo si no había una
+select guardar_correo(p_sitio_url => 'https://tienda.vercel.app');
+select is(prueba.sitio(), 'https://tienda.vercel.app', 'al guardar el correo queda la dirección del sitio (sin dominio propio, la de Vercel)');
+select guardar_correo(p_sitio_url => 'https://otra.com');
+select is(prueba.sitio(), 'https://tienda.vercel.app', 'y no se pisa si ya había una');
+select is(estado_correo() ->> 'sitio', 'true', 'la pantalla sabe que hay dirección del sitio');
+select prueba.como_vendedora();
+select throws_ok($$ select guardar_correo(p_host => 'smtp.gmail.com') $$, 'Solo el administrador configura el correo', 'la vendedora no toca el correo');
+select prueba.como_admin();
 
 select * from finish();
 rollback;

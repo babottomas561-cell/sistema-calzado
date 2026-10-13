@@ -204,7 +204,10 @@ una API de Next.** Lo que ya pisamos:
     `_nuevo_usuario`. El SMTP del local (Resend) está en `integraciones` (regla 16); `cuentas_aplicar()` le pasa a Supabase Auth,
     por su API, el SMTP, `mailer_autoconfirm`, las reglas de contraseña y las plantillas (`_correo_plantilla`, con el nombre de la
     tienda). Los links de los mails van a `/auth/confirmar?token_hash=…&type=…` (`app/auth/confirmar/route.ts`, `verifyOtp`): andan
-    desde otro dispositivo. Hay reenviar mail, «Olvidé mi contraseña» (`/olvide-clave`, `/nueva-clave`). Nunca usar `disable_signup`
+    desde otro dispositivo. Hay reenviar mail, «Olvidé mi contraseña» (`/olvide-clave`, `/nueva-clave`). **El correo es a elección** (`lib/correo.ts`): dominio propio con
+    Resend (API desde la base), **Gmail del local** con contraseña de aplicación (sin dominio) u otro SMTP; con Gmail u otro, los comprobantes los manda la ruta
+    `/api/correo/enviar` (nodemailer) con el pedido **firmado** por la base (`_correo_enviar`, HMAC con `integraciones.correo_secreto`, que nace con la instalación: la
+    ruta lo verifica desde otra conexión con `correo_verificar`). Sin dominio propio, `sitio_url` es la de Vercel (la guarda `guardar_correo`). Nunca usar `disable_signup`
     de Supabase (frena también las invitaciones): el cierre es el trigger. Manual: `docs/integraciones/correo.md`.
 
 20. **Legales** (`/admin/tienda/legales`, `tienda.editar`; `/admin/arrepentimientos`, `pedidos.gestionar`): `datos_legales` (razón
