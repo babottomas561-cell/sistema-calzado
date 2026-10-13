@@ -149,6 +149,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"arca_llamadas": {
+                  Row: {
+                    "ambiente": string,"creado_en": string,"detalle": string | null,"id": number,"metodo": string,"ms": number | null,"ok": boolean,"servicio": string,"status": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "ambiente": string,"creado_en"?: string,"detalle"?: string | null,"id"?: never,"metodo": string,"ms"?: number | null,"ok": boolean,"servicio": string,"status"?: number | null
+                  }
+                  Update: {
+                    "ambiente"?: string,"creado_en"?: string,"detalle"?: string | null,"id"?: never,"metodo"?: string,"ms"?: number | null,"ok"?: boolean,"servicio"?: string,"status"?: number | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"arrepentimientos": {
                   Row: {
                     "codigo": string,"comprobante": string | null,"creado_en": string,"detalle": string | null,"email": string,"estado": string,"id": number,"nombre": string,"pedido_id": number | null,"resolucion": string | null,"resuelto_en": string | null,"resuelto_por": string | null,"telefono": string | null
@@ -321,6 +335,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"configuracion_fiscal": {
+                  Row: {
+                    "activa": boolean,"actualizado_en": string,"actualizado_por": string | null,"alicuota_por_defecto": number,"ambiente": string,"iva_contenido_en_c": string,"modo": string,"pedidos_al_cobrar": string,"serie_por_defecto": string,"umbral_identificacion": number,"unica": boolean
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activa"?: boolean,"actualizado_en"?: string,"actualizado_por"?: string | null,"alicuota_por_defecto"?: number,"ambiente"?: string,"iva_contenido_en_c"?: string,"modo"?: string,"pedidos_al_cobrar"?: string,"serie_por_defecto"?: string,"umbral_identificacion"?: number,"unica"?: boolean
+                  }
+                  Update: {
+                    "activa"?: boolean,"actualizado_en"?: string,"actualizado_por"?: string | null,"alicuota_por_defecto"?: number,"ambiente"?: string,"iva_contenido_en_c"?: string,"modo"?: string,"pedidos_al_cobrar"?: string,"serie_por_defecto"?: string,"umbral_identificacion"?: number,"unica"?: boolean
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"configuracion_gastos": {
                   Row: {
                     "dolar": number,"dolar_actualizado": string,"id": boolean,"wa_precio_authentication": number,"wa_precio_marketing": number,"wa_precio_utility": number
@@ -427,14 +455,14 @@ isOneToOne: false
                   ]
                 },"datos_legales": {
                   Row: {
-                    "actualizado_en": string,"actualizado_por": string | null,"condicion_iva": string | null,"cuit": string | null,"defensa_consumidor_url": string,"domicilio_legal": string | null,"email_contacto": string | null,"jurisdiccion": string,"razon_social": string | null,"telefono_contacto": string | null,"unica": boolean
+                    "actualizado_en": string,"actualizado_por": string | null,"condicion_iva": string | null,"cuit": string | null,"defensa_consumidor_url": string,"domicilio_legal": string | null,"email_contacto": string | null,"ingresos_brutos": string | null,"inicio_actividades": string | null,"jurisdiccion": string,"razon_social": string | null,"telefono_contacto": string | null,"unica": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"actualizado_por"?: string | null,"condicion_iva"?: string | null,"cuit"?: string | null,"defensa_consumidor_url"?: string,"domicilio_legal"?: string | null,"email_contacto"?: string | null,"jurisdiccion"?: string,"razon_social"?: string | null,"telefono_contacto"?: string | null,"unica"?: boolean
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"condicion_iva"?: string | null,"cuit"?: string | null,"defensa_consumidor_url"?: string,"domicilio_legal"?: string | null,"email_contacto"?: string | null,"ingresos_brutos"?: string | null,"inicio_actividades"?: string | null,"jurisdiccion"?: string,"razon_social"?: string | null,"telefono_contacto"?: string | null,"unica"?: boolean
                   }
                   Update: {
-                    "actualizado_en"?: string,"actualizado_por"?: string | null,"condicion_iva"?: string | null,"cuit"?: string | null,"defensa_consumidor_url"?: string,"domicilio_legal"?: string | null,"email_contacto"?: string | null,"jurisdiccion"?: string,"razon_social"?: string | null,"telefono_contacto"?: string | null,"unica"?: boolean
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"condicion_iva"?: string | null,"cuit"?: string | null,"defensa_consumidor_url"?: string,"domicilio_legal"?: string | null,"email_contacto"?: string | null,"ingresos_brutos"?: string | null,"inicio_actividades"?: string | null,"jurisdiccion"?: string,"razon_social"?: string | null,"telefono_contacto"?: string | null,"unica"?: boolean
                   }
                   Relationships: [
                     
@@ -833,14 +861,14 @@ isOneToOne: false
                   ]
                 },"integraciones": {
                   Row: {
-                    "actualizado_en": string,"actualizado_por": string | null,"andreani_clave": string | null,"andreani_cliente": string | null,"andreani_contrato": string | null,"andreani_prueba": Json | null,"andreani_usuario": string | null,"correo_aplicado_en": string | null,"correo_aplicado_error": string | null,"gemini_api_key": string | null,"ia_modelos_error": string | null,"ia_modelos_req": number | null,"ia_modelos_revisado": string | null,"ia_ultima_prueba": number | null,"ig_conectado_en": string | null,"ig_error": string | null,"ig_renovado_en": string | null,"ig_sincronizado_en": string | null,"ig_tipo_cuenta": string | null,"ig_token": string | null,"ig_token_vence": string | null,"ig_usuario": string | null,"ig_usuario_id": string | null,"mp_access_token": string | null,"mp_cuenta": Json | null,"mp_webhook_secret": string | null,"sitio_original": string | null,"sitio_url": string | null,"smtp_clave": string | null,"smtp_email": string | null,"smtp_host": string | null,"smtp_nombre": string | null,"smtp_puerto": number | null,"smtp_usuario": string | null,"supabase_ref": string | null,"supabase_token": string | null,"uber_client_id": string | null,"uber_client_secret": string | null,"uber_customer_id": string | null,"uber_prueba": Json | null,"unica": boolean,"vercel_equipo": string | null,"vercel_proyecto": string | null,"vercel_token": string | null,"wa_access_token": string | null,"wa_app_secret": string | null,"wa_phone_number_id": string | null,"wa_verify_token": string,"wa_waba_id": string | null
+                    "actualizado_en": string,"actualizado_por": string | null,"andreani_clave": string | null,"andreani_cliente": string | null,"andreani_contrato": string | null,"andreani_prueba": Json | null,"andreani_usuario": string | null,"arca_cert_homologacion": string | null,"arca_cert_homologacion_vence": string | null,"arca_cert_produccion": string | null,"arca_cert_produccion_vence": string | null,"arca_clave_nueva_vault_id": string | null,"arca_clave_vault_id": string | null,"arca_csr": string | null,"arca_probado_en": string | null,"arca_sign": string | null,"arca_token": string | null,"arca_token_ambiente": string | null,"arca_token_vence": string | null,"arca_ultimo_error": string | null,"correo_aplicado_en": string | null,"correo_aplicado_error": string | null,"gemini_api_key": string | null,"ia_modelos_error": string | null,"ia_modelos_req": number | null,"ia_modelos_revisado": string | null,"ia_ultima_prueba": number | null,"ig_conectado_en": string | null,"ig_error": string | null,"ig_renovado_en": string | null,"ig_sincronizado_en": string | null,"ig_tipo_cuenta": string | null,"ig_token": string | null,"ig_token_vence": string | null,"ig_usuario": string | null,"ig_usuario_id": string | null,"mp_access_token": string | null,"mp_cuenta": Json | null,"mp_webhook_secret": string | null,"sitio_original": string | null,"sitio_url": string | null,"smtp_clave": string | null,"smtp_email": string | null,"smtp_host": string | null,"smtp_nombre": string | null,"smtp_puerto": number | null,"smtp_usuario": string | null,"supabase_ref": string | null,"supabase_token": string | null,"uber_client_id": string | null,"uber_client_secret": string | null,"uber_customer_id": string | null,"uber_prueba": Json | null,"unica": boolean,"vercel_equipo": string | null,"vercel_proyecto": string | null,"vercel_token": string | null,"wa_access_token": string | null,"wa_app_secret": string | null,"wa_phone_number_id": string | null,"wa_verify_token": string,"wa_waba_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"actualizado_por"?: string | null,"andreani_clave"?: string | null,"andreani_cliente"?: string | null,"andreani_contrato"?: string | null,"andreani_prueba"?: Json | null,"andreani_usuario"?: string | null,"correo_aplicado_en"?: string | null,"correo_aplicado_error"?: string | null,"gemini_api_key"?: string | null,"ia_modelos_error"?: string | null,"ia_modelos_req"?: number | null,"ia_modelos_revisado"?: string | null,"ia_ultima_prueba"?: number | null,"ig_conectado_en"?: string | null,"ig_error"?: string | null,"ig_renovado_en"?: string | null,"ig_sincronizado_en"?: string | null,"ig_tipo_cuenta"?: string | null,"ig_token"?: string | null,"ig_token_vence"?: string | null,"ig_usuario"?: string | null,"ig_usuario_id"?: string | null,"mp_access_token"?: string | null,"mp_cuenta"?: Json | null,"mp_webhook_secret"?: string | null,"sitio_original"?: string | null,"sitio_url"?: string | null,"smtp_clave"?: string | null,"smtp_email"?: string | null,"smtp_host"?: string | null,"smtp_nombre"?: string | null,"smtp_puerto"?: number | null,"smtp_usuario"?: string | null,"supabase_ref"?: string | null,"supabase_token"?: string | null,"uber_client_id"?: string | null,"uber_client_secret"?: string | null,"uber_customer_id"?: string | null,"uber_prueba"?: Json | null,"unica"?: boolean,"vercel_equipo"?: string | null,"vercel_proyecto"?: string | null,"vercel_token"?: string | null,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"andreani_clave"?: string | null,"andreani_cliente"?: string | null,"andreani_contrato"?: string | null,"andreani_prueba"?: Json | null,"andreani_usuario"?: string | null,"arca_cert_homologacion"?: string | null,"arca_cert_homologacion_vence"?: string | null,"arca_cert_produccion"?: string | null,"arca_cert_produccion_vence"?: string | null,"arca_clave_nueva_vault_id"?: string | null,"arca_clave_vault_id"?: string | null,"arca_csr"?: string | null,"arca_probado_en"?: string | null,"arca_sign"?: string | null,"arca_token"?: string | null,"arca_token_ambiente"?: string | null,"arca_token_vence"?: string | null,"arca_ultimo_error"?: string | null,"correo_aplicado_en"?: string | null,"correo_aplicado_error"?: string | null,"gemini_api_key"?: string | null,"ia_modelos_error"?: string | null,"ia_modelos_req"?: number | null,"ia_modelos_revisado"?: string | null,"ia_ultima_prueba"?: number | null,"ig_conectado_en"?: string | null,"ig_error"?: string | null,"ig_renovado_en"?: string | null,"ig_sincronizado_en"?: string | null,"ig_tipo_cuenta"?: string | null,"ig_token"?: string | null,"ig_token_vence"?: string | null,"ig_usuario"?: string | null,"ig_usuario_id"?: string | null,"mp_access_token"?: string | null,"mp_cuenta"?: Json | null,"mp_webhook_secret"?: string | null,"sitio_original"?: string | null,"sitio_url"?: string | null,"smtp_clave"?: string | null,"smtp_email"?: string | null,"smtp_host"?: string | null,"smtp_nombre"?: string | null,"smtp_puerto"?: number | null,"smtp_usuario"?: string | null,"supabase_ref"?: string | null,"supabase_token"?: string | null,"uber_client_id"?: string | null,"uber_client_secret"?: string | null,"uber_customer_id"?: string | null,"uber_prueba"?: Json | null,"unica"?: boolean,"vercel_equipo"?: string | null,"vercel_proyecto"?: string | null,"vercel_token"?: string | null,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
                   }
                   Update: {
-                    "actualizado_en"?: string,"actualizado_por"?: string | null,"andreani_clave"?: string | null,"andreani_cliente"?: string | null,"andreani_contrato"?: string | null,"andreani_prueba"?: Json | null,"andreani_usuario"?: string | null,"correo_aplicado_en"?: string | null,"correo_aplicado_error"?: string | null,"gemini_api_key"?: string | null,"ia_modelos_error"?: string | null,"ia_modelos_req"?: number | null,"ia_modelos_revisado"?: string | null,"ia_ultima_prueba"?: number | null,"ig_conectado_en"?: string | null,"ig_error"?: string | null,"ig_renovado_en"?: string | null,"ig_sincronizado_en"?: string | null,"ig_tipo_cuenta"?: string | null,"ig_token"?: string | null,"ig_token_vence"?: string | null,"ig_usuario"?: string | null,"ig_usuario_id"?: string | null,"mp_access_token"?: string | null,"mp_cuenta"?: Json | null,"mp_webhook_secret"?: string | null,"sitio_original"?: string | null,"sitio_url"?: string | null,"smtp_clave"?: string | null,"smtp_email"?: string | null,"smtp_host"?: string | null,"smtp_nombre"?: string | null,"smtp_puerto"?: number | null,"smtp_usuario"?: string | null,"supabase_ref"?: string | null,"supabase_token"?: string | null,"uber_client_id"?: string | null,"uber_client_secret"?: string | null,"uber_customer_id"?: string | null,"uber_prueba"?: Json | null,"unica"?: boolean,"vercel_equipo"?: string | null,"vercel_proyecto"?: string | null,"vercel_token"?: string | null,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"andreani_clave"?: string | null,"andreani_cliente"?: string | null,"andreani_contrato"?: string | null,"andreani_prueba"?: Json | null,"andreani_usuario"?: string | null,"arca_cert_homologacion"?: string | null,"arca_cert_homologacion_vence"?: string | null,"arca_cert_produccion"?: string | null,"arca_cert_produccion_vence"?: string | null,"arca_clave_nueva_vault_id"?: string | null,"arca_clave_vault_id"?: string | null,"arca_csr"?: string | null,"arca_probado_en"?: string | null,"arca_sign"?: string | null,"arca_token"?: string | null,"arca_token_ambiente"?: string | null,"arca_token_vence"?: string | null,"arca_ultimo_error"?: string | null,"correo_aplicado_en"?: string | null,"correo_aplicado_error"?: string | null,"gemini_api_key"?: string | null,"ia_modelos_error"?: string | null,"ia_modelos_req"?: number | null,"ia_modelos_revisado"?: string | null,"ia_ultima_prueba"?: number | null,"ig_conectado_en"?: string | null,"ig_error"?: string | null,"ig_renovado_en"?: string | null,"ig_sincronizado_en"?: string | null,"ig_tipo_cuenta"?: string | null,"ig_token"?: string | null,"ig_token_vence"?: string | null,"ig_usuario"?: string | null,"ig_usuario_id"?: string | null,"mp_access_token"?: string | null,"mp_cuenta"?: Json | null,"mp_webhook_secret"?: string | null,"sitio_original"?: string | null,"sitio_url"?: string | null,"smtp_clave"?: string | null,"smtp_email"?: string | null,"smtp_host"?: string | null,"smtp_nombre"?: string | null,"smtp_puerto"?: number | null,"smtp_usuario"?: string | null,"supabase_ref"?: string | null,"supabase_token"?: string | null,"uber_client_id"?: string | null,"uber_client_secret"?: string | null,"uber_customer_id"?: string | null,"uber_prueba"?: Json | null,"unica"?: boolean,"vercel_equipo"?: string | null,"vercel_proyecto"?: string | null,"vercel_token"?: string | null,"wa_access_token"?: string | null,"wa_app_secret"?: string | null,"wa_phone_number_id"?: string | null,"wa_verify_token"?: string,"wa_waba_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -1587,6 +1615,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"puntos_venta_fiscales": {
+                  Row: {
+                    "activo": boolean,"ambiente": string,"baja": string | null,"bloqueado": boolean,"emisor": string,"id": number,"nombre": string | null,"numero": number,"por_defecto": boolean,"tipo_arca": string | null,"verificado_en": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activo"?: boolean,"ambiente": string,"baja"?: string | null,"bloqueado"?: boolean,"emisor"?: string,"id"?: never,"nombre"?: string | null,"numero": number,"por_defecto"?: boolean,"tipo_arca"?: string | null,"verificado_en"?: string | null
+                  }
+                  Update: {
+                    "activo"?: boolean,"ambiente"?: string,"baja"?: string | null,"bloqueado"?: boolean,"emisor"?: string,"id"?: never,"nombre"?: string | null,"numero"?: number,"por_defecto"?: boolean,"tipo_arca"?: string | null,"verificado_en"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"roles": {
                   Row: {
                     "activo": boolean,"creado_en": string,"descripcion": string | null,"descuento_max_pct": number | null,"id": number,"nombre": string,"permisos": (string)[],"todos": boolean
@@ -2262,6 +2304,30 @@ isOneToOne: false
             "_aplicar_promociones":
 { Args: { "p_promos": (number)[] }; Returns: undefined
                            },
+"_arca_acceso":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"_arca_anotar":
+{ Args: { "p_ambiente": string,"p_detalle": string,"p_metodo": string,"p_ms": number,"p_ok": boolean,"p_servicio": string,"p_status": number }; Returns: undefined
+                           },
+"_arca_app":
+{ Args: { "p_accion": string,"p_datos": Json }; Returns: Json
+                           },
+"_arca_clave":
+{ Args: { "p_nueva"?: boolean }; Returns: string
+                           },
+"_arca_http":
+{ Args: { "p_soap_action": string,"p_url": string,"p_xml": string }; Returns: Json
+                           },
+"_arca_traer_puntos_venta":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"_arca_url":
+{ Args: { "p_ambiente": string,"p_servicio": string }; Returns: string
+                           },
+"_arca_wsfe":
+{ Args: { "p_con_acceso"?: boolean,"p_cuerpo"?: string,"p_metodo": string }; Returns: string
+                           },
 "_armar_cambio":
 { Args: { "p_devueltos": Json,"p_lleva": Json }; Returns: Json
                            },
@@ -2315,6 +2381,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "cliente_id": number,"id": number,"restante": number,"vence": string
             }[]
+                           },
+"_cuit_valido":
+{ Args: { "p_cuit": string }; Returns: boolean
                            },
 "_dinero":
 { Args: { "p_monto": number }; Returns: string
@@ -2446,6 +2515,9 @@ isOneToOne: false
 "_wa_firma_valida":
 { Args: { "p_firma": string,"p_payload": string }; Returns: boolean
                            },
+"_xml_texto":
+{ Args: { "p_nombre": string,"p_xml": string }; Returns: string
+                           },
 "aceptar_documentos_compra":
 { Args: { "p_pedido": number }; Returns: undefined
                            },
@@ -2474,6 +2546,33 @@ isOneToOne: false
                            },
 "aplicar_credito_proveedor":
 { Args: { "p_compra": number,"p_monto": number }; Returns: number
+                           },
+"arca_agregar_punto_venta_prueba":
+{ Args: { "p_numero": number }; Returns: undefined
+                           },
+"arca_cambiar_ambiente":
+{ Args: { "p_ambiente": string }; Returns: undefined
+                           },
+"arca_estado":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"arca_generar_pedido_certificado":
+{ Args: { "p_alias"?: string }; Returns: string
+                           },
+"arca_guardar_certificado":
+{ Args: { "p_certificado": string }; Returns: Json
+                           },
+"arca_guardar_punto_venta":
+{ Args: { "p_activo": boolean,"p_id": number,"p_nombre": string,"p_por_defecto": boolean }; Returns: undefined
+                           },
+"arca_probar_acceso":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"arca_probar_puntos_venta":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"arca_probar_servicio":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "asignar_rol":
 { Args: { "p_email": string,"p_rol": number }; Returns: string
@@ -2593,8 +2692,14 @@ isOneToOne: false
 "guardar_conexion_hosting":
 { Args: { "p_supabase_ref"?: string,"p_supabase_token"?: string,"p_vercel_equipo"?: string,"p_vercel_proyecto"?: string,"p_vercel_token"?: string }; Returns: undefined
                            },
+"guardar_configuracion_fiscal":
+{ Args: { "p_alicuota": number,"p_iva_contenido_en_c": string,"p_umbral": number }; Returns: undefined
+                           },
 "guardar_correo":
 { Args: { "p_clave"?: string,"p_email"?: string,"p_host"?: string,"p_nombre"?: string,"p_puerto"?: number,"p_usuario"?: string }; Returns: undefined
+                           },
+"guardar_datos_fiscales":
+{ Args: { "p_condicion_iva": string,"p_cuit": string,"p_domicilio": string,"p_ingresos_brutos"?: string,"p_inicio_actividades"?: string,"p_razon_social": string }; Returns: undefined
                            },
 "guardar_envios_credenciales":
 { Args: { "p_andreani_clave"?: string,"p_andreani_cliente"?: string,"p_andreani_contrato"?: string,"p_andreani_usuario"?: string,"p_quitar"?: (string)[],"p_uber_client_id"?: string,"p_uber_client_secret"?: string,"p_uber_customer_id"?: string }; Returns: undefined

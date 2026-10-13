@@ -269,6 +269,13 @@ una API de Next.** Lo que ya pisamos:
     **redondeo del efectivo** va en `p_pagos[].redondeo`: solo medios `tipo = 'Efectivo'`, hacia abajo, hasta 5 % y $ 1.000; queda dentro de `pagos.ajuste` (así
     `monto` y `ventas.total` cuadran como siempre) y además en `pagos.redondeo` para mostrarlo aparte. El lector se toma aunque el foco no esté en el buscador.
 
+
+26. **ARCA (factura electrónica)** — rama `arca`, fase 1 (conexión), diseño en `docs/ARCA.md`. `/admin/integraciones/arca` (`equipo.administrar`):
+    datos fiscales (`datos_legales`), ambiente (`configuracion_fiscal`), certificado y puntos de venta (`puntos_venta_fiscales`). La **llave privada va
+    en el Vault** (`integraciones.arca_clave_vault_id`). **La base no puede conectarse con ARCA** (TLS viejo de sus servidores) ni firmar con RSA: lo hace
+    la ruta `/api/arca/firma` (firmador y pasarela sin secretos, solo hacia las direcciones de ARCA; `lib/arca/`), que la base llama con `_arca_app`.
+    Las funciones que hablan con ARCA tienen `statement_timeout` propio (la API corta a los 8 s) y nunca lanzan errores después de guardar el acceso
+    (ARCA no da otro mientras haya uno vigente). Bitácora en `arca_llamadas` (sin claves). Las pruebas simulan la ruta reemplazando `_pedir_http`.
 ---
 
 ## Dónde está cada cosa

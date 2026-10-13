@@ -5,7 +5,7 @@ import path from "node:path";
 import { BookOpen } from "lucide-react";
 import { Markdown } from "@/lib/markdown";
 
-export default async function Manual({ nombre, abierto = false }: { nombre: "whatsapp" | "ia" | "mercadopago" | "envios" | "dominio" | "correo" | "instagram"; abierto?: boolean }) {
+export default async function Manual({ nombre, abierto = false }: { nombre: "whatsapp" | "ia" | "mercadopago" | "envios" | "dominio" | "correo" | "instagram" | "arca"; abierto?: boolean }) {
   const texto = await readFile(path.join(process.cwd(), "docs", "integraciones", `${nombre}.md`), "utf8");
   return (
     <details id="manual" open={abierto} className="group overflow-hidden rounded-xl border border-borde bg-white shadow-sm">

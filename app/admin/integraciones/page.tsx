@@ -3,7 +3,7 @@
 // Lo ve quien tiene el permiso «Tienda online».
 import Link from "next/link";
 import { IconoInstagram } from "@/components/IconoInstagram";
-import { ChevronRight, CreditCard, Globe, Mail, MessageCircle, Sparkles, Truck, type LucideIcon } from "lucide-react";
+import { ChevronRight, CreditCard, Globe, Landmark, Mail, MessageCircle, Sparkles, Truck, type LucideIcon } from "lucide-react";
 import { crearCliente } from "@/lib/supabase/server";
 import { exigir } from "@/lib/exigir";
 
@@ -40,6 +40,8 @@ export default async function Integraciones() {
   const { data: principal } = admin ? await supabase.from("dominios").select("nombre").eq("principal", true).maybeSingle() : { data: null };
   const { data: instagram } = await supabase.rpc("estado_instagram");
   const { data: correo } = admin ? await supabase.rpc("estado_correo") : { data: null };
+  const { data: arca } = admin ? await supabase.rpc("arca_estado") : { data: null };
+  const a = arca as { ambiente?: string; activa?: boolean; certificado_vence?: string | null; acceso_vigente?: boolean; ultimo_error?: string | null } | null;
   const wa = e as { meta_lista?: boolean; gemini?: string | null; ia_prueba?: { estado: string } | null } | null;
   const cuenta = (mp as { cuenta?: { ok: boolean; prueba?: boolean } | null } | null)?.cuenta;
   const MODO = { no: "No cobra online", opcional: "Cobro online opcional", obligatorio: "Solo pago online" } as const;
@@ -86,6 +88,12 @@ export default async function Integraciones() {
         {admin && <Tarjeta href="/admin/integraciones/correo" icono={Mail} titulo="Correo"
           para="Los mails que recibe el cliente (confirmar su cuenta, cambiar la contraseña) salen por tu propio servidor, con el nombre de tu tienda."
           estados={[(correo as { smtp?: boolean } | null)?.smtp ? { texto: "Conectado", tono: "ok" } : { texto: "Falta conectar", tono: "falta" }]} />}
+        {admin && <Tarjeta href="/admin/integraciones/arca" icono={Landmark} titulo="ARCA (factura electrónica)"
+          para="Emitir facturas A, B o C con CAE desde la caja. Se conecta una vez con el certificado del comercio; primero en el ambiente de pruebas."
+          estados={[
+            !a?.certificado_vence ? { texto: "Falta conectar", tono: "falta" } : a.ultimo_error ? { texto: "Hay un error", tono: "falta" } : { texto: "Conectado", tono: "ok" },
+            { texto: a?.ambiente === "produccion" ? "Producción" : "Pruebas", tono: a?.ambiente === "produccion" ? "ok" : "apagado" },
+          ]} />}
       </div>
     </div>
   );
