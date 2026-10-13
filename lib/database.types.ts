@@ -3119,6 +3119,9 @@ isOneToOne: false
 "facturacion_caja":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"facturar_en_tanda":
+{ Args: { "p_ventas": (number)[] }; Returns: Json
+                           },
 "facturar_venta":
 { Args: { "p_venta": number }; Returns: Json
                            },
@@ -3354,6 +3357,11 @@ isOneToOne: false
                            },
 "ventas_para_cambio":
 { Args: { "p_buscar": string }; Returns: Json
+                           },
+"ventas_sin_factura":
+{ Args: { "p_desde": string,"p_hasta": string }; Returns: {
+              "cliente": string,"comprobante": string,"fecha": string,"id": number,"medios": string,"total": number
+            }[]
                            },
 "wa_envios_recientes":
 { Args: { "p_limite"?: number }; Returns: {

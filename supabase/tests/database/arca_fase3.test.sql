@@ -89,7 +89,7 @@ update datos_legales set cuit = '20-12345678-6', razon_social = 'Mi Tienda SRL',
 update integraciones set sitio_url = 'https://tienda.test', arca_cert_homologacion = 'CERT', arca_cert_homologacion_vence = now() + interval '2 years',
   arca_clave_vault_id = vault.create_secret('LLAVE', 'arca_prueba_' || gen_random_uuid()) where unica;
 update clientes set documento = '30.123.456' where nombre = 'María González';
-select plan(26);
+select plan(30);
 
 set local role authenticated;
 select prueba.como_admin();
@@ -167,6 +167,12 @@ insert into prueba.ids select 'cv', (registrar_cambio(prueba.id('vc'),
   jsonb_build_array(jsonb_build_object('medio_pago_id', prueba.medio('EFE')))) ->> 'venta_id')::bigint;
 set constraints all immediate; set constraints all deferred;
 select is((prueba.f(prueba.id('cv'))).letra, 'A', 'la venta del cambio sale con factura (A, como la original)');
+
+-- ── Pantalla Facturas: ventas sin factura y facturar en tanda ──
+select ok(exists (select 1 from ventas_sin_factura(current_date - 1, current_date + 1) where id = prueba.id('vb')), 'la venta sin factura aparece para regularizar');
+select is((facturar_en_tanda(array[prueba.id('vb')]) ->> 'creadas')::int, 1, 'facturar en tanda la crea');
+select is((prueba.f(prueba.id('vb'))).estado, 'pendiente', 'y queda en la cola');
+select ok(not exists (select 1 from ventas_sin_factura(current_date - 1, current_date + 1) where id = prueba.id('vb')), 'ya no figura como sin factura');
 
 select * from finish();
 rollback;
