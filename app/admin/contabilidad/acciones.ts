@@ -47,3 +47,24 @@ export async function asignar(que: string, id: string, campo: string, cuenta: nu
   refrescar();
   return { ok: "Guardado" };
 }
+
+// Empezar la contabilidad en una fecha: la base arma el asiento de apertura (stock a costo, saldos a favor y crédito con proveedores)
+export async function iniciarContabilidad(_: Estado, f: FormData): Promise<Estado> {
+  const fecha = String(f.get("fecha") ?? "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return { error: "Elegí la fecha de inicio" };
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("iniciar_contabilidad", { p_fecha: fecha });
+  if (error) return { error: error.message };
+  refrescar();
+  return { ok: "La contabilidad empezó: desde ahora cada venta, compra y gasto genera su asiento" };
+}
+
+// Un asiento a mano (por ejemplo, completar la apertura con la caja, los bancos y las deudas)
+export async function asientoManual(fecha: string, concepto: string, lineas: { cuenta: number; debe: number; haber: number; detalle?: string }[]): Promise<Estado> {
+  if (lineas.length < 2) return { error: "Un asiento tiene al menos dos renglones" };
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("registrar_asiento_manual", { p_fecha: fecha, p_concepto: concepto, p_lineas: lineas });
+  if (error) return { error: error.message };
+  refrescar();
+  return { ok: "Asiento registrado" };
+}

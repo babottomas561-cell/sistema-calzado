@@ -282,6 +282,15 @@ una API de Next.** Lo que ya pisamos:
     importación por planilla (`importar_plan_cuentas`, agrega y renombra) y asignaciones con jerarquía: artículo → rubro → línea (`cuentas_por_linea`) →
     general (`cuenta_venta_de`, `cuenta_costo_de`); medios de pago (nacen con la cuenta de su tipo), proveedores, `conceptos_compra`, categorías de gasto.
     `asignar_cuenta` controla que el tipo de cuenta tenga sentido. «Qué falta asignar» = `v_cuentas_sin_asignar`. Los asientos llegan en la fase B.
+
+28. **Asientos automáticos** (fase B; `asientos` + `asiento_lineas`, libro diario, mayor y sumas y saldos en `/admin/contabilidad`). Cada operación genera su asiento con un
+    **trigger** (venta, compra y devolución, **diferidos** al cierre de la transacción para ver los renglones y pagos; anulación, gasto, ajuste de stock, fallado resuelto y
+    ajuste del crédito con proveedores, directos), así vale para toda venta venga de donde venga. `_asentar()` controla que **cuadre** (si no, se deshace la operación),
+    que las cuentas sean imputables y activas, y numera sin saltos. **Los asientos no se editan ni se borran** (trigger): una anulación hace el contra-asiento. No se genera nada
+    hasta `iniciar_contabilidad(fecha)` (arma el asiento de apertura: stock a costo, saldos a favor y crédito con proveedores; el resto lo completa el contador con
+    `registrar_asiento_manual`). Hasta que ARCA esté activa, todo es «interno» y el IVA no se discrimina. En las pruebas hay que forzar los diferidos con
+    `set constraints all immediate; set constraints all deferred;` (si no, no corren: la transacción nunca se confirma). No se desactiva una cuenta asignada. Falta: recibos,
+    órdenes de pago y compras rediseñadas (fase C) e IVA con ARCA.
 ---
 
 ## Dónde está cada cosa

@@ -183,6 +183,52 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"asiento_lineas": {
+                  Row: {
+                    "asiento_id": number,"cuenta_id": number,"debe": number,"detalle": string | null,"haber": number,"id": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "asiento_id": number,"cuenta_id": number,"debe"?: number,"detalle"?: string | null,"haber"?: number,"id"?: never
+                  }
+                  Update: {
+                    "asiento_id"?: number,"cuenta_id"?: number,"debe"?: number,"detalle"?: string | null,"haber"?: number,"id"?: never
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "asiento_lineas_asiento_id_fkey"
+      columns: ["asiento_id"]
+isOneToOne: false
+      referencedRelation: "asientos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "asiento_lineas_cuenta_id_fkey"
+      columns: ["cuenta_id"]
+isOneToOne: false
+      referencedRelation: "cuentas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"asientos": {
+                  Row: {
+                    "anula_a": number | null,"circuito": string,"concepto": string,"creado_en": string,"creado_por": string | null,"documento_id": number | null,"fecha": string,"id": number,"numero": number,"origen": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "anula_a"?: number | null,"circuito"?: string,"concepto": string,"creado_en"?: string,"creado_por"?: string | null,"documento_id"?: number | null,"fecha": string,"id"?: never,"numero": number,"origen": string
+                  }
+                  Update: {
+                    "anula_a"?: number | null,"circuito"?: string,"concepto"?: string,"creado_en"?: string,"creado_por"?: string | null,"documento_id"?: number | null,"fecha"?: string,"id"?: never,"numero"?: number,"origen"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "asientos_anula_a_fkey"
+      columns: ["anula_a"]
+isOneToOne: false
+      referencedRelation: "asientos"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"categorias": {
                   Row: {
                     "codigo": string,"cuenta_costo_id": number | null,"cuenta_venta_id": number | null,"id": number,"linea": string,"nombre": string
@@ -2461,6 +2507,12 @@ isOneToOne: false
 "_armar_cambio":
 { Args: { "p_devueltos": Json,"p_lleva": Json }; Returns: Json
                            },
+"_asentar":
+{ Args: { "p_anula_a"?: number,"p_circuito"?: string,"p_concepto": string,"p_documento": number,"p_fecha": string,"p_lineas": Json,"p_origen": string }; Returns: number
+                           },
+"_asiento_venta":
+{ Args: { "p_venta": number }; Returns: number
+                           },
 "_avisos_cortos":
 { Args: { "p": (string)[] }; Returns: boolean
                            },
@@ -2496,6 +2548,9 @@ isOneToOne: false
 "_comprobante_venta":
 { Args: { "p_id": number }; Returns: Json
                            },
+"_contra_asiento":
+{ Args: { "p_asiento": number,"p_concepto": string,"p_fecha": string,"p_origen": string }; Returns: number
+                           },
 "_correo_plantilla":
 { Args: { "p_color"?: string,"p_logo"?: string,"p_tienda": string,"p_tipo": string }; Returns: Json
                            },
@@ -2511,6 +2566,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "cliente_id": number,"id": number,"restante": number,"vence": string
             }[]
+                           },
+"_cta":
+{ Args: { "p_clave": string }; Returns: number
                            },
 "_cuenta":
 { Args: { "p_clave": string }; Returns: number
@@ -2538,6 +2596,9 @@ isOneToOne: false
                            },
 "_en_promocion":
 { Args: { "p_producto": number,"p_promocion": number }; Returns: boolean
+                           },
+"_fecha_ar":
+{ Args: { "p": string }; Returns: string
                            },
 "_generar_gastos_fijos":
 { Args: Record<PropertyKey, never>; Returns: number
@@ -2890,6 +2951,9 @@ isOneToOne: false
               "copias": number,"formato": string,"modo": string
             }[]
                            },
+"iniciar_contabilidad":
+{ Args: { "p_fecha": string }; Returns: number
+                           },
 "instagram_desconectar":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
@@ -2905,9 +2969,19 @@ isOneToOne: false
 "legales_completos":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"libro_diario":
+{ Args: { "p_desde": string,"p_hasta": string }; Returns: {
+              "anula_a": number,"asiento_id": number,"circuito": string,"concepto": string,"cuenta_codigo": string,"cuenta_nombre": string,"debe": number,"detalle": string,"fecha": string,"haber": number,"numero": number,"origen": string
+            }[]
+                           },
 "mas_vendidos_tienda":
 { Args: { "p_dias"?: number }; Returns: {
               "producto_id": number
+            }[]
+                           },
+"mayor_cuenta":
+{ Args: { "p_cuenta": number,"p_desde": string,"p_hasta": string }; Returns: {
+              "concepto": string,"debe": number,"fecha": string,"haber": number,"numero": number,"origen": string,"saldo": number
             }[]
                            },
 "mi_cliente_id":
@@ -2960,6 +3034,9 @@ isOneToOne: false
 "registrar_arrepentimiento":
 { Args: { "p_comprobante"?: string,"p_detalle"?: string,"p_email": string,"p_nombre": string,"p_telefono"?: string }; Returns: string
                            },
+"registrar_asiento_manual":
+{ Args: { "p_concepto": string,"p_fecha": string,"p_lineas": Json }; Returns: number
+                           },
 "registrar_cambio":
 { Args: { "p_cliente"?: number,"p_comentario"?: string,"p_devuelve": Json,"p_lleva": Json,"p_motivo"?: string,"p_pagos"?: Json,"p_venta": number }; Returns: Json
                            },
@@ -3000,6 +3077,11 @@ isOneToOne: false
                            },
 "saldo_disponible":
 { Args: { "p_cliente": number }; Returns: number
+                           },
+"sumas_y_saldos":
+{ Args: { "p_hasta": string }; Returns: {
+              "codigo": string,"debe": number,"haber": number,"nombre": string,"saldo_acreedor": number,"saldo_deudor": number,"tipo": string
+            }[]
                            },
 "tienda_pagos":
 { Args: Record<PropertyKey, never>; Returns: Json
