@@ -194,6 +194,7 @@ export default function SelectorVariantes({ filas: todas, alElegir, soloConStock
                   <div className="flex flex-1 flex-col gap-0.5 p-2.5">
                     <span className="line-clamp-2 text-sm font-semibold leading-snug">{p.nombre}</span>
                     <span className="truncate text-xs text-texto-2">{p.marca ?? "Sin marca"} · {p.stock} {p.stock === 1 ? "disponible" : "disponibles"}</span>
+                    <span className="truncate text-xs text-gray-700" title="Talles con stock">Talles {[...new Set([...p.variantes].sort(ordenTalle).map((v) => v.talle))].join(" · ")}</span>
                     <span className="mt-auto pt-1 text-sm font-bold tabular-nums">{pesos(p.precio)}</span>
                   </div>
                   {n > 0 && <span className="absolute right-2 top-2 rounded-full bg-marca px-2 py-0.5 text-xs font-bold text-white shadow" aria-label={`${n} en la venta`}>×{n}</span>}

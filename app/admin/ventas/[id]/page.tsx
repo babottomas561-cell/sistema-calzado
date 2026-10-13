@@ -12,10 +12,10 @@ import { esDeHoy, MOTIVOS_ANULACION } from "@/lib/ventas";
 import AnularVenta from "./AnularVenta";
 
 export default async function Venta({ params, searchParams }: {
-  params: Promise<{ id: string }>; searchParams: Promise<{ nueva?: string; cambio?: string }>;
+  params: Promise<{ id: string }>; searchParams: Promise<{ nueva?: string; cambio?: string; vuelto?: string }>;
 }) {
   const { permisos } = await exigir("ventas.registrar", "ventas.ver_todas");
-  const [{ id }, { nueva, cambio }] = await Promise.all([params, searchParams]);
+  const [{ id }, { nueva, cambio, vuelto }] = await Promise.all([params, searchParams]);
   const supabase = await crearCliente();
   const [{ data: v }, { data: items }, { data: presupuesto }, { data: devoluciones }, { data: deCambio }] = await Promise.all([
     supabase.from("ventas").select("*, clientes(id, nombre, telefono), vendedor:perfiles!ventas_usuario_id_fkey(nombre), anulo:perfiles!ventas_anulada_por_fkey(nombre), pagos(base, ajuste_pct, ajuste, redondeo, monto, cuotas, referencia, medios_pago(nombre))").eq("id", Number(id)).single(),
@@ -43,6 +43,7 @@ export default async function Venta({ params, searchParams }: {
     <div className="mx-auto max-w-xl space-y-4">
       {nueva && <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-semibold text-ok">
         <span className="flex items-center gap-2"><CircleCheck size={18} /> Venta registrada. El stock ya se descontó.</span>
+        {Number(vuelto) > 0 && <span className="text-base">Vuelto a entregar: <b className="tabular-nums">{pesos(Number(vuelto))}</b></span>}
         <Link href={`/admin/comprobante/venta/${v.id}`} className="inline-flex items-center gap-1.5 underline underline-offset-2"><Printer size={15} strokeWidth={2} /> Imprimir o enviar el comprobante</Link></div>}
       {cambio && <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-semibold text-ok"><CircleCheck size={18} /> Cambio hecho: entró lo que trajo y salió lo que se llevó.</div>}
       {deCambio && <p className="rounded-lg bg-marca-suave px-3 py-2 text-sm text-marca"><ArrowLeftRight size={16} className="mr-1.5 inline align-[-3px]" />

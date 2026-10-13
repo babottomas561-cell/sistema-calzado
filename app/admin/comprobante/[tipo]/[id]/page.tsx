@@ -8,7 +8,8 @@ import Volver from "@/components/Volver";
 import { exigir } from "@/lib/exigir";
 import { puede } from "@/lib/permisos";
 import { crearCliente } from "@/lib/supabase/server";
-import { esTipo, leerComprobante, type TipoComprobante } from "@/lib/comprobante";
+import { esTipo, leerComprobante, totalDe, type TipoComprobante } from "@/lib/comprobante";
+import { pesos } from "@/lib/formato";
 import EnviarComprobante, { type Envio } from "./EnviarComprobante";
 import VistaComprobante from "./VistaComprobante";
 
@@ -30,10 +31,10 @@ async function contactoDe(tipo: TipoComprobante, id: number): Promise<Contacto> 
 }
 
 export default async function PaginaComprobante({ params, searchParams }: {
-  params: Promise<{ tipo: string; id: string }>; searchParams: Promise<{ imprimir?: string; nueva?: string }>;
+  params: Promise<{ tipo: string; id: string }>; searchParams: Promise<{ imprimir?: string; nueva?: string; vuelto?: string }>;
 }) {
   const { permisos } = await exigir("ventas.registrar", "ventas.ver_todas", "clientes.ver");
-  const [{ tipo, id: idTexto }, { imprimir, nueva }] = await Promise.all([params, searchParams]);
+  const [{ tipo, id: idTexto }, { imprimir, nueva, vuelto }] = await Promise.all([params, searchParams]);
   const id = Number(idTexto);
   if (!esTipo(tipo) || !Number.isInteger(id) || id <= 0) notFound();
 
@@ -56,10 +57,19 @@ export default async function PaginaComprobante({ params, searchParams }: {
 
   return (
     <div className="mx-auto max-w-5xl space-y-4 print:max-w-none print:space-y-0">
-      {nueva && <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-semibold text-ok print:hidden"><CircleCheck size={18} /> Venta registrada. El stock ya se descontó.</div>}
+      {nueva && (
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-xl border border-green-200 bg-green-50 p-4 print:hidden">
+          <div className="flex items-center gap-3">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-ok text-white"><CircleCheck size={24} strokeWidth={2} /></span>
+            <div><p className="font-semibold text-ok">Venta registrada</p><p className="text-sm text-gray-700">Cobrado <b className="tabular-nums">{pesos(totalDe(c))}</b>. El stock ya se descontó.</p></div>
+          </div>
+          {Number(vuelto) > 0 && <div className="rounded-lg bg-white px-4 py-2 ring-1 ring-green-200"><p className="text-xs font-semibold text-texto-2">Vuelto a entregar</p><p className="text-2xl font-bold tabular-nums text-ok">{pesos(Number(vuelto))}</p></div>}
+          <Link href="/admin/ventas/nueva" className="boton ml-auto min-h-12 px-6 text-base"><Plus size={18} /> Nueva venta</Link>
+        </div>
+      )}
       <div className="flex items-center justify-between gap-2 print:hidden">
         <Volver href={volver.href(id)}>{volver.texto}</Volver>
-        {tipo === "venta" && <Link href="/admin/ventas/nueva" className="boton-sec"><Plus size={16} /> Otra venta</Link>}
+        {tipo === "venta" && !nueva && <Link href="/admin/ventas/nueva" className="boton-sec"><Plus size={16} /> Otra venta</Link>}
       </div>
       <h1 className="text-xl font-bold print:hidden">{c.titulo} <span className="font-mono">{c.numero}</span></h1>
 

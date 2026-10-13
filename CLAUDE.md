@@ -263,7 +263,8 @@ una API de Next.** Lo que ya pisamos:
     (`enlaces_comprobante`, nadie la lee: solo funciones; `renovar_enlace_comprobante` invalida el anterior); la página pública no indexa ni manda «referer».
     Envío **manual**: WhatsApp por `wa.me` (`lib/telefono.ts`, `paraWhatsApp`), mail por la API de Resend desde la base (`enviar_comprobante_mail`, devuelve
     `{ok, error}` y deja `comprobante_envios`). `configuracion_impresion`: papel, `modo_impresion` (automatica / opcional / manual), qué lleva, letra, textos y
-    `comprobante_configurado` (hasta guardar una vez, la caja avisa y no imprime). Todos dicen «No válido como factura». Un ticket pide a Chrome el alto medido
+    `comprobante_configurado` (hasta guardar una vez, la caja avisa y no imprime); `impresion_por_usuario` pisa papel, modo y copias de una persona
+    (`impresion_de()` da lo que vale para quien está usando el sistema; el link público usa lo de la tienda). Todos dicen «No válido como factura». Un ticket pide a Chrome el alto medido
     (`cssDePagina`). **Caja**: `lib/cobro.ts` hace la misma cuenta que `_registrar_venta` (reparto por % o monto, redondeo, vuelto) y tiene pruebas. El
     **redondeo del efectivo** va en `p_pagos[].redondeo`: solo medios `tipo = 'Efectivo'`, hacia abajo, hasta 5 % y $ 1.000; queda dentro de `pagos.ajuste` (así
     `monto` y `ventas.total` cuadran como siempre) y además en `pagos.redondeo` para mostrarlo aparte. El lector se toma aunque el foco no esté en el buscador.

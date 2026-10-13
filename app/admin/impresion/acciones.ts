@@ -100,3 +100,17 @@ export async function guardarComprobantes(_: Estado, f: FormData): Promise<Estad
   revalidatePath("/admin/impresion"); revalidatePath("/admin/ventas/nueva");
   return { ok: "Listo: así salen los comprobantes desde ahora" };
 }
+
+// El papel, el modo y las copias de una persona del equipo. Vacío = lo de la tienda; si queda todo vacío, se borra su fila.
+export async function guardarImpresionPersona(usuario: string, datos: { formato: string | null; modo: string | null; copias: number | null }): Promise<Estado> {
+  const formato = datos.formato && esFormato(datos.formato) ? datos.formato : null;
+  const modo = datos.modo && ["automatica", "opcional", "manual"].includes(datos.modo) ? datos.modo : null;
+  const copias = datos.copias && datos.copias >= 1 && datos.copias <= 5 ? Math.round(datos.copias) : null;
+  const supabase = await crearCliente();
+  const { error } = !formato && !modo && !copias
+    ? await supabase.from("impresion_por_usuario").delete().eq("usuario_id", usuario)
+    : await supabase.from("impresion_por_usuario").upsert({ usuario_id: usuario, comprobante_formato: formato, modo_impresion: modo, comprobante_copias: copias, actualizado_en: new Date().toISOString() });
+  if (error) return { error: error.code === "42501" ? "No tenés permiso para cambiar la impresión del equipo" : error.message };
+  revalidatePath("/admin/impresion");
+  return { ok: "Guardado" };
+}

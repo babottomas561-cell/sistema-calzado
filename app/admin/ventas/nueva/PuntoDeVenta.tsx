@@ -5,7 +5,7 @@
 //   · Cliente, descuento y canal quedan a mano pero plegados: la mayoría de las ventas no los usa.
 //   · En el celular, la venta queda abajo en una barra con el total; «Cobrar» abre el cobro a pantalla completa.
 // La cuenta definitiva la hace la base (registrar_venta): precios, promociones, topes y redondeo se vuelven a controlar ahí.
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeftRight, BadgePercent, Banknote, ChevronDown, CircleAlert, CreditCard, Gift, Minus, Plus, Printer, ScanBarcode, ShoppingBag, Smartphone,
@@ -27,7 +27,7 @@ const iconoMedio = (m: MedioCobro & { es_saldo?: boolean | null }): LucideIcon =
 // Los tres pasos de la caja, con su número (es una secuencia de verdad: primero se arma, después se cobra)
 function Paso({ n, titulo, listo, children }: { n: number; titulo: string; listo?: boolean; children?: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex w-full items-center gap-2">
       <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-bold ${listo ? "bg-ok text-white" : "bg-marca text-white"}`} aria-hidden>{n}</span>
       <h3 className="whitespace-nowrap text-sm font-semibold">{titulo}</h3>
       {children}
@@ -61,6 +61,7 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
   const [panel, setPanel] = useState(false);   // en el celular: el cobro a pantalla completa
   const [estado, accion, cargando] = useActionState(registrarVenta, {});
   const cliente = clientes.find((c) => c.id === clienteId) ?? null;
+  const formulario = useRef<HTMLFormElement>(null);
   // «Saldo a favor» solo aparece si el cliente elegido tiene saldo (o si ya se eligió)
   const mediosVisibles = medios.filter((m) => !m.es_saldo || (cliente?.saldo ?? 0) > 0 || lineas.some((l) => l.medio_pago_id === m.id));
 
@@ -111,6 +112,16 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
     : usaSaldo && !cliente ? "Para cobrar con saldo a favor, elegí el cliente"
     : !lineas.length ? "No hay medios de pago para el mostrador (se cargan en Tablas)" : null;
 
+  // Atajos para la compu de la caja: F2 va al buscador, F9 confirma la venta
+  useEffect(() => {
+    const alTeclear = (e: KeyboardEvent) => {
+      if (e.key === "F2") { e.preventDefault(); document.querySelector<HTMLInputElement>('input[aria-label^="Buscar modelo"]')?.focus(); }
+      if (e.key === "F9") { e.preventDefault(); formulario.current?.requestSubmit(); }
+    };
+    window.addEventListener("keydown", alTeclear);
+    return () => window.removeEventListener("keydown", alTeclear);
+  }, []);
+
   const venta = JSON.stringify({
     items: items.map((i) => ({ variante_id: i.variante_id, cantidad: i.cantidad, precio_unitario: i.precio })),
     pagos: pagosParaLaBase(cobro.lineas), canal, cliente_id: cliente?.id ?? null, descuento,
@@ -145,11 +156,13 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
             </div>
           )}
           <h1 className="text-2xl font-bold">Nueva venta</h1>
-          <Paso n={1} titulo="Agregá lo que se lleva" listo={items.length > 0} />
+          <Paso n={1} titulo="Agregá lo que se lleva" listo={items.length > 0}>
+            <span className="ml-auto hidden text-xs text-texto-2 lg:inline"><kbd className="rounded border border-borde bg-white px-1 font-sans">F2</kbd> buscar · <kbd className="rounded border border-borde bg-white px-1 font-sans">F9</kbd> confirmar</span>
+          </Paso>
           <SelectorVariantes filas={filas} alElegir={agregar} soloConStock caja enVenta={enVenta} />
         </section>
 
-        <form action={accion} aria-label="Venta y cobro"
+        <form ref={formulario} action={accion} aria-label="Venta y cobro"
           className={`${panel ? "fixed inset-0 z-30 flex flex-col overflow-y-auto bg-fondo p-4" : "hidden"} lg:sticky lg:top-8 lg:z-auto lg:flex lg:max-h-[calc(100vh-4rem)] lg:flex-col lg:overflow-hidden lg:p-0`}>
           <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
             <div className="flex items-center gap-2 border-b border-borde px-4 py-3">
@@ -251,8 +264,8 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
                 <div className="flex items-center justify-between gap-2">
                   <Paso n={2} titulo="Elegí cómo paga" listo={items.length > 0 && !falta} />
                   {medios.length > 1 && (dividido
-                    ? <button type="button" onClick={() => setLineas((ls) => [ls[0]])} className="text-sm font-medium text-marca">Un solo medio</button>
-                    : <button type="button" onClick={dividir} className="inline-flex items-center gap-1.5 text-sm font-medium text-marca"><SplitSquareHorizontal size={15} strokeWidth={1.8} /> Dividir el pago</button>)}
+                    ? <button type="button" onClick={() => setLineas((ls) => [ls[0]])} className="shrink-0 whitespace-nowrap text-sm font-medium text-marca">Un solo medio</button>
+                    : <button type="button" onClick={dividir} className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-sm font-medium text-marca"><SplitSquareHorizontal size={15} strokeWidth={1.8} /> Dividir el pago</button>)}
                 </div>
 
                 {!dividido ? (
@@ -325,7 +338,7 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
                       <div className="space-y-1.5">
                         <p className="text-xs font-semibold text-texto-2">Redondear el efectivo (para abajo)</p>
                         <div className="flex flex-wrap gap-1.5">
-                          <button type="button" onClick={() => setMultiplo(null)} className={`h-9 rounded-full border px-3 text-sm font-medium tabular-nums ${!cobro.redondeo ? "border-marca bg-marca text-white" : "border-borde bg-white hover:bg-gray-50"}`}>{pesos(sinRedondeo.lineas[cobro.iEfectivo].cobra)}</button>
+                          <button type="button" onClick={() => setMultiplo(null)} className={`h-9 rounded-full border px-3 text-sm font-medium tabular-nums ${!cobro.redondeo ? "border-marca bg-marca text-white" : "border-borde bg-white hover:bg-gray-50"}`}>Sin redondear</button>
                           {opciones.map((o) => (
                             <button key={o.multiplo} type="button" onClick={() => setMultiplo(o.multiplo)} className={`h-9 rounded-full border px-3 text-sm font-medium tabular-nums ${cobro.redondeo === o.redondeo ? "border-marca bg-marca text-white" : "border-borde bg-white hover:bg-gray-50"}`}>{pesos(o.queda)}</button>
                           ))}
@@ -342,9 +355,7 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
                         <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-texto-2">$</span>
                         <input id="recibido" type="number" inputMode="numeric" min={0} value={recibido} onChange={(e) => setRecibido(e.target.value)} placeholder="Otro monto" className="campo pl-7 tabular-nums" />
                       </div>
-                      {montoRecibido > 0 && (montoRecibido >= efectivo.cobra
-                        ? <p className="flex items-baseline justify-between text-sm"><span className="font-semibold">Vuelto</span><span className="text-xl font-bold tabular-nums text-ok">{pesos(vuelto(montoRecibido, efectivo.cobra))}</span></p>
-                        : <p className="text-sm font-semibold text-error">Faltan {pesos(efectivo.cobra - montoRecibido)}</p>)}
+                      {montoRecibido > 0 && montoRecibido < efectivo.cobra && <p className="text-sm font-semibold text-error">Faltan {pesos(efectivo.cobra - montoRecibido)}</p>}
                     </div>
                   </div>
                 )}
@@ -360,8 +371,15 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
                 {cobro.ajustes !== 0 && <div className={`flex justify-between ${cobro.ajustes < 0 ? "text-ok" : "text-alerta"}`}><dt>{cobro.ajustes < 0 ? "Descuento" : "Recargo"} por medio de pago</dt><dd className="tabular-nums">{cobro.ajustes < 0 ? "−" : "+"}{pesos(Math.abs(cobro.ajustes))}</dd></div>}
                 {cobro.redondeo > 0 && <div className="flex justify-between text-ok"><dt>Redondeo</dt><dd className="tabular-nums">−{pesos(cobro.redondeo)}</dd></div>}
                 <div className="flex items-baseline justify-between pt-1 text-sm"><dt className="font-semibold">Total a cobrar</dt><dd className="text-3xl font-bold tabular-nums">{pesos(cobro.total)}</dd></div>
+                {efectivo && montoRecibido >= efectivo.cobra && montoRecibido > 0 && (
+                  <div className="flex items-baseline justify-between rounded-lg bg-green-50 px-2.5 py-1.5 text-sm">
+                    <dt>Paga con <b className="tabular-nums">{pesos(montoRecibido)}</b> · <span className="font-semibold text-ok">vuelto</span></dt>
+                    <dd className="text-xl font-bold tabular-nums text-ok">{pesos(vuelto(montoRecibido, efectivo.cobra))}</dd>
+                  </div>
+                )}
               </dl>
               <input type="hidden" name="venta" value={venta} />
+              {efectivo && montoRecibido >= efectivo.cobra && <input type="hidden" name="vuelto" value={vuelto(montoRecibido, efectivo.cobra)} />}
               {estado.error && <p role="alert" className="flex items-start gap-1.5 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-error"><CircleAlert size={16} className="mt-0.5 shrink-0" />{estado.error}</p>}
               <button className="boton min-h-14 w-full text-base" disabled={cargando || !!falta}>
                 <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20 text-xs font-bold" aria-hidden>3</span>

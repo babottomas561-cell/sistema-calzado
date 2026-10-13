@@ -57,6 +57,9 @@ En **Impresión → Comprobantes** se configura una sola vez:
 - **Textos**: una línea debajo del logo (Instagram, horario), el mensaje final y la aclaración legal. Todos los comprobantes dicen **«No válido como factura»**.
 - **Letra** chica, normal o grande, y **copias**.
 
+**Por persona del equipo**: si alguien imprime distinto (otra impresora, o vende desde el celular y prefiere mandar el comprobante), en la misma pantalla
+se le pone su papel, su modo y sus copias. Lo que quede en «como la tienda» usa lo general.
+
 Con **Imprimir una prueba** se ve cómo sale en tu impresora antes de vender. **Hasta que se guarda una vez, la caja avisa que falta configurar la impresión y no deja
 imprimir** (sí mandar por WhatsApp, mail o link).
 
@@ -71,7 +74,10 @@ al final de «Destino»). Así, con el modo *Automática*, el comprobante sale d
    tocá el producto (filtrá por rubro) y después el talle.
 2. **Elegí cómo paga.** Cada medio dice cuánto se cobra con él. Para pagar con dos medios, «Dividir el pago» (50/50, 70/30 o el % o el monto que quieras).
    En efectivo se puede **redondear para abajo** (hasta el 5 % y nunca más de $ 1.000) y calcular el **vuelto**.
-3. **Confirmá.** El total y el botón siempre están a la vista. Si algo falta, abajo del botón dice qué.
+3. **Confirmá.** El total, el vuelto y el botón siempre están a la vista. Si algo falta, abajo del botón dice qué. Después aparece el vuelto a entregar
+   y «Nueva venta».
+
+Atajos en la compu: **F2** va al buscador y **F9** confirma la venta.
 
 ## Qué no puede hacer una página web
 

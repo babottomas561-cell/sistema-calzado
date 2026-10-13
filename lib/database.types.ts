@@ -789,6 +789,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"impresion_por_usuario": {
+                  Row: {
+                    "actualizado_en": string,"comprobante_copias": number | null,"comprobante_formato": string | null,"modo_impresion": string | null,"usuario_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actualizado_en"?: string,"comprobante_copias"?: number | null,"comprobante_formato"?: string | null,"modo_impresion"?: string | null,"usuario_id": string
+                  }
+                  Update: {
+                    "actualizado_en"?: string,"comprobante_copias"?: number | null,"comprobante_formato"?: string | null,"modo_impresion"?: string | null,"usuario_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"inicio_secciones": {
                   Row: {
                     "actualizado_en": string,"bajada": string | null,"boton_enlace": string | null,"boton_texto": string | null,"contenido": NonNullable<Json>,"id": number,"imagen_ruta": string | null,"imagen_url": string | null,"orden": number,"tipo": string,"titulo": string | null,"visible": boolean
@@ -2602,6 +2616,11 @@ isOneToOne: false
                            },
 "ia_revisar_modelos":
 { Args: { "p_pedir"?: boolean }; Returns: undefined
+                           },
+"impresion_de":
+{ Args: { "p_usuario"?: string }; Returns: {
+              "copias": number,"formato": string,"modo": string
+            }[]
                            },
 "instagram_desconectar":
 { Args: Record<PropertyKey, never>; Returns: undefined

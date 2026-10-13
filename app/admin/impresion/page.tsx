@@ -8,16 +8,24 @@ import { leerPlantilla } from "@/lib/etiquetas";
 import Ayuda from "@/components/Ayuda";
 import ConfigComprobantes from "./ConfigComprobantes";
 import PlantillasEtiqueta from "./PlantillasEtiqueta";
+import ImpresionPorPersona, { type Persona } from "./ImpresionPorPersona";
 
 export default async function PaginaImpresion() {
   await exigir("tablas.editar");
   const supabase = await crearCliente();
-  const [{ data: plantillas }, { data: conf }, tienda, legal] = await Promise.all([
+  const [{ data: plantillas }, { data: conf }, tienda, legal, { data: equipo }, { data: propias }] = await Promise.all([
     supabase.from("plantillas_etiqueta").select("*").order("orden").order("id"),
     supabase.from("configuracion_impresion").select("*").maybeSingle(),
     datosTienda(),
     datosLegales(),
+    supabase.from("perfiles").select("id, nombre, roles(nombre)").eq("rol", "staff").order("nombre"),
+    supabase.from("impresion_por_usuario").select("usuario_id, comprobante_formato, modo_impresion, comprobante_copias"),
   ]);
+  const suya = new Map((propias ?? []).map((x) => [x.usuario_id, x]));
+  const personas: Persona[] = (equipo ?? []).map((e) => ({
+    id: e.id, nombre: e.nombre ?? "Sin nombre", rol: (e.roles as unknown as { nombre: string } | null)?.nombre ?? null,
+    formato: suya.get(e.id)?.comprobante_formato ?? null, modo: suya.get(e.id)?.modo_impresion ?? null, copias: suya.get(e.id)?.comprobante_copias ?? null,
+  }));
   const d = legal.datos;
   return (
     <div className="max-w-5xl space-y-8 print:space-y-0">
@@ -38,6 +46,7 @@ export default async function PaginaImpresion() {
           faltanLegales={!d?.razon_social || !d.cuit || !d.domicilio_legal}
         />
       )}
+      {conf && <ImpresionPorPersona personas={personas} tienda={{ formato: esFormato(conf.comprobante_formato) ? conf.comprobante_formato : "ticket80", modo: conf.modo_impresion as ModoImpresion, copias: conf.comprobante_copias }} />}
       <div className="print:hidden"><PlantillasEtiqueta plantillas={(plantillas ?? []).map((p) => leerPlantilla(p as Record<string, unknown>))} enUso={conf?.etiqueta_plantilla_id ?? null} tienda={tienda.nombre} /></div>
       <div className="print:hidden"><Ayuda nombre="impresion" /></div>
     </div>
