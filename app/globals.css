@@ -151,3 +151,6 @@ body { background: var(--color-fondo); color: #111827; }
   .pagina-impresa { zoom: 1 !important; margin: 0 !important; box-shadow: none !important; border: 0 !important; break-after: page; page-break-after: always; }
   .pagina-impresa:last-child { break-after: auto; page-break-after: auto; }
 }
+
+/* Pantallas que usan todo el ancho (la caja): el panel deja de tener ancho máximo */
+main:has(.pantalla-completa) { max-width: none; }

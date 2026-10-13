@@ -199,8 +199,8 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const porcentajesDescuento = [5, 10, 15, 20].filter((p) => descuentoMax === null || p <= descuentoMax);
 
   return (
-    <div className="pb-24 lg:pb-0">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(24rem,28rem)] lg:items-start">
+    <div className="pantalla-completa pb-24 lg:pb-0">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(24rem,28rem)] lg:items-start 2xl:grid-cols-[minmax(0,1fr)_32rem]">
         <section className="min-w-0 space-y-3">
       {!impresion.configurada && impresion.modo !== "manual" && (
             <div role="alert" className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm">
@@ -224,7 +224,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
         </section>
 
         <form ref={formulario} action={accion} aria-label="Venta y cobro"
-          className={`${panel ? "fixed inset-0 z-30 flex flex-col overflow-y-auto bg-fondo p-4" : "hidden"} lg:sticky lg:top-8 lg:z-auto lg:flex lg:max-h-[calc(100vh-4rem)] lg:flex-col lg:overflow-hidden lg:p-0`}>
+          className={`${panel ? "fixed inset-0 z-30 flex flex-col overflow-y-auto bg-fondo p-4" : "hidden"} lg:sticky lg:top-8 lg:z-auto lg:flex lg:h-[calc(100vh-4rem)] lg:flex-col lg:overflow-hidden lg:p-0`}>
           <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
             <div className="flex items-center gap-2 border-b border-borde px-4 py-3">
               <ShoppingBag size={18} strokeWidth={1.8} className="text-texto-2" />
@@ -245,7 +245,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                   </ul>
                 </div>
               ) : (
-                <ul className="max-h-[38vh] divide-y divide-gray-100 overflow-y-auto px-4 lg:max-h-[26vh]">
+                <ul className="max-h-[38vh] divide-y divide-gray-100 overflow-y-auto px-4 lg:max-h-[30vh] 2xl:max-h-[40vh]">
                   {items.map((i) => (
                     <li key={i.variante_id} className="py-2">
                       <div className="flex items-baseline gap-2">
