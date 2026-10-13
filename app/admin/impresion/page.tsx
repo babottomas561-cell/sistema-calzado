@@ -9,9 +9,20 @@ import Ayuda from "@/components/Ayuda";
 import ConfigComprobantes from "./ConfigComprobantes";
 import PlantillasEtiqueta from "./PlantillasEtiqueta";
 import ImpresionPorPersona, { type Persona } from "./ImpresionPorPersona";
+import Link from "next/link";
+import { ReceiptText, Tags, UsersRound, type LucideIcon } from "lucide-react";
 
-export default async function PaginaImpresion() {
+type Seccion = "comprobantes" | "equipo" | "etiquetas";
+const SECCIONES: { id: Seccion; titulo: string; detalle: string; icono: LucideIcon }[] = [
+  { id: "comprobantes", titulo: "Comprobantes", detalle: "Ticket, A4, contenido, copias y vista previa", icono: ReceiptText },
+  { id: "equipo", titulo: "Por persona", detalle: "Excepciones según quién vende o desde qué equipo", icono: UsersRound },
+  { id: "etiquetas", titulo: "Etiquetas", detalle: "Medidas, contenido y plantilla que se usa", icono: Tags },
+];
+
+export default async function PaginaImpresion({ searchParams }: { searchParams: Promise<{ seccion?: string }> }) {
   await exigir("tablas.editar");
+  const { seccion: pedida } = await searchParams;
+  const seccion: Seccion = SECCIONES.some((item) => item.id === pedida) ? pedida as Seccion : "comprobantes";
   const supabase = await crearCliente();
   const [{ data: plantillas }, { data: conf }, tienda, legal, { data: equipo }, { data: propias }] = await Promise.all([
     supabase.from("plantillas_etiqueta").select("*").order("orden").order("id"),
@@ -28,12 +39,24 @@ export default async function PaginaImpresion() {
   }));
   const d = legal.datos;
   return (
-    <div className="max-w-5xl space-y-8 print:space-y-0">
+    <div className="max-w-5xl space-y-6 print:space-y-0">
       <div className="space-y-1 print:hidden">
         <h1 className="text-2xl font-bold">Impresión</h1>
-        <p className="text-sm text-texto-2">Cómo salen los comprobantes y las etiquetas con código de barras. Cada local imprime con lo que tiene (una impresora térmica de rollo o una común): elegí o ajustá lo que le corresponde.</p>
+        <p className="text-sm text-texto-2">Configurá cada tipo de impresión por separado. Los cambios de una sección no modifican las otras.</p>
       </div>
-      {conf && (
+
+      <nav className="grid gap-2 print:hidden sm:grid-cols-3" aria-label="Formatos de impresión">
+        {SECCIONES.map(({ id, titulo, detalle, icono: Icono }) => {
+          const activa = id === seccion;
+          return <Link key={id} href={`/admin/impresion?seccion=${id}`} aria-current={activa ? "page" : undefined}
+            className={`flex items-start gap-3 rounded-xl border p-3 transition ${activa ? "border-marca bg-marca-suave text-marca shadow-sm" : "border-borde bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"}`}>
+            <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${activa ? "bg-white" : "bg-gray-100"}`}><Icono size={18} strokeWidth={activa ? 2.2 : 1.8} /></span>
+            <span><span className="block text-sm font-bold">{titulo}</span><span className={`mt-0.5 block text-xs leading-snug ${activa ? "text-marca/80" : "text-texto-2"}`}>{detalle}</span></span>
+          </Link>;
+        })}
+      </nav>
+
+      {seccion === "comprobantes" && conf && (
         <ConfigComprobantes
           inicial={{
             formato: esFormato(conf.comprobante_formato) ? conf.comprobante_formato : "ticket80", modo: conf.modo_impresion as ModoImpresion, letra: conf.comprobante_letra as LetraComprobante,
@@ -46,8 +69,8 @@ export default async function PaginaImpresion() {
           faltanLegales={!d?.razon_social || !d.cuit || !d.domicilio_legal}
         />
       )}
-      {conf && <ImpresionPorPersona personas={personas} tienda={{ formato: esFormato(conf.comprobante_formato) ? conf.comprobante_formato : "ticket80", modo: conf.modo_impresion as ModoImpresion, copias: conf.comprobante_copias }} />}
-      <div className="print:hidden"><PlantillasEtiqueta plantillas={(plantillas ?? []).map((p) => leerPlantilla(p as Record<string, unknown>))} enUso={conf?.etiqueta_plantilla_id ?? null} tienda={tienda.nombre} /></div>
+      {seccion === "equipo" && conf && <ImpresionPorPersona personas={personas} tienda={{ formato: esFormato(conf.comprobante_formato) ? conf.comprobante_formato : "ticket80", modo: conf.modo_impresion as ModoImpresion, copias: conf.comprobante_copias }} />}
+      {seccion === "etiquetas" && <div className="print:hidden"><PlantillasEtiqueta plantillas={(plantillas ?? []).map((p) => leerPlantilla(p as Record<string, unknown>))} enUso={conf?.etiqueta_plantilla_id ?? null} tienda={tienda.nombre} /></div>}
       <div className="print:hidden"><Ayuda nombre="impresion" /></div>
     </div>
   );

@@ -6,13 +6,14 @@ import { dia, fecha, fechaHora, pesos } from "@/lib/formato";
 import FichaForm from "../FichaForm";
 import NuevaInteraccion from "./NuevaInteraccion";
 import { marcarHecha } from "../acciones";
-import { Check, MessageCircle } from "lucide-react";
+import { Check, MessageCircle, Pencil } from "lucide-react";
 import Volver from "@/components/Volver";
 import { exigir } from "@/lib/exigir";
 
-export default async function FichaCliente({ params }: { params: Promise<{ id: string }> }) {
-  await exigir("clientes.ver");
+export default async function FichaCliente({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ editar?: string }> }) {
+  const { permisos } = await exigir("clientes.ver");
   const { id } = await params;
+  const { editar } = await searchParams;
   const supabase = await crearCliente();
   const [{ data: c }, { data: ventas }, { data: pedidos }, { data: interacciones }, { data: items }, { data: creditos }] = await Promise.all([
     supabase.from("clientes").select("*").eq("id", Number(id)).single(),
@@ -41,6 +42,7 @@ export default async function FichaCliente({ params }: { params: Promise<{ id: s
           <h1 className="text-2xl font-bold"><span className="mr-2 font-mono text-lg text-texto-2">{c.codigo}</span>{c.nombre}</h1>
           {c.usuario_id && <span className="chip bg-blue-50 text-marca">tiene cuenta en la tienda</span>}
           {telefonoWa && <a href={`https://wa.me/549${telefonoWa.replace(/^0/, "")}`} target="_blank" className="boton-sec py-1.5"><MessageCircle size={16} /> WhatsApp</a>}
+          {permisos.includes("clientes.editar") && <Link href={`?editar=datos#datos-cliente`} className="boton-sec py-1.5"><Pencil size={16} /> Editar datos</Link>}
         </div></div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -97,7 +99,7 @@ export default async function FichaCliente({ params }: { params: Promise<{ id: s
               </tbody></table></div></>}
           </section>
         </div>
-        <div><h2 className="mb-2 font-semibold">Datos</h2><FichaForm c={c} /></div>
+        <div><FichaForm key={editar === "datos" ? "editar" : "ver"} c={c} puedeEditar={permisos.includes("clientes.editar")} iniciarEdicion={editar === "datos"} /></div>
       </div>
     </div>
   );

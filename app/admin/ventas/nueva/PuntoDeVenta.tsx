@@ -151,7 +151,7 @@ export default function PuntoDeVenta({ filas, clientes, medios, cambiaPrecio, de
               <span className="flex items-start gap-2"><CircleAlert size={18} className="mt-0.5 shrink-0 text-error" />
                 <span><b className="text-error">Falta configurar la impresión de comprobantes.</b> Se puede vender, pero no imprimir el comprobante hasta configurarla.</span></span>
               {impresion.puedeConfigurar
-                ? <Link href="/admin/impresion" className="boton-sec ml-auto min-h-10"><Printer size={16} strokeWidth={1.8} /> Configurar ahora</Link>
+                ? <Link href="/admin/impresion?seccion=comprobantes" className="boton-sec ml-auto min-h-10"><Printer size={16} strokeWidth={1.8} /> Configurar ahora</Link>
                 : <span className="ml-auto text-texto-2">Avisale al encargado.</span>}
             </div>
           )}

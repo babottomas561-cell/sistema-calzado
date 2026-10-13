@@ -68,7 +68,7 @@ export default function VistaComprobante({ c, url, autoImprimir, puedeConfigurar
           <div className="space-y-2">
             <p><b className="text-error">No se puede imprimir: falta configurar la impresión de comprobantes.</b> Mientras tanto se puede mandar por WhatsApp, mail o link.</p>
             {puedeConfigurar
-              ? <Link href="/admin/impresion" className="boton-sec min-h-10"><Settings2 size={16} strokeWidth={1.8} /> Configurar la impresión</Link>
+              ? <Link href="/admin/impresion?seccion=comprobantes" className="boton-sec min-h-10"><Settings2 size={16} strokeWidth={1.8} /> Configurar la impresión</Link>
               : <p className="text-texto-2">Avisale al encargado o al dueño: se configura una sola vez en Impresión.</p>}
           </div>
         </div>

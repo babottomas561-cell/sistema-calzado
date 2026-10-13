@@ -183,7 +183,7 @@ export default function Etiquetas({ plantillas, plantillaInicial, tienda, filasI
   });
 
   if (!plantilla) return (
-    <p className="tarjeta text-sm text-texto-2">No hay plantillas de etiquetas. {puedeConfigurar ? <>Creá una en <Link href="/admin/impresion" className="font-semibold text-marca">Impresión</Link>.</> : "Pedile al administrador que cree una en Impresión."}</p>
+    <p className="tarjeta text-sm text-texto-2">No hay plantillas de etiquetas. {puedeConfigurar ? <>Creá una en <Link href="/admin/impresion?seccion=etiquetas" className="font-semibold text-marca">Impresión → Etiquetas</Link>.</> : "Pedile al administrador que cree una en Impresión."}</p>
   );
 
   const zoom = (ancho: number) => (plantilla.tipo === "hoja" ? 0.5 : Math.min(3, 340 / (ancho * 3.78)));
@@ -200,7 +200,7 @@ export default function Etiquetas({ plantillas, plantillaInicial, tienda, filasI
             </select>
             <p className="mt-1 text-xs text-texto-2">{resumen(plantilla)}</p>
           </div>
-          {puedeConfigurar && <Link href="/admin/impresion" className="boton-sec"><Settings2 size={15} strokeWidth={1.8} /> Ajustar plantillas</Link>}
+          {puedeConfigurar && <Link href="/admin/impresion?seccion=etiquetas" className="boton-sec"><Settings2 size={15} strokeWidth={1.8} /> Ajustar plantillas</Link>}
         </div>
         {plantilla.tipo === "hoja" && (
           <div className="max-w-xs">

@@ -8,7 +8,7 @@ import Fotos from "./Fotos";
 import Proveedores, { type FilaProveedor } from "./Proveedores";
 import CodigosBarras from "./CodigosBarras";
 import { leerMaestros } from "@/lib/maestros";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Pencil } from "lucide-react";
 import Volver from "@/components/Volver";
 import GrillaStock, { LeyendaStock } from "@/components/GrillaStock";
 import { exigir } from "@/lib/exigir";
@@ -17,9 +17,10 @@ import { exigir } from "@/lib/exigir";
 const TIPO_MOV: Record<string, string> = { venta: "Venta", compra: "Compra", ajuste: "Ajuste", anulacion: "Anulación", transferencia: "Traspaso",
   devolucion_proveedor: "Al proveedor", baja: "Baja" };
 
-export default async function Producto({ params }: { params: Promise<{ id: string }> }) {
+export default async function Producto({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ editar?: string }> }) {
   const { permisos } = await exigir("costos.ver");
   const { id } = await params;
+  const { editar } = await searchParams;
   const supabase = await crearCliente();
   const [{ data: p }, { data: filas }, { data: movimientos }, maestros, { data: precios }, { data: proveedores }, { data: imagenes }, { data: fallados }] = await Promise.all([
     supabase.from("productos").select("*, marcas(nombre), categorias(nombre), subcategorias(nombre)").eq("id", Number(id)).single(),
@@ -48,10 +49,14 @@ export default async function Producto({ params }: { params: Promise<{ id: strin
   return (
     <div className="space-y-5">
       <div><Volver href="/admin/productos">Productos</Volver>
-        <h1 className="text-2xl font-bold"><span className="mr-2 font-mono text-lg text-texto-2">{p.codigo}</span>{p.nombre}</h1>
+        <div className="flex flex-wrap items-start justify-between gap-3"><div><h1 className="text-2xl font-bold"><span className="mr-2 font-mono text-lg text-texto-2">{p.codigo}</span>{p.nombre}</h1>
         <p className="text-sm text-texto-2">{[marca, categoria, subcategoria, p.genero].filter(Boolean).join(" · ")} · {total} unidades en stock
           {enFallados > 0 && <> · <Link href="/admin/fallados" className="font-semibold text-alerta">{enFallados} en fallados</Link></>}
           {p.publicado_web ? <> · <a href={`/producto/${p.id}`} target="_blank" className="text-marca">ver en la tienda <ExternalLink size={13} className="inline" /></a></> : " · no publicado en la tienda"}</p></div>
+          {permisos.includes("productos.editar") && <Link href={`?editar=datos#datos-producto`} className="boton-sec"><Pencil size={16} /> Editar datos</Link>}</div></div>
+
+      <Formularios key={editar === "datos" ? "editar" : "ver"} producto={producto} variantes={vs} {...maestros} edita={permisos.includes("productos.editar")}
+        editaPrecio={permisos.includes("precios.editar")} ajusta={permisos.includes("stock.ajustar")} abrirEdicion={editar === "datos"} />
 
       <Fotos productoId={p.id} imagenes={imagenes ?? []} />
 
@@ -65,9 +70,6 @@ export default async function Producto({ params }: { params: Promise<{ id: strin
       <CodigosBarras productoId={p.id} variantes={vs.map((v) => ({ id: v.id, talle: v.talle, talle_orden: v.talle_orden, color: v.color, sku: v.sku, codigo_barras: v.codigo_barras }))} edita={permisos.includes("productos.editar")} />
 
       <Proveedores productoId={p.id} filas={(precios ?? []) as unknown as FilaProveedor[]} todos={proveedores ?? []} />
-
-      <Formularios producto={producto} variantes={vs} {...maestros} edita={permisos.includes("productos.editar")}
-        editaPrecio={permisos.includes("precios.editar")} ajusta={permisos.includes("stock.ajustar")} />
 
       <section className="tarjeta overflow-x-auto">
         <h2 className="mb-2 font-semibold">Historial de movimientos</h2>
