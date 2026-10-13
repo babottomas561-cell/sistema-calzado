@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import {
-  BadgePercent, KeyRound, BookUser, Boxes, ChartBar, ExternalLink, FileText, PackageSearch, ShieldCheck, Tags, House, LogOut, Menu as IconoMenu, MessageCircleMore, Package, PackagePlus,
-  PackageX, Plug, Plus, Printer, Receipt, ScanBarcode, Scale, Wallet, Undo2, Settings2, ShoppingBag, Store, Truck, Users, X, type LucideIcon,
-} from "lucide-react";
+import { BadgePercent, BookText, BookUser, Boxes, ChartBar, ExternalLink, FileText, House, KeyRound, LogOut, Menu as IconoMenu, MessageCircleMore, Package, PackagePlus, PackageSearch, PackageX, Plug, Plus, Printer, Receipt, Scale, ScanBarcode, Settings2, ShieldCheck, ShoppingBag, Store, Tags, Truck, Undo2, Users, Wallet, X, type LucideIcon } from "lucide-react";
 import Logo from "@/components/Logo";
 import { puede, type Permiso } from "@/lib/permisos";
 
@@ -34,6 +31,7 @@ const GRUPOS: { titulo?: string; items: Item[] }[] = [
   { titulo: "Análisis", items: [
     { href: "/admin/informes", texto: "Informes", icono: ChartBar, permisos: ["informes.ventas", "informes.stock", "gastos.gestionar"] },
     { href: "/admin/gastos", texto: "Gastos", icono: Wallet, permisos: ["gastos.gestionar"] },
+    { href: "/admin/contabilidad", texto: "Contabilidad", icono: BookText, permisos: ["contabilidad.ver", "contabilidad.configurar"] },
   ] },
   { titulo: "Contactos", items: [
     { href: "/admin/clientes", texto: "Clientes", icono: Users, permisos: ["clientes.ver"] },

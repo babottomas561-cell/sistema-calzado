@@ -185,17 +185,29 @@ isOneToOne: false
                   ]
                 },"categorias": {
                   Row: {
-                    "codigo": string,"id": number,"linea": string,"nombre": string
+                    "codigo": string,"cuenta_costo_id": number | null,"cuenta_venta_id": number | null,"id": number,"linea": string,"nombre": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "codigo": string,"id"?: never,"linea"?: string,"nombre": string
+                    "codigo": string,"cuenta_costo_id"?: number | null,"cuenta_venta_id"?: number | null,"id"?: never,"linea"?: string,"nombre": string
                   }
                   Update: {
-                    "codigo"?: string,"id"?: never,"linea"?: string,"nombre"?: string
+                    "codigo"?: string,"cuenta_costo_id"?: number | null,"cuenta_venta_id"?: number | null,"id"?: never,"linea"?: string,"nombre"?: string
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "categorias_cuenta_costo_id_fkey"
+      columns: ["cuenta_costo_id"]
+isOneToOne: false
+      referencedRelation: "cuentas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "categorias_cuenta_venta_id_fkey"
+      columns: ["cuenta_venta_id"]
+isOneToOne: false
+      referencedRelation: "cuentas"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"clientes": {
                   Row: {
@@ -317,6 +329,40 @@ isOneToOne: false
                   }
                   Update: {
                     "canal"?: string,"creado_en"?: string,"destino"?: string | null,"detalle"?: string | null,"documento_id"?: number,"enviado_por"?: string | null,"estado"?: string,"id"?: never,"tipo"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"conceptos_compra": {
+                  Row: {
+                    "activo": boolean,"cuenta_id": number,"es_mercaderia": boolean,"id": number,"nombre": string,"orden": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activo"?: boolean,"cuenta_id": number,"es_mercaderia"?: boolean,"id"?: never,"nombre": string,"orden"?: number
+                  }
+                  Update: {
+                    "activo"?: boolean,"cuenta_id"?: number,"es_mercaderia"?: boolean,"id"?: never,"nombre"?: string,"orden"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "conceptos_compra_cuenta_id_fkey"
+      columns: ["cuenta_id"]
+isOneToOne: false
+      referencedRelation: "cuentas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"configuracion_contable": {
+                  Row: {
+                    "actualizado_en": string,"actualizado_por": string | null,"cierre_dia": number,"cierre_mes": number,"inicio": string | null,"mascara": (number)[],"unica": boolean
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"cierre_dia"?: number,"cierre_mes"?: number,"inicio"?: string | null,"mascara"?: (number)[],"unica"?: boolean
+                  }
+                  Update: {
+                    "actualizado_en"?: string,"actualizado_por"?: string | null,"cierre_dia"?: number,"cierre_mes"?: number,"inicio"?: string | null,"mascara"?: (number)[],"unica"?: boolean
                   }
                   Relationships: [
                     
@@ -450,6 +496,52 @@ isOneToOne: false
       columns: ["usuario_id"]
 isOneToOne: false
       referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"cuentas": {
+                  Row: {
+                    "activa": boolean,"clave": string | null,"codigo": string,"creado_en": string,"id": number,"imputable": boolean,"nombre": string,"padre_id": number | null,"tipo": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activa"?: boolean,"clave"?: string | null,"codigo": string,"creado_en"?: string,"id"?: never,"imputable"?: boolean,"nombre": string,"padre_id"?: number | null,"tipo": string
+                  }
+                  Update: {
+                    "activa"?: boolean,"clave"?: string | null,"codigo"?: string,"creado_en"?: string,"id"?: never,"imputable"?: boolean,"nombre"?: string,"padre_id"?: number | null,"tipo"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "cuentas_padre_id_fkey"
+      columns: ["padre_id"]
+isOneToOne: false
+      referencedRelation: "cuentas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"cuentas_por_linea": {
+                  Row: {
+                    "cuenta_costo_id": number,"cuenta_venta_id": number,"linea": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cuenta_costo_id": number,"cuenta_venta_id": number,"linea": string
+                  }
+                  Update: {
+                    "cuenta_costo_id"?: number,"cuenta_venta_id"?: number,"linea"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "cuentas_por_linea_cuenta_costo_id_fkey"
+      columns: ["cuenta_costo_id"]
+isOneToOne: false
+      referencedRelation: "cuentas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "cuentas_por_linea_cuenta_venta_id_fkey"
+      columns: ["cuenta_venta_id"]
+isOneToOne: false
+      referencedRelation: "cuentas"
       referencedColumns: ["id"]
     }
                   ]
@@ -701,17 +793,23 @@ isOneToOne: false
                   ]
                 },"gasto_categorias": {
                   Row: {
-                    "activo": boolean,"id": number,"nombre": string,"orden": number
+                    "activo": boolean,"cuenta_id": number | null,"id": number,"nombre": string,"orden": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "activo"?: boolean,"id"?: never,"nombre": string,"orden"?: number
+                    "activo"?: boolean,"cuenta_id"?: number | null,"id"?: never,"nombre": string,"orden"?: number
                   }
                   Update: {
-                    "activo"?: boolean,"id"?: never,"nombre"?: string,"orden"?: number
+                    "activo"?: boolean,"cuenta_id"?: number | null,"id"?: never,"nombre"?: string,"orden"?: number
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "gasto_categorias_cuenta_id_fkey"
+      columns: ["cuenta_id"]
+isOneToOne: false
+      referencedRelation: "cuentas"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"gastos": {
                   Row: {
@@ -947,17 +1045,23 @@ isOneToOne: false
                   ]
                 },"medios_pago": {
                   Row: {
-                    "activo": boolean,"ajuste_pct": number,"codigo": string,"cuotas": number,"en_mostrador": boolean,"en_tienda": boolean,"es_saldo": boolean,"id": number,"nombre": string,"orden": number,"tipo": string
+                    "activo": boolean,"ajuste_pct": number,"codigo": string,"cuenta_id": number | null,"cuotas": number,"en_mostrador": boolean,"en_tienda": boolean,"es_saldo": boolean,"id": number,"nombre": string,"orden": number,"tipo": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "activo"?: boolean,"ajuste_pct"?: number,"codigo": string,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre": string,"orden"?: number,"tipo": string
+                    "activo"?: boolean,"ajuste_pct"?: number,"codigo": string,"cuenta_id"?: number | null,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre": string,"orden"?: number,"tipo": string
                   }
                   Update: {
-                    "activo"?: boolean,"ajuste_pct"?: number,"codigo"?: string,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre"?: string,"orden"?: number,"tipo"?: string
+                    "activo"?: boolean,"ajuste_pct"?: number,"codigo"?: string,"cuenta_id"?: number | null,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre"?: string,"orden"?: number,"tipo"?: string
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "medios_pago_cuenta_id_fkey"
+      columns: ["cuenta_id"]
+isOneToOne: false
+      referencedRelation: "cuentas"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"movimientos_stock": {
                   Row: {
@@ -1477,14 +1581,14 @@ isOneToOne: false
                   ]
                 },"productos": {
                   Row: {
-                    "activo": boolean,"categoria_id": number | null,"codigo": string,"creado_en": string,"descripcion": string | null,"escala": string,"genero": string | null,"id": number,"imagen_url": string | null,"marca_id": number | null,"material": string | null,"nombre": string,"precio_compra": number,"precio_venta": number,"publicado_web": boolean,"subcategoria_id": number | null,"temporada": string | null
+                    "activo": boolean,"categoria_id": number | null,"codigo": string,"creado_en": string,"cuenta_costo_id": number | null,"cuenta_venta_id": number | null,"descripcion": string | null,"escala": string,"genero": string | null,"id": number,"imagen_url": string | null,"marca_id": number | null,"material": string | null,"nombre": string,"precio_compra": number,"precio_venta": number,"publicado_web": boolean,"subcategoria_id": number | null,"temporada": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "activo"?: boolean,"categoria_id"?: number | null,"codigo": string,"creado_en"?: string,"descripcion"?: string | null,"escala"?: string,"genero"?: string | null,"id"?: never,"imagen_url"?: string | null,"marca_id"?: number | null,"material"?: string | null,"nombre": string,"precio_compra"?: number,"precio_venta"?: number,"publicado_web"?: boolean,"subcategoria_id"?: number | null,"temporada"?: string | null
+                    "activo"?: boolean,"categoria_id"?: number | null,"codigo": string,"creado_en"?: string,"cuenta_costo_id"?: number | null,"cuenta_venta_id"?: number | null,"descripcion"?: string | null,"escala"?: string,"genero"?: string | null,"id"?: never,"imagen_url"?: string | null,"marca_id"?: number | null,"material"?: string | null,"nombre": string,"precio_compra"?: number,"precio_venta"?: number,"publicado_web"?: boolean,"subcategoria_id"?: number | null,"temporada"?: string | null
                   }
                   Update: {
-                    "activo"?: boolean,"categoria_id"?: number | null,"codigo"?: string,"creado_en"?: string,"descripcion"?: string | null,"escala"?: string,"genero"?: string | null,"id"?: never,"imagen_url"?: string | null,"marca_id"?: number | null,"material"?: string | null,"nombre"?: string,"precio_compra"?: number,"precio_venta"?: number,"publicado_web"?: boolean,"subcategoria_id"?: number | null,"temporada"?: string | null
+                    "activo"?: boolean,"categoria_id"?: number | null,"codigo"?: string,"creado_en"?: string,"cuenta_costo_id"?: number | null,"cuenta_venta_id"?: number | null,"descripcion"?: string | null,"escala"?: string,"genero"?: string | null,"id"?: never,"imagen_url"?: string | null,"marca_id"?: number | null,"material"?: string | null,"nombre"?: string,"precio_compra"?: number,"precio_venta"?: number,"publicado_web"?: boolean,"subcategoria_id"?: number | null,"temporada"?: string | null
                   }
                   Relationships: [
                     {
@@ -1492,6 +1596,18 @@ isOneToOne: false
       columns: ["categoria_id"]
 isOneToOne: false
       referencedRelation: "categorias"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "productos_cuenta_costo_id_fkey"
+      columns: ["cuenta_costo_id"]
+isOneToOne: false
+      referencedRelation: "cuentas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "productos_cuenta_venta_id_fkey"
+      columns: ["cuenta_venta_id"]
+isOneToOne: false
+      referencedRelation: "cuentas"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "productos_marca_id_fkey"
@@ -1603,17 +1719,23 @@ isOneToOne: false
                   ]
                 },"proveedores": {
                   Row: {
-                    "codigo": number,"creado_en": string,"documento": string | null,"email": string | null,"id": number,"nombre": string,"notas": string | null,"telefono": string | null
+                    "codigo": number,"creado_en": string,"cuenta_id": number | null,"documento": string | null,"email": string | null,"id": number,"nombre": string,"notas": string | null,"telefono": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "codigo"?: number,"creado_en"?: string,"documento"?: string | null,"email"?: string | null,"id"?: never,"nombre": string,"notas"?: string | null,"telefono"?: string | null
+                    "codigo"?: number,"creado_en"?: string,"cuenta_id"?: number | null,"documento"?: string | null,"email"?: string | null,"id"?: never,"nombre": string,"notas"?: string | null,"telefono"?: string | null
                   }
                   Update: {
-                    "codigo"?: number,"creado_en"?: string,"documento"?: string | null,"email"?: string | null,"id"?: never,"nombre"?: string,"notas"?: string | null,"telefono"?: string | null
+                    "codigo"?: number,"creado_en"?: string,"cuenta_id"?: number | null,"documento"?: string | null,"email"?: string | null,"id"?: never,"nombre"?: string,"notas"?: string | null,"telefono"?: string | null
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "proveedores_cuenta_id_fkey"
+      columns: ["cuenta_id"]
+isOneToOne: false
+      referencedRelation: "cuentas"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"puntos_venta_fiscales": {
                   Row: {
@@ -2038,6 +2160,14 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"v_cuentas_sin_asignar": {
+                  Row: {
+                    "detalle": string | null,"id": string | null,"nombre": string | null,"que": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
                 },"v_documentos_vigentes": {
                   Row: {
                     "contenido": string | null,"id": number | null,"publicado_en": string | null,"tipo": string | null,"version": number | null
@@ -2382,6 +2512,18 @@ isOneToOne: false
               "cliente_id": number,"id": number,"restante": number,"vence": string
             }[]
                            },
+"_cuenta":
+{ Args: { "p_clave": string }; Returns: number
+                           },
+"_cuenta_nivel":
+{ Args: { "p_codigo": string }; Returns: number
+                           },
+"_cuenta_padre":
+{ Args: { "p_codigo": string }; Returns: string
+                           },
+"_cuenta_prefijo":
+{ Args: { "p_codigo": string }; Returns: string
+                           },
 "_cuit_valido":
 { Args: { "p_cuit": string }; Returns: boolean
                            },
@@ -2574,8 +2716,14 @@ isOneToOne: false
 "arca_probar_servicio":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"asignar_cuenta":
+{ Args: { "p_campo": string,"p_cuenta": number,"p_id": string,"p_que": string }; Returns: undefined
+                           },
 "asignar_rol":
 { Args: { "p_email": string,"p_rol": number }; Returns: string
+                           },
+"borrar_cuenta":
+{ Args: { "p_id": number }; Returns: undefined
                            },
 "buscar_color":
 { Args: { "p_nombre": string }; Returns: number
@@ -2585,6 +2733,9 @@ isOneToOne: false
                            },
 "cambiar_estado_pedido":
 { Args: { "p_comentario"?: string,"p_estado": string,"p_motivo"?: string,"p_pagos"?: Json,"p_pedido": number }; Returns: number
+                           },
+"cambiar_mascara_cuentas":
+{ Args: { "p_mascara": (number)[] }; Returns: undefined
                            },
 "cancelar_mi_pedido":
 { Args: { "p_comentario"?: string,"p_motivo"?: string,"p_pedido": number }; Returns: undefined
@@ -2623,6 +2774,12 @@ isOneToOne: false
                            },
 "crear_presupuesto":
 { Args: { "p_canal"?: string,"p_cliente"?: number,"p_descuento"?: number,"p_items": Json,"p_medio_pago"?: number,"p_notas"?: string,"p_validez_dias"?: number }; Returns: number
+                           },
+"cuenta_costo_de":
+{ Args: { "p_producto": number }; Returns: number
+                           },
+"cuenta_venta_de":
+{ Args: { "p_producto": number }; Returns: number
                            },
 "cuentas_aplicar":
 { Args: Record<PropertyKey, never>; Returns: Json
@@ -2698,6 +2855,9 @@ isOneToOne: false
 "guardar_correo":
 { Args: { "p_clave"?: string,"p_email"?: string,"p_host"?: string,"p_nombre"?: string,"p_puerto"?: number,"p_usuario"?: string }; Returns: undefined
                            },
+"guardar_cuenta":
+{ Args: { "p_activa": boolean,"p_codigo": string,"p_id": number,"p_imputable": boolean,"p_nombre": string,"p_tipo": string }; Returns: number
+                           },
 "guardar_datos_fiscales":
 { Args: { "p_condicion_iva": string,"p_cuit": string,"p_domicilio": string,"p_ingresos_brutos"?: string,"p_inicio_actividades"?: string,"p_razon_social": string }; Returns: undefined
                            },
@@ -2721,6 +2881,9 @@ isOneToOne: false
                            },
 "ia_revisar_modelos":
 { Args: { "p_pedir"?: boolean }; Returns: undefined
+                           },
+"importar_plan_cuentas":
+{ Args: { "p_filas": Json }; Returns: number
                            },
 "impresion_de":
 { Args: { "p_usuario"?: string }; Returns: {

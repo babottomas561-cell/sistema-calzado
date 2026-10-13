@@ -132,6 +132,40 @@ la llave va a `integraciones` como las demás claves de la regla 16)**
 | `modo` | `todas` (CC1 siempre) / `elegir` (el cajero elige CC1 o CC2; ver sección 9) |
 | `serie_por_defecto` | `fiscal` / `interna` (cuando `modo = elegir`) |
 
+### Empresas y sucursales (pedido del dueño, 2026-10-13)
+
+Un local puede tener **varias sucursales**, y una sucursal puede ser **de otra razón social** (otro CUIT). Por eso los datos fiscales se separan en dos:
+
+**`empresas`** — cada razón social que factura (hoy, una: la de `datos_legales`, que pasa a ser la empresa principal):
+| columna | qué |
+|---|---|
+| `cuit`, `razon_social`, `condicion_iva`, `ingresos_brutos`, `inicio_actividades`, `domicilio_fiscal` | lo de la empresa |
+| `ambiente` | pruebas o producción, **por empresa** |
+| certificado y llave | **cada empresa tiene su propio certificado** (ARCA da uno por CUIT) y su llave en el Vault; su acceso de 12 horas también es suyo |
+
+**`sucursales`** — cada local:
+| columna | qué |
+|---|---|
+| `nombre`, `domicilio_comercial`, `telefono`, `email` | lo que va impreso en sus facturas |
+| `empresa_id` | **de qué razón social es** (de qué CUIT salen sus facturas) |
+| `deposito_id` | de dónde sale la mercadería que vende |
+| `punto_venta_id` | su punto de venta de siempre (uno de los de su empresa) |
+| `cuenta_caja_id` | su caja en el plan de cuentas |
+| `activa`, `principal` | |
+
+**Puntos de venta por sucursal:** cada punto de venta de ARCA es de una empresa (los trae su certificado) y se asigna a una sucursal. Una sucursal puede
+tener varios (por ejemplo, uno por caja); cada persona del equipo usa el de su sucursal. Dos empresas pueden tener el mismo número de punto de venta
+sin problema: la numeración va por empresa + punto de venta + tipo.
+
+**Qué cambia en lo que ya está hecho (fase 1):** hoy hay una sola empresa con un certificado en `integraciones`. La migración de sucursales crea la
+empresa principal con esos datos y mueve ahí el certificado, la llave y el acceso, sin pedir nada de nuevo. La pantalla de ARCA pasa a ser por empresa
+(elegís la empresa y hacés los mismos cuatro pasos). La contabilidad sigue siendo una sola por instalación; si las razones sociales tienen que llevar
+contabilidades separadas, es una decisión para el contador (se marcaría cada asiento con su empresa).
+
+Cada persona del equipo tiene su **sucursal de trabajo** (`perfiles.sucursal_id`): la caja usa su depósito, su empresa, su punto de venta y su domicilio.
+Hoy hay un solo local: la migración crea la empresa y la sucursal «Principal» con los datos actuales, así nada cambia hasta que se agregue otra.
+Se administra en **Configuración → Empresas y sucursales**.
+
 ### `puntos_venta_fiscales` (los de ARCA que usa el sistema)
 | columna | qué |
 |---|---|
@@ -145,10 +179,13 @@ Los puntos de venta **se crean en la página de ARCA** (no hay servicio para cre
 lista los habilitados para web services, se elige cuáles usar y cuál es el de siempre. Se puede fijar uno **por persona del equipo** (como la impresión) o por
 canal (por ejemplo, la tienda online con el suyo). Cada punto de venta numera por separado (`arca_numeradores`).
 
-### `productos.alicuota_iva`
-`numeric(4,2)` con `check` en 0 · 2,5 · 5 · 10,5 · 21 · 27. Vacío = la del rubro (`categorias.alicuota_iva`, opcional) y si tampoco, la del local
-(`configuracion_fiscal.alicuota_por_defecto`). Se edita en la ficha del artículo y en tanda desde Productos. Se copia al renglón de la venta
-(`venta_items.alicuota_iva`) al vender, como se copia el costo: si después se cambia, las ventas viejas no se tocan.
+### IVA de cada artículo (`productos.alicuota_iva`)
+
+Campo **IVA** en la tabla de artículos: `numeric(4,2)` con `check` en 0 · 2,5 · 5 · 10,5 · 21 · 27, más «exento» y «no gravado» (columna
+`condicion_iva_articulo`: `gravado` / `exento` / `no_gravado`, que ARCA informa distinto). Vacío = el del rubro (`categorias.alicuota_iva`) y si
+tampoco, el del local (`configuracion_fiscal.alicuota_por_defecto`). Se carga en la ficha y en el alta del artículo, se cambia en tanda desde
+Productos y se ve en la lista. Se copia al renglón de la venta (`venta_items.alicuota_iva`) al vender, como se copia el costo: si después se cambia,
+las ventas viejas no se tocan. También lo usa la compra (renglones de mercadería) y el presupuesto.
 
 ### Categoría de IVA: de la empresa y de cada cliente
 
@@ -158,13 +195,18 @@ La letra de la factura sale de **dos datos**: la categoría de la empresa y la d
 `responsable_inscripto`, `monotributo`, `exento`. Se elige en **Integraciones → ARCA** (paso 1) y se ve también en Tienda online → Legales.
 Sin categoría cargada no se puede activar ARCA.
 
-**Cada cliente** — en `clientes`:
+**Cada cliente** — columnas para su facturación en `clientes`:
 | columna | valores | de fábrica |
 |---|---|---|
 | `condicion_iva` | `consumidor_final`, `responsable_inscripto`, `monotributo`, `exento`, `no_alcanzado` | `consumidor_final` |
 | `tipo_documento` | `DNI`, `CUIT`, `CUIL`, `pasaporte` | `DNI` |
 | `documento` | (ya existe) el número | — |
-| `razon_social`, `domicilio_fiscal` | para Factura A (si no, se usa el nombre y la dirección) | vacíos |
+| `razon_social` | la que va en la factura (si no, el nombre) | vacío |
+| `domicilio_fiscal`, `localidad_fiscal`, `provincia` | para Factura A (hoy hay `direccion` y `localidad`: se proponen como valor inicial) | vacíos |
+| `email_facturas` | a dónde mandarle la factura (si no, su email) | vacío |
+| `factura_por_defecto` | `si` / `no`: si a este cliente siempre se le factura (CC1) | según la categoría |
+
+Se cargan en la ficha del cliente (sección «Datos para facturar», plegada si es consumidor final) y desde la caja sin salir.
 
 Reglas que controla la base (`check` y trigger, como en el resto del sistema):
 - `responsable_inscripto`, `monotributo` y `exento` **exigen CUIT** (tipo `CUIT` y dígito verificador correcto).

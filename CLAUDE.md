@@ -276,6 +276,12 @@ una API de Next.** Lo que ya pisamos:
     la ruta `/api/arca/firma` (firmador y pasarela sin secretos, solo hacia las direcciones de ARCA; `lib/arca/`), que la base llama con `_arca_app`.
     Las funciones que hablan con ARCA tienen `statement_timeout` propio (la API corta a los 8 s) y nunca lanzan errores después de guardar el acceso
     (ARCA no da otro mientras haya uno vigente). Bitácora en `arca_llamadas` (sin claves). Las pruebas simulan la ruta reemplazando `_pedir_http`.
+
+27. **Plan de cuentas** (`/admin/contabilidad`, `contabilidad.ver` / `contabilidad.configurar`; diseño en `docs/PLAN_DE_CUENTAS.md`). Fase A: `cuentas` (árbol por
+    código; el padre y el tipo los pone la base; solo las imputables reciben movimientos; `clave` = las que usa el sistema, no se borran ni se desactivan),
+    importación por planilla (`importar_plan_cuentas`, agrega y renombra) y asignaciones con jerarquía: artículo → rubro → línea (`cuentas_por_linea`) →
+    general (`cuenta_venta_de`, `cuenta_costo_de`); medios de pago (nacen con la cuenta de su tipo), proveedores, `conceptos_compra`, categorías de gasto.
+    `asignar_cuenta` controla que el tipo de cuenta tenga sentido. «Qué falta asignar» = `v_cuentas_sin_asignar`. Los asientos llegan en la fase B.
 ---
 
 ## Dónde está cada cosa
