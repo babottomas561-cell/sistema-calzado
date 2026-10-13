@@ -44,7 +44,8 @@ export default function Menu({ version, logo, nombre, email, rolEquipo, permisos
   const itemActual = GRUPOS.flatMap((g) => g.items).find((item) => item.href === actual);
   const textoBusqueda = normalizar(busqueda.trim());
   // Lo que se ve: sin lo que la persona ocultó (salvo al personalizar, que muestra todo para poder volver a prenderlo)
-  const visibles = gruposPermitidos.map((g) => ({ ...g, items: personalizando ? g.items : g.items.filter((i) => !ocultos.includes(i.href)) }));
+  // Al buscar se ve todo (también lo que ocultó), así nunca queda una sección inalcanzable
+  const visibles = gruposPermitidos.map((g) => ({ ...g, items: personalizando || textoBusqueda ? g.items : g.items.filter((i) => !ocultos.includes(i.href)) }));
   const favoritosVisibles = personalizando ? [] : visibles.flatMap((g) => g.items).filter((i) => favoritos.includes(i.href));
   const grupos = [...(favoritosVisibles.length && !textoBusqueda ? [{ titulo: "Favoritos", items: favoritosVisibles, esFavoritos: true }] : []),
     ...visibles.map((g) => ({ ...g, esFavoritos: false }))]
@@ -153,6 +154,7 @@ export default function Menu({ version, logo, nombre, email, rolEquipo, permisos
                       title={compacto ? texto : undefined}
                       className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${compacto ? "md:justify-center" : "pr-10"} ${activo ? "bg-marca-suave text-marca" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}>
                       <Icono size={18} strokeWidth={activo ? 2.2 : 1.8} className="shrink-0" /><span className={compacto ? "md:hidden" : ""}>{texto}</span>
+                      {oculto && <span className="ml-auto text-[11px] font-normal text-gray-400">oculto</span>}
                     </Link>
                     {!compacto && <button type="button" onClick={() => alternarFavorito(href)} aria-pressed={esFavorito} aria-label={esFavorito ? `Sacar ${texto} de favoritos` : `Agregar ${texto} a favoritos`} title={esFavorito ? "Sacar de favoritos" : "Agregar a favoritos"}
                       className={`absolute right-1.5 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-md transition hover:bg-gray-200 focus-visible:opacity-100 ${esFavorito ? "text-amber-500" : "text-gray-400 opacity-100 md:opacity-0 md:group-hover:opacity-100"}`}>

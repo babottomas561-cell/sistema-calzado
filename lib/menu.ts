@@ -1,5 +1,5 @@
 // Catálogo del menú del panel (lo usan el menú y la pantalla de módulos).
-import { BadgePercent, BookText, BookUser, Boxes, ChartBar, ChevronDown, ExternalLink, FileText, House, KeyRound, LogOut, Menu as IconoMenu, MessageCircleMore, Package, PackagePlus, PackageSearch, PackageX, PanelLeftClose, PanelLeftOpen, Plug, Plus, Printer, Receipt, Scale, ScanBarcode, Search, Settings2, ShieldCheck, ShoppingBag, Store, Tags, Truck, Undo2, Users, Wallet, X, type LucideIcon } from "lucide-react";
+import { BadgePercent, BookText, Boxes, ChartBar, FileText, House, MessageCircleMore, Package, PackagePlus, PackageSearch, PackageX, Plug, Printer, Receipt, Scale, ScanBarcode, Settings2, ShieldCheck, ShoppingBag, Store, Tags, Truck, Undo2, Users, Wallet, type LucideIcon } from "lucide-react";
 import type { Permiso } from "@/lib/permisos";
 
 // El menú del panel. Cada ítem aparece si la persona tiene alguno de sus permisos (la base controla igual lo que puede hacer),

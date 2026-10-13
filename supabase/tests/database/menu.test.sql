@@ -14,7 +14,7 @@ select plan(10);
 set local role authenticated;
 
 select prueba.como_admin();
-select lives_ok($$ select configurar_modulos(array['/admin/presupuestos', '/admin/contabilidad', '/admin/presupuestos']) $$, 'el Administrador apaga módulos');
+select lives_ok($$ select configurar_modulos(array['etiquetas', 'precios', 'etiquetas']) $$, 'el Administrador apaga módulos');
 select is((select count(*)::int from modulos_desactivados), 2, 'sin repetidos');
 
 select prueba.como_vendedor();

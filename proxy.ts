@@ -42,6 +42,12 @@ export async function proxy(request: NextRequest) {
     const { data: perfil } = await supabase.from("perfiles").select("rol").eq("id", user.id).single();
     const staff = perfil?.rol === "staff";
     if (esAdmin && !staff) return ir("/mi-cuenta");
+    // Un módulo apagado en esta instalación corta sus pantallas (las altas las frena la base; esto es para no mostrar una pantalla muerta)
+    const modulo = ruta.split("/")[2];
+    if (esAdmin && modulo) {
+      const { data: m } = await supabase.from("modulos").select("activo").eq("clave", modulo).maybeSingle();
+      if (m && !m.activo) return ir(`/admin?modulo_apagado=${encodeURIComponent(modulo)}`);
+    }
     if (esAcceso) return ir(staff ? "/admin" : "/mi-cuenta");
   }
   return respuesta;

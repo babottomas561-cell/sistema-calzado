@@ -26,7 +26,7 @@ export default async function LayoutAdmin({ children }: { children: React.ReactN
   return (
     <div className="md:flex print:block">
       <Menu version={versionSistema()} logo={tienda.logo_url} nombre={tienda.nombre} email={user.email ?? ""} rolEquipo={rolEquipo} permisos={permisos} salir={salir}
-        desactivados={(apagados ?? []).map((m) => m.clave)} favoritos={miMenu?.favoritos ?? []} ocultos={miMenu?.ocultos ?? []} guardarMenu={guardarMenu} />
+        desactivados={(apagados ?? []).flatMap((m) => (m.clave ? [m.clave] : []))} favoritos={miMenu?.favoritos ?? []} ocultos={miMenu?.ocultos ?? []} guardarMenu={guardarMenu} />
       <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 px-4 py-5 md:px-8 md:py-8 print:m-0 print:max-w-none print:p-0">{children}</main>
     </div>
   );

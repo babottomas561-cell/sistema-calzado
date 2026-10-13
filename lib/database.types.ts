@@ -1123,16 +1123,16 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"modulos_desactivados": {
+                },"modulos": {
                   Row: {
-                    "clave": string
+                    "activo": boolean,"cambiado_en": string | null,"cambiado_por": string | null,"clave": string,"depende": (string)[],"fijo": boolean,"nombre": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "clave": string
+                    "activo"?: boolean,"cambiado_en"?: string | null,"cambiado_por"?: string | null,"clave": string,"depende"?: (string)[],"fijo"?: boolean,"nombre": string
                   }
                   Update: {
-                    "clave"?: string
+                    "activo"?: boolean,"cambiado_en"?: string | null,"cambiado_por"?: string | null,"clave"?: string,"depende"?: (string)[],"fijo"?: boolean,"nombre"?: string
                   }
                   Relationships: [
                     
@@ -2192,7 +2192,15 @@ isOneToOne: false
                 }
           }
           Views: {
-            "v_catalogo": {
+            "modulos_desactivados": {
+                  Row: {
+                    "clave": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
+                },"v_catalogo": {
                   Row: {
                     "categoria": string | null,"color": string | null,"color_hex": string | null,"creado_en": string | null,"descripcion": string | null,"disponible": number | null,"escala": string | null,"genero": string | null,"imagen_url": string | null,"linea": string | null,"marca": string | null,"material": string | null,"nombre": string | null,"precio": number | null,"producto_id": number | null,"talle": string | null,"talle_orden": number | null,"temporada": string | null,"variante_id": number | null
                   }
@@ -2663,6 +2671,12 @@ isOneToOne: false
                            },
 "_instagram_tarea":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"_modulo_activo":
+{ Args: { "p_clave": string }; Returns: boolean
+                           },
+"_modulo_pendientes":
+{ Args: { "p_clave": string }; Returns: string
                            },
 "_mover_stock":
 { Args: { "p_cantidad": number,"p_compra"?: number,"p_deposito": number,"p_motivo"?: string,"p_tipo": string,"p_variante": number,"p_venta"?: number }; Returns: undefined

@@ -10,8 +10,8 @@ import { ChevronRight, Lock, MessageCircleMore, Plus, ShoppingBag, TriangleAlert
 
 const vacio = { data: [] as never[], count: 0 };
 
-export default async function Inicio({ searchParams }: { searchParams: Promise<{ sin_permiso?: string }> }) {
-  const { sin_permiso } = await searchParams;
+export default async function Inicio({ searchParams }: { searchParams: Promise<{ sin_permiso?: string; modulo_apagado?: string }> }) {
+  const { sin_permiso, modulo_apagado } = await searchParams;
   const { supabase, permisos } = await usuarioActual();
   const todas = puede(permisos, "ventas.ver_todas", "informes.ventas");   // ve el negocio entero
   const vende = puede(permisos, "ventas.registrar");
@@ -69,6 +69,7 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
         {vende && <Link href="/admin/ventas/nueva" className="boton"><Plus size={16} /> Nueva venta</Link>}
       </div>
 
+      {modulo_apagado && <p className="flex items-center gap-2 rounded-lg border border-borde bg-white px-4 py-2.5 text-sm text-texto-2"><Lock size={16} /> Esa parte del sistema no está activa en este local. Un administrador la puede activar en Equipo → Módulos.</p>}
       {sin_permiso && <p className="flex items-center gap-2 rounded-lg border border-borde bg-white px-4 py-2.5 text-sm text-texto-2"><Lock size={16} /> Esa pantalla no está habilitada para tu rol. Si la necesitás, pedíselo a un administrador.</p>}
 
       {((pedidos.count ?? 0) > 0 || (seguimientos.count ?? 0) > 0) && (
