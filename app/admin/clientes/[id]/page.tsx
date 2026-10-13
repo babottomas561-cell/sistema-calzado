@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { crearCliente } from "@/lib/supabase/server";
 import { dia, fecha, fechaHora, pesos } from "@/lib/formato";
-import FichaForm from "../FichaForm";
+import FichaForm, { type FichaCliente } from "../FichaForm";
 import NuevaInteraccion from "./NuevaInteraccion";
 import { marcarHecha } from "../acciones";
 import { Check, MessageCircle, Pencil } from "lucide-react";
@@ -15,6 +15,8 @@ export default async function FichaCliente({ params, searchParams }: { params: P
   const { id } = await params;
   const { editar } = await searchParams;
   const supabase = await crearCliente();
+  const { data: fac } = await supabase.rpc("facturacion_caja");
+  const letraLocal = (fac as { activa?: boolean; letra?: string | null } | null)?.activa ? ((fac as { letra?: string | null }).letra ?? null) : null;
   const [{ data: c }, { data: ventas }, { data: pedidos }, { data: interacciones }, { data: items }, { data: creditos }] = await Promise.all([
     supabase.from("clientes").select("*").eq("id", Number(id)).single(),
     supabase.from("ventas").select("id, comprobante, fecha, total, canal").eq("cliente_id", Number(id)).is("anulada_en", null).order("fecha", { ascending: false }),
@@ -99,7 +101,7 @@ export default async function FichaCliente({ params, searchParams }: { params: P
               </tbody></table></div></>}
           </section>
         </div>
-        <div><FichaForm key={editar === "datos" ? "editar" : "ver"} c={c} puedeEditar={permisos.includes("clientes.editar")} iniciarEdicion={editar === "datos"} /></div>
+        <div><FichaForm key={editar === "datos" ? "editar" : "ver"} c={c as FichaCliente} letraLocal={letraLocal} puedeEditar={permisos.includes("clientes.editar")} iniciarEdicion={editar === "datos"} /></div>
       </div>
     </div>
   );

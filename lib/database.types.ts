@@ -285,14 +285,14 @@ isOneToOne: false
                   ]
                 },"clientes": {
                   Row: {
-                    "acepta_promos": boolean,"codigo": number,"creado_en": string,"direccion": string | null,"documento": string | null,"email": string | null,"etiquetas": (string)[],"fecha_nacimiento": string | null,"id": number,"localidad": string | null,"nombre": string,"notas": string | null,"origen": string | null,"telefono": string | null,"usuario_id": string | null
+                    "acepta_promos": boolean,"codigo": number,"condicion_iva": string,"creado_en": string,"direccion": string | null,"documento": string | null,"domicilio_fiscal": string | null,"email": string | null,"email_facturas": string | null,"etiquetas": (string)[],"fecha_nacimiento": string | null,"id": number,"localidad": string | null,"localidad_fiscal": string | null,"nombre": string,"notas": string | null,"origen": string | null,"provincia": string | null,"razon_social": string | null,"telefono": string | null,"tipo_documento": string,"usuario_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "acepta_promos"?: boolean,"codigo"?: number,"creado_en"?: string,"direccion"?: string | null,"documento"?: string | null,"email"?: string | null,"etiquetas"?: (string)[],"fecha_nacimiento"?: string | null,"id"?: never,"localidad"?: string | null,"nombre": string,"notas"?: string | null,"origen"?: string | null,"telefono"?: string | null,"usuario_id"?: string | null
+                    "acepta_promos"?: boolean,"codigo"?: number,"condicion_iva"?: string,"creado_en"?: string,"direccion"?: string | null,"documento"?: string | null,"domicilio_fiscal"?: string | null,"email"?: string | null,"email_facturas"?: string | null,"etiquetas"?: (string)[],"fecha_nacimiento"?: string | null,"id"?: never,"localidad"?: string | null,"localidad_fiscal"?: string | null,"nombre": string,"notas"?: string | null,"origen"?: string | null,"provincia"?: string | null,"razon_social"?: string | null,"telefono"?: string | null,"tipo_documento"?: string,"usuario_id"?: string | null
                   }
                   Update: {
-                    "acepta_promos"?: boolean,"codigo"?: number,"creado_en"?: string,"direccion"?: string | null,"documento"?: string | null,"email"?: string | null,"etiquetas"?: (string)[],"fecha_nacimiento"?: string | null,"id"?: never,"localidad"?: string | null,"nombre"?: string,"notas"?: string | null,"origen"?: string | null,"telefono"?: string | null,"usuario_id"?: string | null
+                    "acepta_promos"?: boolean,"codigo"?: number,"condicion_iva"?: string,"creado_en"?: string,"direccion"?: string | null,"documento"?: string | null,"domicilio_fiscal"?: string | null,"email"?: string | null,"email_facturas"?: string | null,"etiquetas"?: (string)[],"fecha_nacimiento"?: string | null,"id"?: never,"localidad"?: string | null,"localidad_fiscal"?: string | null,"nombre"?: string,"notas"?: string | null,"origen"?: string | null,"provincia"?: string | null,"razon_social"?: string | null,"telefono"?: string | null,"tipo_documento"?: string,"usuario_id"?: string | null
                   }
                   Relationships: [
                     
@@ -793,14 +793,14 @@ isOneToOne: true
                   ]
                 },"facturas": {
                   Row: {
-                    "ambiente": string,"autorizada_en": string | null,"cae": string | null,"cae_vence": string | null,"cbte_tipo": number,"clase": string,"cliente_id": number | null,"comprobante": string | null,"condicion_iva_receptor": number,"creada_en": string,"creada_por": string | null,"detalle_iva": NonNullable<Json>,"doc_nro": string,"doc_tipo": number,"estado": string,"factura_id": number | null,"fecha": string,"id": number,"intentos": number,"iva": number,"letra": string,"neto": number,"numero": number | null,"numero_intentado": number | null,"observaciones": string | null,"proximo_intento": string | null,"punto_venta": number,"receptor": string,"total": number,"ultimo_error": string | null,"venta_id": number
+                    "ambiente": string,"autorizada_en": string | null,"cae": string | null,"cae_vence": string | null,"cbte_tipo": number,"clase": string,"cliente_id": number | null,"comprobante": string | null,"condicion_iva_receptor": number,"creada_en": string,"creada_por": string | null,"detalle_iva": NonNullable<Json>,"devolucion_id": number | null,"doc_nro": string,"doc_tipo": number,"estado": string,"factura_id": number | null,"fecha": string,"id": number,"intentos": number,"iva": number,"letra": string,"neto": number,"numero": number | null,"numero_intentado": number | null,"observaciones": string | null,"proximo_intento": string | null,"punto_venta": number,"receptor": string,"total": number,"ultimo_error": string | null,"venta_id": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "ambiente": string,"autorizada_en"?: string | null,"cae"?: string | null,"cae_vence"?: string | null,"cbte_tipo": number,"clase"?: string,"cliente_id"?: number | null,"comprobante"?: never,"condicion_iva_receptor": number,"creada_en"?: string,"creada_por"?: string | null,"detalle_iva"?: NonNullable<Json>,"doc_nro": string,"doc_tipo": number,"estado"?: string,"factura_id"?: number | null,"fecha": string,"id"?: never,"intentos"?: number,"iva"?: number,"letra": string,"neto": number,"numero"?: number | null,"numero_intentado"?: number | null,"observaciones"?: string | null,"proximo_intento"?: string | null,"punto_venta": number,"receptor": string,"total": number,"ultimo_error"?: string | null,"venta_id": number
+                    "ambiente": string,"autorizada_en"?: string | null,"cae"?: string | null,"cae_vence"?: string | null,"cbte_tipo": number,"clase"?: string,"cliente_id"?: number | null,"comprobante"?: never,"condicion_iva_receptor": number,"creada_en"?: string,"creada_por"?: string | null,"detalle_iva"?: NonNullable<Json>,"devolucion_id"?: number | null,"doc_nro": string,"doc_tipo": number,"estado"?: string,"factura_id"?: number | null,"fecha": string,"id"?: never,"intentos"?: number,"iva"?: number,"letra": string,"neto": number,"numero"?: number | null,"numero_intentado"?: number | null,"observaciones"?: string | null,"proximo_intento"?: string | null,"punto_venta": number,"receptor": string,"total": number,"ultimo_error"?: string | null,"venta_id": number
                   }
                   Update: {
-                    "ambiente"?: string,"autorizada_en"?: string | null,"cae"?: string | null,"cae_vence"?: string | null,"cbte_tipo"?: number,"clase"?: string,"cliente_id"?: number | null,"comprobante"?: never,"condicion_iva_receptor"?: number,"creada_en"?: string,"creada_por"?: string | null,"detalle_iva"?: NonNullable<Json>,"doc_nro"?: string,"doc_tipo"?: number,"estado"?: string,"factura_id"?: number | null,"fecha"?: string,"id"?: never,"intentos"?: number,"iva"?: number,"letra"?: string,"neto"?: number,"numero"?: number | null,"numero_intentado"?: number | null,"observaciones"?: string | null,"proximo_intento"?: string | null,"punto_venta"?: number,"receptor"?: string,"total"?: number,"ultimo_error"?: string | null,"venta_id"?: number
+                    "ambiente"?: string,"autorizada_en"?: string | null,"cae"?: string | null,"cae_vence"?: string | null,"cbte_tipo"?: number,"clase"?: string,"cliente_id"?: number | null,"comprobante"?: never,"condicion_iva_receptor"?: number,"creada_en"?: string,"creada_por"?: string | null,"detalle_iva"?: NonNullable<Json>,"devolucion_id"?: number | null,"doc_nro"?: string,"doc_tipo"?: number,"estado"?: string,"factura_id"?: number | null,"fecha"?: string,"id"?: never,"intentos"?: number,"iva"?: number,"letra"?: string,"neto"?: number,"numero"?: number | null,"numero_intentado"?: number | null,"observaciones"?: string | null,"proximo_intento"?: string | null,"punto_venta"?: number,"receptor"?: string,"total"?: number,"ultimo_error"?: string | null,"venta_id"?: number
                   }
                   Relationships: [
                     {
@@ -814,6 +814,12 @@ isOneToOne: false
       columns: ["cliente_id"]
 isOneToOne: false
       referencedRelation: "v_mi_ficha"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "facturas_devolucion_id_fkey"
+      columns: ["devolucion_id"]
+isOneToOne: false
+      referencedRelation: "devoluciones"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "facturas_factura_id_fkey"
@@ -2764,6 +2770,9 @@ isOneToOne: false
 "_factura_letra":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"_factura_receptor":
+{ Args: { "p_cliente": number }; Returns: Json
+                           },
 "_factura_resumen":
 { Args: { "p_factura": number }; Returns: Json
                            },
@@ -3187,6 +3196,9 @@ isOneToOne: false
                            },
 "legales_completos":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"letra_para_cliente":
+{ Args: { "p_cliente"?: number }; Returns: string
                            },
 "libro_diario":
 { Args: { "p_desde": string,"p_hasta": string }; Returns: {

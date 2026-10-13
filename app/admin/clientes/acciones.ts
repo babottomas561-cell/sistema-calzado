@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { crearCliente } from "@/lib/supabase/server";
+import { datosFiscales } from "@/lib/fiscal";
 
 export type Estado = { error?: string; ok?: string };
 const texto = (f: FormData, k: string) => String(f.get(k) ?? "").trim() || null;
@@ -15,6 +16,8 @@ function datosCliente(f: FormData) {
     fecha_nacimiento: texto(f, "fecha_nacimiento"), origen: texto(f, "origen"), notas: texto(f, "notas"),
     etiquetas: String(f.get("etiquetas") ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
     acepta_promos: f.get("acepta_promos") === "on",
+    // Datos para facturar (la base controla el CUIT de las categorías que lo necesitan)
+    ...datosFiscales((k) => (f.has(k) ? String(f.get(k)) : null)),
   };
 }
 

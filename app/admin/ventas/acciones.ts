@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { crearCliente } from "@/lib/supabase/server";
+import { datosFiscales } from "@/lib/fiscal";
 
 export type Estado = { error?: string };
 
@@ -55,7 +56,7 @@ export async function anularVenta(_: { error?: string; ok?: string }, f: FormDat
 }
 
 // Alta rápida de un cliente desde la caja (solo nombre y teléfono; el resto se completa después en Clientes). La base controla el permiso (clientes.editar).
-export async function crearClienteRapido(nombre: string, telefono: string): Promise<{ error?: string; cliente?: { id: number; nombre: string; telefono: string | null } }> {
+export async function crearClienteRapido(nombre: string, telefono: string, fiscal: Record<string, string> = {}): Promise<{ error?: string; cliente?: { id: number; nombre: string; telefono: string | null; documento: string | null; condicion_iva: string; tipo_documento: string } }> {
   const n = nombre.trim(), t = telefono.trim();
   if (!n) return { error: "Falta el nombre" };
   const supabase = await crearCliente();
@@ -65,7 +66,9 @@ export async function crearClienteRapido(nombre: string, telefono: string): Prom
     const ya = (iguales ?? []).find((c) => digitos.length >= 6 && (c.telefono ?? "").replace(/\D/g, "") === digitos);
     if (ya) return { error: `Ya existe ${ya.nombre} con ese teléfono: buscalo en la lista` };
   }
-  const { data, error } = await supabase.from("clientes").insert({ nombre: n, telefono: t || null }).select("id, nombre, telefono").single();
+  // Con los datos para facturar si se cargaron (la base controla el CUIT de las categorías que lo necesitan)
+  const { data, error } = await supabase.from("clientes").insert({ nombre: n, telefono: t || null, ...datosFiscales((k) => fiscal[k] ?? null) })
+    .select("id, nombre, telefono, documento, condicion_iva, tipo_documento").single();
   if (error) return { error: error.code === "42501" ? "No tenés permiso para crear clientes" : error.message };
   revalidatePath("/admin/clientes");
   return { cliente: data };
@@ -100,4 +103,14 @@ function resultadoFactura(data: unknown): { error?: string; ok?: string } {
   if (r.estado === "autorizada") return { ok: `Factura ${r.letra} ${r.comprobante} autorizada por ARCA` };
   if (r.estado === "rechazada") return { error: r.error ?? "ARCA rechazó la factura" };
   return { ok: "ARCA no contestó: la factura quedó en la cola y se reintenta sola en unos minutos" };
+}
+
+// Buscar la venta para un cambio o una devolución desde la caja (ticket escaneado, número de factura, cliente o teléfono). La base la encuentra aunque
+// la haya hecho otro vendedor, sin mostrar montos.
+export type VentaParaCambio = { id: number; comprobante: string; fecha: string; cliente: string | null; productos: string | null; en_plazo: boolean; factura: string | null };
+export async function buscarParaCambio(q: string): Promise<{ error?: string; ventas?: VentaParaCambio[] }> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("ventas_para_cambio", { p_buscar: q.trim().replace(/'/g, "-") });
+  if (error) return { error: error.message };
+  return { ventas: (data ?? []) as unknown as VentaParaCambio[] };
 }

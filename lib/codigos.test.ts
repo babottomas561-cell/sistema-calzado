@@ -1,7 +1,7 @@
 // Pruebas de los códigos de barras (npm run test:unidades). Los códigos de ejemplo son los de la norma GS1 / Wikipedia.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { claveDeBusqueda, codigoPropio, digitoGs1, esCodigoPropio, gs1Valido, normalizarCodigo, pareceCodigoLeido, tipoDeCodigo, validarCodigo } from "./codigos.ts";
+import { claveDeBusqueda, codigoPropio, digitoGs1, esCodigoPropio, gs1Valido, normalizarCodigo, pareceCodigoLeido, tipoDeCodigo, validarCodigo, comoComprobante } from "./codigos.ts";
 
 test("el dígito verificador GS1", () => {
   assert.equal(digitoGs1("400638133393"), 1);      // EAN-13 4006381333931
@@ -53,4 +53,12 @@ test("lo que parece salido de un lector", () => {
   assert.equal(pareceCodigoLeido("4006381333931"), true);
   assert.equal(pareceCodigoLeido("camisa"), false);
   assert.equal(pareceCodigoLeido("12345"), false);
+});
+
+test("el número de un ticket o de una factura (para cambios desde la caja)", () => {
+  assert.equal(comoComprobante("0001-00000123"), "0001-00000123");
+  assert.equal(comoComprobante("0001'00000123"), "0001-00000123");   // lector en inglés con el teclado en castellano
+  assert.equal(comoComprobante("B 00003-00000045"), "B00003-00000045");
+  assert.equal(comoComprobante("7790001234567"), null);               // un código de producto, no
+  assert.equal(comoComprobante("ZAP-0007-42-NEG"), null);              // un SKU, tampoco
 });

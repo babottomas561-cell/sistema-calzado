@@ -42,7 +42,18 @@ const lineasFiscales = (c: Doc): string[] => {
     ...(f.nota_credito?.estado === "autorizada" ? [`Anulada con nota de crédito ${f.nota_credito.letra} ${f.nota_credito.comprobante} (CAE ${f.nota_credito.cae})`] : []),
   ];
 };
-const receptor = (c: Doc) => (esFactura(c) ? (c.fiscal!.doc_tipo === 99 ? "A consumidor final" : `${c.fiscal!.receptor} · ${c.fiscal!.doc_tipo === 80 ? "CUIT" : "DNI"} ${c.fiscal!.doc_nro} · ${c.fiscal!.condicion_receptor}`) : null);
+const TIPO_DOC: Record<number, string> = { 80: "CUIT", 86: "CUIL", 96: "DNI", 94: "Pasaporte" };
+const receptor = (c: Doc) => {
+  if (!esFactura(c)) return null;
+  const f = c.fiscal!;
+  if (f.doc_tipo === 99) return "A consumidor final";
+  const doc = f.doc_tipo === 80 || f.doc_tipo === 86 ? `${f.doc_nro.slice(0, 2)}-${f.doc_nro.slice(2, 10)}-${f.doc_nro.slice(10)}` : f.doc_nro;
+  return [f.receptor, `${TIPO_DOC[f.doc_tipo] ?? "Doc."} ${doc}`, f.condicion_receptor, f.domicilio_receptor || null].filter(Boolean).join(" · ");
+};
+// Factura A: el neto y el IVA de cada alícuota, discriminados
+const discriminado = (c: Doc) => (esFactura(c) && c.fiscal!.letra === "A"
+  ? [{ rotulo: "Neto gravado", monto: c.fiscal!.neto }, ...c.fiscal!.detalle_iva.map((d) => ({ rotulo: `IVA ${String(d.alicuota).replace(".", ",")} %`, monto: d.iva }))]
+  : []);
 const rotuloAnulado = (c: Doc) => (c.tipo === "presupuesto" ? "PRESUPUESTO ANULADO" : "COMPROBANTE ANULADO");
 
 // ── Ticket (80 mm, 58 mm y la versión del celular) ─────────────────────────
@@ -104,6 +115,8 @@ function Ticket({ c, p, url }: { c: Doc; p: "ticket80" | "ticket58" | "pantalla"
       {c.totales.map((t, i) => t.fuerte
         ? <div key={i} style={{ ...fila, fontSize: e.grande, fontWeight: 800, margin: "0.8mm 0" }}><span>{t.rotulo.toUpperCase()}</span><span style={num}>{monto(t.monto)}</span></div>
         : <div key={i} style={fila}><span>{t.rotulo}</span><span style={num}>{monto(t.monto)}</span></div>)}
+      {discriminado(c).length > 0 && <div style={{ marginTop: "1.2mm", paddingTop: "1mm", borderTop: `1px dotted ${e.raya}`, fontSize: e.chico }}>
+        {discriminado(c).map((d, i) => <div key={i} style={fila}><span>{d.rotulo}</span><span style={num}>{pesos(d.monto)}</span></div>)}</div>}
       {c.pagos.length > 0 && (
         <>
           <hr style={raya} />
@@ -213,6 +226,8 @@ function HojaA4({ c, url }: { c: Doc; url?: string | null }) {
             {c.totales.map((t, i) => t.fuerte
               ? <div key={i} style={{ ...fila, marginTop: "1.5mm", paddingTop: "1.5mm", borderTop: "0.5mm solid #000", fontSize: "14pt", fontWeight: 800 }}><span>{t.rotulo}</span><span style={num}>{monto(t.monto)}</span></div>
               : <div key={i} style={{ ...fila, padding: "0.5mm 0" }}><span>{t.rotulo}</span><span style={num}>{monto(t.monto)}</span></div>)}
+            {discriminado(c).length > 0 && <div style={{ marginTop: "2mm", paddingTop: "1.5mm", borderTop: "0.2mm solid #999", fontSize: "9pt" }}>
+              {discriminado(c).map((d, i) => <div key={i} style={{ ...fila, padding: "0.3mm 0" }}><span>{d.rotulo}</span><span style={num}>{pesos(d.monto)}</span></div>)}</div>}
           </div>
         </div>
 

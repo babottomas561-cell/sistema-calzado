@@ -7,7 +7,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { Camera, ChevronLeft, CircleAlert, CircleCheck, Flame, ImageOff, ScanBarcode, Search, Volume2, VolumeX, X } from "lucide-react";
 import { pesos } from "@/lib/formato";
-import { claveDeBusqueda, normalizarCodigo, pareceCodigoLeido } from "@/lib/codigos";
+import { claveDeBusqueda, normalizarCodigo, pareceCodigoLeido, comoComprobante } from "@/lib/codigos";
 import EscanerCamara, { type Aviso } from "@/components/EscanerCamara";
 
 export type FilaStock = {
@@ -40,10 +40,11 @@ const avisosSonido = new Set<() => void>();
 const suscribirSonido = (f: () => void) => { avisosSonido.add(f); return () => { avisosSonido.delete(f); }; };
 const leerSonido = () => { try { return localStorage.getItem("caja.sonido") !== "no"; } catch { return true; } };
 
-export default function SelectorVariantes({ filas: todas, alElegir, soloConStock, caja = false, enVenta, masVendidos }: {
+export default function SelectorVariantes({ filas: todas, alElegir, soloConStock, caja = false, enVenta, masVendidos, alComprobante }: {
   filas: FilaStock[]; alElegir: (f: FilaStock) => void; soloConStock: boolean;
   caja?: boolean; enVenta?: Map<number, number>;   // en la caja: cuántas de cada variante ya están en la venta
   masVendidos?: number[];   // en la caja: ids de los modelos más vendidos, en orden (se ofrecen a un toque)
+  alComprobante?: (numero: string) => void;   // en la caja: se leyó el número de un ticket o factura (para un cambio o devolución)
 }) {
   // Al vender, lo que no tiene stock disponible directamente no aparece (ni el talle, ni el color,
   // ni el modelo si se quedó sin nada). Al comprar se ven todos: justamente es para reponer.
@@ -83,6 +84,8 @@ export default function SelectorVariantes({ filas: todas, alElegir, soloConStock
     const codigo = normalizarCodigo(texto);
     if (!codigo) return false;
     const f = porCodigo.get(claveDeBusqueda(codigo));
+    const comprobante = !f && alComprobante ? comoComprobante(codigo) : null;
+    if (comprobante) { alComprobante!(comprobante); return true; }
     if (!f) { avisar({ tipo: "error", texto: `No encontramos ningún producto con el código ${codigo}` }); return false; }
     if (soloConStock && f.stock <= 0) { avisar({ tipo: "error", texto: `${f.nombre} · talle ${f.talle} · ${f.color}: no hay stock disponible` }); return false; }
     alElegir(f);
@@ -168,7 +171,7 @@ export default function SelectorVariantes({ filas: todas, alElegir, soloConStock
               e.preventDefault();
               const t = normalizarCodigo(busqueda);
               // Enter con un código (de un lector o escrito): se agrega; con un nombre que deja un solo modelo, se abre
-              if (porCodigo.has(claveDeBusqueda(t)) || pareceCodigoLeido(t)) { leerCodigo(t); setBusqueda(""); }
+              if (porCodigo.has(claveDeBusqueda(t)) || pareceCodigoLeido(t) || (alComprobante && comoComprobante(t))) { leerCodigo(t); setBusqueda(""); }
               else if (caja && productos.length === 1) abrir(productos[0]);
             }} />
           {caja && busqueda && <button type="button" onClick={() => { setBusqueda(""); campo.current?.focus(); }} aria-label="Borrar la búsqueda" className="absolute right-1.5 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-md text-gray-500 hover:bg-gray-100"><X size={17} /></button>}

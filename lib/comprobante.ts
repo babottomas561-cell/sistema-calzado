@@ -33,7 +33,7 @@ export type ConfigComprobante = {
 // La factura de ARCA de una venta (si tiene): con ella el comprobante pasa a ser fiscal (letra, CAE y QR de ARCA)
 export type Fiscal = {
   estado: "pendiente" | "autorizada" | "rechazada" | "error" | "cancelada"; letra: "A" | "B" | "C"; codigo: string; comprobante: string | null; fecha: string;
-  cae: string | null; cae_vence: string | null; receptor: string; doc_tipo: number; doc_nro: string; condicion_receptor: string;
+  cae: string | null; cae_vence: string | null; receptor: string; doc_tipo: number; doc_nro: string; condicion_receptor: string; domicilio_receptor?: string | null;
   neto: number; iva: number; detalle_iva: { alicuota: number; base: number; iva: number }[]; total: number; iva_contenido_en_c: "leyenda" | "cero"; pruebas: boolean;
   qr: string | null;
   emisor: { razon_social: string | null; cuit: string | null; condicion_iva: string | null; ingresos_brutos: string | null; inicio_actividades: string | null; domicilio: string | null };

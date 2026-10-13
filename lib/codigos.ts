@@ -55,3 +55,10 @@ export function codigoPropio(numero: number): string {
   const cuerpo = `200${String(numero).padStart(9, "0")}`;
   return `${cuerpo}${digitoGs1(cuerpo)}`;
 }
+
+// El número de un comprobante (el código de barras del ticket «0001-00000123» o el de una factura «B 00003-00000045»): en la caja abre el cambio o la
+// devolución de esa venta. Un lector configurado en inglés con el teclado en castellano a veces manda «'» en vez de «-»: también vale.
+export function comoComprobante(texto: string): string | null {
+  const t = normalizarCodigo(texto).replace(/'/g, "-");
+  return /^[ABCabc]?\d{1,5}-\d{1,8}$/.test(t) ? t.toUpperCase() : null;
+}

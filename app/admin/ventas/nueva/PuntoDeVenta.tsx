@@ -11,12 +11,15 @@ import {
   ArrowLeftRight, BadgePercent, Banknote, ChevronDown, CircleAlert, CreditCard, Gift, KeyRound, Minus, Plus, Printer, ScanBarcode, ShieldCheck, ShoppingBag, Smartphone,
   SplitSquareHorizontal, Trash2, User, UserPlus, Wallet, X, FileCheck2, ReceiptText, type LucideIcon } from "lucide-react";
 import SelectorVariantes, { type FilaStock } from "@/components/SelectorVariantes";
+import DatosFiscales from "@/components/DatosFiscales";
+import CambioRapido from "./CambioRapido";
+import { cuitValido, letraPara } from "@/lib/fiscal";
 import { pesos, porcentaje } from "@/lib/formato";
 import { billetesSugeridos, calcularCobro, opcionesRedondeo, pagosParaLaBase, REPARTOS, totalCon, vuelto, type LineaPago, type MedioCobro } from "@/lib/cobro";
 import { autorizarDescuento, cotizarMostrador, crearClienteRapido, registrarVenta, type CotizacionMostrador } from "../acciones";
 
 type Item = FilaStock & { cantidad: number; precio: number };
-type Cliente = { id: number; nombre: string; telefono: string | null; saldo: number; documento?: string | null };
+type Cliente = { id: number; nombre: string; telefono: string | null; saldo: number; documento?: string | null; condicion_iva?: string | null; tipo_documento?: string | null };
 const CANALES = ["Local", "Instagram", "WhatsApp", "Web"];
 
 // Un ícono por tipo de medio de pago (el tipo se elige en Tablas → Medios de pago)
@@ -60,6 +63,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const [altaNombre, setAltaNombre] = useState("");
   const [altaTelefono, setAltaTelefono] = useState("");
   const [altaError, setAltaError] = useState("");
+  const altaFiscal = useRef<HTMLDivElement>(null);
   const [creando, setCreando] = useState(false);
   const [referencias, setReferencias] = useState<Record<number, string>>({});   // n.º de cupón / operación por medio de pago
   const [clienteId, setClienteId] = useState<number | null>(null);
@@ -70,11 +74,14 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const [pinError, setPinError] = useState("");
   const [validandoPin, setValidandoPin] = useState(false);
   const [abierto, setAbierto] = useState<"cliente" | "descuento" | "canal" | null>(null);
-  const [panel, setPanel] = useState(false);   // en el celular: el cobro a pantalla completa
+  const [panel, setPanel] = useState(false);
+  const [cambio, setCambio] = useState<string | null>(null);   // el panel de cambio o devolución (con lo que se escaneó)   // en el celular: el cobro a pantalla completa
   const [estado, accion, cargando] = useActionState(registrarVenta, {});
   // Con ARCA activa: «Factura» o «Comprobante interno» (si el local deja elegir; si no, siempre factura)
   const [elegido, setFacturar] = useState(facturacion ? facturacion.modo === "todas" || facturacion.porDefecto === "fiscal" : false);
   const cliente = clientes.find((c) => c.id === clienteId) ?? null;
+  // La letra que sale: con un cliente inscripto o monotributista con CUIT, A (si el local es inscripto)
+  const letra = facturacion ? letraPara(facturacion.letra, cliente) : "";
   const formulario = useRef<HTMLFormElement>(null);
   // «Saldo a favor» solo aparece si el cliente elegido tiene saldo (o si ya se eligió)
   const mediosVisibles = medios.filter((m) => !m.es_saldo || (cliente?.saldo ?? 0) > 0 || lineas.some((l) => l.medio_pago_id === m.id));
@@ -122,7 +129,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   // Un medio «siempre con factura» (Tablas → Medios de pago) en el cobro: va con factura, sin opción (la base también lo hace cumplir)
   const medioObliga = facturacion ? medios.find((m) => m.siempre_factura && cobro.lineas.some((l) => l.medio_pago_id === m.id)) ?? null : null;
   const facturar = elegido || !!medioObliga;
-  const sinDni = facturar && !!facturacion && cobro.total >= facturacion.umbral && !/^\d{7,8}$/.test((cliente?.documento ?? "").replace(/\D/g, ""));
+  const sinDni = facturar && !!facturacion && cobro.total >= facturacion.umbral && !(/^\d{7,8}$/.test((cliente?.documento ?? "").replace(/\D/g, "")) || cuitValido(cliente?.documento));
   // Por qué no se puede confirmar (se dice, no solo se apaga el botón)
   const falta = !items.length ? "Agregá al menos un producto"
     : pasaTope ? `Tu descuento máximo es ${pesos(topeDescuento ?? 0)}: para más, pedíselo a un encargado`
@@ -138,6 +145,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
     const alTeclear = (e: KeyboardEvent) => {
       if (e.key === "F2") { e.preventDefault(); document.querySelector<HTMLInputElement>('input[aria-label^="Buscar modelo"]')?.focus(); }
       if (e.key === "F9") { e.preventDefault(); formulario.current?.requestSubmit(); }
+      if (e.key === "F6") { e.preventDefault(); setCambio(""); }
       // F4: con factura / sin factura (solo si el local deja elegir)
       if (e.key === "F4" && facturacion?.modo === "elegir") { e.preventDefault(); setFacturar((x) => !x); }
     };
@@ -179,7 +187,9 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   };
   const crearCliente = async () => {
     setCreando(true); setAltaError("");
-    const r = await crearClienteRapido(altaNombre, altaTelefono);
+    // Los datos para facturar del alta (si se completaron): se leen del bloque, que no es un formulario aparte (está dentro del de la venta)
+    const fiscal = Object.fromEntries([...(altaFiscal.current?.querySelectorAll<HTMLInputElement | HTMLSelectElement>("[name]") ?? [])].map((x) => [x.name, x.value]));
+    const r = await crearClienteRapido(altaNombre, altaTelefono, fiscal);
     setCreando(false);
     if (r.error || !r.cliente) { setAltaError(r.error ?? "No se pudo crear el cliente"); return; }
     setNuevos((n) => [{ ...r.cliente!, saldo: 0 }, ...n]);
@@ -201,11 +211,16 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                 : <span className="ml-auto text-texto-2">Avisale al encargado.</span>}
             </div>
           )}
-          <h1 className="text-2xl font-bold">Nueva venta</h1>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h1 className="text-2xl font-bold">Nueva venta</h1>
+            <button type="button" onClick={() => setCambio("")} className="boton-sec min-h-10 whitespace-nowrap" title="Cambio o devolución (F6). También: escaneá el ticket del cliente">
+              <ArrowLeftRight size={16} strokeWidth={1.8} /> Cambio o devolución <kbd className="ml-1 hidden rounded border border-borde bg-white px-1 text-[11px] font-sans text-texto-2 lg:inline">F6</kbd></button>
+          </div>
+          {cambio !== null && <CambioRapido inicial={cambio} alCerrar={() => setCambio(null)} />}
           <Paso n={1} titulo="Agregá lo que se lleva" listo={items.length > 0}>
             <span className="ml-auto hidden whitespace-nowrap text-xs text-texto-2 xl:inline"><kbd className="rounded border border-borde bg-white px-1 font-sans">F2</kbd> buscar · <kbd className="rounded border border-borde bg-white px-1 font-sans">F9</kbd> confirmar{facturacion?.modo === "elegir" && <> · <kbd className="rounded border border-borde bg-white px-1 font-sans">F4</kbd> factura</>}</span>
           </Paso>
-          <SelectorVariantes filas={filas} alElegir={agregar} soloConStock caja enVenta={enVenta} masVendidos={masVendidos} />
+          <SelectorVariantes filas={filas} alElegir={agregar} soloConStock caja enVenta={enVenta} masVendidos={masVendidos} alComprobante={(n) => setCambio(n)} />
         </section>
 
         <form ref={formulario} action={accion} aria-label="Venta y cobro"
@@ -266,7 +281,8 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                 {abierto === "cliente" && <div>
                   {cliente ? (
                     <div className="flex items-center justify-between gap-2 rounded-lg bg-marca-suave px-3 py-2 text-sm">
-                      <span><b>{cliente.nombre}</b>{cliente.saldo > 0 && <span className="block text-xs font-semibold text-ok">Tiene {pesos(cliente.saldo)} de saldo a favor: cobralo con «Saldo a favor».</span>}</span>
+                      <span><b>{cliente.nombre}</b>{cliente.saldo > 0 && <span className="block text-xs font-semibold text-ok">Tiene {pesos(cliente.saldo)} de saldo a favor: cobralo con «Saldo a favor».</span>}
+                        {facturacion && <span className="block text-xs text-texto-2">Le sale Factura <b>{letra}</b>{letra !== "A" && facturacion.letra === "B" ? <> · <Link href={`/admin/clientes/${cliente.id}?editar=datos`} target="_blank" className="font-semibold text-marca underline">¿Es inscripto? Cargá su CUIT</Link></> : null}</span>}</span>
                       <button type="button" onClick={() => setClienteId(null)} className="text-xs font-semibold text-marca underline">Quitar</button>
                     </div>
                   ) : (
@@ -291,6 +307,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                           <p className="text-sm font-semibold">Cliente nuevo</p>
                           <input value={altaNombre} onChange={(e) => setAltaNombre(e.target.value)} placeholder="Nombre y apellido *" className="campo" aria-label="Nombre del cliente nuevo" autoFocus />
                           <input value={altaTelefono} onChange={(e) => setAltaTelefono(e.target.value)} placeholder="Teléfono (para avisarle o mandarle el comprobante)" inputMode="tel" className="campo" aria-label="Teléfono del cliente nuevo" />
+                          {facturacion && <div ref={altaFiscal}><DatosFiscales compacto letraLocal={facturacion.letra} /></div>}
                           {altaError && <p role="alert" className="text-sm font-medium text-error">{altaError}</p>}
                           <div className="flex gap-2">
                             <button type="button" onClick={crearCliente} disabled={creando || !altaNombre.trim()} className="boton min-h-10 flex-1">{creando ? "Guardando…" : "Guardar y usar"}</button>
@@ -467,7 +484,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
               </dl>
               {facturacion && facturacion.modo === "elegir" && (
                 <div role="radiogroup" aria-label="¿Con factura? (F4 cambia)" className="grid grid-cols-2 gap-1 rounded-lg bg-gray-100 p-1 text-sm">
-                  {([[true, `Factura ${facturacion.letra}`], [false, "Sin factura"]] as const).map(([valor, texto]) => (
+                  {([[true, `Factura ${letra}`], [false, "Sin factura"]] as const).map(([valor, texto]) => (
                     <button key={texto} type="button" role="radio" aria-checked={facturar === valor} onClick={() => setFacturar(valor)} disabled={!valor && !!medioObliga}
                       className={`flex min-h-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-md font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${facturar === valor ? "bg-white text-marca shadow-sm" : "text-gray-600 hover:text-gray-900"}`}>
                       {valor ? <FileCheck2 size={15} strokeWidth={facturar === valor ? 2.2 : 1.8} /> : <ReceiptText size={15} strokeWidth={facturar === valor ? 2.2 : 1.8} />}{texto}
@@ -477,7 +494,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                 </div>
               )}
               {medioObliga && facturacion?.modo === "elegir" && <p className="flex items-center gap-1.5 text-xs text-texto-2"><FileCheck2 size={14} /> Con {medioObliga.nombre} va siempre con factura.</p>}
-              {facturacion?.modo === "todas" && <p className="flex items-center gap-1.5 text-xs text-texto-2"><FileCheck2 size={14} /> Sale con Factura {facturacion.letra}{facturacion.pruebas ? " (pruebas de ARCA)" : ""}</p>}
+              {facturacion?.modo === "todas" && <p className="flex items-center gap-1.5 text-xs text-texto-2"><FileCheck2 size={14} /> Sale con Factura {letra}{facturacion.pruebas ? " (pruebas de ARCA)" : ""}</p>}
               {facturar && <input type="hidden" name="factura" value="1" />}
               <input type="hidden" name="venta" value={venta} />
               {efectivo && montoRecibido >= efectivo.cobra && <input type="hidden" name="vuelto" value={vuelto(montoRecibido, efectivo.cobra)} />}
@@ -487,7 +504,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                 {cargando ? (facturar ? "Registrando y facturando…" : "Registrando…") : (
                   <span className="flex flex-col items-center leading-tight">
                     <span>Confirmar{items.length ? ` · ${pesos(cobro.total)}` : " venta"}</span>
-                    {facturacion && <span className="text-xs font-medium opacity-90">{facturar ? `con Factura ${facturacion.letra}` : "sin factura (comprobante interno)"}</span>}
+                    {facturacion && <span className="text-xs font-medium opacity-90">{facturar ? `con Factura ${letra}` : "sin factura (comprobante interno)"}</span>}
                   </span>)}
               </button>
               {falta && items.length > 0 && <p className="text-center text-xs text-texto-2">{falta}</p>}

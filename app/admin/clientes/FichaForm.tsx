@@ -3,15 +3,18 @@
 import { useActionState } from "react";
 import { useState } from "react";
 import { guardarCliente } from "./acciones";
+import DatosFiscales, { type Fiscal } from "@/components/DatosFiscales";
+import { CONDICIONES, formatoCuit } from "@/lib/fiscal";
 import { CircleCheck, Mail, MapPin, Pencil, Phone, Save, UserRound, X } from "lucide-react";
 
-type C = { id?: number; nombre?: string; documento?: string | null; telefono?: string | null; email?: string | null; direccion?: string | null;
+export type FichaCliente = C;
+type C = Fiscal & { id?: number; nombre?: string; documento?: string | null; telefono?: string | null; email?: string | null; direccion?: string | null;
   localidad?: string | null; fecha_nacimiento?: string | null; origen?: string | null; etiquetas?: string[]; acepta_promos?: boolean; notas?: string | null };
 const ORIGENES = ["Local", "Instagram", "WhatsApp", "Web", "Referido", "Otro"];
 
 const dato = (valor?: string | null) => valor?.trim() || "—";
 
-export default function FichaForm({ c = {}, puedeEditar = true, iniciarEdicion = false }: { c?: C; puedeEditar?: boolean; iniciarEdicion?: boolean }) {
+export default function FichaForm({ c = {}, puedeEditar = true, iniciarEdicion = false, letraLocal = null }: { c?: C; puedeEditar?: boolean; iniciarEdicion?: boolean; letraLocal?: string | null }) {
   const [editando, setEditando] = useState(!c.id || iniciarEdicion);
   const [estado, accion, cargando] = useActionState(async (anterior: { error?: string; ok?: string }, formulario: FormData) => {
     const resultado = await guardarCliente(anterior, formulario);
@@ -28,7 +31,10 @@ export default function FichaForm({ c = {}, puedeEditar = true, iniciarEdicion =
       </div>
       <dl className="grid gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
         <div><dt className="etiqueta">Nombre</dt><dd className="font-semibold">{dato(c.nombre)}</dd></div>
-        <div><dt className="etiqueta">DNI / CUIT</dt><dd>{dato(c.documento)}</dd></div>
+        <div><dt className="etiqueta">{c.tipo_documento ?? "Documento"}</dt><dd>{c.documento ? (c.tipo_documento === "CUIT" || c.tipo_documento === "CUIL" ? formatoCuit(c.documento) : c.documento) : "—"}</dd></div>
+        <div><dt className="etiqueta">Frente al IVA</dt><dd>{CONDICIONES[c.condicion_iva ?? "consumidor_final"]}{c.razon_social ? ` · ${c.razon_social}` : ""}</dd></div>
+        {(c.domicilio_fiscal || c.email_facturas) && <div className="sm:col-span-2"><dt className="etiqueta">Para facturar</dt>
+          <dd>{[c.domicilio_fiscal, c.localidad_fiscal, c.provincia].filter(Boolean).join(", ")}{c.email_facturas ? ` · facturas a ${c.email_facturas}` : ""}</dd></div>}
         <div><dt className="etiqueta">Teléfono</dt><dd className="flex items-center gap-2"><Phone size={15} className="text-texto-2" />{dato(c.telefono)}</dd></div>
         <div><dt className="etiqueta">Email</dt><dd className="flex min-w-0 items-center gap-2"><Mail size={15} className="shrink-0 text-texto-2" /><span className="truncate">{dato(c.email)}</span></dd></div>
         <div className="sm:col-span-2"><dt className="etiqueta">Dirección</dt><dd className="flex items-center gap-2"><MapPin size={15} className="shrink-0 text-texto-2" />{[c.direccion, c.localidad].filter(Boolean).join(", ") || "—"}</dd></div>
@@ -53,13 +59,13 @@ export default function FichaForm({ c = {}, puedeEditar = true, iniciarEdicion =
         <div className="sm:col-span-2"><label className="etiqueta">Nombre *</label><input name="nombre" required defaultValue={c.nombre} className="campo" /></div>
         <div><label className="etiqueta">Teléfono</label><input name="telefono" defaultValue={c.telefono ?? ""} className="campo" /></div>
         <div><label className="etiqueta">Email</label><input name="email" type="email" defaultValue={c.email ?? ""} className="campo" /></div>
-        <div><label className="etiqueta">DNI / CUIT</label><input name="documento" defaultValue={c.documento ?? ""} className="campo" /></div>
         <div><label className="etiqueta">Cumpleaños</label><input name="fecha_nacimiento" type="date" defaultValue={c.fecha_nacimiento ?? ""} className="campo" /></div>
         <div><label className="etiqueta">Dirección</label><input name="direccion" defaultValue={c.direccion ?? ""} className="campo" /></div>
         <div><label className="etiqueta">Localidad</label><input name="localidad" defaultValue={c.localidad ?? ""} className="campo" /></div>
         <div><label className="etiqueta">¿Cómo nos conoció?</label>
           <select name="origen" defaultValue={c.origen ?? ""} className="campo"><option value="">—</option>{ORIGENES.map((o) => <option key={o}>{o}</option>)}</select></div>
         <div><label className="etiqueta">Etiquetas</label><input name="etiquetas" defaultValue={(c.etiquetas ?? []).join(", ")} placeholder="running, mayorista, vip" className="campo" /></div>
+        <div className="sm:col-span-2"><DatosFiscales f={c} letraLocal={letraLocal} /></div>
         <div className="sm:col-span-2"><label className="etiqueta">Notas internas (el cliente no las ve)</label><textarea name="notas" rows={2} defaultValue={c.notas ?? ""} className="campo" /></div>
       </div>
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="acepta_promos" defaultChecked={c.acepta_promos ?? true} /> Acepta recibir promociones</label>
