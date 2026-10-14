@@ -20,7 +20,7 @@ create function prueba.responder(p_metodo text, p_ruta text, p_status int, p_cue
 create function prueba.como_admin() returns void language sql as $$ select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}', true) $$;
 create function prueba.como_vendedora() returns void language sql as $$ select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}', true) $$;
 grant execute on all functions in schema prueba to anon, authenticated;
-select plan(30);
+select plan(32);
 
 reset role;
 update integraciones set mp_access_token = 'APP_USR-1234567890-abcdefghij-xyz', mp_webhook_secret = 'secreto';
@@ -36,6 +36,7 @@ select prueba.responder('POST', '/v2/pos', 201, '{"id":"555"}');
 select is(qr_preparar('Mitre', '100', 'Rosario', 'Santa Fe') ->> 'ok', 'true', 'crea la sucursal y la caja en Mercado Pago');
 select is((select cuerpo -> 'config' -> 'qr' ->> 'operating_mode' from prueba.llamadas where ruta = '/v2/pos'), 'pdv', 'la caja se crea integrada por API');
 select is(estado_qr() ->> 'listo', 'true', 'queda preparado');
+select is((select jsonb_typeof(cuerpo -> 'store_id') from prueba.llamadas where ruta = '/v2/pos' order by id limit 1), 'string', 'Mercado Pago pide el store_id como texto, no como número');
 select is(point_caja() ->> 'qr', 'true', 'la caja sabe que hay QR');
 
 select prueba.responder('POST', '/v1/orders', 201, '{"id":"ORDQR1","status":"created","type_response":{"qr_data":"00020101021243650016com.mercadolibre"}}');
@@ -74,6 +75,7 @@ select is(qr_fijo() ->> 'imagen', 'https://mp/c1.png', 'y trae su QR fijo');
 select is(qr_usar_sucursal('111', '702', '') ->> 'ok', 'false', 'una caja sin identificador no sirve para cobrar');
 select prueba.responder('POST', '/v2/pos', 201, '{"id":703,"external_id":"CAJA1"}');
 select is(qr_usar_sucursal('222') ->> 'ok', 'true', 'una sucursal sin cajas: se crea una ahí');
+select is((select jsonb_typeof(cuerpo -> 'store_id') from prueba.llamadas where ruta = '/v2/pos' order by id desc limit 1), 'string', 'y también ahí el store_id va como texto');
 select lives_ok($$ select qr_desvincular() $$, 'se puede dejar de usar para elegir otra');
 -- «Esperar el pago»
 select is(cobro_espera_pago(), true, 'de fábrica, la caja espera el pago antes de confirmar la venta');
