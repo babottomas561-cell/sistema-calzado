@@ -22,7 +22,7 @@ create function prueba.como_vendedora() returns void language sql as $$ select s
 create function prueba.suc(p_nombre text) returns bigint language sql stable security definer set search_path = public as $$ select id from sucursales where nombre = p_nombre $$;
 create function prueba.caja(p_nombre text) returns bigint language sql stable security definer set search_path = public as $$ select id from cajas where nombre = p_nombre $$;
 grant execute on all functions in schema prueba to anon, authenticated;
-select plan(27);
+select plan(31);
 
 -- La principal siempre existe
 select is((select nombre from sucursales where por_defecto), 'Principal', 'siempre hay una sucursal principal');
@@ -59,9 +59,14 @@ select is(qr_cobrar(1000, 'dynamic', prueba.caja('Caja Centro')) ->> 'ok', 'true
 select is((select cuerpo -> 'config' -> 'qr' ->> 'external_pos_id' from prueba.llamadas where ruta = '/v1/orders' order by id desc limit 1), (select mp_externo from cajas where nombre = 'Caja Centro'), 'la orden usa la caja de Mercado Pago de esa caja');
 select is((select caja_id from point_cobros order by id desc limit 1), prueba.caja('Caja Centro'), 'y el cobro queda anotado en esa caja');
 select is(qr_cobrar(1000, 'dynamic', (select id from cajas where por_defecto)) ->> 'ok', 'false', 'la caja principal, sin QR preparado, avisa que no está lista');
+select is(qr_cobrar(10, 'dynamic', prueba.caja('Caja Centro')) ->> 'error', 'Mercado Pago no acepta cobros por QR menores a $ 15,00', 'por debajo del mínimo, ni se le pide a Mercado Pago');
+select is(point_caja(prueba.caja('Caja Centro')) ->> 'qr_minimo', '15.00', 'la caja conoce el mínimo del QR');
+reset role; update configuracion_tienda set qr_monto_minimo = 0; set local role authenticated; select prueba.como_admin();
 select prueba.responder('POST', '/v1/orders', 400, '{"errors":[{"code":"property_value","message":"Invalid value for property","details":["Amount must be greater than or equal to 15.00"]}]}');
 select is(qr_cobrar(1.05, 'dynamic', prueba.caja('Caja Centro')) ->> 'error', 'Mercado Pago no generó el cobro: Mercado Pago no acepta cobros menores a $ 15,00', 'el monto mínimo de Mercado Pago se explica en castellano');
 select is((select detalle from point_cobros order by id desc limit 1), 'Mercado Pago no acepta cobros menores a $ 15,00', 'y queda anotado en el cobro');
+select is(point_caja(prueba.caja('Caja Centro')) ->> 'qr_minimo', '15.00', 'el sistema aprende el mínimo que informa Mercado Pago');
+select lives_ok($$ select guardar_qr_minimo(20) $$, 'y el administrador lo puede cambiar');
 select is(point_caja(prueba.caja('Caja Centro')) ->> 'qr', 'true', 'la caja dice si tiene QR');
 
 -- Cada dispositivo cobra con la caja que tiene asignada

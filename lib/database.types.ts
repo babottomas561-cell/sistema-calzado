@@ -575,14 +575,14 @@ isOneToOne: false
                   ]
                 },"configuracion_tienda": {
                   Row: {
-                    "aviso_enlace": string | null,"avisos": (string)[],"cobro_espera_pago": boolean,"color_marca": string | null,"dias_cambio": number,"dias_retiro": number,"dias_saldo": number,"direccion_retiro": string | null,"envio_requiere_pago": boolean,"horario": string | null,"ia_modelo": string,"ia_plan": string,"icono_ruta": string | null,"icono_url": string | null,"id": number,"instagram": string | null,"lista_mostrador_id": number | null,"lista_tienda_id": number | null,"listas_precios_activas": boolean,"logo_oscuro_ruta": string | null,"logo_oscuro_url": string | null,"logo_ruta": string | null,"logo_url": string | null,"mp_cuotas_max": number,"mp_modo": string,"nombre": string,"tarjetas_modo": string,"transferencia_comprobante": string,"unica": boolean,"wa_bot_activo": boolean,"wa_idioma_plantilla": string,"wa_notificaciones_pedidos": boolean,"wa_plantilla_estado": string | null,"whatsapp": string | null
+                    "aviso_enlace": string | null,"avisos": (string)[],"cobro_espera_pago": boolean,"color_marca": string | null,"dias_cambio": number,"dias_retiro": number,"dias_saldo": number,"direccion_retiro": string | null,"envio_requiere_pago": boolean,"horario": string | null,"ia_modelo": string,"ia_plan": string,"icono_ruta": string | null,"icono_url": string | null,"id": number,"instagram": string | null,"lista_mostrador_id": number | null,"lista_tienda_id": number | null,"listas_precios_activas": boolean,"logo_oscuro_ruta": string | null,"logo_oscuro_url": string | null,"logo_ruta": string | null,"logo_url": string | null,"mp_cuotas_max": number,"mp_modo": string,"nombre": string,"qr_monto_minimo": number,"tarjetas_modo": string,"transferencia_comprobante": string,"unica": boolean,"wa_bot_activo": boolean,"wa_idioma_plantilla": string,"wa_notificaciones_pedidos": boolean,"wa_plantilla_estado": string | null,"whatsapp": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"cobro_espera_pago"?: boolean,"color_marca"?: string | null,"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"envio_requiere_pago"?: boolean,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"icono_ruta"?: string | null,"icono_url"?: string | null,"id"?: never,"instagram"?: string | null,"lista_mostrador_id"?: number | null,"lista_tienda_id"?: number | null,"listas_precios_activas"?: boolean,"logo_oscuro_ruta"?: string | null,"logo_oscuro_url"?: string | null,"logo_ruta"?: string | null,"logo_url"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"tarjetas_modo"?: string,"transferencia_comprobante"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"cobro_espera_pago"?: boolean,"color_marca"?: string | null,"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"envio_requiere_pago"?: boolean,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"icono_ruta"?: string | null,"icono_url"?: string | null,"id"?: never,"instagram"?: string | null,"lista_mostrador_id"?: number | null,"lista_tienda_id"?: number | null,"listas_precios_activas"?: boolean,"logo_oscuro_ruta"?: string | null,"logo_oscuro_url"?: string | null,"logo_ruta"?: string | null,"logo_url"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"qr_monto_minimo"?: number,"tarjetas_modo"?: string,"transferencia_comprobante"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
                   }
                   Update: {
-                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"cobro_espera_pago"?: boolean,"color_marca"?: string | null,"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"envio_requiere_pago"?: boolean,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"icono_ruta"?: string | null,"icono_url"?: string | null,"id"?: never,"instagram"?: string | null,"lista_mostrador_id"?: number | null,"lista_tienda_id"?: number | null,"listas_precios_activas"?: boolean,"logo_oscuro_ruta"?: string | null,"logo_oscuro_url"?: string | null,"logo_ruta"?: string | null,"logo_url"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"tarjetas_modo"?: string,"transferencia_comprobante"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"cobro_espera_pago"?: boolean,"color_marca"?: string | null,"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"envio_requiere_pago"?: boolean,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"icono_ruta"?: string | null,"icono_url"?: string | null,"id"?: never,"instagram"?: string | null,"lista_mostrador_id"?: number | null,"lista_tienda_id"?: number | null,"listas_precios_activas"?: boolean,"logo_oscuro_ruta"?: string | null,"logo_oscuro_url"?: string | null,"logo_ruta"?: string | null,"logo_url"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"qr_monto_minimo"?: number,"tarjetas_modo"?: string,"transferencia_comprobante"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
                   }
                   Relationships: [
                     {
@@ -3151,6 +3151,9 @@ isOneToOne: false
 "_html":
 { Args: { "p_texto": string }; Returns: string
                            },
+"_http_cuerpo":
+{ Args: { "p_cuerpo": Json,"p_metodo": string }; Returns: string
+                           },
 "_ia_pedir_modelos":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
@@ -3213,6 +3216,9 @@ isOneToOne: false
                            },
 "_mp_firma_valida":
 { Args: { "p_data_id": string,"p_firma": string,"p_request_id": string }; Returns: boolean
+                           },
+"_mp_minimo":
+{ Args: { "p_cuerpo": Json }; Returns: number
                            },
 "_mp_pedir":
 { Args: { "p_cuerpo"?: Json,"p_idempotencia"?: string,"p_metodo": string,"p_ruta": string }; Returns: Json
@@ -3446,7 +3452,7 @@ isOneToOne: false
 { Args: { "p_token": string }; Returns: Json
                            },
 "configurar_listas_precios":
-{ Args: { "p_activas": boolean,"p_mostrador": number,"p_tienda": number }; Returns: undefined
+{ Args: { "p_activas"?: boolean,"p_mostrador"?: number,"p_tienda"?: number }; Returns: undefined
                            },
 "configurar_modulos":
 { Args: { "p_desactivados": (string)[] }; Returns: undefined
@@ -3612,7 +3618,7 @@ isOneToOne: false
 { Args: { "p_access_token"?: string,"p_app_secret"?: string,"p_gemini_api_key"?: string,"p_phone_number_id"?: string,"p_quitar"?: (string)[],"p_waba_id"?: string }; Returns: undefined
                            },
 "guardar_lista_precios":
-{ Args: { "p_activa"?: boolean,"p_ajuste_pct": number,"p_id": number,"p_nombre": string,"p_redondeo": number }; Returns: number
+{ Args: { "p_activa"?: boolean,"p_ajuste_pct"?: number,"p_id"?: number,"p_nombre": string,"p_redondeo"?: number }; Returns: number
                            },
 "guardar_menu_usuario":
 { Args: { "p_favoritos": (string)[],"p_ocultos": (string)[] }; Returns: undefined
@@ -3628,6 +3634,9 @@ isOneToOne: false
                            },
 "guardar_preferencia_cobro":
 { Args: { "p_ambito": string,"p_habilitado": boolean,"p_medio": string,"p_referencia": string }; Returns: undefined
+                           },
+"guardar_qr_minimo":
+{ Args: { "p_monto": number }; Returns: undefined
                            },
 "guardar_sucursal":
 { Args: { "p_activa"?: boolean,"p_deposito"?: number,"p_id"?: number,"p_nombre": string }; Returns: number

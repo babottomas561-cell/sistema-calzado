@@ -27,7 +27,7 @@ create function prueba.orden(p_orden text, p_status text, p_monto text) returns 
     'transactions', jsonb_build_object('payments', jsonb_build_array(jsonb_build_object('id', 'PAY' || p_orden, 'status', p_status, 'amount', p_monto,
       'payment_method', jsonb_build_object('id', 'visa', 'type', 'credit_card', 'installments', 1))))) ) $$;
 grant execute on all functions in schema prueba to anon, authenticated;
-select plan(13);
+select plan(17);
 
 reset role;
 update integraciones set mp_access_token = 'APP_USR-1234567890-abcdefghij-xyz', mp_webhook_secret = 'secreto', mp_point_token = null, mp_point_secreto = null;
@@ -79,5 +79,10 @@ select _point_reconciliar();
 select is(prueba.estado((select id from point_cobros where orden_id = 'ORDC')), 'aprobado', 'el barrido actualiza un cobro pendiente aunque el aviso no llegue');
 update integraciones set mp_webhook_secret = null;
 select is(point_notificacion('ORDC', 'req', 'ts=1,v1=' || repeat('0', 64)), 'firma_invalida', 'sin clave secreta cargada, un aviso no se acepta');
+-- El pedido sin cuerpo (cancelar, reembolsar): la extensión http exige un cuerpo en los POST, aunque sea vacío
+select is(_http_cuerpo('POST', null), '', 'un POST sin cuerpo manda uno vacío (cancelar y reembolsar)');
+select is(_http_cuerpo('GET', null), null, 'un GET no manda cuerpo');
+select is(_http_cuerpo('POST', '{"a":1}'::jsonb), '{"a": 1}', 'y con cuerpo, lo manda');
+select is(_http_cuerpo('patch', null), '', 'también PATCH y PUT');
 select * from finish();
 rollback;

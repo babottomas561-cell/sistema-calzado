@@ -21,11 +21,11 @@ select is(precio_de((select id from prueba.ids where nombre = 'v')), 79000.00::n
 select is((select precio from v_catalogo where variante_id = (select id from prueba.ids where nombre = 'v')), 79000.00::numeric(12,2), 'y la tienda lo muestra igual');
 
 set local role authenticated; select prueba.como_vendedora();
-select throws_ok($$ select guardar_lista_precios(null, 'Web', 10, 100) $$, 'No tenés permiso para cambiar precios de venta', 'la vendedora no crea listas');
+select throws_ok($$ select guardar_lista_precios('Web', 10, 100) $$, 'No tenés permiso para cambiar precios de venta', 'la vendedora no crea listas');
 select prueba.como_equipo();
-select lives_ok($$ select guardar_lista_precios(null, 'Web', 10, 100) $$, 'el administrador crea la lista Web (+10 %, redondeo a 100)');
-select lives_ok($$ select guardar_lista_precios(null, 'Local', -5, 0) $$, 'y la del Local (−5 %)');
-select throws_ok($$ select guardar_lista_precios(null, 'web', 1, 0) $$, 'Ya hay una lista con ese nombre', 'el nombre no se repite');
+select lives_ok($$ select guardar_lista_precios('Web', 10, 100) $$, 'el administrador crea la lista Web (+10 %, redondeo a 100)');
+select lives_ok($$ select guardar_lista_precios('Local', -5, 0) $$, 'y la del Local (−5 %)');
+select throws_ok($$ select guardar_lista_precios('web', 1, 0) $$, 'Ya hay una lista con ese nombre', 'el nombre no se repite');
 select lives_ok($$ select configurar_listas_precios(true, prueba.lista('Local'), prueba.lista('Web')) $$, 'se encienden y se asigna una lista a cada canal');
 
 select is(precio_de((select id from prueba.ids where nombre = 'v')), 75050.00::numeric, 'el mostrador usa la lista Local: 79.000 − 5 %');

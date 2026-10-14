@@ -1,4 +1,5 @@
 // Precios: ajuste masivo de precios de venta y de compra, y el historial de ajustes.
+import Link from "next/link";
 import { exigir } from "@/lib/exigir";
 import { leerTodo } from "@/lib/informes";
 import AjustePrecios, { type Articulo } from "./AjustePrecios";
@@ -29,9 +30,12 @@ export default async function Precios() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Precios</h1>
-        <p className="text-sm text-texto-2">Subí o bajá precios de muchos artículos de una vez. Antes de aplicar ves cada cambio, y después lo podés deshacer.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Precios</h1>
+          <p className="text-sm text-texto-2">Subí o bajá precios de muchos artículos de una vez. Antes de aplicar ves cada cambio, y después lo podés deshacer.</p>
+        </div>
+        {puedeVenta && <Link href="/admin/precios/listas" className="boton-sec">Listas de precios</Link>}
       </div>
       <AjustePrecios articulos={[...articulos.values()].sort((a, b) => a.nombre.localeCompare(b.nombre))} proveedores={proveedores ?? []}
         puedeVenta={puedeVenta} puedeCompra={puedeCompra} />
