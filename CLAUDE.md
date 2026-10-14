@@ -431,3 +431,13 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
     obligatoria). `cc_cobrar` registra el cobro (n.º de recibo = id del movimiento, `/admin/cuenta-corriente/recibo/<id>`) y, con contabilidad iniciada, su asiento (`recibo`: medio → Deudores por ventas). Anular una venta a cuenta
     descuenta su deuda (`_cc_anular`). Permisos `cc.ver`, `cc.cobrar`, `cc.habilitar` (el Encargado los trae). La clave de un módulo es su ruta (`/admin/<clave>`; se admite el guion). Una devolución de una venta a cuenta deja
     saldo a favor y no toca la deuda; el interés por mora no existe todavía.
+
+35. **Listas de precios** (`listas_precios`, `configuracion_tienda.listas_precios_activas` / `lista_mostrador_id` / `lista_tienda_id`; APAGADAS de fábrica): `productos.precio_venta` es el precio base; cada canal lo ajusta con un % y un redondeo
+    (`_aplicar_lista`, la misma cuenta en la base y en las pruebas). `precio_de()` (caja, presupuestos, cambios) usa la lista del mostrador, salvo que `app.canal_precio = 'tienda'` (lo fija `crear_pedido`, que cotiza con la lista de la
+    tienda); `v_catalogo.precio` es el de la tienda y `v_stock.precio_lista` el del mostrador (la caja lo usa). Las listas se administran con `guardar_lista_precios`, `quitar_lista_precios` y `configurar_listas_precios`
+    (permiso `precios.editar`). Sin pantalla todavía: falta la administración en Precios. Si se cambia `crear_pedido` otra vez, conservar su primera línea (`set_config('app.canal_precio', 'tienda', true)`).
+
+36. **Mercado Pago, auditado contra la documentación oficial** (`supabase/migrations/20261026000000_mercado_pago_auditoria.sql`): la idempotencia del cobro es estable (`cobro-c<id>`), si Mercado Pago no contesta el cobro queda en `error`
+    (no se pierde), el importe cobrado (`monto_pagado`) tiene que ser el pedido, la referencia de un cobro sirve **una sola vez** y por su importe con cualquier medio (`_pago_tarjeta_vinculada`), anular una venta cobrada con el
+    posnet o el QR devuelve el dinero por la API (o no se anula: `_point_reembolsar_al_anular`, diferido), un barrido cada 2 minutos actualiza los pendientes (`_point_reconciliar`) y sin clave secreta un aviso no se acepta.
+    Pendiente: reembolso parcial, comisiones de Point/QR a Gastos y confirmar con una prueba real la firma del webhook de órdenes (la documentación de órdenes no describe el cálculo; se usa el de los webhooks generales).

@@ -88,7 +88,7 @@ select throws_like($$ do $d$ begin perform pg_temp.vender('DEB', '1234', 9000); 
 reset role; update point_cobros set monto = 9000 where id = (select max(id) from point_cobros); set local role authenticated; select prueba.como_admin();
 select lives_ok($$ do $d$ begin perform pg_temp.vender('DEB', 'ORD01ABC', 9000); set constraints all immediate; end $d$ $$, 'con la referencia del cobro aprobado, pasa y al cierre queda bien');
 select is((select venta_id is not null from point_cobros where id = (select max(id) from point_cobros)), true, 'el cobro queda atado a la venta');
-select throws_like($$ do $d$ begin perform pg_temp.vender('CRE', 'ORD01ABC', 9000); set constraints all immediate; end $d$ $$, 'Con tarjeta se cobra con el posnet de Mercado Pago%', 'el mismo cobro no sirve para una segunda venta');
+select throws_like($$ do $d$ begin perform pg_temp.vender('CRE', 'ORD01ABC', 9000); set constraints all immediate; end $d$ $$, 'El cobro de Mercado Pago ORD01ABC ya se usó en otra venta', 'el mismo cobro no sirve para una segunda venta');
 reset role; set constraints all deferred;
 select * from finish();
 rollback;
