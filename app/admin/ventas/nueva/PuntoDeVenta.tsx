@@ -13,6 +13,7 @@ import {
 import SelectorVariantes, { type FilaStock } from "@/components/SelectorVariantes";
 import DatosFiscales from "@/components/DatosFiscales";
 import CambioRapido from "./CambioRapido";
+import CobroPoint from "./CobroPoint";
 import { cuitValido, letraPara } from "@/lib/fiscal";
 import { pesos, porcentaje } from "@/lib/formato";
 import { billetesSugeridos, calcularCobro, opcionesRedondeo, pagosParaLaBase, REPARTOS, totalCon, vuelto, type LineaPago, type MedioCobro } from "@/lib/cobro";
@@ -47,7 +48,8 @@ function Opcion({ icono: Icono, valor, activo, abierto, alAlternar }: { icono: L
   );
 }
 
-export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion, exigeOperacion = false }: {
+export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion, exigeOperacion = false, point = null }: {
+  point?: { disponible: boolean; modo: string; terminal: string | null } | null;   // posnet de Mercado Pago (Point)
   exigeOperacion?: boolean;   // el dueño pidió el n.º de operación en las transferencias
   facturacion: { modo: "todas" | "elegir"; porDefecto: "fiscal" | "interna"; letra: string; pruebas: boolean; umbral: number } | null;
   filas: FilaStock[]; clientes: Cliente[]; masVendidos: number[]; puedeCrearCliente: boolean; medios: (MedioCobro & { es_saldo?: boolean | null; siempre_factura?: boolean | null })[]; cambiaPrecio: boolean; descuentoMax: number | null;
@@ -127,6 +129,11 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const usaSaldo = cobro.lineas.some((l) => medios.find((m) => m.id === l.medio_pago_id)?.es_saldo);
   const montoRecibido = Number(recibido.replace(/\./g, "").replace(",", ".")) || 0;
 
+  // Con el posnet vinculado: cada tarjeta se cobra por el posnet y su referencia (la orden) queda en el pago
+  const esTarjeta = (m: MedioCobro) => m.tipo === "Débito" || m.tipo === "Crédito";
+  const usaPoint = !!point?.disponible;
+  const tarjetaSinPosnet = point?.modo === "vinculado" ? cobro.lineas.find((l) => l.base > 0 && esTarjeta(l.medio) && !(referencias[l.medio.id] ?? "").trim()) : undefined;
+
   // Un medio «siempre con factura» (Tablas → Medios de pago) en el cobro: va con factura, sin opción (la base también lo hace cumplir)
   const medioObliga = facturacion ? medios.find((m) => m.siempre_factura && cobro.lineas.some((l) => l.medio_pago_id === m.id)) ?? null : null;
   const facturar = elegido || !!medioObliga;
@@ -141,6 +148,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
     : usaSaldo && !cliente ? "Para cobrar con saldo a favor, elegí el cliente"
     : !lineas.length ? "No hay medios de pago para el mostrador (se cargan en Tablas)"
     // Desde el umbral de la norma, ARCA pide identificar al consumidor final: se avisa antes de cobrar (si no, la factura sale rechazada)
+    : tarjetaSinPosnet ? `Cobrá la tarjeta (${tarjetaSinPosnet.medio.nombre}) con el posnet antes de confirmar`
     : faltaOperacion ? `Anotá el n.º de operación de la transferencia (${faltaOperacion.medio.nombre}): la tienda lo pide`
     : sinDni ? `Para facturar ${pesos(facturacion!.umbral)} o más, ARCA pide el DNI: elegí el cliente (con su DNI cargado) o cobrá sin factura` : null;
 
@@ -436,7 +444,10 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                 )}
 
                 {/* Número de cupón / operación (opcional) para los medios que no son efectivo */}
-                {[...new Map(cobro.lineas.filter((l) => l.base > 0 && pideReferencia(l.medio)).map((l) => [l.medio.id, l.medio])).values()].map((m) => (
+                {[...new Map(cobro.lineas.filter((l) => l.base > 0 && pideReferencia(l.medio)).map((l) => [l.medio.id, l.medio])).values()].map((m) => usaPoint && esTarjeta(m) ? (
+                  <CobroPoint key={m.id} monto={cobro.lineas.filter((l) => l.medio.id === m.id).reduce((t, l) => t + l.cobra + l.redondeo, 0)} terminal={point?.terminal ?? null} referencia={referencias[m.id] ?? ""}
+                    onAprobado={(orden) => setReferencias((r) => ({ ...r, [m.id]: orden ?? "" }))} />
+                ) : (
                   <div key={m.id} className="space-y-1">
                     <label htmlFor={`ref-${m.id}`} className="flex items-center gap-1.5 text-xs font-semibold text-texto-2"><CreditCard size={14} strokeWidth={1.8} /> {textoReferencia(m)} · {m.nombre} <span className="font-normal">{exigeOperacion && m.tipo === "Transferencia" ? "(obligatorio)" : "(opcional)"}</span></label>
                     <input id={`ref-${m.id}`} value={referencias[m.id] ?? ""} onChange={(e) => setReferencias((r) => ({ ...r, [m.id]: e.target.value }))} maxLength={40} inputMode="text" autoComplete="off" placeholder="Para encontrar el cobro después" className="campo" />

@@ -117,6 +117,56 @@ export async function probarMercadoPago(): Promise<Estado> {
   return r.ok ? { ok: "Conectado con Mercado Pago" } : { error: r.error ?? "Mercado Pago no respondió" };
 }
 
+// ── Mercado Pago Point (el posnet del mostrador) ───────────────────────
+export async function guardarPoint(_: Estado, f: FormData): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("guardar_mp_point", {
+    p_access_token: texto(f, "point_token", 300), p_webhook_secret: texto(f, "point_secreto", 300), p_quitar: f.getAll("quitar").map(String),
+  });
+  if (error) return { error: error.message };
+  if (texto(f, "point_token", 300)) await supabase.rpc("mp_point_probar");
+  revalidatePath("/admin/integraciones", "layout");
+  return { ok: "Point guardado" };
+}
+
+export async function probarPoint(): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("mp_point_probar");
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  const r = data as { ok: boolean; error?: string };
+  return r.ok ? { ok: "Conectado con Mercado Pago" } : { error: r.error ?? "Mercado Pago no respondió" };
+}
+
+export async function buscarPosnets(): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("mp_point_buscar_terminales");
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  const r = data as { ok: boolean; error?: string; cantidad?: number };
+  if (!r.ok) return { error: r.error ?? "No se pudieron buscar los posnets" };
+  return { ok: r.cantidad ? `Encontramos ${r.cantidad} posnet${r.cantidad === 1 ? "" : "s"}` : "La cuenta no tiene posnets vinculados" };
+}
+
+export async function usarPosnet(_: Estado, f: FormData): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("mp_point_usar_terminal", { p_terminal: Number(f.get("terminal")), p_nombre: texto(f, "nombre", 60) || undefined });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  const r = data as { ok?: boolean; error?: string; reiniciar?: boolean };
+  if (r.ok === false) return { error: r.error ?? "No se pudo preparar el posnet" };
+  return { ok: r.reiniciar ? "Listo. Reiniciá el posnet para que quede en modo punto de venta" : "Posnet elegido" };
+}
+
+export async function guardarReglaTarjetas(_: Estado, f: FormData): Promise<Estado> {
+  const modo = String(f.get("tarjetas_modo")) === "vinculado" ? "vinculado" : "libre";
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("guardar_tarjetas_modo", { p_modo: modo });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  return { ok: "Regla de tarjetas guardada" };
+}
+
 // Cómo cobra la tienda: sin Mercado Pago, como opción o solo online; y cuántas cuotas como máximo
 export async function guardarCobro(_: Estado, f: FormData): Promise<Estado> {
   const mp_modo = ["no", "opcional", "obligatorio"].includes(String(f.get("mp_modo"))) ? String(f.get("mp_modo")) : "no";

@@ -16,6 +16,13 @@ export async function POST(request: NextRequest) {
   const tipo = q.get("type") ?? cuerpo.type ?? q.get("topic") ?? "";
   const id = String(q.get("data.id") ?? cuerpo.data?.id ?? q.get("id") ?? "");
   const supabase = createClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
+  // Una sola aplicación puede avisar de la tienda (pagos) y del posnet (órdenes): las órdenes van a Point
+  if (tipo.startsWith("order")) {
+    const { data, error } = await supabase.rpc("point_notificacion", { p_data_id: id, p_request_id: request.headers.get("x-request-id") ?? "", p_firma: request.headers.get("x-signature") ?? "" });
+    if (error) console.error("[Mercado Pago Point] Error procesando el aviso:", error.message);
+    if (data === "firma_invalida") return NextResponse.json({ status: "invalid_signature" }, { status: 401 });
+    return NextResponse.json({ status: data ?? "error" }, { status: 200 });
+  }
   const { data, error } = await supabase.rpc("mp_notificacion", {
     p_tipo: tipo, p_data_id: id, p_request_id: request.headers.get("x-request-id") ?? "", p_firma: request.headers.get("x-signature") ?? "",
   });

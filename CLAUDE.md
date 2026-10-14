@@ -406,3 +406,9 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
     Lo que paga el cliente por Mercado Pago se verifica solo. No se entrega un pedido con un pago sin confirmar. En la caja, la transferencia pide el n.º de operación si hay exigencia (se controla al cierre de
     la operación: `_pago_pide_referencia`, deferido). El aviso «pago recibido» sale al confirmar.
 
+
+31. **Mercado Pago Point** (posnet del mostrador; `point_terminales`, `point_cobros`, `integraciones.mp_point_*`, `configuracion_tienda.tarjetas_modo`): la base habla con la API de Órdenes
+    (`_mp_point_pedir`, que en las pruebas se reemplaza). Usa las credenciales propias de Point o, si no hay, las de Checkout (una sola aplicación sirve a los dos): el webhook `/api/mercadopago`
+    reparte los avisos `order` a `point_notificacion()`, que verifica la firma y CONSULTA la orden. La caja manda el monto con `point_cobrar()` y mira `point_estado()` cada 2 s (`CobroPoint`); el cobro
+    aprobado deja su orden como `referencia` del pago. Regla `tarjetas_modo`: `libre` (de fábrica) o `vinculado` (el trigger deferido `pagos_tarjeta_vinculada` frena una tarjeta que no pasó por el posnet y
+    ata el cobro a la venta una sola vez). Pantalla: Integraciones → Mercado Pago. Manual: `docs/integraciones/mercadopago.md`.
