@@ -24,8 +24,12 @@ WhatsApp** (conviene un chip nuevo solo para el bot) y una tarjeta para pagar lo
    - Nombre: por ejemplo «Bot del local». Email de contacto: el tuyo.
    - Portfolio comercial: elegí el del paso 1. → **Crear app**.
 3. En el panel de la app, en **WhatsApp → Configuración de la API** (o «Primeros pasos»), Meta crea un **número de
-   prueba** y una cuenta de WhatsApp Business. Sirve para probar ya, pero solo le puede escribir a 5 números que
-   agregues como destinatarios («Para» → Administrar lista de números).
+   prueba** y una cuenta de WhatsApp Business. Sirve para probar ya, sin pagar ni verificar el negocio: solo le podés escribir a los números que
+   agregues como destinatarios («Para» → Administrar lista de números), y Meta le pone sus límites (se ven en el panel de la app).
+
+   > **Para probar no hace falta publicar la app ni completar nada legal.** Una app nueva arranca en *modo de desarrollo*: ahí solo la usan quienes
+   > tienen un rol en la app (vos). La **política de privacidad**, los **términos** y la **verificación del negocio** los pide Meta recién cuando pasás la app
+   > a *modo en vivo* o pedís permisos avanzados. Dejá esos campos vacíos y seguí con el paso 3.
 
 ## Paso 3 — Meta: tu número real
 
