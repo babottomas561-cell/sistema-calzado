@@ -1,6 +1,6 @@
 // Tienda online: lo que ven los clientes. Identidad propia (ver .tienda en globals.css), aislada del panel.
 import Link from "next/link";
-import { Bricolage_Grotesque, Instrument_Serif } from "next/font/google";
+import { Anton, Bricolage_Grotesque, Instrument_Serif } from "next/font/google";
 import { CircleUserRound, Clock, MapPin, MessageCircle, Search } from "lucide-react";
 import BotonCarrito from "@/components/BotonCarrito";
 import { IconoInstagram } from "@/components/IconoInstagram";
@@ -16,6 +16,8 @@ import SuavizarScroll from "@/components/tienda/SuavizarScroll";
 const fuente = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-tienda", display: "swap" });
 // Serif editorial: frases, ante-títulos y títulos de colección (contrasta con la letra gruesa)
 const serif = Instrument_Serif({ subsets: ["latin"], weight: "400", style: ["normal", "italic"], variable: "--font-serif", display: "swap" });
+// Condensada para el estilo «Urbano» (solo se descarga si se usa: next/font la sirve con la página)
+const condensada = Anton({ subsets: ["latin"], weight: "400", variable: "--font-condensada", display: "swap" });
 
 export default async function LayoutTienda({ children }: { children: React.ReactNode }) {
   const supabase = await crearCliente();
@@ -26,7 +28,7 @@ export default async function LayoutTienda({ children }: { children: React.React
   const portada = primera?.contenido as { estilo?: string; marca_gigante?: boolean } | null;
   const sobreCampana = primera?.tipo === "portada" && !!primera.imagen_url && portada?.estilo === "foto";
   return (
-    <div className={`${fuente.variable} ${serif.variable} tienda min-h-screen`}>
+    <div className={`${fuente.variable} ${serif.variable} ${condensada.variable} tienda min-h-screen`} data-estilo={tienda.estilo}>
       <SuavizarScroll />
       <Cursor />
       {/* Avisos del local (se editan en el panel → Tienda online); si hay varios, rotan */}
@@ -48,17 +50,17 @@ export default async function LayoutTienda({ children }: { children: React.React
       <main className="mx-auto max-w-7xl px-4 pb-16 pt-5 sm:px-6">{children}</main>
       <footer className="border-t border-borde bg-marca-suave">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1.2fr_1fr_1fr]">
-          <div><Marca nombre={tienda.nombre} logo={tienda.logo_url} /><p className="mt-3 max-w-xs text-sm text-texto-2">Elegí tu prenda, reservala online y retirala en el local o recibila en tu casa.</p></div>
+          <div><Marca nombre={tienda.nombre} logo={tienda.logo_url} /><p className="mt-3 max-w-xs text-sm text-texto-2">Elegí, reservá online y pasalo a buscar por el local o te lo llevamos a tu casa.</p></div>
           <div className="space-y-2 text-sm">
             <p className="font-bold">Retiro en el local</p>
             {contacto?.direccion_retiro && <p className="flex gap-2 text-texto-2"><MapPin size={16} className="mt-0.5 shrink-0" />{contacto.direccion_retiro}</p>}
             {contacto?.horario && <p className="flex gap-2 text-texto-2"><Clock size={16} className="mt-0.5 shrink-0" />{contacto.horario}</p>}
           </div>
           <div className="space-y-2 text-sm">
-            <p className="font-bold">¿Dudas?</p>
+            <p className="font-bold">¿Tenés alguna duda?</p>
             {contacto?.whatsapp
               ? <a href={`https://wa.me/${contacto.whatsapp}`} className="inline-flex min-h-11 items-center gap-2 font-semibold underline underline-offset-4"><MessageCircle size={17} /> Escribinos por WhatsApp</a>
-              : <p className="text-texto-2">Consultanos en el local.</p>}
+              : <p className="text-texto-2">Preguntanos en el local, sin drama.</p>}
             {tienda.instagram && <a href={`https://instagram.com/${tienda.instagram}`} target="_blank" rel="noopener" className="flex min-h-11 items-center gap-2 font-semibold underline underline-offset-4"><IconoInstagram size={17} /> @{tienda.instagram}</a>}
           </div>
         </div>

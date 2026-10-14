@@ -56,7 +56,7 @@ export default function Formulario({ config, invitacion, volver, docs }: { docs:
     <form action={accion} onSubmit={() => setVolverAlForm(false)} className="tarjeta mx-auto max-w-sm space-y-4 p-6">
       <div>
         <h1 className="text-xl font-bold">{invitacion ? "Aceptar invitación" : "Crear cuenta"}</h1>
-        <p className="text-sm text-texto-2">{invitacion?.rol ? `Te sumaron como ${invitacion.rol}.` : config.texto_registro ?? "Para hacer pedidos y seguirlos."}</p>
+        <p className="text-sm text-texto-2">{invitacion?.rol ? `Te sumaron como ${invitacion.rol}.` : config.texto_registro ?? "Así hacés tus pedidos y los seguís desde acá."}</p>
       </div>
       <input type="hidden" name="volver" value={volver} />
       {invitacion && <input type="hidden" name="invitacion" value={invitacion.token} />}

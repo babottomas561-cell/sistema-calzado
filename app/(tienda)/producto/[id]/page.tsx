@@ -42,8 +42,8 @@ export default async function Producto({ params }: { params: Promise<{ id: strin
           ))}
           <ElegirVariante variantes={data as never} mejorMedio={medios?.[0] ?? null} imagen={fotos[0] ?? null} />
           <ul className="space-y-2.5 border-t border-borde pt-5 text-sm text-texto-2">
-            <li className="flex gap-3"><MapPin size={18} className="mt-0.5 shrink-0" /> Retirás en el local sin costo.</li>
-            <li className="flex gap-3"><Truck size={18} className="mt-0.5 shrink-0" /> También enviamos a tu domicilio.</li>
+            <li className="flex gap-3"><MapPin size={18} className="mt-0.5 shrink-0" /> Lo pasás a buscar por el local sin cargo.</li>
+            <li className="flex gap-3"><Truck size={18} className="mt-0.5 shrink-0" /> O te lo llevamos a tu casa.</li>
           </ul>
           {(p.descripcion || p.temporada || p.material) && (
             <div className="space-y-2 border-t border-borde pt-5 text-[0.95rem]">

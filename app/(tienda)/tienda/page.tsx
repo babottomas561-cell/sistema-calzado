@@ -149,7 +149,7 @@ export default async function Tienda({ searchParams }: { searchParams: Promise<F
       {/* Buscador */}
       <form action="/tienda" className="flex gap-2">
         {Object.entries(filtros).filter(([k, v]) => v && !["q", "mas"].includes(k)).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
-        <input id="buscar" name="q" defaultValue={filtros.q} placeholder="Buscar remeras, zapatillas, una marca…" className="campo" aria-label="Buscar" />
+        <input id="buscar" name="q" defaultValue={filtros.q} placeholder="Buscá remeras, zapas, una marca…" className="campo" aria-label="Buscar" />
         <button className="boton px-5">Buscar</button>
       </form>
 
@@ -187,8 +187,8 @@ export default async function Tienda({ searchParams }: { searchParams: Promise<F
 
           {lista.length === 0 ? (
             <div className="rounded-sm border border-dashed border-borde px-6 py-14 text-center">
-              <p className="text-lg font-bold">No encontramos nada con esos filtros</p>
-              <p className="mt-1 text-texto-2">Probá con otra categoría o sacá algún filtro.</p>
+              <p className="text-lg font-bold">Uh, no hay nada con esos filtros</p>
+              <p className="mt-1 text-texto-2">Probá con otra categoría o sacale algún filtro.</p>
               <Link href="/tienda#catalogo" className="boton mt-5">Ver todo</Link>
             </div>
           ) : (

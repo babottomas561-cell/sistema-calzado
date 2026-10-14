@@ -4,7 +4,7 @@
 import { crearCliente } from "@/lib/supabase/server";
 import { datosTienda } from "@/lib/tienda";
 import { leerContenido, type Filtro, type Seccion, type Tipo } from "@/lib/inicio";
-import { Accesos, Banner, Beneficios, Cinta, Editorial, Instagram, Local, Pasos, Portada, Promociones, Vidriera, type Beneficio, type ModeloInicio } from "./inicio/Secciones";
+import { Accesos, Banner, Beneficios, Cinta, Editorial, Frase, Look, Instagram, Local, Pasos, Portada, Promociones, Vidriera, type Beneficio, type ModeloInicio } from "./inicio/Secciones";
 
 type Fila = { producto_id: number; nombre: string; marca: string | null; categoria: string | null; genero: string | null; linea: string | null;
   imagen_url: string | null; talle: string; talle_orden: number; color: string; color_hex: string | null; precio: number; disponible: number; creado_en: string };
@@ -67,17 +67,19 @@ export default async function Landing() {
   const mejorDescuento = [...(medios ?? [])].filter((m) => Number(m.ajuste_pct) < 0).sort((a, b) => Number(a.ajuste_pct) - Number(b.ajuste_pct))[0];
   const mp = pagos as { mp_modo?: string; mp_cuotas_max?: number } | null;
   const beneficios: Beneficio[] = [
-    ...(contacto?.direccion_retiro ? [{ icono: "retiro" as const, titulo: "Retirá sin costo", texto: "Reservá online y pasá por el local" }] : []),
-    ...(zonas ? [{ icono: "envio" as const, titulo: "Envíos a domicilio", texto: "Elegí tu zona al hacer el pedido" }] : []),
+    ...(contacto?.direccion_retiro ? [{ icono: "retiro" as const, titulo: "Retiralo gratis", texto: "Reservá online y pasalo a buscar" }] : []),
+    ...(zonas ? [{ icono: "envio" as const, titulo: "Te lo llevamos", texto: "Elegís tu zona al hacer el pedido" }] : []),
     ...(mejorDescuento ? [{ icono: "pago" as const, titulo: `${Math.abs(Number(mejorDescuento.ajuste_pct)).toLocaleString("es-AR")} % off`, texto: `Pagando con ${mejorDescuento.nombre.toLowerCase()}` }] : []),
     ...(mp?.mp_modo && mp.mp_modo !== "no" && (mp.mp_cuotas_max ?? 1) > 1 ? [{ icono: "cuotas" as const, titulo: `Hasta ${mp.mp_cuotas_max} cuotas`, texto: "Con tarjeta, por Mercado Pago" }] : []),
-    ...((contacto?.dias_cambio ?? 0) > 0 ? [{ icono: "cambios" as const, titulo: `Cambios por ${contacto?.dias_cambio} días`, texto: "Con el ticket, en el local" }] : []),
+    ...((contacto?.dias_cambio ?? 0) > 0 ? [{ icono: "cambios" as const, titulo: `Cambios por ${contacto?.dias_cambio} días`, texto: "Con el ticket, en el local, sin drama" }] : []),
   ].slice(0, 4);
 
   const bloques = lista.map((s) => {
     switch (s.tipo) {
       case "portada": return <Portada key={s.id} s={s as Seccion<"portada">} fotos={hay.slice(0, 18)} tienda={tienda.nombre} />;
       case "cinta": return <Cinta key={s.id} s={s as Seccion<"cinta">} marcas={marcas} />;
+      case "frase": return <Frase key={s.id} s={s as Seccion<"frase">} fotos={hay.length > 8 ? hay.slice(6, 18) : hay} />;
+      case "look": { const sl = s as Seccion<"look">; return <Look key={s.id} s={sl} productos={sl.contenido.puntos.map((p) => modelos.get(p.producto_id) ?? null)} />; }
       case "accesos": {
         const sa = s as Seccion<"accesos">;
         const tarjetas = sa.contenido.tarjetas.map((t) => ({ ...t, foto: t.imagen_url || elegir(hay.filter((m) => cumple(m, t.filtro)), 1)[0]?.imagen || null }));

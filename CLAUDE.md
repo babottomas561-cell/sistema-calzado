@@ -146,6 +146,9 @@ una API de Next.** Lo que ya pisamos:
     y en el editor. Si la portada es una campaña (`estilo: foto`), la cabecera flota transparente encima
     (`app/(tienda)/marco/Cabecera.tsx`). Tipografía: Bricolage (titulares) + Instrument Serif (`.serif`, frases). El movimiento es **CSS** (bloque «PORTADA» de `globals.css`), siempre dentro de
     `prefers-reduced-motion: no-preference` y sin esconder contenido si el navegador no lo soporta.
+    **Estilo de la tienda** (`configuracion_tienda.estilo`: clasico / editorial / urbano; Identidad, `lib/estilos.ts`): la raíz de la tienda lleva
+    `data-estilo` y el bloque «ESTILOS» de `globals.css` redefine `.titular` (la clase de los títulos grandes), botones, bordes y movimiento. Un título
+    grande nuevo usa `.titular`, no `font-extrabold` a mano. Secciones «Frase en movimiento» (`frase`) y «El look» (`look`: foto + las prendas elegidas con el total).
 16. **Claves de servicios externos (WhatsApp de Meta, Gemini): en la base, nunca legibles.** Se cargan en
     `/admin/integraciones` y van a `integraciones`, una tabla **sin lectura para nadie**
     (`guardar_integraciones()` escribe; `estado_integraciones()` solo dice si están, con los últimos 4).

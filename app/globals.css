@@ -173,3 +173,45 @@ main:has(.pantalla-completa) { max-width: none; }
 .tienda .inclinar { transition: transform .35s cubic-bezier(.22, 1, .36, 1); transform-style: preserve-3d; position: relative; }
 .tienda .inclinar .brillo-tarjeta { opacity: 0; transition: opacity .3s; background: radial-gradient(circle at var(--bx, 50%) var(--by, 50%), rgb(255 255 255 / .28), transparent 55%); }
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) { .tienda .inclinar:hover .brillo-tarjeta { opacity: 1; } }
+
+/* Trama sutil para las tarjetas de acceso sin foto: líneas diagonales del mismo color, apenas más claras */
+.trama-diagonal { background-image: repeating-linear-gradient(135deg, rgb(255 255 255 / 0.06) 0 2px, transparent 2px 14px); }
+
+/* Frase en movimiento: dos filas que se cruzan con el scroll (sin soporte, quedan quietas y legibles) */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .tienda .desliza-izquierda, .tienda .desliza-derecha { animation: linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
+    .tienda .desliza-izquierda { animation-name: desliza-izquierda; }
+    .tienda .desliza-derecha { animation-name: desliza-derecha; }
+    @keyframes desliza-izquierda { from { transform: translateX(0); } to { transform: translateX(-40%); } }
+    @keyframes desliza-derecha { from { transform: translateX(-40%); } to { transform: translateX(0); } }
+  }
+}
+
+/* La frase que entra inclinada y se endereza (Agence Cartier) */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .tienda .inclina { transform-origin: 50% 100%; animation: inclina linear both; animation-timeline: view(); animation-range: entry 0% cover 45%; }
+    @keyframes inclina { from { transform: perspective(900px) rotateX(38deg) scale(0.92); opacity: 0.4; } to { transform: none; opacity: 1; } }
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   ESTILOS de la tienda (configuracion_tienda.estilo → data-estilo en la raíz; lib/estilos.ts). Cambian la letra de los
+   títulos, los bordes y cuánto se mueve, sin tocar el contenido. Las secciones usan .titular para los títulos grandes.
+   ─────────────────────────────────────────────────────────────────────────── */
+.tienda .titular { font-weight: 800; line-height: 0.95; letter-spacing: -0.04em; }
+
+/* Editorial: serif fina, aire y casi nada de movimiento */
+.tienda[data-estilo="editorial"] .titular { font-family: var(--font-serif), Georgia, serif; font-weight: 400; letter-spacing: -0.015em; line-height: 1; }
+.tienda[data-estilo="editorial"] .titular em { font-style: italic; }
+.tienda[data-estilo="editorial"] :is(h1, h2, h3) { letter-spacing: -0.01em; }
+.tienda[data-estilo="editorial"] .boton { text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.78rem; font-weight: 600; }
+.tienda[data-estilo="editorial"] :is(.sube, .baja, .corre, .corre-inv, .desliza-izquierda, .desliza-derecha, .inclina, .paralaje) { animation: none !important; }
+.tienda[data-estilo="editorial"] .desliza-derecha { display: none; }
+
+/* Urbano: condensada en mayúsculas, contraste y bordes rectos */
+.tienda[data-estilo="urbano"] .titular { font-family: var(--font-condensada), Impact, sans-serif; font-weight: 400; text-transform: uppercase; letter-spacing: 0; line-height: 0.88; }
+.tienda[data-estilo="urbano"] .titular em { font-family: inherit; font-style: normal; color: var(--color-acento); }
+.tienda[data-estilo="urbano"] .boton, .tienda[data-estilo="urbano"] .boton-sec { border-radius: 0; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; }
+.tienda[data-estilo="urbano"] :is(.rounded-sm, .rounded) { border-radius: 0; }

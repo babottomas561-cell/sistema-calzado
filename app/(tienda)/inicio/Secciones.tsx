@@ -8,12 +8,13 @@ import { enlaceFiltro, type Contenido, type Seccion } from "@/lib/inicio";
 import TarjetaProducto, { type Modelo } from "../TarjetaProducto";
 import Carrusel from "./Carrusel";
 import Medio from "./Medio";
+import { pesos } from "@/lib/formato";
 
 export type ModeloInicio = Modelo & { genero: string | null; linea: string | null; creado: string };
 export type PostInstagram = { id: number; tipo: string; imagen_url: string; permalink: string; descripcion: string | null };
 export type Contacto = { whatsapp: string | null; direccion_retiro: string | null; horario: string | null; instagram: string | null };
 
-const titular = "font-extrabold leading-[0.95] tracking-[-0.045em]";
+const titular = "titular";   // la letra, el peso y el espaciado los pone el estilo de la tienda (globals.css, «ESTILOS»)
 const h2 = `text-[clamp(2rem,5vw,3.6rem)] ${titular}`;
 
 // «Una *palabra* en cursiva»: lo que va entre asteriscos se escribe en la serif editorial (así el dueño destaca una palabra del título)
@@ -81,7 +82,7 @@ export function Portada({ s, fotos, tienda }: { s: Seccion<"portada">; fotos: Mo
   const botones = (claro: boolean) => (
     <div className="entra flex flex-wrap items-center gap-x-6 gap-y-3" style={{ "--d": "0.55s" } as React.CSSProperties}>
       {s.boton_texto && s.boton_enlace && <Magnetico><Boton href={s.boton_enlace} variante={claro ? "blanco" : "lleno"}>{s.boton_texto} <Flecha /></Boton></Magnetico>}
-      <a href="#local" className="inline-flex min-h-11 items-center font-bold underline decoration-2 underline-offset-[6px]">Visitá el local</a>
+      <a href="#local" className="inline-flex min-h-11 items-center font-bold underline decoration-2 underline-offset-[6px]">Pasá por el local</a>
     </div>
   );
   const antetitulo = s.contenido.antetitulo && (
@@ -97,7 +98,7 @@ export function Portada({ s, fotos, tienda }: { s: Seccion<"portada">; fotos: Mo
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/5 to-black/70" aria-hidden />
         <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 pb-24 pt-24 sm:px-6 sm:pb-16">
           {s.contenido.marca_gigante && (
-            <p aria-hidden className="entra select-none break-words text-[clamp(3.6rem,15.5vw,15rem)] font-extrabold leading-[0.8] tracking-[-0.06em]" style={{ "--d": "0.1s" } as React.CSSProperties}>{tienda}</p>
+            <p aria-hidden className="entra select-none break-words titular text-[clamp(3.6rem,15.5vw,15rem)] !leading-[0.8]" style={{ "--d": "0.1s" } as React.CSSProperties}>{tienda}</p>
           )}
           <div className="mt-auto space-y-5">
             {antetitulo}
@@ -160,7 +161,7 @@ export function Cinta({ s, marcas }: { s: Seccion<"cinta">; marcas: string[] }) 
     <section aria-label={items.join(", ")} className="sangrado pausa-hover -mt-12 overflow-hidden bg-marca py-4 text-white md:-mt-20 md:py-5">
       <div className="corre flex w-max items-center" style={{ "--dur": `${tanda.length * 3.5}s` } as React.CSSProperties} aria-hidden>
         {[...tanda, ...tanda].map((t, i) => (
-          <span key={i} className="flex shrink-0 items-center gap-6 pr-6 text-[clamp(1.1rem,2.4vw,1.6rem)] font-extrabold uppercase tracking-[-0.01em]">
+          <span key={i} className="flex shrink-0 items-center gap-6 pr-6 titular text-[clamp(1.1rem,2.4vw,1.6rem)] uppercase">
             {t}<Asterisk size={22} strokeWidth={2.4} className="text-acento" />
           </span>
         ))}
@@ -187,7 +188,8 @@ export function Accesos({ s, tarjetas }: { s: Seccion<"accesos">; tarjetas: (Con
               <span className={`relative block overflow-hidden bg-marca-suave ${ancha ? "aspect-[4/3] md:aspect-[3/4]" : "aspect-[3/4]"}`}>
                 {t.foto
                   ? <img src={t.foto} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-[1.2s] ease-out group-hover:scale-[1.04] motion-reduce:transition-none" />
-                  : <span className={`absolute inset-0 grid place-items-center bg-marca px-4 text-center text-[clamp(1.8rem,4vw,3rem)] text-white ${titular}`}>{t.titulo}</span>}
+                  : <span className={`trama-diagonal absolute inset-0 flex items-end bg-marca p-4 text-white sm:p-6 ${titular}`}>
+                      <span className="text-[clamp(2rem,5vw,3.6rem)] transition-transform duration-700 group-hover:-translate-y-1 motion-reduce:transition-none">{t.titulo}</span></span>}
               </span>
               <span className="block px-3 pb-1 pt-3 text-center">
                 <span className="text-[0.95rem] font-bold underline decoration-1 underline-offset-[6px] group-hover:decoration-2">{t.titulo}</span>
@@ -208,7 +210,7 @@ export function Vidriera({ s, modelos }: { s: Seccion<"productos">; modelos: Mod
     <section className="space-y-8">
       <Encabezado s={s} />
       <div data-revelar>
-        <Carrusel etiqueta={s.titulo ?? "Productos"}>
+        <Carrusel etiqueta={s.titulo?.replace(/\*/g, "") ?? "Productos"}>
           {modelos.map((m) => <div key={m.id} className="w-[46%] shrink-0 sm:w-[31%] lg:w-[23%]"><TarjetaProducto m={m} /></div>)}
         </Carrusel>
       </div>
@@ -223,7 +225,7 @@ export function Promociones({ s, promos }: { s: Seccion<"promociones">; promos: 
   return (
     <section aria-label="Promociones" className="sangrado overflow-hidden bg-acento py-12 text-white md:py-16">
       <div className="mx-auto mb-8 flex max-w-7xl flex-wrap items-end justify-between gap-4 px-4 sm:px-6" data-revelar>
-        <p className="serif text-[1.8rem] italic leading-none">{s.titulo ?? "Promociones"}</p>
+        <p className="serif text-[1.8rem] italic leading-none">{s.titulo?.replace(/\*/g, "") ?? "Promociones"}</p>
         {s.boton_texto && s.boton_enlace && <Boton href={s.boton_enlace} variante="blanco">{s.boton_texto} <Flecha /></Boton>}
       </div>
       <div className="pausa-hover" aria-hidden>
@@ -290,7 +292,7 @@ export function Instagram({ s, posts, usuario }: { s: Seccion<"instagram">; post
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3" data-revelar>
         <div className="max-w-2xl space-y-3">
           {usuario && <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.14em] text-texto-2"><IconoInstagram size={17} strokeWidth={1.8} aria-hidden /> @{usuario}</p>}
-          {s.titulo && <h2 className={h2}>{s.titulo}</h2>}
+          {s.titulo && <h2 className={h2}>{realzar(s.titulo)}</h2>}
           {s.bajada && <p className="serif text-[1.45rem] italic leading-snug text-texto-2">{s.bajada}</p>}
         </div>
         {enlace && <Boton href={enlace}>{s.boton_texto || "Seguinos"} <Flecha /></Boton>}
@@ -314,21 +316,25 @@ export function Instagram({ s, posts, usuario }: { s: Seccion<"instagram">; post
 }
 
 // ── Cómo comprar ──────────────────────────────────────────────────────
+// Un recorrido, no tarjetas: los pasos unidos por una línea (horizontal en la compu, vertical en el celular).
+// Los números van porque es de verdad una secuencia.
 export function Pasos({ s }: { s: Seccion<"pasos"> }) {
   const pasos = s.contenido.pasos;
   if (!pasos.length) return null;
+  const cols = pasos.length >= 4 ? "md:grid-cols-4" : pasos.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2";
   return (
-    <section className="space-y-10">
+    <section className="space-y-12">
       {s.titulo && <h2 className={`max-w-[16ch] ${h2}`} data-revelar>{realzar(s.titulo)}</h2>}
-      <ol className={`grid gap-px overflow-hidden rounded-sm border border-borde bg-borde sm:grid-cols-2 ${pasos.length >= 3 ? "lg:grid-cols-3" : ""}`}>
+      <ol className={`relative grid gap-10 md:gap-8 ${cols}`}>
+        {/* La línea que une los pasos */}
+        <span aria-hidden className="absolute bottom-3 left-[1.375rem] top-3 w-px bg-borde md:bottom-auto md:left-0 md:right-0 md:top-[1.375rem] md:h-px md:w-auto" />
         {pasos.map((p, i) => (
-          <li key={i} className="group flex flex-col gap-10 bg-white p-6 transition-colors duration-500 hover:bg-marca hover:text-white md:min-h-72 md:p-8">
-            <span className="text-[clamp(4rem,8vw,6.5rem)] font-extrabold leading-none tracking-[-0.06em] text-acento" data-revelar="numero" style={{ "--i": i } as React.CSSProperties} aria-hidden>
-              {String(i + 1).padStart(2, "0")}</span>
-            <div className="mt-auto">
-              <p className="text-2xl font-extrabold tracking-[-0.03em]">{p.titulo}</p>
-              <p className="mt-2 max-w-sm text-texto-2 transition-colors duration-500 group-hover:text-white/75">{p.texto}</p>
-            </div>
+          <li key={i} className="relative grid grid-cols-[2.75rem_1fr] gap-5 md:block" data-revelar style={{ "--i": i } as React.CSSProperties}>
+            <span className="relative z-[1] grid h-11 w-11 place-items-center rounded-full bg-marca text-base font-extrabold text-white ring-8 ring-white md:mb-7" aria-hidden>{i + 1}</span>
+            <span>
+              <span className="block titular text-[clamp(1.5rem,2.6vw,2rem)] !leading-tight">{p.titulo}</span>
+              <span className="mt-2 block max-w-xs text-[0.98rem] leading-relaxed text-texto-2">{p.texto}</span>
+            </span>
           </li>
         ))}
       </ol>
@@ -354,10 +360,14 @@ export function Local({ s, contacto, tienda }: { s: Seccion<"local">; contacto: 
         <ul className="space-y-5 text-[0.95rem]" data-revelar style={{ "--i": 1 } as React.CSSProperties}>
           {contacto?.direccion_retiro && <li className="flex gap-3 border-t border-white/15 pt-5"><MapPin size={20} className="mt-0.5 shrink-0" /><span><b className="block">Dónde</b><span className="text-white/75">{contacto.direccion_retiro}</span></span></li>}
           {contacto?.horario && <li className="flex gap-3 border-t border-white/15 pt-5"><Clock size={20} className="mt-0.5 shrink-0" /><span><b className="block">Cuándo</b><span className="text-white/75">{contacto.horario}</span></span></li>}
-          {!contacto?.direccion_retiro && !contacto?.horario && <li className="text-white/75">Pronto vas a ver acá la dirección y el horario.</li>}
         </ul>
+        {contacto?.direccion_retiro && (
+          <iframe title={`Mapa: ${contacto.direccion_retiro}`} loading="lazy" referrerPolicy="no-referrer"
+            src={`https://www.google.com/maps?q=${encodeURIComponent(contacto.direccion_retiro)}&output=embed`}
+            className="h-64 w-full rounded-sm border-0 grayscale-[0.4] md:col-span-2 md:h-80" />
+        )}
       </div>
-      <p aria-hidden className="select-none whitespace-nowrap px-2 text-center text-[clamp(4rem,19vw,17rem)] font-extrabold leading-[0.78] tracking-[-0.07em] text-white/[0.09] translate-y-[14%]" data-revelar>
+      <p aria-hidden className="select-none whitespace-nowrap px-2 text-center titular text-[clamp(4rem,19vw,17rem)] !leading-[0.78] text-white/[0.09] translate-y-[14%]" data-revelar>
         {tienda}</p>
     </section>
   );
@@ -370,19 +380,106 @@ export type Beneficio = { icono: "retiro" | "cambios" | "pago" | "cuotas" | "env
 const ICONOS = { retiro: Store, cambios: RefreshCw, pago: BadgePercent, cuotas: CreditCard, envio: Truck };
 export function Beneficios({ items }: { items: Beneficio[] }) {
   if (!items.length) return null;
+  // Sin cajas: una línea con íconos y separadores finos, como la franja de servicios de una marca
   return (
-    <section aria-label="Beneficios de comprar acá" className="-mt-10 md:-mt-16">
-      <ul className={`grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-borde bg-borde ${items.length >= 4 ? "lg:grid-cols-4" : items.length === 3 ? "md:grid-cols-3" : ""}`}>
+    <section aria-label="Beneficios de comprar acá" className="-mt-12 border-y border-borde py-6 md:-mt-20 md:py-8">
+      <ul className={`grid grid-cols-2 gap-y-6 ${items.length >= 4 ? "lg:grid-cols-4" : items.length === 3 ? "md:grid-cols-3" : ""}`}>
         {items.map((b, i) => {
           const Icono = ICONOS[b.icono];
           return (
-            <li key={b.titulo} className="group flex items-start gap-3.5 bg-white p-4 transition-colors duration-500 hover:bg-marca-suave sm:p-6" data-revelar style={{ "--i": i } as React.CSSProperties}>
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-marca-suave text-marca transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110 motion-reduce:transition-none"><Icono size={20} strokeWidth={1.8} aria-hidden /></span>
-              <span className="min-w-0"><b className="block text-[0.95rem] leading-snug">{b.titulo}</b><span className="mt-0.5 block text-sm leading-snug text-texto-2">{b.texto}</span></span>
+            <li key={b.titulo} className={`flex items-center gap-3.5 px-3 sm:px-6 ${i > 0 ? "md:border-l md:border-borde" : ""}`} data-revelar style={{ "--i": i } as React.CSSProperties}>
+              <Icono size={26} strokeWidth={1.6} className="shrink-0 text-marca" aria-hidden />
+              <span className="min-w-0"><b className="block text-[0.98rem] leading-snug">{b.titulo}</b><span className="block text-sm leading-snug text-texto-2">{b.texto}</span></span>
             </li>
           );
         })}
       </ul>
+    </section>
+  );
+}
+
+// ── Frase en movimiento ───────────────────────────────────────────────
+// Toda la pantalla del color de la marca y una frase enorme que se corre de costado con el scroll, con fotos de
+// prendas del catálogo metidas entre las palabras (The Pleasure Pursuit, Coach). Sin soporte de animación por scroll
+// o con «reducir movimiento», la frase queda quieta y se lee igual.
+export function Frase({ s, fotos }: { s: Seccion<"frase">; fotos: ModeloInicio[] }) {
+  if (!s.titulo) return null;
+  const { fondo, fotos: conFotos } = s.contenido;
+  const colores = { claro: "bg-marca-suave text-marca", oscuro: "bg-marca text-white", acento: "bg-acento text-white" }[fondo];
+  const palabras = s.titulo.split(/\s+/);
+  const imagenes = conFotos ? fotos.filter((m) => m.imagen).slice(0, 6) : [];
+  const fila = (sentido: "izquierda" | "derecha", desfase: number) => (
+    <p aria-hidden className={`desliza-${sentido} flex w-max items-center gap-[0.35em] whitespace-nowrap text-[clamp(3.5rem,12vw,9rem)] ${titular}`}>
+      {[...palabras, ...palabras].map((p, i) => {
+        const foto = imagenes.length ? imagenes[(i + desfase) % imagenes.length] : null;
+        return (
+          <span key={i} className="flex items-center gap-[0.35em]">
+            <span>{realzar(p)}</span>
+            {foto && i % 2 === 0 && (
+              <Link href={`/producto/${foto.id}`} tabIndex={-1} className="relative inline-block h-[0.8em] w-[0.62em] shrink-0 overflow-hidden rounded-[0.12em] align-middle">
+                <img src={foto.imagen!} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-700 hover:scale-110" />
+              </Link>
+            )}
+          </span>
+        );
+      })}
+    </p>
+  );
+  return (
+    <section className={`sangrado relative overflow-hidden py-16 sm:py-24 ${colores}`}>
+      <h2 className="sr-only">{s.titulo.replace(/\*/g, "")}</h2>
+      <div className="inclina flex flex-col gap-2 sm:gap-4">
+        {fila("izquierda", 0)}
+        {fila("derecha", 3)}
+      </div>
+      {(s.bajada || (s.boton_texto && s.boton_enlace)) && (
+        <div className="mx-auto mt-10 flex max-w-6xl flex-col items-start gap-5 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-6" data-revelar>
+          {s.bajada && <p className="max-w-md text-lg opacity-85">{s.bajada}</p>}
+          {s.boton_texto && s.boton_enlace && <Boton href={s.boton_enlace} variante={fondo === "claro" ? "lleno" : "blanco"}>{s.boton_texto} <Flecha /></Boton>}
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ── El look ───────────────────────────────────────────────────────────
+// La foto de un conjunto, grande, y al costado las prendas que lleva en fila, con el total del conjunto (Ssense / COS «shop the look»).
+export function Look({ s, productos }: { s: Seccion<"look">; productos: (ModeloInicio | null)[] }) {
+  if (!s.imagen_url) return null;
+  const { puntos, lado } = s.contenido;
+  const items = puntos.flatMap((p, i) => (productos[i] ? [{ ...p, m: productos[i] }] : []));
+  const total = items.reduce((t, p) => t + p.m.precio, 0);
+  return (
+    <section className="grid items-end gap-10 md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] md:gap-16">
+      <div className={`relative aspect-[4/5] overflow-hidden bg-marca-suave ${lado === "derecha" ? "md:order-2" : ""}`} data-revelar="foto">
+        <Medio url={s.imagen_url} className="absolute inset-0 h-full w-full object-cover" />
+      </div>
+      <div className="space-y-8 md:pb-6" data-revelar>
+        <div className="space-y-4">
+          {s.titulo && <h2 className={h2}>{realzar(s.titulo)}</h2>}
+          {s.bajada && <p className="max-w-sm text-texto-2">{s.bajada}</p>}
+        </div>
+        {items.length > 0 && <>
+          <ul className="grid grid-cols-3 gap-3">
+            {items.slice(0, 6).map((p) => (
+              <li key={p.producto_id}>
+                <Link href={`/producto/${p.m.id}`} className="group block space-y-2">
+                  <span className="block aspect-[3/4] overflow-hidden bg-marca-suave">
+                    {p.m.imagen && <img src={p.m.imagen} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105 motion-reduce:transition-none" />}
+                  </span>
+                  <span className="block truncate text-sm leading-tight">{p.m.nombre}</span>
+                  <span className="block text-sm text-texto-2">{pesos(p.m.precio)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="flex items-baseline justify-between border-t border-marca pt-4">
+            <span className="text-sm text-texto-2">El look completo, {items.length} {items.length === 1 ? "prenda" : "prendas"}</span>
+            <span className="text-xl font-bold">{pesos(total)}</span>
+          </div>
+        </>}
+        {s.boton_texto && s.boton_enlace && <Boton href={s.boton_enlace}>{s.boton_texto} <Flecha /></Boton>}
+      </div>
     </section>
   );
 }

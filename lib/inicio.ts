@@ -4,16 +4,18 @@
 // y todo lo que no cuadra se reemplaza por un valor por defecto en vez de tirar error en la tienda.
 import { IconoInstagram } from "@/components/IconoInstagram";
 import {
-  BookOpen, Images, LayoutTemplate, ListOrdered, MapPin, Megaphone, PanelsTopLeft, ShoppingBag, type LucideIcon,
+  BookOpen, Images, LayoutTemplate, ListOrdered, MapPin, Megaphone, PanelsTopLeft, Shirt, ShoppingBag, Type, type LucideIcon,
 } from "lucide-react";
 
-export const TIPOS = ["portada", "cinta", "accesos", "productos", "promociones", "banner", "editorial", "instagram", "pasos", "local"] as const;
+export const TIPOS = ["portada", "cinta", "frase", "accesos", "productos", "look", "promociones", "banner", "editorial", "instagram", "pasos", "local"] as const;
 export type Tipo = (typeof TIPOS)[number];
 
 // Para el panel: nombre, ícono y qué es cada tipo, en palabras del dueño
 export const INFO_TIPO: Record<Tipo, { nombre: string; icono: LucideIcon; ayuda: string }> = {
   portada: { nombre: "Portada", icono: LayoutTemplate, ayuda: "Lo primero que se ve: una campaña a pantalla completa (foto o video) o fotos del catálogo en movimiento." },
   cinta: { nombre: "Cinta que corre", icono: Megaphone, ayuda: "Una franja con frases y marcas que se desliza sola." },
+  frase: { nombre: "Frase en movimiento", icono: Type, ayuda: "Una frase gigante a pantalla completa que se desliza de costado al bajar, con prendas del catálogo flotando entre las palabras." },
+  look: { nombre: "El look", icono: Shirt, ayuda: "La foto de un conjunto y, al lado, las prendas que lleva con el precio del look completo." },
   accesos: { nombre: "Accesos", icono: PanelsTopLeft, ayuda: "Fotos grandes que llevan a una parte de la tienda (Remeras, Camisas, Calzado…)." },
   productos: { nombre: "Vidriera", icono: ShoppingBag, ayuda: "Una fila de productos: los más vendidos, lo nuevo, lo que está en promoción o los que elijas." },
   promociones: { nombre: "Promociones", icono: Megaphone, ayuda: "Una franja de color con las promociones vigentes de la tienda. Si no hay ninguna, no aparece." },
@@ -29,6 +31,8 @@ export const INFO_TIPO: Record<Tipo, { nombre: string; icono: LucideIcon; ayuda:
 export type Filtro = { genero?: string; categoria?: string; linea?: string; q?: string };
 export type Tarjeta = { titulo: string; bajada?: string; filtro: Filtro; imagen_url?: string | null };
 export type Paso = { titulo: string; texto: string };
+// Una prenda del look (x e y quedaron de una versión con puntos sobre la foto: hoy no se usan)
+export type PuntoLook = { x: number; y: number; producto_id: number };
 export const CRITERIOS = { mas_vendidos: "Los más vendidos", nuevos: "Lo nuevo", promocion: "En promoción", elegidos: "Elegidos a mano" } as const;
 export type Criterio = keyof typeof CRITERIOS;
 export const FONDOS = { claro: "Claro", oscuro: "Oscuro", acento: "Color de promociones" } as const;
@@ -42,6 +46,8 @@ export const CANTIDADES_INSTAGRAM = [4, 6, 8, 12];
 export type Contenido = {
   portada: { estilo: EstiloPortada; antetitulo?: string; marca_gigante: boolean };
   cinta: { frases: string[]; marcas: boolean };
+  frase: { fondo: Fondo; fotos: boolean };
+  look: { puntos: PuntoLook[]; lado: "izquierda" | "derecha" };
   accesos: { tarjetas: Tarjeta[] };
   productos: { criterio: Criterio; cantidad: number; productos: number[] };
   promociones: Record<string, never>;
@@ -75,6 +81,14 @@ export function leerContenido<T extends Tipo>(tipo: T, x: Json): Contenido[T] {
   const r: { [K in Tipo]: () => Contenido[K] } = {
     portada: () => ({ estilo: o.estilo === "foto" ? "foto" : "columnas", antetitulo: txt(o.antetitulo, 60) || undefined, marca_gigante: o.marca_gigante !== false }),
     cinta: () => ({ frases: lista(o.frases).map((f) => txt(f, 60)).filter(Boolean).slice(0, 8), marcas: o.marcas !== false }),
+    frase: () => ({ fondo: (Object.keys(FONDOS) as Fondo[]).includes(o.fondo as Fondo) ? (o.fondo as Fondo) : "acento", fotos: o.fotos !== false }),
+    look: () => ({
+      lado: o.lado === "derecha" ? "derecha" : "izquierda",
+      puntos: lista(o.puntos).map((p) => { const a = obj(p);
+        const lim = (n: Json) => Math.min(97, Math.max(3, Math.round(Number(n) * 10) / 10));
+        return { x: lim(a.x), y: lim(a.y), producto_id: Math.round(Number(a.producto_id)) };
+      }).filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y) && p.producto_id > 0).slice(0, 8),
+    }),
     accesos: () => ({ tarjetas: lista(o.tarjetas).map((t) => { const a = obj(t);
       return { titulo: txt(a.titulo, 40), bajada: txt(a.bajada, 80) || undefined, filtro: leerFiltro(a.filtro), imagen_url: txt(a.imagen_url, 500) || null };
     }).filter((t) => t.titulo).slice(0, 6) }),
@@ -97,16 +111,18 @@ export function leerContenido<T extends Tipo>(tipo: T, x: Json): Contenido[T] {
 
 // Lo que crea "Agregar sección" (el dueño después lo cambia)
 export const NUEVA: { [K in Tipo]: { titulo: string | null; bajada?: string; boton_texto?: string; boton_enlace?: string; contenido: Contenido[K] } } = {
-  portada: { titulo: "Nueva temporada", boton_texto: "Entrar a la tienda", boton_enlace: "/tienda", contenido: { estilo: "foto", marca_gigante: true } },
-  cinta: { titulo: null, contenido: { frases: ["Reservá online", "Retirá sin cargo en el local"], marcas: true } },
-  accesos: { titulo: "Elegí por dónde empezar", boton_texto: "Ver todo", boton_enlace: "/tienda", contenido: { tarjetas: [{ titulo: "Remeras", filtro: { categoria: "Remera" } }, { titulo: "Camisas", filtro: { categoria: "Camisa" } }] } },
+  portada: { titulo: "Vestite para el *finde*", boton_texto: "Ver la ropa", boton_enlace: "/tienda", contenido: { estilo: "foto", marca_gigante: true } },
+  cinta: { titulo: null, contenido: { frases: ["Reservá online", "Pasalo a buscar sin cargo", "Cambios sin vueltas"], marcas: true } },
+  frase: { titulo: "Para el *laburo* y para el *finde*", contenido: { fondo: "acento", fotos: true } },
+  look: { titulo: "Armá la *pinta*", bajada: "Todo lo que lleva. Llevátelo entero o de a una prenda.", contenido: { puntos: [], lado: "izquierda" } },
+  accesos: { titulo: "¿Qué andás buscando?", boton_texto: "Ver todo", boton_enlace: "/tienda", contenido: { tarjetas: [{ titulo: "Remeras", filtro: { categoria: "Remera" } }, { titulo: "Camisas", filtro: { categoria: "Camisa" } }] } },
   productos: { titulo: "Lo nuevo", boton_texto: "Ver toda la tienda", boton_enlace: "/tienda", contenido: { criterio: "nuevos", cantidad: 8, productos: [] } },
-  promociones: { titulo: "Ahora en la tienda", boton_texto: "Ver las prendas", boton_enlace: "/tienda", contenido: {} },
-  banner: { titulo: "Llegó la nueva colección", bajada: "Pasá a verla al local o reservala online.", boton_texto: "Ver la colección", boton_enlace: "/tienda", contenido: { alineacion: "izquierda" } },
-  editorial: { titulo: "Para salir esta noche", bajada: "Camisas, sacos y jeans para cualquier ocasión.", boton_texto: "Ver la selección", boton_enlace: "/tienda", contenido: { lado: "izquierda", fondo: "claro", antetitulo: "La edición de la semana" } },
-  instagram: { titulo: "Seguinos en Instagram", bajada: "Lo que llega y cómo se usa, todas las semanas.", boton_texto: "Seguinos", contenido: { cantidad: 6 } },
-  pasos: { titulo: "Comprar es así de simple", contenido: { pasos: [{ titulo: "Elegí", texto: "Sumá lo que te guste al carrito." }, { titulo: "Reservá", texto: "Te lo guardamos y coordinamos por WhatsApp." }] } },
-  local: { titulo: "Pasá a probártelo", bajada: "Te esperamos en el local.", boton_texto: "Entrar a la tienda", boton_enlace: "/tienda", contenido: {} },
+  promociones: { titulo: "Aprovechá ahora", boton_texto: "Ver las prendas", boton_enlace: "/tienda", contenido: {} },
+  banner: { titulo: "Cayó la nueva temporada", bajada: "Vení a probártela al local o reservala online.", boton_texto: "Ver la temporada", boton_enlace: "/tienda", contenido: { alineacion: "izquierda" } },
+  editorial: { titulo: "Para la salida del sábado", bajada: "Camisa, jean y unas buenas zapatillas. No falla.", boton_texto: "Ver la selección", boton_enlace: "/tienda", contenido: { lado: "izquierda", fondo: "claro", antetitulo: "Lo elegido de la semana" } },
+  instagram: { titulo: "Seguinos en Instagram", bajada: "Lo que va llegando y cómo combinarlo.", boton_texto: "Seguinos", contenido: { cantidad: 6 } },
+  pasos: { titulo: "Comprar es *re fácil*", contenido: { pasos: [{ titulo: "Elegí", texto: "Mandá al carrito lo que te guste." }, { titulo: "Reservá", texto: "Te lo guardamos y coordinamos por WhatsApp, sin vueltas." }] } },
+  local: { titulo: "Vení a probártelo", bajada: "Te esperamos en el local.", boton_texto: "Entrar a la tienda", boton_enlace: "/tienda", contenido: {} },
 };
 
 // Link a la tienda con los filtros de una tarjeta: /tienda?genero=Mujer#catalogo

@@ -49,7 +49,7 @@ export default async function MiCuenta({ searchParams }: { searchParams: Promise
             <div className="text-right"><span className={`chip ${ESTADOS[p.estado].color}`}>{ESTADOS[p.estado].texto}</span><div className="mt-1 font-semibold">{pesos(p.total)}</div></div>
           </Link>
         ))}
-        {pedidos?.length === 0 && <p className="text-texto-2">Todavía no hiciste pedidos. <Link href="/tienda" className="text-marca">Ver el catálogo</Link></p>}
+        {pedidos?.length === 0 && <p className="text-texto-2">Todavía no hiciste pedidos. <Link href="/tienda" className="text-marca">Ver la ropa</Link></p>}
       </section>
       {/* Las columnas de una vista llegan como posible null: se normalizan */}
       {ficha && <MisDatos ficha={{ ...ficha, nombre: ficha.nombre ?? "", acepta_promos: ficha.acepta_promos ?? true }} />}

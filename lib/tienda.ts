@@ -6,8 +6,8 @@ import { crearCliente } from "@/lib/supabase/server";
 export const datosTienda = cache(async () => {
   const supabase = await crearCliente();
   const { data } = await supabase.from("configuracion_tienda")
-    .select("nombre, avisos, aviso_enlace, instagram, whatsapp, direccion_retiro, horario, icono_url, logo_url, logo_oscuro_url, color_marca").single();
-  return data ?? { nombre: "Mi Tienda", avisos: [] as string[], aviso_enlace: null, instagram: null, whatsapp: null, direccion_retiro: null, horario: null, icono_url: null as string | null, logo_url: null as string | null, logo_oscuro_url: null as string | null, color_marca: null as string | null };
+    .select("nombre, avisos, aviso_enlace, instagram, whatsapp, direccion_retiro, horario, icono_url, logo_url, logo_oscuro_url, color_marca, estilo").single();
+  return data ?? { nombre: "Mi Tienda", avisos: [] as string[], aviso_enlace: null, instagram: null, whatsapp: null, direccion_retiro: null, horario: null, icono_url: null as string | null, logo_url: null as string | null, logo_oscuro_url: null as string | null, color_marca: null as string | null, estilo: "clasico" };
 });
 
 // Lo legal que se muestra en el pie: datos del comercio y qué documentos están publicados

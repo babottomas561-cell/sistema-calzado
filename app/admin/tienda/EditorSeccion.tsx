@@ -93,8 +93,8 @@ export default function EditorSeccion({ s, opciones }: { s: Seccion; opciones: O
   const info = INFO_TIPO[s.tipo];
   // Qué campos comunes usa cada tipo
   const usa = {
-    titulo: s.tipo !== "cinta", bajada: ["portada", "banner", "editorial", "local", "accesos", "productos", "instagram"].includes(s.tipo),
-    boton: !["cinta", "pasos"].includes(s.tipo), foto: s.tipo === "banner" || s.tipo === "editorial" || (s.tipo === "portada" && (c as Contenido["portada"]).estilo === "foto"),
+    titulo: s.tipo !== "cinta", bajada: ["portada", "banner", "editorial", "local", "accesos", "productos", "instagram", "frase", "look"].includes(s.tipo),
+    boton: !["cinta", "pasos"].includes(s.tipo), foto: s.tipo === "banner" || s.tipo === "editorial" || s.tipo === "look" || (s.tipo === "portada" && (c as Contenido["portada"]).estilo === "foto"),
   };
 
   const destinos = (
@@ -197,6 +197,39 @@ export default function EditorSeccion({ s, opciones }: { s: Seccion; opciones: O
             {CANTIDADES_INSTAGRAM.map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
         <p className="rounded-xl bg-gray-50 px-3 py-2.5 text-sm text-texto-2">Las fotos salen de tu Instagram, conectado en <a href="/admin/integraciones/instagram" className="font-semibold text-marca underline">Integraciones → Instagram</a>. Si todavía no está conectado, la sección muestra solo el botón (si cargaste tu usuario en Datos de la tienda).</p>
       </>; }
+      case "frase": { const p = c as Contenido["frase"]; return <>
+        <p className="text-[11px] text-texto-2">La frase va enorme y se corre de costado al bajar. Poné una *palabra* entre asteriscos para escribirla en cursiva.</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className="etiqueta">Fondo</label>
+            <select value={p.fondo} onChange={(e) => setC({ ...p, fondo: e.target.value as keyof typeof FONDOS })} className="campo">
+              {Object.entries(FONDOS).map(([k, t]) => <option key={k} value={k}>{t}</option>)}</select></div>
+          <label className="flex items-end gap-2 pb-2.5 text-sm"><input type="checkbox" checked={p.fotos} onChange={(e) => setC({ ...p, fotos: e.target.checked })} /> Fotos de prendas entre las palabras</label>
+        </div>
+      </>; }
+      case "look": { const p = c as Contenido["look"];
+        const elegidos = p.puntos.map((x) => x.producto_id);
+        const filtrados = opciones.productos.filter((x) => `${x.nombre} ${x.marca ?? ""}`.toLowerCase().includes(buscar.toLowerCase())).slice(0, 60);
+        const tocar = (id: number) => setC({ ...p, puntos: elegidos.includes(id) ? p.puntos.filter((x) => x.producto_id !== id)
+          : [...p.puntos, { x: 50, y: 50, producto_id: id }].slice(0, 6) });
+        return <>
+          <div><label className="etiqueta">Foto</label>
+            <select value={p.lado} onChange={(e) => setC({ ...p, lado: e.target.value as "izquierda" | "derecha" })} className="campo">
+              <option value="izquierda">A la izquierda</option><option value="derecha">A la derecha</option></select></div>
+          <div className="space-y-2">
+            <label className="etiqueta">Prendas del look <span className="normal-case tracking-normal">({elegidos.length} de 6, en el orden en que las tocás)</span></label>
+            <div className="relative"><Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input value={buscar} onChange={(e) => setBuscar(e.target.value)} placeholder="Buscar por nombre o marca" className="campo pl-9" /></div>
+            <ul className="max-h-64 divide-y divide-gray-100 overflow-y-auto rounded-xl border border-borde">
+              {filtrados.map((x) => { const n = elegidos.indexOf(x.id) + 1; return (
+                <li key={x.id}><button type="button" onClick={() => tocar(x.id)} className={`flex w-full items-center gap-3 px-3 py-2 text-left text-sm ${n ? "bg-marca-suave" : "hover:bg-gray-50"}`}>
+                  {x.imagen ? <img src={x.imagen} alt="" className="h-10 w-8 shrink-0 rounded object-cover" /> : <span className="h-10 w-8 shrink-0 rounded bg-gray-100" />}
+                  <span className="min-w-0 flex-1"><span className="block truncate font-medium">{x.nombre}</span><span className="text-xs text-texto-2">{x.marca}</span></span>
+                  {n > 0 && <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-marca text-xs font-bold text-white">{n}</span>}
+                </button></li>
+              ); })}
+            </ul>
+          </div>
+        </>; }
       case "local": return <p className="rounded-xl bg-gray-50 px-3 py-2.5 text-sm text-texto-2">La dirección, el horario y el WhatsApp salen de <b>Datos de la tienda</b>, más abajo en esta misma pantalla.</p>;
       default: return null;
     }
@@ -217,11 +250,11 @@ export default function EditorSeccion({ s, opciones }: { s: Seccion; opciones: O
           <input type="hidden" name="imagen_url" value={usa.foto ? foto?.url ?? "" : ""} />
           <input type="hidden" name="imagen_ruta" value={usa.foto ? foto?.ruta ?? "" : ""} />
           <div className="space-y-4 overflow-y-auto px-5 py-4">
-            {usa.foto && <CampoFoto url={foto?.url ?? null} onCambio={setFoto} conVideo={s.tipo !== "editorial"}
-              alto={s.tipo === "editorial" ? "aspect-[4/5] max-h-72" : s.tipo === "portada" ? "aspect-[4/3]" : "aspect-[16/9]"}
+            {usa.foto && <CampoFoto url={foto?.url ?? null} onCambio={setFoto} conVideo={s.tipo !== "editorial" && s.tipo !== "look"}
+              alto={s.tipo === "editorial" || s.tipo === "look" ? "aspect-[4/5] max-h-72" : s.tipo === "portada" ? "aspect-[4/3]" : "aspect-[16/9]"}
               ayuda={s.tipo === "editorial" ? "Mejor vertical: ocupa media pantalla en la compu." : "Foto horizontal o video corto (MP4, hasta 50 MB). El texto va abajo a la izquierda."} />}
             {usa.titulo && <div><label className="etiqueta">{s.tipo === "portada" ? "Título grande" : "Título"}</label>
-              <input name="titulo" defaultValue={s.titulo ?? ""} maxLength={120} className="campo" placeholder={s.tipo === "portada" ? "Elegí lo que más te gusta" : ""} /></div>}
+              <input name="titulo" defaultValue={s.titulo ?? ""} maxLength={120} className="campo" placeholder={s.tipo === "portada" ? "Vestite para el *finde*" : ""} /></div>}
             {usa.bajada && <div><label className="etiqueta">Bajada (opcional)</label>
               <textarea name="bajada" defaultValue={s.bajada ?? ""} maxLength={300} rows={2} className="campo" /></div>}
             {usa.boton && <div className="grid grid-cols-2 gap-3">

@@ -1,4 +1,5 @@
 "use server";
+import { ESTILOS, esEstilo } from "@/lib/estilos";
 // Tienda online: las secciones de la portada y los datos de la tienda. Lo que se puede hacer lo
 // controla la base (permiso tienda.editar); acá se valida la forma de cada sección (lib/inicio.ts).
 import { revalidatePath } from "next/cache";
@@ -164,4 +165,14 @@ export async function guardarColor(hex: string | null): Promise<Estado> {
   if (error) return { error: error.message };
   refrescar();
   return { ok: hex ? "Color guardado" : "Volvió al color de siempre" };
+}
+
+// Estilo de la tienda (clásico, editorial, urbano): cambia títulos, bordes y movimiento sin tocar el contenido
+export async function guardarEstilo(estilo: string): Promise<Estado> {
+  if (!esEstilo(estilo)) return { error: "Ese estilo no existe" };
+  const supabase = await crearCliente();
+  const { error } = await supabase.from("configuracion_tienda").update({ estilo }).eq("unica", true);
+  if (error) return { error: error.message };
+  refrescar();
+  return { ok: `Listo: la tienda ahora es ${ESTILOS[estilo].nombre}` };
 }

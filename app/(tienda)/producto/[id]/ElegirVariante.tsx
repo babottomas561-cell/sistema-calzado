@@ -23,7 +23,7 @@ export default function ElegirVariante({ variantes: todas, mejorMedio, imagen }:
   if (!variantes.length) return (
     <div className="space-y-3">
       <p className="text-2xl font-extrabold">{pesos(Math.min(...todas.map((v) => Number(v.precio))))}</p>
-      <p className="rounded-sm bg-marca-suave p-4 text-sm text-texto-2">Se agotó por ahora. Escribinos y te avisamos cuando vuelva.</p>
+      <p className="rounded-sm bg-marca-suave p-4 text-sm text-texto-2">Se agotó por ahora. Escribinos y te chiflamos cuando vuelva.</p>
     </div>
   );
 
@@ -66,10 +66,10 @@ export default function ElegirVariante({ variantes: todas, mejorMedio, imagen }:
       {/* En el celular la compra queda fija abajo, al alcance del pulgar */}
       <div className="fixed inset-x-0 bottom-0 z-10 border-t border-borde bg-white px-4 py-3 lg:static lg:border-0 lg:p-0">
         <button ref={boton} className="boton w-full" disabled={!elegida} onClick={agregarAlCarrito}>
-          <ShoppingBag size={19} /> {elegida ? `Agregar al carrito · ${pesos(elegida.precio)}` : "Elegí un talle"}</button>
+          <ShoppingBag size={19} /> {elegida ? `Agregar al carrito · ${pesos(elegida.precio)}` : "Elegí tu talle"}</button>
       </div>
       <div role="status" aria-live="polite">
-        {agregado && <p className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-sm bg-marca-suave px-4 py-3 text-sm"><span className="inline-flex items-center gap-1.5 font-bold text-ok"><Check size={16} /> Agregado al carrito</span>
+        {agregado && <p className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-sm bg-marca-suave px-4 py-3 text-sm"><span className="inline-flex items-center gap-1.5 font-bold text-ok"><Check size={16} /> Listo, ya está en el carrito</span>
           <Link href="/carrito" className="inline-flex min-h-11 items-center gap-0.5 font-bold underline underline-offset-4">Ir al carrito <ChevronRight size={15} /></Link></p>}
       </div>
     </div>

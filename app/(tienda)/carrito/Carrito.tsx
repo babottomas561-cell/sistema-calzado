@@ -43,7 +43,7 @@ export default function Carrito({ pendientes, medios, conSesion, conWhatsApp, mp
 
   if (!cargado) return <div className="py-16" aria-busy="true" />;
   if (items.length === 0) return (
-    <div className="mx-auto max-w-sm py-20 text-center"><p className="text-2xl font-extrabold tracking-tight">Tu carrito está vacío</p><p className="mt-2 text-texto-2">Elegí algo que te guste y reservalo para retirarlo o recibirlo.</p><Link href="/tienda" className="boton mt-6">Ver el catálogo</Link></div>
+    <div className="mx-auto max-w-sm py-20 text-center"><p className="text-2xl font-extrabold tracking-tight">Todavía no elegiste nada</p><p className="mt-2 text-texto-2">Date una vuelta por la tienda y reservá lo que te guste.</p><Link href="/tienda" className="boton mt-6">Ver la ropa</Link></div>
   );
 
   return (
@@ -77,17 +77,17 @@ export default function Carrito({ pendientes, medios, conSesion, conWhatsApp, mp
         {/* "Te falta 1 unidad para el 2×1" */}
         {(cot?.sugerencias ?? []).map((g) => (
           <p key={g.promocion} className="flex items-center gap-2 rounded-sm bg-acento-suave px-4 py-3 text-sm">
-            <BadgePercent size={18} className="shrink-0 text-acento" /> <span>Sumá <b>{g.faltan} {g.faltan === 1 ? "unidad" : "unidades"}</b> más y aprovechás <b>{g.promocion}</b>. <Link href="/tienda" className="font-semibold underline">Ver el catálogo</Link></span></p>
+            <BadgePercent size={18} className="shrink-0 text-acento" /> <span>Sumá <b>{g.faltan} {g.faltan === 1 ? "unidad" : "unidades"}</b> más y aprovechás <b>{g.promocion}</b>. <Link href="/tienda" className="font-semibold underline">Ver la ropa</Link></span></p>
         ))}
       </section>
       {!conSesion && (
         <aside className="tarjeta h-fit space-y-5 lg:sticky lg:top-24">
-          <div><h2 className="text-xl font-extrabold tracking-[-0.03em]">Antes de pedir, creá tu cuenta</h2>
+          <div><h2 className="text-xl font-extrabold tracking-[-0.03em]">Antes de pedir, armate una cuenta</h2>
             <p className="mt-1 text-sm text-texto-2">Es rápido y es lo que nos permite reservarte los productos y avisarte cuando estén listos. Tu carrito queda guardado.</p></div>
           <ul className="space-y-2.5 text-sm">
             <li className="flex items-start gap-2.5"><PackageSearch size={18} strokeWidth={1.8} className="mt-0.5 shrink-0 text-marca" /><span>Seguís el estado de tu pedido desde tu cuenta.</span></li>
             <li className="flex items-start gap-2.5"><Bell size={18} strokeWidth={1.8} className="mt-0.5 shrink-0 text-marca" /><span>Te avisamos cuando esté confirmado y listo.</span></li>
-            <li className="flex items-start gap-2.5"><UserPlus size={18} strokeWidth={1.8} className="mt-0.5 shrink-0 text-marca" /><span>La próxima vez no cargás tus datos de nuevo.</span></li>
+            <li className="flex items-start gap-2.5"><UserPlus size={18} strokeWidth={1.8} className="mt-0.5 shrink-0 text-marca" /><span>La próxima vez no tenés que cargar todo de nuevo.</span></li>
           </ul>
           <dl className="flex items-baseline justify-between border-t border-borde pt-3 text-sm"><dt className="font-semibold">Total estimado</dt><dd className="text-2xl font-extrabold tracking-[-0.03em]">{pesos(totalFinal)}</dd></dl>
           <div className="space-y-2.5">
@@ -122,7 +122,7 @@ export default function Carrito({ pendientes, medios, conSesion, conWhatsApp, mp
                 {Number(m.ajuste_pct) < 0 ? `${numero(-m.ajuste_pct)} % off` : `recargo ${porcentaje(m.ajuste_pct)}`}</span>}
             </label>
           ))}</div></div>
-        <div><label className="etiqueta">Notas</label><input name="notas" className="campo" placeholder="Algo que tengamos que saber" /></div>
+        <div><label className="etiqueta">Notas</label><input name="notas" className="campo" placeholder="Algo que tengamos que saber (ej.: pasa a buscarlo mi hermano)" /></div>
         <dl className={`space-y-1 border-t border-borde pt-3 text-sm ${cot ? "" : "opacity-60"}`}>
           {(promos > 0 || ajuste !== 0) && <div className="flex justify-between text-texto-2"><dt>Subtotal</dt><dd>{pesos(subtotal)}</dd></div>}
           {promos > 0 && <div className="flex justify-between text-ok"><dt>Promociones</dt><dd>−{pesos(promos)}</dd></div>}
@@ -151,7 +151,7 @@ export default function Carrito({ pendientes, medios, conSesion, conWhatsApp, mp
           ? "Te reservamos los productos y pagás en Mercado Pago (tarjeta, débito o dinero en cuenta). Si el pago no se completa, lo podés pagar después desde tu pedido."
           : conWhatsApp
           ? "Te reservamos los productos y en el paso siguiente nos mandás el pedido por WhatsApp para coordinar el pago y la entrega."
-          : "Te reservamos los productos al confirmar. Te avisamos por acá cuando esté listo."}</p>
+          : "Al confirmar te lo guardamos. Te avisamos por acá cuando esté listo."}</p>
       </form>}
     </div>
   );

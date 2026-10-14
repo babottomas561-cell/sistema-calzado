@@ -4,7 +4,8 @@
 import { useRef, useState } from "react";
 import { crearClienteNavegador } from "@/lib/supabase/navegador";
 import { contrasteConBlanco, esHex, sirveParaBotones } from "@/lib/color";
-import { guardarColor, guardarLogo } from "./acciones";
+import { ESTILOS, type Estilo } from "@/lib/estilos";
+import { guardarColor, guardarEstilo, guardarLogo } from "./acciones";
 
 type Aviso = { error?: string; ok?: string };
 
@@ -91,9 +92,51 @@ function Color({ color }: { color: string | null }) {
   );
 }
 
-export default function IdentidadTienda({ logo, logoOscuro, color }: { logo: string | null; logoOscuro: string | null; color: string | null }) {
+// Cómo se ve el título en cada estilo (la misma muestra que la tienda, en chico)
+const MUESTRA: Record<Estilo, { titulo: string; letra: React.CSSProperties; boton: string }> = {
+  clasico: { titulo: "Ropa con actitud", letra: { fontWeight: 800, letterSpacing: "-0.04em" }, boton: "rounded-sm" },
+  editorial: { titulo: "Ropa con actitud", letra: { fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400, fontStyle: "italic" }, boton: "rounded-sm uppercase tracking-[0.14em] text-[9px]" },
+  urbano: { titulo: "ROPA CON ACTITUD", letra: { fontFamily: "Impact, 'Arial Narrow', sans-serif", fontWeight: 400, letterSpacing: "0.01em" }, boton: "uppercase tracking-[0.08em]" },
+};
+
+function EstiloTienda({ estilo }: { estilo: string }) {
+  const [actual, setActual] = useState(estilo);
+  const [aviso, setAviso] = useState<Aviso>({});
+  const [guardando, setGuardando] = useState(false);
+  async function elegir(e: Estilo) {
+    if (e === actual) return;
+    setGuardando(true); setAviso({});
+    const r = await guardarEstilo(e);
+    setAviso(r); if (r.ok) setActual(e);
+    setGuardando(false);
+  }
+  return (
+    <fieldset className="space-y-2 md:col-span-3" disabled={guardando}>
+      <legend className="etiqueta">Estilo de la tienda</legend>
+      <p className="text-[11px] text-texto-2">Cambia la letra de los títulos, los botones y el movimiento de toda la tienda. Las fotos y los textos quedan igual.</p>
+      <div className="grid gap-3 sm:grid-cols-3">
+        {(Object.keys(ESTILOS) as Estilo[]).map((e) => (
+          <button key={e} type="button" onClick={() => elegir(e)} aria-pressed={actual === e}
+            className={`rounded-xl border-2 p-3 text-left transition ${actual === e ? "border-marca" : "border-borde hover:border-gray-300"}`}>
+            <span className="mb-3 flex h-24 flex-col justify-between rounded-lg bg-neutral-900 p-3 text-white">
+              <span className="text-[1.35rem] leading-none" style={MUESTRA[e].letra}>{MUESTRA[e].titulo}</span>
+              <span className={`self-start bg-white px-2 py-1 text-[10px] font-bold text-neutral-900 ${MUESTRA[e].boton}`}>Ver la tienda</span>
+            </span>
+            <span className="block font-semibold">{ESTILOS[e].nombre}{actual === e && <span className="ml-2 text-xs font-medium text-marca">En uso</span>}</span>
+            <span className="block text-xs text-texto-2">{ESTILOS[e].ayuda}</span>
+          </button>
+        ))}
+      </div>
+      {aviso.error && <p className="text-xs text-error" role="alert">{aviso.error}</p>}
+      {aviso.ok && <p className="text-xs text-ok">{aviso.ok}</p>}
+    </fieldset>
+  );
+}
+
+export default function IdentidadTienda({ logo, logoOscuro, color, estilo }: { logo: string | null; logoOscuro: string | null; color: string | null; estilo: string }) {
   return (
     <div className="grid gap-6 md:grid-cols-3">
+      <EstiloTienda estilo={estilo} />
       <Logo cual="claro" titulo="Logo" ayuda="Para fondo claro. Se achica solo; PNG con fondo transparente queda mejor." url={logo} fondo="bg-white" />
       <Logo cual="oscuro" titulo="Logo para fondo oscuro (opcional)" ayuda="Versión clara o blanca. Se usa en la cabecera cuando flota sobre la foto de la portada." url={logoOscuro} fondo="bg-neutral-800" />
       <Color color={color} />
