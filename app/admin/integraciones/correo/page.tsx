@@ -3,6 +3,7 @@ import { exigir } from "@/lib/exigir";
 import Encabezado from "../Encabezado";
 import Manual from "../Manual";
 import Correo, { type EstadoCorreo } from "./Correo";
+import Requisitos from "@/components/Requisitos";
 
 export default async function PaginaCorreo() {
   const { supabase } = await exigir("equipo.administrar");
@@ -10,6 +11,7 @@ export default async function PaginaCorreo() {
   const e = estado as unknown as EstadoCorreo;
   return (
     <div className="max-w-4xl space-y-6">
+      <Requisitos accion="enviar_mails" />
       <Encabezado titulo="Correo" texto="Los mails que le llegan al cliente (confirmar su cuenta, cambiar la contraseña) salen por tu propio servidor de correo, con el nombre de tu tienda." />
       <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">{e && <Correo estado={e} />}</section>
       <Manual nombre="correo" abierto={!e?.smtp} />

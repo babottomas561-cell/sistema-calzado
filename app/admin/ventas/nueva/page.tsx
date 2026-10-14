@@ -5,10 +5,12 @@ import PuntoDeVenta from "./PuntoDeVenta";
 import { exigir } from "@/lib/exigir";
 import { puede } from "@/lib/permisos";
 import { leerTodo } from "@/lib/informes";
+import { leerRequisitos } from "@/components/Requisitos";
 
 export default async function NuevaVenta() {
   const { permisos, descuentoMax } = await exigir("ventas.registrar");
   const supabase = await crearCliente();
+  const frenan = (await leerRequisitos("vender")).filter((r) => r.bloquea);
   const [filas, { data: clientes }, { data: medios }, { data: saldos }, { data: impresion }, { data: mia }, { data: vendidos }, { data: fiscal }, { data: confPagos }, { data: point }] = await Promise.all([
     // De a páginas: con muchos modelos se pasa de las 1000 filas por consulta
     leerTodo((a, b) => supabase.from("v_stock").select("variante_id, producto_id, nombre, marca, categoria, talle, talle_orden, color, color_hex, sku, codigo_barras, disponible, precio_venta, precio_compra, imagen_url").order("variante_id").range(a, b)),
@@ -31,7 +33,7 @@ export default async function NuevaVenta() {
   const saldo = new Map((saldos ?? []).map((s) => [s.cliente_id, Number(s.disponible)]));
   // El selector trabaja con "stock" = lo disponible (descontando lo reservado en pedidos)
   const stock = filas.map((f) => ({ ...f, stock: f.disponible ?? 0 }));
-  return <PuntoDeVenta point={point as { disponible: boolean; modo: string; terminal: string | null; qr?: boolean } | null} exigeOperacion={(confPagos?.transferencia_comprobante ?? "no") !== "no"} filas={stock as never} clientes={(clientes ?? []).map((c) => ({ ...c, saldo: saldo.get(c.id) ?? 0 }))} medios={mediosCaja} sinTarjetas={sinTarjetas}
+  return <PuntoDeVenta requisitoFalta={frenan[0]?.mensaje ?? null} point={point as { disponible: boolean; modo: string; terminal: string | null; qr?: boolean } | null} exigeOperacion={(confPagos?.transferencia_comprobante ?? "no") !== "no"} filas={stock as never} clientes={(clientes ?? []).map((c) => ({ ...c, saldo: saldo.get(c.id) ?? 0 }))} medios={mediosCaja} sinTarjetas={sinTarjetas}
     cambiaPrecio={permisos.includes("ventas.cambiar_precio")} descuentoMax={descuentoMax} masVendidos={(vendidos ?? []).map((v) => v.producto_id)} puedeCrearCliente={puede(permisos, "clientes.editar")}
     facturacion={f?.activa && f.puede && f.letra ? { modo: f.sin_factura ? f.modo : "todas", porDefecto: f.serie_por_defecto, letra: f.letra, pruebas: f.ambiente === "homologacion", umbral: Number(f.umbral) } : null}
     impresion={{ configurada: !!impresion?.comprobante_configurado, modo: mia?.[0]?.modo ?? "opcional", puedeConfigurar: puede(permisos, "tablas.editar") }} />;

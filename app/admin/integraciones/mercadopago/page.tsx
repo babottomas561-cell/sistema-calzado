@@ -10,6 +10,7 @@ import PreferenciasCobro, { type DatosPreferencias } from "../PreferenciasCobro"
 import CobroQr from "../CobroQr";
 import MercadoPagoPoint, { type EstadoPoint } from "../MercadoPagoPoint";
 import { sitio } from "../sitio";
+import Requisitos from "@/components/Requisitos";
 
 export default async function PaginaMercadoPago() {
   const { permisos } = await exigir("tienda.editar");
@@ -35,6 +36,7 @@ export default async function PaginaMercadoPago() {
   }
   return (
     <div className="max-w-4xl space-y-6">
+      <Requisitos accion="cobrar_online" />
       <Encabezado titulo="Mercado Pago"
         texto="Cobrar online los pedidos de la tienda: tarjeta, débito, cuotas o dinero en cuenta. Usá una cuenta de Mercado Pago a nombre del local, no una personal." />
       <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">

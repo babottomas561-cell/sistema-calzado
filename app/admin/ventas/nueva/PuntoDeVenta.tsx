@@ -49,7 +49,8 @@ function Opcion({ icono: Icono, valor, activo, abierto, alAlternar }: { icono: L
   );
 }
 
-export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion, exigeOperacion = false, point = null, sinTarjetas = false }: {
+export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion, exigeOperacion = false, point = null, sinTarjetas = false, requisitoFalta = null }: {
+  requisitoFalta?: string | null;   // algo de la configuración impide vender (Requisitos)
   sinTarjetas?: boolean;   // la regla pide el posnet y no hay uno disponible: Débito y Crédito no se ofrecen
   point?: { disponible: boolean; modo: string; terminal: string | null; qr?: boolean } | null;   // posnet de Mercado Pago (Point)
   exigeOperacion?: boolean;   // el dueño pidió el n.º de operación en las transferencias
@@ -156,7 +157,8 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const faltaOperacion = exigeOperacion ? cobro.lineas.find((l) => l.base > 0 && l.medio.tipo === "Transferencia" && !(referencias[l.medio.id] ?? "").trim()) : undefined;
   const sinDni = facturar && !!facturacion && cobro.total >= facturacion.umbral && !(/^\d{7,8}$/.test((cliente?.documento ?? "").replace(/\D/g, "")) || cuitValido(cliente?.documento));
   // Por qué no se puede confirmar (se dice, no solo se apaga el botón)
-  const falta = !items.length ? "Agregá al menos un producto"
+  const falta = requisitoFalta ? requisitoFalta
+    : !items.length ? "Agregá al menos un producto"
     : pasaTope ? `Tu descuento máximo es ${pesos(topeDescuento ?? 0)}: para más, pedíselo a un encargado`
     : descuento > conPromos ? "El descuento es mayor que el total"
     : cobro.excedido ? "Las partes del pago suman más que el total"

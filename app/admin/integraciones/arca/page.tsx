@@ -4,6 +4,7 @@ import { exigir } from "@/lib/exigir";
 import Encabezado from "../Encabezado";
 import Manual from "../Manual";
 import Arca, { type EstadoArca, type Llamada, type PuntoVenta } from "./Arca";
+import Requisitos from "@/components/Requisitos";
 
 export default async function PaginaArca() {
   await exigir("equipo.administrar");
@@ -16,6 +17,7 @@ export default async function PaginaArca() {
   ]);
   return (
     <div className="max-w-4xl space-y-6">
+      <Requisitos accion="facturar" />
       <Encabezado titulo="ARCA (factura electrónica)"
         texto="Conectá el sistema con ARCA para emitir facturas electrónicas con CAE. Se hace una sola vez, en cuatro pasos, primero en el ambiente de pruebas." />
       <Arca estado={e} puntos={(puntos ?? []) as PuntoVenta[]} llamadas={(llamadas ?? []) as Llamada[]} />

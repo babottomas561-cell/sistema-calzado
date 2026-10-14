@@ -419,3 +419,8 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
 32. **Preferencias de cobro** (`dispositivos`, `preferencias_cobro`; Integraciones → Mercado Pago → «Cobro en la caja», `equipo.administrar`): qué medios de Mercado Pago ofrece la caja (`posnet`, `qr`, `qr_fijo`)
     según el rol, la persona y el **dispositivo** (se registra una vez; el navegador guarda su `clave` en `localStorage`, y `cobro_medios(clave)` da lo que corresponde). Gana lo más específico (dispositivo > persona > rol; sin
     nada dicho, todo habilitado). Es comodidad de la pantalla: no reemplaza el permiso de cobrar ni la regla de tarjetas, que controla la base. El mismo mecanismo sirve para sumar otros medios después.
+
+33. **Requisitos** (`requisitos(p_accion)`; `components/Requisitos.tsx`): qué falta antes de `vender`, `facturar`, `cobrar_online`, `publicar_tienda` o `enviar_mails`. La base mira la configuración y devuelve cada ítem con
+    `bloquea` (rojo: impide hacerlo hoy) o aviso (ámbar), la `ruta` donde se arregla y `puede` (si quien mira tiene el permiso para arreglarlo; si no, «pedíselo a quien administra»). Los carteles están en la caja
+    (lo que frena detiene «confirmar» con el motivo), Tienda, Mercado Pago, Correo y ARCA, y el resumen en Configuración. Es información para la pantalla: lo que frena de verdad una operación lo controla la
+    función de la base de esa operación. Un requisito nuevo = un caso más en `requisitos()` (migración nueva, no se edita la vieja) y su prueba en `supabase/tests/database/requisitos.test.sql`.

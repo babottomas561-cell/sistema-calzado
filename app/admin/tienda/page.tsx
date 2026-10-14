@@ -9,6 +9,7 @@ import FormTienda from "./FormTienda";
 import IconoTienda from "./IconoTienda";
 import IdentidadTienda from "./IdentidadTienda";
 import ListaSecciones from "./ListaSecciones";
+import Requisitos from "@/components/Requisitos";
 
 export default async function TiendaOnline() {
   await exigir("tienda.editar");
@@ -29,6 +30,7 @@ export default async function TiendaOnline() {
 
   return (
     <div className="space-y-8">
+      <Requisitos accion="publicar_tienda" />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div><h1 className="text-2xl font-bold">Tienda online</h1>
           <p className="text-sm text-texto-2">La portada de la tienda, armada por secciones. Los cambios se ven al instante.</p></div>
