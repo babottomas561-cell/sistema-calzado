@@ -49,7 +49,8 @@ function Opcion({ icono: Icono, valor, activo, abierto, alAlternar }: { icono: L
   );
 }
 
-export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion, exigeOperacion = false, point = null, sinTarjetas = false, requisitoFalta = null }: {
+export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion, exigeOperacion = false, point = null, sinTarjetas = false, requisitoFalta = null, esperaPago = true }: {
+  esperaPago?: boolean;   // no confirmar la venta mientras un cobro por posnet o QR espera el pago
   requisitoFalta?: string | null;   // algo de la configuración impide vender (Requisitos)
   sinTarjetas?: boolean;   // la regla pide el posnet y no hay uno disponible: Débito y Crédito no se ofrecen
   point?: { disponible: boolean; modo: string; terminal: string | null; qr?: boolean } | null;   // posnet de Mercado Pago (Point)
@@ -60,6 +61,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
 }) {
   const [items, setItems] = useState<Item[]>([]);
   // Qué medios de Mercado Pago le corresponden a esta persona en este aparato (Integraciones → Mercado Pago → Cobro en la caja)
+  const [pendientes, setPendientes] = useState<Record<number, boolean>>({});   // medios con un cobro de Mercado Pago esperando el pago
   const [permitidos, setPermitidos] = useState({ posnet: true, qr: true, qr_fijo: true });
   useEffect(() => {
     if (!point) return;
@@ -172,7 +174,9 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const faltaOperacion = exigeOperacion ? cobro.lineas.find((l) => l.base > 0 && l.medio.tipo === "Transferencia" && !(referencias[l.medio.id] ?? "").trim()) : undefined;
   const sinDni = facturar && !!facturacion && cobro.total >= facturacion.umbral && !(/^\d{7,8}$/.test((cliente?.documento ?? "").replace(/\D/g, "")) || cuitValido(cliente?.documento));
   // Por qué no se puede confirmar (se dice, no solo se apaga el botón)
+  const faltaPago = esperaPago && Object.values(pendientes).some(Boolean);
   const falta = requisitoFalta ? requisitoFalta
+    : faltaPago ? "Esperando el pago de Mercado Pago: cuando se apruebe se puede confirmar (o cancelá el cobro)"
     : !items.length ? "Agregá al menos un producto"
     : pasaTope ? `Tu descuento máximo es ${pesos(topeDescuento ?? 0)}: para más, pedíselo a un encargado`
     : descuento > conPromos ? "El descuento es mayor que el total"
@@ -483,7 +487,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                 {/* Número de cupón / operación (opcional) para los medios que no son efectivo */}
                 {[...new Map(cobro.lineas.filter((l) => l.base > 0 && pideReferencia(l.medio)).map((l) => [l.medio.id, l.medio])).values()].map((m) => (usaPoint && esTarjeta(m)) || esQr(m) ? (
                   <CobroPoint key={m.id} monto={cobro.lineas.filter((l) => l.medio.id === m.id).reduce((t, l) => t + l.cobra + l.redondeo, 0)} via={esQr(m) ? "qr" : "point"} permiteQr={permitidos.qr} permiteFijo={permitidos.qr_fijo} terminal={point?.terminal ?? null} referencia={referencias[m.id] ?? ""}
-                    onAprobado={(orden) => setReferencias((r) => ({ ...r, [m.id]: orden ?? "" }))} />
+                    onPendiente={(p) => setPendientes((x) => (x[m.id] === p ? x : { ...x, [m.id]: p }))} onAprobado={(orden) => setReferencias((r) => ({ ...r, [m.id]: orden ?? "" }))} />
                 ) : (
                   <div key={m.id} className="space-y-1">
                     <label htmlFor={`ref-${m.id}`} className="flex items-center gap-1.5 text-xs font-semibold text-texto-2"><CreditCard size={14} strokeWidth={1.8} /> {textoReferencia(m)} · {m.nombre} <span className="font-normal">{exigeOperacion && m.tipo === "Transferencia" ? "(obligatorio)" : "(opcional)"}</span></label>

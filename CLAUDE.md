@@ -441,3 +441,6 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
     (no se pierde), el importe cobrado (`monto_pagado`) tiene que ser el pedido, la referencia de un cobro sirve **una sola vez** y por su importe con cualquier medio (`_pago_tarjeta_vinculada`), anular una venta cobrada con el
     posnet o el QR devuelve el dinero por la API (o no se anula: `_point_reembolsar_al_anular`, diferido), un barrido cada 2 minutos actualiza los pendientes (`_point_reconciliar`) y sin clave secreta un aviso no se acepta.
     Pendiente: reembolso parcial, comisiones de Point/QR a Gastos y confirmar con una prueba real la firma del webhook de órdenes (la documentación de órdenes no describe el cálculo; se usa el de los webhooks generales).
+
+    **QR y sucursales existentes:** `qr_sucursales()` lee las sucursales y cajas de la cuenta de Mercado Pago y `qr_usar_sucursal()` usa una (o crea una caja nueva en ella); `qr_preparar()` crea una sucursal nueva.
+    **Esperar el pago** (`configuracion_tienda.cobro_espera_pago`, encendido de fábrica; `cobro_espera_pago()`): mientras un cobro por posnet o QR está pendiente la caja no deja confirmar la venta ni suelta el ticket.

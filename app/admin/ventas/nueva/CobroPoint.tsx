@@ -1,7 +1,7 @@
 "use client";
 // Cobro con el posnet de Mercado Pago (Point): manda el monto al posnet, espera que el cliente pase la tarjeta y devuelve la
 // referencia del cobro aprobado (la orden), que la caja guarda en el pago. La base vuelve a controlar todo al confirmar la venta.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CircleAlert, CircleCheck, Loader2, QrCode, Smartphone, X } from "lucide-react";
 import QRCode from "qrcode";
 import { crearClienteNavegador } from "@/lib/supabase/navegador";
@@ -10,7 +10,9 @@ import { pesos } from "@/lib/formato";
 type Estado = { estado: string; detalle: string | null; orden: string | null; usado: boolean; qr?: string | null };
 const FINALES: Record<string, string> = { cancelado: "Se canceló el cobro", rechazado: "El posnet rechazó el pago", vencido: "El cobro venció sin que se pagara", error: "No se pudo mandar el cobro", reembolsado: "El cobro fue devuelto" };
 
-export default function CobroPoint({ monto, terminal, referencia, onAprobado, via = "point", permiteQr = true, permiteFijo = true }: { monto: number; terminal: string | null; referencia: string; onAprobado: (orden: string | null) => void; via?: "point" | "qr"; permiteQr?: boolean; permiteFijo?: boolean }) {
+export default function CobroPoint({ monto, terminal, referencia, onAprobado, via = "point", permiteQr = true, permiteFijo = true, onPendiente }: {
+  onPendiente?: (pendiente: boolean) => void;   // el cobro está esperando el pago (la caja puede frenar la venta)
+  monto: number; terminal: string | null; referencia: string; onAprobado: (orden: string | null) => void; via?: "point" | "qr"; permiteQr?: boolean; permiteFijo?: boolean }) {
   const [supabase] = useState(() => crearClienteNavegador());
   const [cobro, setCobro] = useState<number | null>(null);
   const [montoCobro, setMontoCobro] = useState(0);
@@ -21,6 +23,10 @@ export default function CobroPoint({ monto, terminal, referencia, onAprobado, vi
   const [hayFijo, setHayFijo] = useState(false);       // el QR impreso del mostrador (modo híbrido)
   const [fijo, setFijo] = useState(false);             // este cobro se hizo con el QR del mostrador
   const aprobado = estado?.estado === "aprobado";
+  const avisar = useRef(onPendiente);
+  useEffect(() => { avisar.current = onPendiente; });
+  const pendiente = !!cobro && !!estado && !aprobado && !FINALES[estado.estado];
+  useEffect(() => { avisar.current?.(pendiente); return () => avisar.current?.(false); }, [pendiente]);
   // Si cambia el monto después de aprobar, ese cobro ya no sirve para esta venta
   const desfasado = aprobado && Math.abs(montoCobro - monto) > 0.009;
 

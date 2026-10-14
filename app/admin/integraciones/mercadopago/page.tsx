@@ -15,12 +15,13 @@ import Requisitos from "@/components/Requisitos";
 export default async function PaginaMercadoPago() {
   const { permisos } = await exigir("tienda.editar");
   const supabase = await crearCliente();
-  const [{ data: mp }, { data: point }, { data: qr }, { data: webhook }, { data: fijo }, { data: config }] = await Promise.all([
+  const [{ data: mp }, { data: point }, { data: qr }, { data: webhook }, { data: fijo }, { data: espera }, { data: config }] = await Promise.all([
     supabase.rpc("estado_mercadopago"),
     supabase.rpc("estado_point"),
     supabase.rpc("estado_qr"),
     supabase.rpc("estado_webhook_mp"),
     supabase.rpc("qr_fijo"),
+    supabase.rpc("cobro_espera_pago"),
     supabase.from("configuracion_tienda").select("mp_modo, mp_cuotas_max").single(),
   ]);
   // Las preferencias de cobro las maneja quien administra el equipo
@@ -44,7 +45,7 @@ export default async function PaginaMercadoPago() {
         {mp && config && <MercadoPago estado={mp as unknown as EstadoMP} modo={config.mp_modo} cuotasMax={config.mp_cuotas_max} webhook={`${sitio()}/api/mercadopago`} />}
       </section>
       <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
-        <CobroQr listo={!!(qr as { listo?: boolean } | null)?.listo} hayToken={!!(mp as { token?: string | null } | null)?.token} fijo={fijo as { imagen?: string | null; plantilla?: string | null } | null} />
+        <CobroQr listo={!!(qr as { listo?: boolean } | null)?.listo} hayToken={!!(mp as { token?: string | null } | null)?.token} fijo={fijo as { imagen?: string | null; plantilla?: string | null } | null} cajaExterna={(qr as { caja_externa?: string | null } | null)?.caja_externa ?? null} espera={espera !== false} />
       </section>
       {prefs && <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm"><PreferenciasCobro datos={prefs} /></section>}
       {/* Solo para quien tiene el posnet de Mercado Pago: plegado hasta que se use */}

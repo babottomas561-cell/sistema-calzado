@@ -155,6 +155,40 @@ export async function confirmarWebhookMp(): Promise<Estado> {
   return { ok: "Anotado" };
 }
 
+export type SucursalMp = { id: string; nombre: string; externo: string | null; direccion: string; cajas: { id: string; nombre: string; externo: string | null }[] };
+export async function buscarSucursalesQr(): Promise<{ error?: string; sucursales?: SucursalMp[] }> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("qr_sucursales");
+  if (error) return { error: error.message };
+  const r = data as { ok: boolean; error?: string; sucursales?: SucursalMp[] };
+  return r.ok ? { sucursales: r.sucursales ?? [] } : { error: r.error ?? "No se pudieron leer las sucursales" };
+}
+
+export async function usarSucursalQr(sucursal: string, caja: string, cajaExterna: string): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("qr_usar_sucursal", { p_sucursal: sucursal, p_caja: caja || undefined, p_caja_externo: cajaExterna || undefined });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  const r = data as { ok: boolean; error?: string };
+  return r.ok ? { ok: "Listo: ya se puede cobrar con QR desde la caja" } : { error: r.error ?? "No se pudo usar esa sucursal" };
+}
+
+export async function desvincularQr(): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("qr_desvincular");
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  return { ok: "Desvinculado" };
+}
+
+export async function guardarEsperaPago(activa: boolean): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("guardar_espera_pago", { p_activa: activa });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout"); revalidatePath("/admin/ventas/nueva");
+  return { ok: "Guardado" };
+}
+
 export async function guardarReglaTarjetas(_: Estado, f: FormData): Promise<Estado> {
   const modo = String(f.get("tarjetas_modo")) === "vinculado" ? "vinculado" : "libre";
   const supabase = await crearCliente();

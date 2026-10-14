@@ -20,7 +20,7 @@ create function prueba.responder(p_metodo text, p_ruta text, p_status int, p_cue
 create function prueba.como_admin() returns void language sql as $$ select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}', true) $$;
 create function prueba.como_vendedora() returns void language sql as $$ select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}', true) $$;
 grant execute on all functions in schema prueba to anon, authenticated;
-select plan(19);
+select plan(30);
 
 reset role;
 update integraciones set mp_access_token = 'APP_USR-1234567890-abcdefghij-xyz', mp_webhook_secret = 'secreto';
@@ -60,5 +60,24 @@ select is(qr_fijo() ->> 'plantilla', 'https://mp/qr.pdf', 'y su documento listo 
 select prueba.responder('POST', '/v1/orders', 201, '{"id":"ORDQR2","status":"created"}');
 select is(qr_cobrar(8000, 'hybrid') ->> 'ok', 'true', 'con el QR del mostrador no hace falta el texto del QR');
 select is((select cuerpo -> 'config' -> 'qr' ->> 'mode' from prueba.llamadas where ruta = '/v1/orders' order by id desc limit 1), 'hybrid', 'se pide en modo híbrido');
+-- Elegir una sucursal y una caja que ya existen en la cuenta
+reset role; update integraciones set mp_qr_externo = null, mp_qr_caja = null, mp_qr_sucursal = null; set local role authenticated; select prueba.como_admin();
+select prueba.responder('GET', '/users/123456/stores/search%', 200, '{"results":[{"id":"111","name":"Local Centro","external_id":"CENTRO","location":{"address_line":"Mitre 100"}},{"id":"222","name":"Depósito","external_id":"DEP"}]}');
+select prueba.responder('GET', '/pos?store_id=111', 200, '{"results":[{"id":701,"name":"Caja 1","external_id":"C1"},{"id":702,"name":"Caja sin código"}]}');
+select prueba.responder('GET', '/pos?store_id=222', 200, '{"results":[]}');
+select is(jsonb_array_length(qr_sucursales() -> 'sucursales'), 2, 'lista las sucursales de la cuenta');
+select is(qr_sucursales() -> 'sucursales' -> 0 -> 'cajas' -> 0 ->> 'externo', 'C1', 'con sus cajas');
+select prueba.responder('GET', '/pos/701', 200, '{"id":701,"external_id":"C1","qr_response":{"image":"https://mp/c1.png","template_document":"https://mp/c1.pdf"}}');
+select is(qr_usar_sucursal('111', '701', 'C1') ->> 'ok', 'true', 'se elige una caja que ya existe');
+select is(estado_qr() ->> 'caja_externa', 'C1', 'queda usando esa caja');
+select is(qr_fijo() ->> 'imagen', 'https://mp/c1.png', 'y trae su QR fijo');
+select is(qr_usar_sucursal('111', '702', '') ->> 'ok', 'false', 'una caja sin identificador no sirve para cobrar');
+select prueba.responder('POST', '/v2/pos', 201, '{"id":703,"external_id":"CAJA1"}');
+select is(qr_usar_sucursal('222') ->> 'ok', 'true', 'una sucursal sin cajas: se crea una ahí');
+select lives_ok($$ select qr_desvincular() $$, 'se puede dejar de usar para elegir otra');
+-- «Esperar el pago»
+select is(cobro_espera_pago(), true, 'de fábrica, la caja espera el pago antes de confirmar la venta');
+select lives_ok($$ select guardar_espera_pago(false) $$, 'el administrador lo puede apagar');
+select is(cobro_espera_pago(), false, 'y queda apagado');
 select * from finish();
 rollback;

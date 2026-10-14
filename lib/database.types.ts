@@ -549,14 +549,14 @@ isOneToOne: false
                   ]
                 },"configuracion_tienda": {
                   Row: {
-                    "aviso_enlace": string | null,"avisos": (string)[],"color_marca": string | null,"dias_cambio": number,"dias_retiro": number,"dias_saldo": number,"direccion_retiro": string | null,"envio_requiere_pago": boolean,"horario": string | null,"ia_modelo": string,"ia_plan": string,"icono_ruta": string | null,"icono_url": string | null,"id": number,"instagram": string | null,"lista_mostrador_id": number | null,"lista_tienda_id": number | null,"listas_precios_activas": boolean,"logo_oscuro_ruta": string | null,"logo_oscuro_url": string | null,"logo_ruta": string | null,"logo_url": string | null,"mp_cuotas_max": number,"mp_modo": string,"nombre": string,"tarjetas_modo": string,"transferencia_comprobante": string,"unica": boolean,"wa_bot_activo": boolean,"wa_idioma_plantilla": string,"wa_notificaciones_pedidos": boolean,"wa_plantilla_estado": string | null,"whatsapp": string | null
+                    "aviso_enlace": string | null,"avisos": (string)[],"cobro_espera_pago": boolean,"color_marca": string | null,"dias_cambio": number,"dias_retiro": number,"dias_saldo": number,"direccion_retiro": string | null,"envio_requiere_pago": boolean,"horario": string | null,"ia_modelo": string,"ia_plan": string,"icono_ruta": string | null,"icono_url": string | null,"id": number,"instagram": string | null,"lista_mostrador_id": number | null,"lista_tienda_id": number | null,"listas_precios_activas": boolean,"logo_oscuro_ruta": string | null,"logo_oscuro_url": string | null,"logo_ruta": string | null,"logo_url": string | null,"mp_cuotas_max": number,"mp_modo": string,"nombre": string,"tarjetas_modo": string,"transferencia_comprobante": string,"unica": boolean,"wa_bot_activo": boolean,"wa_idioma_plantilla": string,"wa_notificaciones_pedidos": boolean,"wa_plantilla_estado": string | null,"whatsapp": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"color_marca"?: string | null,"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"envio_requiere_pago"?: boolean,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"icono_ruta"?: string | null,"icono_url"?: string | null,"id"?: never,"instagram"?: string | null,"lista_mostrador_id"?: number | null,"lista_tienda_id"?: number | null,"listas_precios_activas"?: boolean,"logo_oscuro_ruta"?: string | null,"logo_oscuro_url"?: string | null,"logo_ruta"?: string | null,"logo_url"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"tarjetas_modo"?: string,"transferencia_comprobante"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"cobro_espera_pago"?: boolean,"color_marca"?: string | null,"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"envio_requiere_pago"?: boolean,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"icono_ruta"?: string | null,"icono_url"?: string | null,"id"?: never,"instagram"?: string | null,"lista_mostrador_id"?: number | null,"lista_tienda_id"?: number | null,"listas_precios_activas"?: boolean,"logo_oscuro_ruta"?: string | null,"logo_oscuro_url"?: string | null,"logo_ruta"?: string | null,"logo_url"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"tarjetas_modo"?: string,"transferencia_comprobante"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
                   }
                   Update: {
-                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"color_marca"?: string | null,"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"envio_requiere_pago"?: boolean,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"icono_ruta"?: string | null,"icono_url"?: string | null,"id"?: never,"instagram"?: string | null,"lista_mostrador_id"?: number | null,"lista_tienda_id"?: number | null,"listas_precios_activas"?: boolean,"logo_oscuro_ruta"?: string | null,"logo_oscuro_url"?: string | null,"logo_ruta"?: string | null,"logo_url"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"tarjetas_modo"?: string,"transferencia_comprobante"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"cobro_espera_pago"?: boolean,"color_marca"?: string | null,"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"envio_requiere_pago"?: boolean,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"icono_ruta"?: string | null,"icono_url"?: string | null,"id"?: never,"instagram"?: string | null,"lista_mostrador_id"?: number | null,"lista_tienda_id"?: number | null,"listas_precios_activas"?: boolean,"logo_oscuro_ruta"?: string | null,"logo_oscuro_url"?: string | null,"logo_ruta"?: string | null,"logo_url"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"tarjetas_modo"?: string,"transferencia_comprobante"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
                   }
                   Relationships: [
                     {
@@ -3334,6 +3334,9 @@ isOneToOne: false
 "cc_habilitar":
 { Args: { "p_cliente": number,"p_habilitada": boolean,"p_tope": number }; Returns: undefined
                            },
+"cobro_espera_pago":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
 "cobro_medios":
 { Args: { "p_dispositivo"?: string }; Returns: Json
                            },
@@ -3496,6 +3499,9 @@ isOneToOne: false
                            },
 "guardar_envios_credenciales":
 { Args: { "p_andreani_clave"?: string,"p_andreani_cliente"?: string,"p_andreani_contrato"?: string,"p_andreani_usuario"?: string,"p_quitar"?: (string)[],"p_uber_client_id"?: string,"p_uber_client_secret"?: string,"p_uber_customer_id"?: string }; Returns: undefined
+                           },
+"guardar_espera_pago":
+{ Args: { "p_activa": boolean }; Returns: undefined
                            },
 "guardar_instagram":
 { Args: { "p_token": string }; Returns: Json
@@ -3669,11 +3675,20 @@ isOneToOne: false
 "qr_cobrar":
 { Args: { "p_modo"?: string,"p_monto": number }; Returns: Json
                            },
+"qr_desvincular":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "qr_fijo":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
 "qr_preparar":
 { Args: { "p_calle": string,"p_ciudad": string,"p_numero": string,"p_provincia": string }; Returns: Json
+                           },
+"qr_sucursales":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"qr_usar_sucursal":
+{ Args: { "p_caja"?: string,"p_caja_externo"?: string,"p_sucursal": string }; Returns: Json
                            },
 "quitar_del_equipo":
 { Args: { "p_usuario": string }; Returns: undefined
