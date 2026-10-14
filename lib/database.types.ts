@@ -3554,6 +3554,9 @@ isOneToOne: false
               "codigo": string,"color": string,"color_hex": string,"costo_unitario": number,"disponible": number,"marca": string,"nombre": string,"producto_id": number,"proveedor": string,"proveedor_id": number,"sugerido": number,"talle": string,"talle_orden": number,"variante_id": number,"vendidos": number
             }[]
                            },
+"requisitos":
+{ Args: { "p_accion": string }; Returns: Json
+                           },
 "resolver_arrepentimiento":
 { Args: { "p_estado": string,"p_id": number,"p_resolucion"?: string }; Returns: undefined
                            },

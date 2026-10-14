@@ -20,7 +20,7 @@ create function prueba.responder(p_metodo text, p_ruta text, p_status int, p_cue
 create function prueba.como_admin() returns void language sql as $$ select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}', true) $$;
 create function prueba.como_vendedora() returns void language sql as $$ select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}', true) $$;
 grant execute on all functions in schema prueba to anon, authenticated;
-select plan(16);
+select plan(19);
 
 reset role;
 update integraciones set mp_access_token = 'APP_USR-1234567890-abcdefghij-xyz', mp_webhook_secret = 'secreto';
@@ -44,6 +44,15 @@ select is((select cuerpo -> 'config' -> 'qr' ->> 'mode' from prueba.llamadas whe
 select is(point_estado((select max(id) from point_cobros)) ->> 'qr', '00020101021243650016com.mercadolibre', 'la caja recibe el texto del QR para dibujarlo');
 select prueba.responder('POST', '/v1/orders/ORDQR1/cancel', 200, '{"status":"canceled"}');
 select is(point_cancelar((select max(id) from point_cobros)) ->> 'ok', 'true', 'se puede cancelar el QR');
+-- Reintento: si la sucursal ya existe (la creó un intento anterior), se reutiliza
+reset role; update integraciones set mp_qr_externo = null, mp_qr_caja = null, mp_qr_sucursal = null; set local role authenticated; select prueba.como_admin();
+select prueba.responder('POST', '/users/123456/stores', 400, '{"message":"external id ''SUCURSAL1'' is already assigned to this user 123456"}');
+select prueba.responder('GET', '/users/123456/stores/search%', 200, '{"results":[{"id":"98765"}]}');
+select is(qr_preparar('Mitre', '100', 'Rosario', 'Santa Fe') ->> 'ok', 'true', 'si la sucursal ya existía en Mercado Pago, la reutiliza y sigue con la caja');
+select is((select (estado_qr() ->> 'sucursal')), 'true', 'queda la sucursal que ya existía');
+reset role; update integraciones set mp_qr_externo = null, mp_qr_caja = null; set local role authenticated; select prueba.como_admin();
+select is(qr_preparar('Mitre', '100', 'Rosario', 'Santa Fe') ->> 'ok', 'true', 'y si falló la caja, el reintento no vuelve a crear la sucursal');
+
 -- QR fijo (híbrido)
 select prueba.responder('GET', '/pos/555', 200, '{"id":555,"qr_response":{"image":"https://mp/qr.png","template_document":"https://mp/qr.pdf"}}');
 select is(qr_fijo() ->> 'imagen', 'https://mp/qr.png', 'trae el QR fijo de la caja para imprimir');
