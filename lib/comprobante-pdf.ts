@@ -40,7 +40,7 @@ export async function comprobantePdf(c: Comprobante, url: string): Promise<Buffe
   const lineas = f
     ? [f.emisor.razon_social, f.emisor.domicilio, f.emisor.cuit && `CUIT ${f.emisor.cuit}`, f.emisor.condicion_iva && `IVA ${f.emisor.condicion_iva}`, f.emisor.ingresos_brutos && `Ingresos Brutos ${f.emisor.ingresos_brutos}`,
        f.emisor.inicio_actividades && `Inicio de actividades ${fechaCorta(f.emisor.inicio_actividades)}`]
-    : c.config.datos_legales ? [c.emisor.razon_social, c.emisor.cuit && `CUIT ${c.emisor.cuit}`, c.emisor.condicion_iva, c.emisor.domicilio, c.emisor.telefono && `Tel. ${c.emisor.telefono}`] : [];
+    : c.config.datos_legales ? [c.emisor.razon_social, c.emisor.sucursal && `Sucursal ${c.emisor.sucursal}`, c.emisor.cuit && `CUIT ${c.emisor.cuit}`, c.emisor.condicion_iva, c.emisor.domicilio, c.emisor.telefono && `Tel. ${c.emisor.telefono}`] : [];
   doc.font("Helvetica").fontSize(8.5).fillColor(gris);
   let yIzq = y + (marca ? 54 : 26);
   for (const l of lineas.filter(Boolean)) { doc.text(limpio(l), izq, yIzq, { width: ancho * 0.55 }); yIzq += 11; }

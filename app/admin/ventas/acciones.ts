@@ -14,7 +14,7 @@ export async function registrarVenta(_: Estado, f: FormData): Promise<Estado> {
   // registrar_venta (en la base) valida stock, descuenta, registra los pagos y deja el historial, todo junto
   const { data: id, error } = await supabase.rpc("registrar_venta", {
     p_items: venta.items, p_pagos: venta.pagos, p_cliente: venta.cliente_id || undefined,
-    p_descuento: Number(venta.descuento) || 0, p_canal: venta.canal, p_notas: venta.notas || undefined,
+    p_descuento: Number(venta.descuento) || 0, p_canal: venta.canal, p_notas: venta.notas || undefined, p_caja: venta.caja_id || undefined,
   });
   if (error) return { error: error.message };
   revalidatePath("/", "layout");

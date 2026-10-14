@@ -12,7 +12,15 @@ const mp = (r: Respuesta, ok: string): Estado => (r?.ok === false ? { error: r.e
 
 export async function guardarSucursal(_: Estado, f: FormData): Promise<Estado> {
   const supabase = await crearCliente();
-  const { error } = await supabase.rpc("guardar_sucursal", { p_id: (num(f, "id") ?? undefined) as number, p_nombre: t(f, "nombre"), p_deposito: (num(f, "deposito") ?? undefined) as number, p_activa: f.get("activa") !== "no" });
+  const { error } = await supabase.rpc("guardar_sucursal", { p_id: (num(f, "id") ?? undefined) as number, p_nombre: t(f, "nombre"), p_deposito: (num(f, "deposito") ?? undefined) as number, p_activa: f.get("activa") !== "no",
+    p_empresa: (num(f, "empresa") ?? undefined) as number, p_domicilio: t(f, "domicilio") || undefined, p_telefono: t(f, "telefono") || undefined });
+  return error ? { error: error.message } : listo("Guardado");
+}
+
+export async function guardarEmpresa(_: Estado, f: FormData): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("guardar_empresa", { p_razon_social: t(f, "razon_social"), p_cuit: t(f, "cuit"), p_condicion_iva: t(f, "condicion_iva"), p_domicilio: t(f, "domicilio"),
+    p_ingresos_brutos: t(f, "ingresos_brutos") || undefined, p_inicio_actividades: t(f, "inicio_actividades") || undefined, p_id: (num(f, "id") ?? undefined) as number, p_activa: f.get("activa") !== "no" });
   return error ? { error: error.message } : listo("Guardado");
 }
 

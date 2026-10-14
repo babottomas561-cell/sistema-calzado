@@ -859,6 +859,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"empresas": {
+                  Row: {
+                    "activa": boolean,"condicion_iva": string,"creado_en": string,"cuit": string,"domicilio_fiscal": string,"id": number,"ingresos_brutos": string | null,"inicio_actividades": string | null,"razon_social": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activa"?: boolean,"condicion_iva": string,"creado_en"?: string,"cuit": string,"domicilio_fiscal": string,"id"?: never,"ingresos_brutos"?: string | null,"inicio_actividades"?: string | null,"razon_social": string
+                  }
+                  Update: {
+                    "activa"?: boolean,"condicion_iva"?: string,"creado_en"?: string,"cuit"?: string,"domicilio_fiscal"?: string,"id"?: never,"ingresos_brutos"?: string | null,"inicio_actividades"?: string | null,"razon_social"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"enlaces_comprobante": {
                   Row: {
                     "creado_en": string,"creado_por": string | null,"documento_id": number,"id": number,"revocado": boolean,"tipo": string,"token": string,"ultima_vista": string | null,"vistas": number
@@ -2323,14 +2337,14 @@ isOneToOne: false
                   ]
                 },"sucursales": {
                   Row: {
-                    "activa": boolean,"creado_en": string,"deposito_id": number | null,"id": number,"mp_sucursal_id": string | null,"nombre": string,"por_defecto": boolean
+                    "activa": boolean,"creado_en": string,"deposito_id": number | null,"domicilio": string | null,"empresa_id": number | null,"id": number,"mp_sucursal_id": string | null,"nombre": string,"por_defecto": boolean,"telefono": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "activa"?: boolean,"creado_en"?: string,"deposito_id"?: number | null,"id"?: never,"mp_sucursal_id"?: string | null,"nombre": string,"por_defecto"?: boolean
+                    "activa"?: boolean,"creado_en"?: string,"deposito_id"?: number | null,"domicilio"?: string | null,"empresa_id"?: number | null,"id"?: never,"mp_sucursal_id"?: string | null,"nombre": string,"por_defecto"?: boolean,"telefono"?: string | null
                   }
                   Update: {
-                    "activa"?: boolean,"creado_en"?: string,"deposito_id"?: number | null,"id"?: never,"mp_sucursal_id"?: string | null,"nombre"?: string,"por_defecto"?: boolean
+                    "activa"?: boolean,"creado_en"?: string,"deposito_id"?: number | null,"domicilio"?: string | null,"empresa_id"?: number | null,"id"?: never,"mp_sucursal_id"?: string | null,"nombre"?: string,"por_defecto"?: boolean,"telefono"?: string | null
                   }
                   Relationships: [
                     {
@@ -2345,6 +2359,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "v_stock"
       referencedColumns: ["deposito_id"]
+    },{
+      foreignKeyName: "sucursales_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
     }
                   ]
                 },"talles": {
@@ -2469,14 +2489,14 @@ isOneToOne: false
                   ]
                 },"ventas": {
                   Row: {
-                    "ajuste_medio_pago": number,"anulada_en": string | null,"anulada_por": string | null,"canal": string,"cliente_id": number | null,"comentario_anulacion": string | null,"comprobante": string | null,"deposito_id": number,"descuento": number,"descuento_promociones": number,"fecha": string,"id": number,"motivo_anulacion": string | null,"notas": string | null,"numero": number | null,"pedido_id": number | null,"punto_venta": number,"subtotal": number,"total": number,"usuario_id": string | null,"vendedor_id": string | null
+                    "ajuste_medio_pago": number,"anulada_en": string | null,"anulada_por": string | null,"caja_id": number | null,"canal": string,"cliente_id": number | null,"comentario_anulacion": string | null,"comprobante": string | null,"deposito_id": number,"descuento": number,"descuento_promociones": number,"fecha": string,"id": number,"motivo_anulacion": string | null,"notas": string | null,"numero": number | null,"pedido_id": number | null,"punto_venta": number,"subtotal": number,"sucursal_id": number | null,"total": number,"usuario_id": string | null,"vendedor_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "ajuste_medio_pago"?: number,"anulada_en"?: string | null,"anulada_por"?: string | null,"canal"?: string,"cliente_id"?: number | null,"comentario_anulacion"?: string | null,"comprobante"?: never,"deposito_id": number,"descuento"?: number,"descuento_promociones"?: number,"fecha"?: string,"id"?: never,"motivo_anulacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal": number,"total": number,"usuario_id"?: string | null,"vendedor_id"?: string | null
+                    "ajuste_medio_pago"?: number,"anulada_en"?: string | null,"anulada_por"?: string | null,"caja_id"?: number | null,"canal"?: string,"cliente_id"?: number | null,"comentario_anulacion"?: string | null,"comprobante"?: never,"deposito_id": number,"descuento"?: number,"descuento_promociones"?: number,"fecha"?: string,"id"?: never,"motivo_anulacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal": number,"sucursal_id"?: number | null,"total": number,"usuario_id"?: string | null,"vendedor_id"?: string | null
                   }
                   Update: {
-                    "ajuste_medio_pago"?: number,"anulada_en"?: string | null,"anulada_por"?: string | null,"canal"?: string,"cliente_id"?: number | null,"comentario_anulacion"?: string | null,"comprobante"?: never,"deposito_id"?: number,"descuento"?: number,"descuento_promociones"?: number,"fecha"?: string,"id"?: never,"motivo_anulacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number,"usuario_id"?: string | null,"vendedor_id"?: string | null
+                    "ajuste_medio_pago"?: number,"anulada_en"?: string | null,"anulada_por"?: string | null,"caja_id"?: number | null,"canal"?: string,"cliente_id"?: number | null,"comentario_anulacion"?: string | null,"comprobante"?: never,"deposito_id"?: number,"descuento"?: number,"descuento_promociones"?: number,"fecha"?: string,"id"?: never,"motivo_anulacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal"?: number,"sucursal_id"?: number | null,"total"?: number,"usuario_id"?: string | null,"vendedor_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -2484,6 +2504,12 @@ isOneToOne: false
       columns: ["anulada_por"]
 isOneToOne: false
       referencedRelation: "perfiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ventas_caja_id_fkey"
+      columns: ["caja_id"]
+isOneToOne: false
+      referencedRelation: "cajas"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "ventas_cliente_id_fkey"
@@ -2520,6 +2546,12 @@ isOneToOne: false
       columns: ["pedido_id"]
 isOneToOne: true
       referencedRelation: "pedidos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ventas_sucursal_id_fkey"
+      columns: ["sucursal_id"]
+isOneToOne: false
+      referencedRelation: "sucursales"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "ventas_usuario_id_fkey"
@@ -3094,6 +3126,9 @@ isOneToOne: false
 "_dominios_revisar_pendientes":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
+"_emisor_de":
+{ Args: { "p_id": number,"p_tipo": string }; Returns: Json
+                           },
 "_en_promocion":
 { Args: { "p_producto": number,"p_promocion": number }; Returns: boolean
                            },
@@ -3605,6 +3640,9 @@ isOneToOne: false
 "guardar_datos_fiscales":
 { Args: { "p_condicion_iva": string,"p_cuit": string,"p_domicilio": string,"p_ingresos_brutos"?: string,"p_inicio_actividades"?: string,"p_razon_social": string }; Returns: undefined
                            },
+"guardar_empresa":
+{ Args: { "p_activa"?: boolean,"p_condicion_iva": string,"p_cuit": string,"p_domicilio": string,"p_id"?: number,"p_ingresos_brutos"?: string,"p_inicio_actividades"?: string,"p_razon_social": string }; Returns: number
+                           },
 "guardar_envios_credenciales":
 { Args: { "p_andreani_clave"?: string,"p_andreani_cliente"?: string,"p_andreani_contrato"?: string,"p_andreani_usuario"?: string,"p_quitar"?: (string)[],"p_uber_client_id"?: string,"p_uber_client_secret"?: string,"p_uber_customer_id"?: string }; Returns: undefined
                            },
@@ -3639,7 +3677,7 @@ isOneToOne: false
 { Args: { "p_monto": number }; Returns: undefined
                            },
 "guardar_sucursal":
-{ Args: { "p_activa"?: boolean,"p_deposito"?: number,"p_id"?: number,"p_nombre": string }; Returns: number
+{ Args: { "p_activa"?: boolean,"p_deposito"?: number,"p_domicilio"?: string,"p_empresa"?: number,"p_id"?: number,"p_nombre": string,"p_telefono"?: string }; Returns: number
                            },
 "guardar_tarjetas_modo":
 { Args: { "p_modo": string }; Returns: undefined
@@ -3847,7 +3885,7 @@ isOneToOne: false
 { Args: { "p_comprobante"?: string,"p_confirma"?: boolean,"p_medio"?: number,"p_monto": number,"p_pedido": number,"p_referencia"?: string }; Returns: Json
                            },
 "registrar_venta":
-{ Args: { "p_canal"?: string,"p_cliente"?: number,"p_deposito"?: number,"p_descuento"?: number,"p_items": Json,"p_notas"?: string,"p_pagos"?: Json }; Returns: number
+{ Args: { "p_caja"?: number,"p_canal"?: string,"p_cliente"?: number,"p_deposito"?: number,"p_descuento"?: number,"p_items": Json,"p_notas"?: string,"p_pagos"?: Json }; Returns: number
                            },
 "reintentar_factura":
 { Args: { "p_factura": number }; Returns: Json

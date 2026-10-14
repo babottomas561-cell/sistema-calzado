@@ -215,7 +215,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   });
   const venta = JSON.stringify({
     items: items.map((i) => ({ variante_id: i.variante_id, cantidad: i.cantidad, precio_unitario: i.precio })),
-    pagos: pagosConReferencia, canal, cliente_id: cliente?.id ?? null, descuento,
+    pagos: pagosConReferencia, canal, cliente_id: cliente?.id ?? null, descuento, caja_id: point?.caja_id ?? null,
   });
 
   const elegirMedio = (i: number, id: number) => { setLineas((ls) => ls.map((l, j) => (j === i ? { ...l, medio_pago_id: id } : l))); setRecibido(""); };

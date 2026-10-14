@@ -452,3 +452,9 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
     (`_mp_error_texto` explica los rechazos) y el `external_id` de cada caja tiene que ser distinto (`CAJA<id>`). Falta: los datos fiscales (razón social, CUIT, certificado y punto de venta de ARCA) por sucursal.
 38. **Supabase en la nube rechaza un `UPDATE` sin `WHERE`** (la base local no): en la fila única de `integraciones` / `configuracion_tienda` usar siempre `where unica`. `scripts/migraciones.test.mjs` lo controla en las migraciones nuevas.
     Y una función con parámetros opcionales los declara `default null`: la pantalla omite los vacíos y PostgREST resuelve la función por los nombres que llegan.
+
+39. **Razón social por sucursal (etapa 1)** (`empresas`, `sucursales.empresa_id` / `domicilio` / `telefono`, `ventas.caja_id` / `sucursal_id`): la razón social PRINCIPAL sigue siendo `datos_legales`; las ADICIONALES viven en `empresas`
+    (`guardar_empresa`, CUIT validado, único); `sucursales.empresa_id` null = la principal. Cada venta anota su caja y sucursal con un disparador (`_venta_caja`): `registrar_venta(…, p_caja)` fija `app.caja_id` en la transacción (sin dato,
+    la caja principal; los pedidos, presupuestos y cambios caen en la principal). El comprobante (`_comprobante_json` → `_emisor_de`) lleva la razón social, el CUIT, el local y el teléfono de la sucursal que vendió, y su nombre si hay
+    más de una. **Facturar por ARCA desde una razón social adicional todavía NO se puede** (`_factura_crear` lo frena con un mensaje claro): falta la etapa 2 (certificado y punto de venta por razón social), que se hace después de
+    probar ARCA con un certificado real. Mientras tanto una sucursal de otra razón social vende e imprime el comprobante interno.

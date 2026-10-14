@@ -21,7 +21,7 @@ const datosLegales = (c: Doc) => esFactura(c)
      c.fiscal!.emisor.ingresos_brutos && `Ingresos Brutos ${c.fiscal!.emisor.ingresos_brutos}`,
      c.fiscal!.emisor.inicio_actividades && `Inicio de actividades ${fechaCorta(c.fiscal!.emisor.inicio_actividades)}`].filter((x): x is string => !!x)
   : c.config.datos_legales
-  ? [c.emisor.razon_social, c.emisor.cuit && `CUIT ${c.emisor.cuit}`, c.emisor.condicion_iva, c.emisor.domicilio, c.emisor.telefono && `Tel. ${c.emisor.telefono}`].filter((x): x is string => !!x)
+  ? [c.emisor.razon_social, c.emisor.sucursal && `Sucursal ${c.emisor.sucursal}`, c.emisor.cuit && `CUIT ${c.emisor.cuit}`, c.emisor.condicion_iva, c.emisor.domicilio, c.emisor.telefono && `Tel. ${c.emisor.telefono}`].filter((x): x is string => !!x)
   : [];
 const detallePago = (p: Doc["pagos"][number]) => [
   p.medio + (Number(p.ajuste_pct) ? ` (${porcentaje(p.ajuste_pct)})` : ""), p.cuotas > 1 ? `${p.cuotas} cuotas de ${pesos(p.monto / p.cuotas)}` : null, p.referencia,

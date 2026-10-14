@@ -16,7 +16,7 @@ export const esTipo = (x: unknown): x is TipoComprobante => (TIPOS_COMPROBANTE a
 
 export type Renglon = { detalle: string; marca: string | null; variante: string; cantidad: number; precio: number | null; promocion: string | null; descuento: number; subtotal: number };
 export type PagoComprobante = { medio: string; base: number; ajuste_pct: number; ajuste: number; monto: number; cuotas: number; referencia: string | null };
-export type Emisor = { nombre: string; logo_url: string | null; es_icono?: boolean; razon_social: string | null; cuit: string | null; condicion_iva: string | null; domicilio: string | null; telefono: string | null; email: string | null; local: string | null };
+export type Emisor = { nombre: string; logo_url: string | null; es_icono?: boolean; razon_social: string | null; cuit: string | null; condicion_iva: string | null; domicilio: string | null; telefono: string | null; email: string | null; local: string | null; sucursal?: string | null };
 export type ModoImpresion = "automatica" | "opcional" | "manual";
 export const MODOS_IMPRESION: Record<ModoImpresion, { nombre: string; detalle: string }> = {
   automatica: { nombre: "Automática", detalle: "Al confirmar la venta, el comprobante sale solo por la impresora." },
