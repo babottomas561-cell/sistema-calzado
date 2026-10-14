@@ -101,9 +101,9 @@ export default async function Landing() {
     }
   });
 
-  // La franja de beneficios va justo después de la portada (y de la cinta, si la hay)
+  // La franja de beneficios va justo después de la portada (y de la cinta, si la hay); con uno solo no se muestra
   const iPortada = lista.findIndex((s) => s.tipo === "portada");
-  if (iPortada >= 0 && beneficios.length) bloques.splice(iPortada + (lista[iPortada + 1]?.tipo === "cinta" ? 2 : 1), 0, <Beneficios key="beneficios" items={beneficios} />);
+  if (iPortada >= 0 && beneficios.length >= 2) bloques.splice(iPortada + (lista[iPortada + 1]?.tipo === "cinta" ? 2 : 1), 0, <Beneficios key="beneficios" items={beneficios} />);
 
   return <div className="space-y-24 md:space-y-36">{bloques}</div>;
 }
