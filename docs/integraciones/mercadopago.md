@@ -72,3 +72,15 @@ Después, en **Integraciones → Mercado Pago**: cargá el Access Token de produ
 Si Point usa otra aplicación distinta de la tienda, cargá sus credenciales en el mismo bloque.
 
 **En la caja:** al elegir Débito o Crédito aparece «Cobrar $… en el posnet». El cliente paga en el posnet y la caja lo muestra solo. Si cambia el total después de cobrar, ese cobro no sirve y hay que devolverlo desde Mercado Pago.
+
+---
+
+## Cobrar con QR (desde la caja o el celular)
+
+No necesita posnet: la caja muestra en pantalla un QR con el monto exacto de la venta y el cliente paga escaneándolo con Mercado Pago u otra billetera.
+
+1. En **Integraciones → Mercado Pago → Cobro con QR**, completá la dirección del local y tocá **Preparar cobro con QR** (se hace una sola vez: Mercado Pago pide una sucursal y una caja).
+2. En la caja, al elegir un medio de pago de tipo **Billetera** (o que se llame «Mercado Pago» o «QR») aparece **Cobrar con QR**. El QR vence a los 10 minutos.
+3. Cuando el cliente paga, la caja lo muestra solo y la venta se confirma con ese cobro. Si cambia el total después de cobrar, ese cobro no sirve.
+
+El webhook es el mismo de siempre (evento **Order (Mercado Pago)**).

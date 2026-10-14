@@ -412,3 +412,6 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
     reparte los avisos `order` a `point_notificacion()`, que verifica la firma y CONSULTA la orden. La caja manda el monto con `point_cobrar()` y mira `point_estado()` cada 2 s (`CobroPoint`); el cobro
     aprobado deja su orden como `referencia` del pago. Regla `tarjetas_modo`: `libre` (de fábrica) o `vinculado` (el trigger deferido `pagos_tarjeta_vinculada` frena una tarjeta que no pasó por el posnet y
     ata el cobro a la venta una sola vez). Pantalla: Integraciones → Mercado Pago. Manual: `docs/integraciones/mercadopago.md`.
+
+    **QR dinámico** (`qr_preparar`, `qr_cobrar`; la caja y la sucursal se crean una vez en Mercado Pago, `integraciones.mp_qr_*`): mismo circuito que el posnet (`point_cobros.via = 'qr'`, `point_estado`, webhook `order`);
+    la caja dibuja el QR con `qr_data` (`CobroPoint`, librería `qrcode`). Se ofrece para los medios de tipo Billetera o con «mercado pago»/«qr» en el nombre.

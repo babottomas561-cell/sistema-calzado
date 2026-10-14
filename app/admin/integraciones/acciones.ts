@@ -158,6 +158,15 @@ export async function usarPosnet(_: Estado, f: FormData): Promise<Estado> {
   return { ok: r.reiniciar ? "Listo. Reiniciá el posnet para que quede en modo punto de venta" : "Posnet elegido" };
 }
 
+export async function prepararQr(_: Estado, f: FormData): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("qr_preparar", { p_calle: texto(f, "calle", 80), p_numero: texto(f, "numero", 12), p_ciudad: texto(f, "ciudad", 60), p_provincia: texto(f, "provincia", 60) });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  const r = data as { ok: boolean; error?: string };
+  return r.ok ? { ok: "Listo: ya se puede cobrar con QR desde la caja" } : { error: r.error ?? "No se pudo preparar el QR" };
+}
+
 export async function guardarReglaTarjetas(_: Estado, f: FormData): Promise<Estado> {
   const modo = String(f.get("tarjetas_modo")) === "vinculado" ? "vinculado" : "libre";
   const supabase = await crearCliente();

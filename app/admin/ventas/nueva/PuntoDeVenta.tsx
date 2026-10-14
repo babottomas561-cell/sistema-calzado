@@ -49,7 +49,7 @@ function Opcion({ icono: Icono, valor, activo, abierto, alAlternar }: { icono: L
 }
 
 export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion, exigeOperacion = false, point = null }: {
-  point?: { disponible: boolean; modo: string; terminal: string | null } | null;   // posnet de Mercado Pago (Point)
+  point?: { disponible: boolean; modo: string; terminal: string | null; qr?: boolean } | null;   // posnet de Mercado Pago (Point)
   exigeOperacion?: boolean;   // el dueño pidió el n.º de operación en las transferencias
   facturacion: { modo: "todas" | "elegir"; porDefecto: "fiscal" | "interna"; letra: string; pruebas: boolean; umbral: number } | null;
   filas: FilaStock[]; clientes: Cliente[]; masVendidos: number[]; puedeCrearCliente: boolean; medios: (MedioCobro & { es_saldo?: boolean | null; siempre_factura?: boolean | null })[]; cambiaPrecio: boolean; descuentoMax: number | null;
@@ -132,6 +132,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   // Con el posnet vinculado: cada tarjeta se cobra por el posnet y su referencia (la orden) queda en el pago
   const esTarjeta = (m: MedioCobro) => m.tipo === "Débito" || m.tipo === "Crédito";
   const usaPoint = !!point?.disponible;
+  const esQr = (m: MedioCobro) => !!point?.qr && (m.tipo === "Billetera" || /mercado ?pago|qr/i.test(m.nombre));
   const tarjetaSinPosnet = point?.modo === "vinculado" ? cobro.lineas.find((l) => l.base > 0 && esTarjeta(l.medio) && !(referencias[l.medio.id] ?? "").trim()) : undefined;
 
   // Un medio «siempre con factura» (Tablas → Medios de pago) en el cobro: va con factura, sin opción (la base también lo hace cumplir)
@@ -444,8 +445,8 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                 )}
 
                 {/* Número de cupón / operación (opcional) para los medios que no son efectivo */}
-                {[...new Map(cobro.lineas.filter((l) => l.base > 0 && pideReferencia(l.medio)).map((l) => [l.medio.id, l.medio])).values()].map((m) => usaPoint && esTarjeta(m) ? (
-                  <CobroPoint key={m.id} monto={cobro.lineas.filter((l) => l.medio.id === m.id).reduce((t, l) => t + l.cobra + l.redondeo, 0)} terminal={point?.terminal ?? null} referencia={referencias[m.id] ?? ""}
+                {[...new Map(cobro.lineas.filter((l) => l.base > 0 && pideReferencia(l.medio)).map((l) => [l.medio.id, l.medio])).values()].map((m) => (usaPoint && esTarjeta(m)) || esQr(m) ? (
+                  <CobroPoint key={m.id} monto={cobro.lineas.filter((l) => l.medio.id === m.id).reduce((t, l) => t + l.cobra + l.redondeo, 0)} via={esQr(m) ? "qr" : "point"} terminal={point?.terminal ?? null} referencia={referencias[m.id] ?? ""}
                     onAprobado={(orden) => setReferencias((r) => ({ ...r, [m.id]: orden ?? "" }))} />
                 ) : (
                   <div key={m.id} className="space-y-1">

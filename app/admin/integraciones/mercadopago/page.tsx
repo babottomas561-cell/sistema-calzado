@@ -4,15 +4,17 @@ import { exigir } from "@/lib/exigir";
 import Encabezado from "../Encabezado";
 import Manual from "../Manual";
 import MercadoPago, { type EstadoMP } from "../MercadoPago";
+import CobroQr from "../CobroQr";
 import MercadoPagoPoint, { type EstadoPoint } from "../MercadoPagoPoint";
 import { sitio } from "../sitio";
 
 export default async function PaginaMercadoPago() {
   await exigir("tienda.editar");
   const supabase = await crearCliente();
-  const [{ data: mp }, { data: point }, { data: config }] = await Promise.all([
+  const [{ data: mp }, { data: point }, { data: qr }, { data: config }] = await Promise.all([
     supabase.rpc("estado_mercadopago"),
     supabase.rpc("estado_point"),
+    supabase.rpc("estado_qr"),
     supabase.from("configuracion_tienda").select("mp_modo, mp_cuotas_max").single(),
   ]);
   return (
@@ -21,6 +23,9 @@ export default async function PaginaMercadoPago() {
         texto="Cobrar online los pedidos de la tienda: tarjeta, débito, cuotas o dinero en cuenta. Usá una cuenta de Mercado Pago a nombre del local, no una personal." />
       <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
         {mp && config && <MercadoPago estado={mp as unknown as EstadoMP} modo={config.mp_modo} cuotasMax={config.mp_cuotas_max} webhook={`${sitio()}/api/mercadopago`} />}
+      </section>
+      <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
+        <CobroQr listo={!!(qr as { listo?: boolean } | null)?.listo} hayToken={!!(mp as { token?: string | null } | null)?.token} />
       </section>
       {/* Solo para quien tiene el posnet de Mercado Pago: plegado hasta que se use */}
       <details className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm" open={!!(point as { terminales?: unknown[] } | null)?.terminales?.length}>
