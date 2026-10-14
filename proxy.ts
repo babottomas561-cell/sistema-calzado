@@ -43,10 +43,13 @@ export async function proxy(request: NextRequest) {
     const staff = perfil?.rol === "staff";
     if (esAdmin && !staff) return ir("/mi-cuenta");
     // Un módulo apagado en esta instalación corta sus pantallas (las altas las frena la base; esto es para no mostrar una pantalla muerta)
-    const modulo = ruta.split("/")[2];
+    const tramos = ruta.split("/");
+    const modulo = tramos[2];
     if (esAdmin && modulo) {
-      const { data: m } = await supabase.from("modulos").select("activo").eq("clave", modulo).maybeSingle();
-      if (m && !m.activo) return ir(`/admin?modulo_apagado=${encodeURIComponent(modulo)}`);
+      // El módulo de la pantalla (cuenta-corriente) y, si lo hay, el de la pantalla de adentro (integraciones/whatsapp)
+      const claves = tramos[3] ? [modulo, `${modulo}/${tramos[3]}`] : [modulo];
+      const { data: apagados } = await supabase.from("modulos").select("clave").in("clave", claves).eq("activo", false);
+      if (apagados?.length) return ir(`/admin?modulo_apagado=${encodeURIComponent(apagados[apagados.length - 1].clave)}`);
     }
     if (esAcceso) return ir(staff ? "/admin" : "/mi-cuenta");
   }

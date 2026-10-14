@@ -12,7 +12,7 @@ create function prueba.caja(p_nombre text) returns bigint language sql stable se
 create table prueba.ids (nombre text primary key, id bigint);
 grant all on prueba.ids to anon, authenticated;
 grant execute on all functions in schema prueba to anon, authenticated;
-select plan(19);
+select plan(26);
 
 -- Datos de la razón social principal y stock para vender
 reset role;
@@ -54,6 +54,18 @@ select is(comprobante_de('venta', (select id from prueba.ids where nombre = 'v1'
 -- Facturar por ARCA desde la razón social adicional: todavía no
 reset role; update configuracion_fiscal set activa = true; set local role authenticated; select prueba.como_admin();
 select throws_like(format($$ select facturar_venta(%s) $$, (select id from prueba.ids where nombre = 'v2')), 'La razón social de la sucursal de esta venta todavía no puede facturar%', 'facturar desde la otra razón social se frena con un mensaje claro');
+
+-- Cada persona con su caja: sin dispositivo ni caja indicada, vende en la suya
+select lives_ok($$ select persona_asignar_caja('11111111-1111-1111-1111-111111111111', prueba.caja('Caja Norte')) $$, 'se le asigna una caja a una persona del equipo');
+select is(cobro_medios() -> 'caja' ->> 'caja', 'Caja Norte', 'su caja es la que cobra en la pantalla de la caja');
+insert into prueba.ids select 'v3', pg_temp.vender(null);
+select is((select c.nombre from ventas v join cajas c on c.id = v.caja_id where v.id = (select id from prueba.ids where nombre = 'v3')), 'Caja Norte', 'y la venta sin caja indicada cae en la suya');
+select is((select count(*)::int from cajas_de_personas() where caja_id is not null), 1, 'la pantalla de Equipo ve quién tiene caja');
+select lives_ok($$ select persona_asignar_caja('11111111-1111-1111-1111-111111111111', null) $$, 'se le quita la caja');
+select is(cobro_medios() -> 'caja' ->> 'caja', 'Caja 1', 'y vuelve la principal');
+select prueba.como_vendedora();
+select throws_ok($$ select persona_asignar_caja('11111111-1111-1111-1111-111111111111', null) $$, 'No tenés permiso para asignar cajas a las personas', 'la vendedora no asigna cajas');
+select prueba.como_admin();
 
 -- Una caja apagada no vende
 select lives_ok($$ select guardar_caja(prueba.suc('Sucursal Norte'), 'Caja Norte', prueba.caja('Caja Norte'), null, false) $$, 'se apaga una caja');

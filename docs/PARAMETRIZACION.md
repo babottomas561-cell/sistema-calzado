@@ -1,4 +1,4 @@
-# Parametrización y configuración (a hacer)
+# Parametrización y configuración (etapa 1 hecha: 14/10/2026)
 
 Idea del dueño (14/10/2026): separar dos cosas que hoy se mezclan.
 
@@ -17,7 +17,13 @@ Ejemplo: se enciende WhatsApp en Parametrización → recién entonces aparece, 
 - La pantalla Configuración (`lib/configuracion.ts`) ya oculta las entradas cuyo módulo está apagado.
 - `requisitos()` dice qué falta para usar algo que está encendido.
 
-## Cómo encararlo
+## Qué quedó hecho (etapa 1)
+
+`/admin/parametrizacion` agrupa todos los interruptores (módulos, listas de precios e integraciones); Configuración e Integraciones solo muestran lo encendido; el `proxy.ts` corta lo apagado; los carteles de «qué falta» lo respetan. Ver la regla 40 de `CLAUDE.md`.
+
+Falta (etapa 2): los sí/no que todavía viven dentro de cada pantalla (modo de Mercado Pago online, regla de tarjetas, «esperar el pago», bot y avisos de WhatsApp…) y la guía del alta para un local nuevo.
+
+## Cómo encararlo (el plan original)
 
 1. Una pantalla **Parametrización** con todos los interruptores (los módulos + los sí/no que hoy viven en cada pantalla), agrupados por tema y con su explicación.
 2. Cada interruptor tiene sus dependencias (ya existe `modulos.depende`) y una validación de lo que implica apagarlo (ya existe `_modulo_pendientes`).

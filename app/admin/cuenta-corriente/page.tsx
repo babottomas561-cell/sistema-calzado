@@ -1,4 +1,4 @@
-// Cuenta corriente: quién debe y cuánto, y la entrada para habilitar a un cliente. Solo con el módulo encendido (Equipo → Módulos).
+// Cuenta corriente: quién debe y cuánto, y la entrada para habilitar a un cliente. Solo con el módulo encendido (Parametrización).
 import Link from "next/link";
 import { crearCliente } from "@/lib/supabase/server";
 import { exigir } from "@/lib/exigir";
@@ -12,7 +12,7 @@ export default async function CuentaCorriente({ searchParams }: { searchParams: 
   const { data: modulo } = await supabase.from("modulos").select("activo").eq("clave", "cuenta-corriente").maybeSingle();
   if (modulo && !modulo.activo) {
     return <div className="space-y-2"><h1 className="text-2xl font-bold">Cuenta corriente</h1>
-      <p className="text-texto-2">Esta parte está apagada. Se enciende en <Link href="/admin/equipo/modulos" className="font-medium text-marca">Equipo → Módulos</Link>.</p></div>;
+      <p className="text-texto-2">Esta parte está apagada. Se enciende en <Link href="/admin/parametrizacion" className="font-medium text-marca">Parametrización</Link>.</p></div>;
   }
   const b = q.replace(/[%,()]/g, "");
   const [{ data: saldos }, { data: buscados }] = await Promise.all([

@@ -2,9 +2,10 @@
 // Personas del equipo: cambiar el rol, sacar del equipo y sumar a alguien por su email.
 import { useActionState, useState, useTransition } from "react";
 import { CircleCheck, UserMinus, UserPlus } from "lucide-react";
-import { cambiarRol, quitarDelEquipo, sumarAlEquipo, type Estado } from "./acciones";
+import { asignarCajaPersona, cambiarRol, quitarDelEquipo, sumarAlEquipo, type Estado } from "./acciones";
 
-type Persona = { usuario_id: string; nombre: string | null; email: string; rol_id: number; rol: string; desde: string };
+type Persona = { usuario_id: string; nombre: string | null; email: string; rol_id: number; rol: string; desde: string; caja_id?: number | null };
+export type CajaOpcion = { id: number; nombre: string; sucursal: string };
 type Rol = { id: number; nombre: string; activo: boolean };
 
 function Mensaje({ e }: { e: Estado }) {
@@ -13,7 +14,7 @@ function Mensaje({ e }: { e: Estado }) {
   return null;
 }
 
-export default function Personas({ personas, roles, yo }: { personas: Persona[]; roles: Rol[]; yo: string }) {
+export default function Personas({ personas, roles, yo, cajas = [] }: { personas: Persona[]; roles: Rol[]; yo: string; cajas?: CajaOpcion[] }) {
   const [estado, setEstado] = useState<Estado>({});
   const [ocupado, empezar] = useTransition();
   const [eAlta, aAlta, cAlta] = useActionState(sumarAlEquipo, {});
@@ -34,6 +35,13 @@ export default function Personas({ personas, roles, yo }: { personas: Persona[];
               onChange={(e) => accion(() => cambiarRol(p.email, Number(e.target.value)))}>
               {activos.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
             </select>
+            {cajas.length > 1 && (
+              <select defaultValue={p.caja_id ?? ""} disabled={ocupado} aria-label={`Caja de ${p.nombre ?? p.email}`} className="campo w-auto py-1.5"
+                onChange={(e) => accion(() => asignarCajaPersona(p.usuario_id, e.target.value ? Number(e.target.value) : null))}>
+                <option value="">Caja principal</option>
+                {cajas.map((c) => <option key={c.id} value={c.id}>{c.sucursal} · {c.nombre}</option>)}
+              </select>
+            )}
             {p.usuario_id !== yo && (
               <button type="button" disabled={ocupado} title="Sacar del equipo" aria-label={`Sacar a ${p.nombre ?? p.email} del equipo`}
                 onClick={() => confirm(`¿Sacar a ${p.nombre ?? p.email} del equipo? Va a seguir pudiendo comprar en la tienda; su historial queda.`) && accion(() => quitarDelEquipo(p.usuario_id))}

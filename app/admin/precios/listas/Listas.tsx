@@ -1,6 +1,7 @@
 "use client";
 // Administración de las listas de precios: encender, qué lista usa cada canal y las listas (nombre, % y redondeo) con un ejemplo en vivo.
 import { useActionState, useState, useTransition } from "react";
+import Link from "next/link";
 import { CircleCheck, Plus, Trash2 } from "lucide-react";
 import { pesos } from "@/lib/formato";
 import { aplicarLista, REDONDEOS } from "@/lib/listas";
@@ -44,8 +45,7 @@ export default function Listas({ listas, activas, mostrador, tienda }: { listas:
   return (
     <div className="space-y-5">
       <form action={accion} className="tarjeta space-y-3">
-        <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="activas" defaultChecked={activas} className="mt-1" />
-          <span><b>Usar listas de precios.</b> <span className="text-texto-2">Apagado, todo se cobra al precio de Productos, como siempre.</span></span></label>
+        <p className={`rounded-lg p-3 text-sm ${activas ? "bg-green-50 text-ok" : "bg-amber-50 text-alerta"}`}>{activas ? "Las listas de precios están encendidas." : "Las listas de precios están apagadas: todo se cobra al precio de Productos."} Se encienden y se apagan en <Link href="/admin/parametrizacion" className="font-semibold underline">Parametrización</Link>.</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <div><label className="etiqueta" htmlFor="l-mostrador">Lista del mostrador (caja, presupuestos, cambios)</label>
             <select id="l-mostrador" name="mostrador" defaultValue={mostrador ?? ""} className="campo"><option value="">El precio base</option>{activasListas.map((l) => <option key={l.id} value={l.id}>{l.nombre}</option>)}</select></div>

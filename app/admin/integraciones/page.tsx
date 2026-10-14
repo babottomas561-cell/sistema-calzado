@@ -10,7 +10,8 @@ import { exigir } from "@/lib/exigir";
 type Estado = { texto: string; tono: "ok" | "falta" | "apagado" };
 const TONO = { ok: "bg-green-50 text-ok", falta: "bg-amber-50 text-alerta", apagado: "bg-gray-100 text-texto-2" };
 
-function Tarjeta({ href, icono: Icono, titulo, para, estados }: { href: string; icono: LucideIcon; titulo: string; para: string; estados: Estado[] }) {
+function Tarjeta({ href, icono: Icono, titulo, para, estados, visible = true }: { href: string; icono: LucideIcon; titulo: string; para: string; estados: Estado[]; visible?: boolean }) {
+  if (!visible) return null;   // apagada en Parametrización: no se muestra
   return (
     <Link href={href} className="tarjeta group flex flex-col gap-3 transition hover:border-marca">
       <div className="flex items-start justify-between gap-3">
@@ -30,6 +31,10 @@ export default async function Integraciones() {
   const { permisos } = await exigir("tienda.editar");
   const admin = permisos.includes("equipo.administrar");
   const supabase = await crearCliente();
+  const { data: apagadosDatos } = await supabase.from("modulos").select("clave").eq("activo", false);
+  const apagados = new Set((apagadosDatos ?? []).map((m) => m.clave));
+  const usa = (clave: string) => !apagados.has(clave);
+  const hayApagadas = [...apagados].some((c) => c.startsWith("integraciones/"));
   const [{ data: e }, { data: mp }, { data: t }, { count: zonas }] = await Promise.all([
     supabase.rpc("estado_integraciones"),
     supabase.rpc("estado_mercadopago"),
@@ -53,42 +58,43 @@ export default async function Integraciones() {
         <p className="text-sm text-texto-2">Los servicios de afuera que usa el sistema. Entrá a cada uno para configurarlo: cada pantalla tiene su manual paso a paso.
           Las claves quedan guardadas en la base y nadie las puede volver a leer.</p>
       </div>
+      {hayApagadas && <p className="text-sm text-texto-2">¿Falta algún servicio? {admin ? <Link href="/admin/parametrizacion" className="font-medium text-marca">Habilitalo en Parametrización</Link> : "Pedile al administrador que lo habilite en Parametrización"} y aparece acá para configurarlo.</p>}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Tarjeta href="/admin/integraciones/whatsapp" icono={MessageCircle} titulo="WhatsApp"
+        <Tarjeta visible={usa("integraciones/whatsapp")} href="/admin/integraciones/whatsapp" icono={MessageCircle} titulo="WhatsApp"
           para="Contestar a los clientes con el número del local (bot) y avisarles solos cómo va su pedido."
           estados={[
             wa?.meta_lista ? { texto: "Conectado", tono: "ok" } : { texto: "Falta conectar", tono: "falta" },
             { texto: t?.wa_bot_activo ? "Bot prendido" : "Bot apagado", tono: t?.wa_bot_activo ? "ok" : "apagado" },
             { texto: t?.wa_notificaciones_pedidos ? "Avisos prendidos" : "Avisos apagados", tono: t?.wa_notificaciones_pedidos ? "ok" : "apagado" },
           ]} />
-        <Tarjeta href="/admin/integraciones/ia" icono={Sparkles} titulo="Inteligencia artificial"
+        <Tarjeta visible={usa("integraciones/ia")} href="/admin/integraciones/ia" icono={Sparkles} titulo="Inteligencia artificial"
           para="Gemini, de Google: le da al bot la capacidad de contestar con el stock, los precios y el estado de los pedidos. Opcional."
           estados={[
             !wa?.gemini ? { texto: "Sin clave", tono: "apagado" } : wa.ia_prueba?.estado === "error" ? { texto: "La clave no anda", tono: "falta" } : { texto: "Clave cargada", tono: "ok" },
             { texto: t?.ia_plan === "pago" ? "Plan pago" : "Plan gratis", tono: "apagado" },
           ]} />
-        <Tarjeta href="/admin/integraciones/mercadopago" icono={CreditCard} titulo="Mercado Pago"
+        <Tarjeta visible={usa("integraciones/mercadopago")} href="/admin/integraciones/mercadopago" icono={CreditCard} titulo="Mercado Pago"
           para="Cobrar online los pedidos de la tienda: tarjeta, débito, cuotas o dinero en cuenta. La comisión va sola a Gastos."
           estados={[
             !cuenta ? { texto: "Falta conectar", tono: "falta" } : !cuenta.ok ? { texto: "No conecta", tono: "falta" } : cuenta.prueba ? { texto: "Cuenta de prueba", tono: "falta" } : { texto: "Conectado", tono: "ok" },
             { texto: MODO[(t?.mp_modo ?? "no") as keyof typeof MODO], tono: t?.mp_modo && t.mp_modo !== "no" ? "ok" : "apagado" },
           ]} />
-        <Tarjeta href="/admin/integraciones/instagram" icono={IconoInstagram} titulo="Instagram"
+        <Tarjeta visible={usa("integraciones/instagram")} href="/admin/integraciones/instagram" icono={IconoInstagram} titulo="Instagram"
           para="Mostrar las últimas publicaciones de tu Instagram en la portada de la tienda. Necesita una cuenta profesional."
           estados={[
             (instagram as { conectado?: boolean } | null)?.conectado ? { texto: `@${(instagram as { usuario?: string }).usuario}`, tono: "ok" } : { texto: "Falta conectar", tono: "falta" },
             ...((instagram as { error?: string | null } | null)?.error ? [{ texto: "Hay un error", tono: "falta" as const }] : []),
           ]} />
-        <Tarjeta href="/admin/integraciones/envios" icono={Truck} titulo="Envíos"
+        <Tarjeta visible={usa("integraciones/envios")} href="/admin/integraciones/envios" icono={Truck} titulo="Envíos"
           para="Zonas de Tucumán con su precio, el Uber de cada pedido y lo que costó (va a Gastos). Uber Direct y Andreani, cuando haya acceso."
           estados={[zonas ? { texto: `${zonas} ${zonas === 1 ? "zona" : "zonas"}`, tono: "ok" } : { texto: "Sin zonas (se coordina)", tono: "falta" }]} />
-        {admin && <Tarjeta href="/admin/integraciones/dominio" icono={Globe} titulo="Dominio propio"
+        {admin && <Tarjeta visible={usa("integraciones/dominio")} href="/admin/integraciones/dominio" icono={Globe} titulo="Dominio propio"
           para="Que la tienda se vea en tu propia dirección (mitienda.com.ar). Comprás el dominio y lo conectás desde acá."
           estados={[principal ? { texto: principal.nombre, tono: "ok" } : { texto: "Usa la dirección de Vercel", tono: "apagado" }]} />}
-        {admin && <Tarjeta href="/admin/integraciones/correo" icono={Mail} titulo="Correo"
+        {admin && <Tarjeta visible={usa("integraciones/correo")} href="/admin/integraciones/correo" icono={Mail} titulo="Correo"
           para="Los mails que recibe el cliente (confirmar su cuenta, cambiar la contraseña) salen por tu propio servidor, con el nombre de tu tienda."
           estados={[(correo as { smtp?: boolean } | null)?.smtp ? { texto: "Conectado", tono: "ok" } : { texto: "Falta conectar", tono: "falta" }]} />}
-        {admin && <Tarjeta href="/admin/integraciones/arca" icono={Landmark} titulo="ARCA (factura electrónica)"
+        {admin && <Tarjeta visible={usa("integraciones/arca")} href="/admin/integraciones/arca" icono={Landmark} titulo="ARCA (factura electrónica)"
           para="Emitir facturas A, B o C con CAE desde la caja. Se conecta una vez con el certificado del comercio; primero en el ambiente de pruebas."
           estados={[
             !a?.certificado_vence ? { texto: "Falta conectar", tono: "falta" } : a.ultimo_error ? { texto: "Hay un error", tono: "falta" } : { texto: "Conectado", tono: "ok" },

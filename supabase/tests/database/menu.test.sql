@@ -11,14 +11,15 @@ create function prueba.como_cliente() returns void language sql as $$
   select set_config('request.jwt.claims', '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}', true) $$;
 grant execute on all functions in schema prueba to anon, authenticated;
 select plan(10);
+update modulos set activo = true;   -- las pruebas parten de «todo encendido»
 set local role authenticated;
 
 select prueba.como_admin();
-select lives_ok($$ select configurar_modulos(array['etiquetas', 'precios', 'etiquetas']) $$, 'el Administrador apaga módulos');
-select is((select count(*)::int from modulos_desactivados), 2, 'sin repetidos');
+select lives_ok($$ select configurar_modulos(array['etiquetas', 'precios', 'precios/listas', 'etiquetas']) $$, 'el Administrador apaga módulos');
+select is((select count(*)::int from modulos_desactivados), 3, 'sin repetidos');
 
 select prueba.como_vendedor();
-select is((select count(*)::int from modulos_desactivados), 2, 'el equipo ve qué está apagado');
+select is((select count(*)::int from modulos_desactivados), 3, 'el equipo ve qué está apagado');
 select throws_ok($$ select configurar_modulos('{}') $$, 'No tenés permiso para configurar los módulos', 'el Vendedor no los cambia');
 
 -- Menú de cada persona

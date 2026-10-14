@@ -14,7 +14,7 @@ create function prueba.lista(p_nombre text) returns bigint language sql stable s
 create table prueba.ids (nombre text primary key, id bigint);
 grant all on prueba.ids to anon, authenticated;
 grant execute on all functions in schema prueba to anon, authenticated;
-select plan(13);
+select plan(14);
 
 insert into prueba.ids values ('v', prueba.variante('Zapatilla Urbana Classic', '40', 'Negro'));
 select is(precio_de((select id from prueba.ids where nombre = 'v')), 79000.00::numeric, 'apagadas: el precio es el de siempre');
@@ -26,7 +26,9 @@ select prueba.como_equipo();
 select lives_ok($$ select guardar_lista_precios('Web', 10, 100) $$, 'el administrador crea la lista Web (+10 %, redondeo a 100)');
 select lives_ok($$ select guardar_lista_precios('Local', -5, 0) $$, 'y la del Local (−5 %)');
 select throws_ok($$ select guardar_lista_precios('web', 1, 0) $$, 'Ya hay una lista con ese nombre', 'el nombre no se repite');
-select lives_ok($$ select configurar_listas_precios(true, prueba.lista('Local'), prueba.lista('Web')) $$, 'se encienden y se asigna una lista a cada canal');
+select lives_ok($$ select configurar_listas_precios(true, prueba.lista('Local'), prueba.lista('Web')) $$, 'se asigna una lista a cada canal');
+select is(precio_de((select id from prueba.ids where nombre = 'v')), 79000.00::numeric, 'sin encender «Listas de precios» en Parametrización, el precio sigue siendo el de siempre');
+reset role; update modulos set activo = true where clave = 'precios/listas'; set local role authenticated; select prueba.como_equipo();
 
 select is(precio_de((select id from prueba.ids where nombre = 'v')), 75050.00::numeric, 'el mostrador usa la lista Local: 79.000 − 5 %');
 select is((select precio from v_catalogo where variante_id = (select id from prueba.ids where nombre = 'v')), 86900.00::numeric(12,2), 'la tienda muestra la lista Web: 79.000 + 10 %, redondeado a 100');
@@ -40,7 +42,7 @@ insert into prueba.ids select 'p', crear_pedido(format('[{"variante_id": %s, "ca
 select is((select precio_unitario from pedido_items where pedido_id = (select id from prueba.ids where nombre = 'p')), 86900.00::numeric(12,2), 'el pedido web usa el precio de la lista Web');
 
 select prueba.como_equipo();
-select configurar_listas_precios(false, null, null);
+reset role; update modulos set activo = false where clave = 'precios/listas'; set local role authenticated; select prueba.como_equipo();
 select is(precio_de((select id from prueba.ids where nombre = 'v')), 79000.00::numeric, 'apagadas otra vez, vuelve el precio de siempre');
 select * from finish();
 rollback;

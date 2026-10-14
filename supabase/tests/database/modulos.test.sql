@@ -13,11 +13,15 @@ create function prueba.variante(p_talle text, p_color text) returns bigint langu
   select v.id from variantes v join productos p on p.id = v.producto_id join talles t on t.id = v.talle_id join colores c on c.id = v.color_id
    where p.nombre = 'Zapatilla Urbana Classic' and t.nombre = p_talle and c.nombre = p_color $$;
 grant execute on all functions in schema prueba to anon, authenticated;
-select plan(15);
+select plan(18);
 set local role authenticated;
 select prueba.como_admin();
 
-select is((select count(*)::int from modulos where not activo and clave not in ('cuenta-corriente', 'sucursales')), 0, 'de fábrica está todo encendido (menos cuenta corriente y sucursales, que se encienden a propósito)');
+select is((select count(*)::int from modulos where not activo and clave not in ('cuenta-corriente', 'sucursales', 'precios/listas') and clave not like 'integraciones/%'), 0, 'de fábrica está todo encendido (menos lo que se enciende a propósito: cuenta corriente, sucursales, listas de precios e integraciones)');
+select is((select count(*)::int from modulos where not activo and clave like 'integraciones/%'), 8, 'las integraciones que no se usan arrancan apagadas (un local nuevo empieza con lo mínimo)');
+select is((select activo from modulos where clave = 'precios/listas'), false, 'las listas de precios también');
+select is(_modulo_activo('integraciones/whatsapp'), false, 'la base dice que WhatsApp está apagado');
+reset role; update modulos set activo = true; set local role authenticated; select prueba.como_admin();   -- el resto de las pruebas parten de «todo encendido»
 select throws_like($$ select configurar_modulos(array['ventas']) $$, '%base del sistema%', 'lo fijo no se apaga');
 select throws_like($$ select configurar_modulos(array['no_existe']) $$, '%no existe%', 'una clave inventada se rechaza');
 select throws_like($$ select configurar_modulos(array['tienda']) $$, 'Para apagar «Tienda online» también hay que apagar «%', 'no deja un dependiente encendido');

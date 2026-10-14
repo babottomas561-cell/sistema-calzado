@@ -1677,17 +1677,23 @@ isOneToOne: false
                   ]
                 },"perfiles": {
                   Row: {
-                    "id": string,"nombre": string | null,"rol": string,"rol_id": number | null,"terminos_aceptados_en": string | null
+                    "caja_id": number | null,"id": string,"nombre": string | null,"rol": string,"rol_id": number | null,"terminos_aceptados_en": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "id": string,"nombre"?: string | null,"rol"?: string,"rol_id"?: number | null,"terminos_aceptados_en"?: string | null
+                    "caja_id"?: number | null,"id": string,"nombre"?: string | null,"rol"?: string,"rol_id"?: number | null,"terminos_aceptados_en"?: string | null
                   }
                   Update: {
-                    "id"?: string,"nombre"?: string | null,"rol"?: string,"rol_id"?: number | null,"terminos_aceptados_en"?: string | null
+                    "caja_id"?: number | null,"id"?: string,"nombre"?: string | null,"rol"?: string,"rol_id"?: number | null,"terminos_aceptados_en"?: string | null
                   }
                   Relationships: [
                     {
+      foreignKeyName: "perfiles_caja_id_fkey"
+      columns: ["caja_id"]
+isOneToOne: false
+      referencedRelation: "cajas"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "perfiles_rol_id_fkey"
       columns: ["rol_id"]
 isOneToOne: false
@@ -3447,6 +3453,11 @@ isOneToOne: false
 "caja_vincular_mp":
 { Args: { "p_caja": number,"p_mp_caja": string,"p_mp_externo": string }; Returns: Json
                            },
+"cajas_de_personas":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "caja_id": number,"usuario_id": string
+            }[]
+                           },
 "cambiar_estado_pedido":
 { Args: { "p_comentario"?: string,"p_estado": string,"p_motivo"?: string,"p_pagos"?: Json,"p_pedido": number }; Returns: number
                            },
@@ -3787,6 +3798,9 @@ isOneToOne: false
                            },
 "pedido_pagado":
 { Args: { "p_pedido": number }; Returns: boolean
+                           },
+"persona_asignar_caja":
+{ Args: { "p_caja": number,"p_usuario": string }; Returns: undefined
                            },
 "point_caja":
 { Args: { "p_caja"?: number }; Returns: Json

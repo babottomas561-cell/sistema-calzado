@@ -57,3 +57,12 @@ export async function borrarRol(id: number): Promise<Estado> {
   revalidatePath("/admin/equipo");
   return { ok: "Rol borrado" };
 }
+
+// La caja con la que cobra cada persona (null = la principal)
+export async function asignarCajaPersona(usuario: string, caja: number | null): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("persona_asignar_caja", { p_usuario: usuario, p_caja: caja as unknown as number });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/equipo");
+  return { ok: "Caja asignada" };
+}

@@ -458,3 +458,13 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
     la caja principal; los pedidos, presupuestos y cambios caen en la principal). El comprobante (`_comprobante_json` → `_emisor_de`) lleva la razón social, el CUIT, el local y el teléfono de la sucursal que vendió, y su nombre si hay
     más de una. **Facturar por ARCA desde una razón social adicional todavía NO se puede** (`_factura_crear` lo frena con un mensaje claro): falta la etapa 2 (certificado y punto de venta por razón social), que se hace después de
     probar ARCA con un certificado real. Mientras tanto una sucursal de otra razón social vende e imprime el comprobante interno.
+
+40. **Parametrización vs configuración** (`/admin/parametrizacion`, `lib/parametrizacion.ts`; permiso `equipo.modulos`): la **parametrización** es qué usa el local, sí o no; cada interruptor es un módulo de la tabla `modulos`
+    (devoluciones, presupuestos, pedidos, tienda, cuenta corriente, sucursales, **listas de precios** `precios/listas` y cada **integración** `integraciones/<servicio>`: mercadopago, whatsapp, ia, instagram, envios,
+    dominio, correo, arca). Lo que se enciende ahí aparece en **Configuración** (`lib/configuracion.ts`, campo `modulo`) con su «cómo»; lo apagado se oculta (menú, tarjetas de Integraciones, Configuración, Inicio) y el
+    `proxy.ts` corta su pantalla (mira los dos tramos de la ruta: `cuenta-corriente`, `integraciones/whatsapp`). La clave de un módulo es su ruta (`[a-z_/-]`). Un local nuevo arranca con lo mínimo; en esta instalación quedó
+    encendido lo que ya se usaba. Apagar una integración la oculta: lo ya conectado sigue funcionando hasta desconectarlo. `accionActiva()` hace que los carteles de «qué falta» respeten lo apagado. El interruptor de las
+    listas de precios es el módulo (`_precio_con_lista` lo lee); `configurar_listas_precios` solo guarda la lista de cada canal. Un módulo nuevo: fila en `modulos` (migración), su `descripcion` en `lib/parametrizacion.ts` y su
+    entrada en `lib/configuracion.ts`. Las pruebas de la base que apagan módulos parten de «todo encendido».
+41. **Caja de cada persona**: `perfiles.caja_id` (Equipo → Personas). La caja con la que se cobra se resuelve de lo más específico a lo general: el dispositivo registrado y asignado → la persona → la caja principal (`cobro_medios`,
+    `_venta_caja`).

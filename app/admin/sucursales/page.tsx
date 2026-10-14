@@ -1,4 +1,4 @@
-// Sucursales y cajas: la estructura del local y su vínculo con Mercado Pago. Solo con el módulo encendido (Equipo → Módulos).
+// Sucursales y cajas: la estructura del local y su vínculo con Mercado Pago. Solo con el módulo encendido (Parametrización).
 import Link from "next/link";
 import { crearCliente } from "@/lib/supabase/server";
 import { exigir } from "@/lib/exigir";
@@ -10,7 +10,7 @@ export default async function PaginaSucursales() {
   const { data: modulo } = await supabase.from("modulos").select("activo").eq("clave", "sucursales").maybeSingle();
   if (modulo && !modulo.activo) {
     return <div className="space-y-2"><h1 className="text-2xl font-bold">Sucursales y cajas</h1>
-      <p className="text-texto-2">Esta parte está apagada. Se enciende en <Link href="/admin/equipo/modulos" className="font-medium text-marca">Equipo → Módulos</Link>. Si tenés un solo local, no la necesitás: el cobro con QR se configura en Integraciones → Mercado Pago.</p></div>;
+      <p className="text-texto-2">Esta parte está apagada. Se enciende en <Link href="/admin/parametrizacion" className="font-medium text-marca">Parametrización</Link>. Si tenés un solo local, no la necesitás: el cobro con QR se configura en Integraciones → Mercado Pago.</p></div>;
   }
   const { data } = await supabase.rpc("sucursales_estado");
   const datos = data as unknown as DatosSucursales | null;
