@@ -9,7 +9,7 @@ import { after, NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { procesarMensajeConIA } from "@/lib/whatsapp/bot";
 import { respuestasDeMenu } from "@/lib/whatsapp/flujo";
-import { pideMenu } from "@/lib/whatsapp/menu";
+import { pideComprar, pideMenu } from "@/lib/whatsapp/menu";
 import type { Database } from "@/lib/database.types";
 
 export const maxDuration = 30;
@@ -47,8 +47,8 @@ export async function POST(request: NextRequest) {
       for (const m of r.mensajes ?? []) {
         try {
           // Eligió una opción del menú, o saluda / pide el menú: se le contesta con listas y botones (sin gastar IA)
-          if (m.opcion || pideMenu(m.texto)) {
-            for (const msg of await respuestasDeMenu(m.opcion ?? "m:menu", sitio)) {
+          if (m.opcion || pideMenu(m.texto) || pideComprar(m.texto)) {
+            for (const msg of await respuestasDeMenu(m.opcion ?? (pideComprar(m.texto) ? "m:comprar" : "m:menu"), sitio)) {
               if ("texto" in msg) await supabase.rpc("wa_responder", { p_payload: cuerpo, p_firma: firma, p_para: m.de, p_texto: msg.texto });
               else await supabase.rpc("wa_responder_menu", { p_payload: cuerpo, p_firma: firma, p_para: m.de, p_interactivo: msg.interactivo as never });
             }

@@ -5,6 +5,7 @@ import Carrito, { type ZonaEnvio } from "./Carrito";
 
 export default async function PaginaCarrito() {
   const supabase = await crearCliente();
+  const { data: { user } } = await supabase.auth.getUser();
   const [{ data: medios }, { data: tienda }, { data: pagos }, { data: zonas }, { data: pend }] = await Promise.all([
     supabase.from("medios_pago").select("id, codigo, nombre, ajuste_pct, cuotas").eq("activo", true).eq("en_tienda", true).order("orden"),
     supabase.from("configuracion_tienda").select("whatsapp").single(),
@@ -16,6 +17,6 @@ export default async function PaginaCarrito() {
   const modo = (pagos as { mp_modo?: string } | null)?.mp_modo ?? "no";
   const mp = (medios ?? []).find((m) => m.codigo === "MP");
   const lista = modo === "obligatorio" && mp ? [mp] : (medios ?? []);
-  return <Carrito medios={lista} pendientes={(pend ?? []) as { tipo: string; version: number }[]} conWhatsApp={!!tienda?.whatsapp} mpId={modo !== "no" && mp ? mp.id : null}
+  return <Carrito medios={lista} pendientes={(pend ?? []) as { tipo: string; version: number }[]} conSesion={!!user} conWhatsApp={!!tienda?.whatsapp} mpId={modo !== "no" && mp ? mp.id : null}
     zonas={(zonas ?? []).map((z) => ({ ...z, precio: z.precio == null ? null : Number(z.precio) })) as ZonaEnvio[]} />;
 }

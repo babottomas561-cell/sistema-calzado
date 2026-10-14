@@ -29,6 +29,7 @@ export const POR_PAGINA = 8;   // modelos por página (más «Ver más» y «Otr
 export const menuPrincipal = (tienda: string, hay: { promos?: boolean; novedades?: boolean } = {}): Interactivo =>
   lista(`¡Hola! Soy el asistente de ${tienda}. ¿Qué querés hacer? Elegí una opción tocando el botón, o escribime tu consulta.`, "Ver opciones", [
     { id: "m:cat", title: "Ver el catálogo", description: "Calzado, ropa y accesorios con precios" },
+    { id: "m:comprar", title: "Quiero comprar", description: "Creá tu cuenta y hacé tu pedido online" },
     ...(hay.novedades ? [{ id: "m:nuevo", title: "Novedades", description: "Lo último que llegó al local" }] : []),
     ...(hay.promos ? [{ id: "m:promo", title: "Promociones", description: "Ofertas y descuentos vigentes" }] : []),
     { id: "m:pedido", title: "Consultar un pedido", description: "Fijate en qué estado está" },
@@ -73,4 +74,11 @@ const RELLENO = new Set(["dia", "dias", "tardes", "noches", "que", "tal", "como"
 export function pideMenu(texto: string): boolean {
   const palabras = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9ñ ]/g, " ").split(/\s+/).filter(Boolean);
   return palabras.length > 0 && palabras.length <= 6 && DISPARADORES.has(palabras[0]) && palabras.every((p) => DISPARADORES.has(p) || RELLENO.has(p));
+}
+
+// ¿Quiere comprar o hacer un pedido? El pedido no se toma por WhatsApp: se hace en la tienda y antes hay que crear la cuenta.
+export function pideComprar(texto: string): boolean {
+  const t = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9ñ ]/g, " ").replace(/\s+/g, " ").trim();
+  return /\b(quiero|quisiera|me gustaria|voy a|como|donde|puedo|podria|necesito)\b.{0,25}\b(comprar|compro|hacer un pedido|hacer una compra|pedir|reservar|encargar)\b/.test(t)
+    || /\b(lo compro|la compro|los compro|las compro|me lo llevo|me la llevo|hacer el pedido|hacer mi pedido|tomar el pedido|tomame el pedido)\b/.test(t);
 }

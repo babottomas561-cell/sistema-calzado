@@ -5,13 +5,14 @@ import { useCarrito } from "@/lib/carrito";
 import { numero, pesos, porcentaje } from "@/lib/formato";
 import { ajusteDe, type MedioPago } from "@/lib/medios";
 import { confirmarPedido, cotizarCarrito, type Cotizacion } from "./acciones";
-import { BadgePercent, CreditCard, Minus, Plus, Shirt, MessageCircle, Trash2 } from "lucide-react";
+import { BadgePercent, Bell, CreditCard, LogIn, Minus, PackageSearch, Plus, Shirt, MessageCircle, Trash2, UserPlus } from "lucide-react";
 
 export type ZonaEnvio = { id: number; nombre: string; descripcion: string | null; precio: number | null };
 
 // mpId: el medio «Mercado Pago» cuando la tienda cobra online (si no, null): elegirlo lleva a pagar.
 // zonas: las zonas de envío del local (el precio lo vuelve a poner la base al crear el pedido)
-export default function Carrito({ pendientes, medios, conWhatsApp, mpId, zonas }: { pendientes: { tipo: string; version: number }[]; medios: MedioPago[]; conWhatsApp: boolean; mpId: number | null; zonas: ZonaEnvio[] }) {
+// conSesion: si ya ingresó. Sin cuenta, el pedido no se arma: primero se le pide crearla (o ingresar) y vuelve acá con el carrito intacto.
+export default function Carrito({ pendientes, medios, conSesion, conWhatsApp, mpId, zonas }: { pendientes: { tipo: string; version: number }[]; medios: MedioPago[]; conSesion: boolean; conWhatsApp: boolean; mpId: number | null; zonas: ZonaEnvio[] }) {
   const { items, cargado, total, cambiar, quitar } = useCarrito();
   const [entrega, setEntrega] = useState("retiro");
   const [zonaId, setZonaId] = useState<number | null>(null);
@@ -77,7 +78,23 @@ export default function Carrito({ pendientes, medios, conWhatsApp, mpId, zonas }
             <BadgePercent size={18} className="shrink-0 text-acento" /> <span>Sumá <b>{g.faltan} {g.faltan === 1 ? "unidad" : "unidades"}</b> más y aprovechás <b>{g.promocion}</b>. <Link href="/tienda" className="font-semibold underline">Ver el catálogo</Link></span></p>
         ))}
       </section>
-      <form action={accion} className="tarjeta h-fit space-y-5 lg:sticky lg:top-24">
+      {!conSesion && (
+        <aside className="tarjeta h-fit space-y-5 lg:sticky lg:top-24">
+          <div><h2 className="text-xl font-extrabold tracking-[-0.03em]">Antes de pedir, creá tu cuenta</h2>
+            <p className="mt-1 text-sm text-texto-2">Es rápido y es lo que nos permite reservarte los productos y avisarte cuando estén listos. Tu carrito queda guardado.</p></div>
+          <ul className="space-y-2.5 text-sm">
+            <li className="flex items-start gap-2.5"><PackageSearch size={18} strokeWidth={1.8} className="mt-0.5 shrink-0 text-marca" /><span>Seguís el estado de tu pedido desde tu cuenta.</span></li>
+            <li className="flex items-start gap-2.5"><Bell size={18} strokeWidth={1.8} className="mt-0.5 shrink-0 text-marca" /><span>Te avisamos cuando esté confirmado y listo.</span></li>
+            <li className="flex items-start gap-2.5"><UserPlus size={18} strokeWidth={1.8} className="mt-0.5 shrink-0 text-marca" /><span>La próxima vez no cargás tus datos de nuevo.</span></li>
+          </ul>
+          <dl className="flex items-baseline justify-between border-t border-borde pt-3 text-sm"><dt className="font-semibold">Total estimado</dt><dd className="text-2xl font-extrabold tracking-[-0.03em]">{pesos(totalFinal)}</dd></dl>
+          <div className="space-y-2.5">
+            <Link href="/registro?volver=/carrito" className="boton w-full"><UserPlus size={18} />Crear mi cuenta</Link>
+            <Link href="/ingresar?volver=/carrito" className="boton-sec w-full"><LogIn size={18} />Ya tengo cuenta</Link>
+          </div>
+        </aside>
+      )}
+      {conSesion && <form action={accion} className="tarjeta h-fit space-y-5 lg:sticky lg:top-24">
         <h2 className="text-xl font-extrabold tracking-[-0.03em]">Confirmar pedido</h2>
         <input type="hidden" name="items" value={JSON.stringify(items.map((i) => ({ variante_id: i.variante_id, cantidad: i.cantidad })))} />
         <div><div className="etiqueta">Entrega</div>
@@ -133,7 +150,7 @@ export default function Carrito({ pendientes, medios, conWhatsApp, mpId, zonas }
           : conWhatsApp
           ? "Te reservamos los productos y en el paso siguiente nos mandás el pedido por WhatsApp para coordinar el pago y la entrega."
           : "Te reservamos los productos al confirmar. Te avisamos por acá cuando esté listo."}</p>
-      </form>
+      </form>}
     </div>
   );
 }

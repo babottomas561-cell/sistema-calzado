@@ -129,6 +129,17 @@ export async function respuestasDeMenu(opcion: string, sitio: string): Promise<M
     const d = Number(valor) ? await detalleDeModelo(Number(valor), sitio) : null;
     return d ? [{ texto: d.texto }, { interactivo: botonesDespuesDelModelo(d.rubro) }] : [{ texto: "Ese modelo se quedó sin stock. ¡Mirá el resto de las opciones!" }, { interactivo: botonesMenu("¿Seguimos?") }];
   }
+  if (tipo === "m" && valor === "comprar") return [{ texto: [
+    "¡Buenísimo! El pedido se hace en nuestra tienda online, y *antes tenés que crearte una cuenta* (es rápido: así te reservamos los productos y seguís tu pedido).",
+    "",
+    "1. Creá tu cuenta (o ingresá si ya tenés):",
+    `${sitio}/registro?volver=/carrito`,
+    "",
+    "2. Elegí lo que te gusta:",
+    `${sitio}/tienda`,
+    "",
+    "3. Confirmá el pedido: lo reservamos y te avisamos cuando esté listo.",
+  ].join("\n") }, { interactivo: botonesMenu("¿Te ayudo con algo más?") }];
   if (tipo === "m" && valor === "info") return [{ texto: await datosDelLocal() }, { interactivo: botonesMenu("¿Te ayudo con algo más?") }];
   if (tipo === "m" && valor === "pedido") return [{ texto: "Escribime el *número de tu pedido* (por ejemplo, 0001-00000015) y te cuento en qué estado está. Tiene que ser el pedido hecho con este mismo número de WhatsApp." }];
   if (tipo === "m" && valor === "humano") return [{ texto: "Listo, ya le avisamos al equipo. En cuanto puedan, te responden por acá. 🙌" }, { interactivo: botonesMenu("Mientras tanto, podés seguir mirando:") }];

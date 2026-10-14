@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { botonesDespuesDelModelo, botonesLineas, listaDeModelos, listaModelos, listaRubros, menuPrincipal, pideMenu, POR_PAGINA, recorta } from "./menu.ts";
+import { botonesDespuesDelModelo, botonesLineas, listaDeModelos, listaModelos, listaRubros, menuPrincipal, pideComprar, pideMenu, POR_PAGINA, recorta } from "./menu.ts";
 
 type Lista = { action: { button: string; sections: { rows: { id: string; title: string; description?: string }[] }[] }; body: { text: string } };
 
@@ -47,8 +47,8 @@ test("recorta no deja texto de más", () => {
 
 test("el menú principal ofrece Novedades y Promociones solo si hay", () => {
   const ids = (m: unknown) => (m as Lista).action.sections[0].rows.map((f) => f.id);
-  assert.deepEqual(ids(menuPrincipal("X")), ["m:cat", "m:pedido", "m:info", "m:humano"]);
-  assert.deepEqual(ids(menuPrincipal("X", { novedades: true, promos: true })), ["m:cat", "m:nuevo", "m:promo", "m:pedido", "m:info", "m:humano"]);
+  assert.deepEqual(ids(menuPrincipal("X")), ["m:cat", "m:comprar", "m:pedido", "m:info", "m:humano"]);
+  assert.deepEqual(ids(menuPrincipal("X", { novedades: true, promos: true })), ["m:cat", "m:comprar", "m:nuevo", "m:promo", "m:pedido", "m:info", "m:humano"]);
 });
 
 test("una lista de novedades o promos con etiqueta cumple los límites", () => {
@@ -56,4 +56,9 @@ test("una lista de novedades o promos con etiqueta cumple los límites", () => {
   const filas = m.action.sections[0].rows;
   assert.equal(filas.length, 10);
   assert.ok(filas.every((f) => f.title.length <= 24 && (f.description ?? "").length <= 72));
+});
+
+test("quien quiere comprar o hacer un pedido va al camino de la cuenta; una consulta, no", () => {
+  for (const t of ["quiero comprar", "Quiero hacer un pedido", "cómo compro?", "dónde puedo comprar esto", "me gustaría reservar una campera", "lo compro", "hacer el pedido", "quiero comprar la camisa rayas"]) assert.equal(pideComprar(t), true, t);
+  for (const t of ["¿qué camisas tienen?", "dónde está mi pedido 0001-00000001", "hola", "tienen jeans en talle 42?", "cuánto sale el envío", "cómo pago"]) assert.equal(pideComprar(t), false, t);
 });
