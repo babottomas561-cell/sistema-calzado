@@ -5,7 +5,10 @@ import { usuarioActual } from "@/lib/supabase/server";
 import { puede } from "@/lib/permisos";
 import { FilaMovil } from "@/components/ListaMovil";
 import { leerTodo } from "@/lib/informes";
-import { diaArgentina, fechaHora, inicioDe, numero, pesos } from "@/lib/formato";
+import { diaArgentina, diaDe, fechaHora, inicioDe, numero, pesos, ultimosDias } from "@/lib/formato";
+import AccesosRapidos from "./AccesosRapidos";
+import VentasPorDia, { type DiaVentas } from "./VentasPorDia";
+import { ACCIONES, leerRequisitos, ListaRequisitos, type Accion, type Requisito } from "@/components/Requisitos";
 import { ChevronRight, Lock, MessageCircleMore, Plus, ShoppingBag, TriangleAlert, Trophy } from "lucide-react";
 
 const vacio = { data: [] as never[], count: 0 };
@@ -20,6 +23,24 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
   const veValorStock = puede(permisos, "costos.ver_valor_stock");
   const veProductos = puede(permisos, "costos.ver_precio_compra");
   const hoy = inicioDe("hoy"), mes = inicioDe("mes");
+
+  // Ventas de los últimos 14 días (la base filtra: sin «ver todas», solo las propias), los módulos apagados y lo que falta configurar
+  const fechas14 = ultimosDias(14);
+  const desde14 = `${fechas14[0]}T00:00:00-03:00`;
+  const [{ data: ventas14 }, { data: apagadosDatos }, faltas] = await Promise.all([
+    supabase.from("ventas").select("total, fecha").gte("fecha", desde14).is("anulada_en", null),
+    supabase.from("modulos_desactivados").select("clave"),
+    Promise.all((Object.keys(ACCIONES) as Accion[]).map(async (a) => ({ accion: a, items: (await leerRequisitos(a)).filter((r) => r.puede) }))),
+  ]);
+  const apagados = new Set((apagadosDatos ?? []).flatMap((m) => (m.clave ? [m.clave] : [])));
+  const porDia = new Map<string, number>();
+  for (const v of ventas14 ?? []) { const d = diaDe(v.fecha); porDia.set(d, (porDia.get(d) ?? 0) + Number(v.total)); }
+  const dias: DiaVentas[] = fechas14.map((d) => ({ dia: d, total: porDia.get(d) ?? 0 }));
+  // Lo que falta para usar algo, solo lo que esta persona puede arreglar (y lo que frena primero)
+  // En el Inicio, solo lo de lo que el local USA: ARCA apagada no es un problema, ni Mercado Pago si la tienda no lo ofrece, ni la tienda si no la usa
+  const utiles = faltas.filter((g) => !(g.accion === "cobrar_online" && g.items.some((r) => r.clave === "mp_apagado")) && !(g.accion === "publicar_tienda" && apagados.has("/admin/tienda")))
+    .map((g) => ({ ...g, items: g.items.filter((r) => r.clave !== "arca_apagada") }));
+  const porArreglar: Requisito[] = utiles.flatMap((g) => g.items).sort((a, b) => Number(b.bloquea) - Number(a.bloquea)).filter((r, i, l) => l.findIndex((x) => x.clave === r.clave) === i).slice(0, 4);
 
   // La base ya filtra: sin "ver todas", ventas devuelve solo las propias
   const [ventasHoy, ventasMes, itemsMes, stock, ultimas, pedidos, seguimientos, devHoy, devMes] = await Promise.all([
@@ -71,6 +92,8 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
         {vende && <Link href="/admin/ventas/nueva" className="boton"><Plus size={16} /> Nueva venta</Link>}
       </div>
 
+      <AccesosRapidos permisos={permisos} apagados={apagados} />
+
       {modulo_apagado && <p className="flex items-center gap-2 rounded-lg border border-borde bg-white px-4 py-2.5 text-sm text-texto-2"><Lock size={16} /> Esa parte del sistema no está activa en este local. Un administrador la puede activar en Equipo → Módulos.</p>}
       {sin_permiso && <p className="flex items-center gap-2 rounded-lg border border-borde bg-white px-4 py-2.5 text-sm text-texto-2"><Lock size={16} /> Esa pantalla no está habilitada para tu rol. Si la necesitás, pedíselo a un administrador.</p>}
 
@@ -90,6 +113,14 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
           </div>
         ))}
       </div>
+
+      {(todas || vende) && <VentasPorDia dias={dias} titulo={todas ? "Ventas de los últimos 14 días" : "Tus ventas de los últimos 14 días"} />}
+
+      {porArreglar.length > 0 && (
+        <section className="space-y-2"><div className="flex items-center justify-between"><h2 className="font-semibold">Para dejar a punto</h2>
+          <Link href="/admin/configuracion" className="inline-flex items-center gap-1 text-sm font-semibold text-marca">Ver todo <ChevronRight size={15} /></Link></div>
+          <ListaRequisitos items={porArreglar} /></section>
+      )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {veStock && <section className="tarjeta">

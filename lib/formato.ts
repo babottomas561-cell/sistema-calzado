@@ -50,3 +50,11 @@ export function leerMonto(texto: string): number | null {
   if (/^\d{1,3}(\.\d{3})+$/.test(t)) return Number(t.replace(/\./g, ""));
   return Number(t);
 }
+
+// Los últimos n días (hoy incluido) como fechas «AAAA-MM-DD» de Argentina, del más viejo al de hoy
+export function ultimosDias(n: number): string[] {
+  const ahora = Date.now();
+  return Array.from({ length: n }, (_, i) => new Date(ahora - (n - 1 - i) * 864e5).toLocaleDateString("en-CA", { timeZone: "America/Argentina/Buenos_Aires" }));
+}
+// El día (AAAA-MM-DD, hora de Argentina) de un instante
+export const diaDe = (iso: string) => new Date(iso).toLocaleDateString("en-CA", { timeZone: "America/Argentina/Buenos_Aires" });
