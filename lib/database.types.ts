@@ -257,6 +257,70 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"bulto_items": {
+                  Row: {
+                    "bulto_id": number,"cantidad": number,"id": number,"variante_id": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "bulto_id": number,"cantidad": number,"id"?: never,"variante_id": number
+                  }
+                  Update: {
+                    "bulto_id"?: number,"cantidad"?: number,"id"?: never,"variante_id"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "bulto_items_bulto_id_fkey"
+      columns: ["bulto_id"]
+isOneToOne: false
+      referencedRelation: "bultos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bulto_items_variante_id_fkey"
+      columns: ["variante_id"]
+isOneToOne: false
+      referencedRelation: "v_catalogo"
+      referencedColumns: ["variante_id"]
+    },{
+      foreignKeyName: "bulto_items_variante_id_fkey"
+      columns: ["variante_id"]
+isOneToOne: false
+      referencedRelation: "v_stock"
+      referencedColumns: ["variante_id"]
+    },{
+      foreignKeyName: "bulto_items_variante_id_fkey"
+      columns: ["variante_id"]
+isOneToOne: false
+      referencedRelation: "variantes"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"bultos": {
+                  Row: {
+                    "creado_en": string,"id": number,"nombre": string,"notas": string | null,"proveedor_id": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "creado_en"?: string,"id"?: never,"nombre": string,"notas"?: string | null,"proveedor_id"?: number | null
+                  }
+                  Update: {
+                    "creado_en"?: string,"id"?: never,"nombre"?: string,"notas"?: string | null,"proveedor_id"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "bultos_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "proveedores"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bultos_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "v_credito_proveedores"
+      referencedColumns: ["proveedor_id"]
+    }
+                  ]
                 },"cajas": {
                   Row: {
                     "activa": boolean,"creado_en": string,"id": number,"mp_caja_id": string | null,"mp_externo": string | null,"mp_qr_imagen": string | null,"mp_qr_plantilla": string | null,"nombre": string,"por_defecto": boolean,"sucursal_id": number,"terminal_id": number | null
@@ -3630,6 +3694,9 @@ isOneToOne: false
 "generar_gastos_fijos":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"guardar_bulto":
+{ Args: { "p_id"?: number,"p_items": Json,"p_nombre": string,"p_notas"?: string,"p_proveedor"?: number }; Returns: number
+                           },
 "guardar_caja":
 { Args: { "p_activa"?: boolean,"p_id"?: number,"p_nombre": string,"p_sucursal": number,"p_terminal"?: number }; Returns: number
                            },
@@ -3855,6 +3922,9 @@ isOneToOne: false
                            },
 "qr_usar_sucursal":
 { Args: { "p_caja"?: string,"p_caja_externo"?: string,"p_sucursal": string }; Returns: Json
+                           },
+"quitar_bulto":
+{ Args: { "p_id": number }; Returns: undefined
                            },
 "quitar_del_equipo":
 { Args: { "p_usuario": string }; Returns: undefined

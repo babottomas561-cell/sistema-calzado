@@ -7,14 +7,14 @@
 //  4. Si el modelo no existe, se crea ahí mismo y se sigue cargando.
 import { useMemo, useRef, useState, useTransition, useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, CircleAlert, CircleCheck, Eraser, PackagePlus, Plus, Search, Trash2, X } from "lucide-react";
+import { Boxes, Camera, CircleAlert, CircleCheck, Eraser, PackagePlus, Plus, Search, Trash2, X } from "lucide-react";
 import EscanerCamara, { type Aviso } from "@/components/EscanerCamara";
 import { claveDeBusqueda, normalizarCodigo, pareceCodigoLeido } from "@/lib/codigos";
 import { diaArgentina, pesos } from "@/lib/formato";
 import CamposProducto, { type Maestros } from "../../productos/CamposProducto";
 import ElegirTallesColores, { type Color, type Talle } from "../../productos/ElegirTallesColores";
 import { crearProductoRapido } from "../../productos/acciones";
-import { registrarCompra } from "../acciones";
+import { guardarBulto, registrarCompra } from "../acciones";
 
 type Fila = { variante_id: number; producto_id: number; codigo: string; nombre: string; marca: string | null; talle: string; talle_orden: number;
   color: string; color_hex: string | null; sku: string | null; codigo_barras: string | null; stock: number; precio_compra: number };
@@ -22,7 +22,8 @@ type Precio = { producto_id: number; proveedor_id: number; codigo_proveedor: str
 // Un modelo cargado en la factura: su costo y los pares por variante
 type Bloque = { producto_id: number; costo: number; costoEditado: boolean; pares: Record<number, number> };
 
-export default function FacturaCompra({ filas, proveedores, precios, maestros, talles, colores, editaPrecio, creditos }: {
+export default function FacturaCompra({ filas, proveedores, precios, maestros, talles, colores, editaPrecio, creditos, bultos = [] }: {
+  bultos?: { id: number; nombre: string; proveedor_id: number | null; items: { variante_id: number; cantidad: number }[] }[];   // plantillas de compra
   filas: Fila[]; proveedores: { id: number; nombre: string }[]; precios: Precio[]; maestros: Maestros; talles: Talle[]; colores: Color[]; editaPrecio: boolean;
   creditos: Record<number, number>;   // crédito a favor con cada proveedor (fallados devueltos)
 }) {
@@ -77,6 +78,38 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
     setBloques((bs) => bs.map((b) => (b.producto_id === productoId ? cambio(b) : b)));
   const ponerPares = (productoId: number, varianteId: number, n: number) =>
     cambiarBloque(productoId, (b) => ({ ...b, pares: { ...b.pares, [varianteId]: Math.max(0, Math.floor(n) || 0) } }));
+
+  // Bultos: una curva guardada que se agrega «×N» y se expande a los renglones de siempre (el stock lo suma registrar_compra)
+  const [bultoElegido, setBultoElegido] = useState<number | "">("");
+  const [bultoCantidad, setBultoCantidad] = useState(1);
+  const [nombreBulto, setNombreBulto] = useState("");
+  const [avisoBulto, setAvisoBulto] = useState<{ error?: string; ok?: string }>({});
+  const [guardandoBulto, guardarComoBulto] = useTransition();
+  const bultosVisibles = bultos.filter((b) => !proveedor || !b.proveedor_id || b.proveedor_id === proveedor);
+  const agregarBulto = () => {
+    const b = bultos.find((x) => x.id === bultoElegido);
+    if (!b) return;
+    let faltan = 0;
+    setBloques((bs) => {
+      let sig = [...bs];
+      for (const it of b.items) {
+        const f = filas.find((x) => x.variante_id === it.variante_id);
+        if (!f) { faltan++; continue; }
+        const i = sig.findIndex((x) => x.producto_id === f.producto_id);
+        const base: Bloque = i >= 0 ? sig[i] : { producto_id: f.producto_id, costo: costoSugerido(f.producto_id, proveedor), costoEditado: false, pares: {} };
+        const nuevo = { ...base, pares: { ...base.pares, [it.variante_id]: (base.pares[it.variante_id] ?? 0) + it.cantidad * bultoCantidad } };
+        if (i >= 0) sig[i] = nuevo; else sig = [nuevo, ...sig];
+      }
+      return sig;
+    });
+    setAvisoBulto(faltan ? { error: `${faltan} ${faltan === 1 ? "renglón del bulto ya no existe" : "renglones del bulto ya no existen"} y se salteó` } : { ok: `${b.nombre} ×${bultoCantidad} agregado` });
+  };
+  const guardarLoCargado = () => guardarComoBulto(async () => {
+    const items = bloques.flatMap((b) => Object.entries(b.pares).filter(([, n]) => n > 0).map(([variante_id, cantidad]) => ({ variante_id: Number(variante_id), cantidad })));
+    const r = await guardarBulto(nombreBulto, items, proveedor || null);
+    setAvisoBulto(r);
+    if (r.ok) { setNombreBulto(""); router.refresh(); }
+  });
 
   // Código de barras (lector o cámara): suma UNA unidad de esa variante a su modelo. Sirve para contar la mercadería que llega.
   const porCodigo = useMemo(() => {
@@ -159,6 +192,17 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-4">
+          {/* Bultos: una curva guardada */}
+          {bultos.length > 0 && (
+            <div className="tarjeta flex flex-wrap items-end gap-2">
+              <div className="min-w-48 flex-1"><label className="etiqueta" htmlFor="bulto-elegido"><Boxes size={14} className="mr-1 inline" /> Agregar un bulto</label>
+                <select id="bulto-elegido" value={bultoElegido} onChange={(e) => setBultoElegido(e.target.value ? Number(e.target.value) : "")} className="campo">
+                  <option value="">Elegí un bulto…</option>{bultosVisibles.map((b) => <option key={b.id} value={b.id}>{b.nombre} ({b.items.reduce((t, i) => t + i.cantidad, 0)} u.)</option>)}</select></div>
+              <div className="w-24"><label className="etiqueta" htmlFor="bulto-cantidad">Bultos</label><input id="bulto-cantidad" type="number" min={1} value={bultoCantidad} onChange={(e) => setBultoCantidad(Math.max(1, Math.floor(Number(e.target.value)) || 1))} className="campo tabular-nums" /></div>
+              <button type="button" className="boton-sec" disabled={!bultoElegido} onClick={agregarBulto}><Plus size={15} /> Agregar</button>
+            </div>
+          )}
+
           {/* 2. Buscar el modelo */}
           <div className="flex gap-2"><div className="relative flex-1">
             <Search size={17} className="pointer-events-none absolute left-3 top-3 text-gray-400" />
@@ -297,6 +341,17 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
               {credito > 0 && <div className="flex justify-between pl-6 font-semibold text-ok"><span>A pagar</span><span>{pesos(totalCargado - credito)}</span></div>}
             </div>
           )}
+          {totalPares > 0 && (
+            <details className="rounded-lg border border-borde p-2.5 text-sm">
+              <summary className="cursor-pointer font-medium text-marca">Guardar lo cargado como bulto</summary>
+              <div className="mt-2 space-y-2">
+                <p className="text-xs text-texto-2">La próxima vez lo agregás de un toque, con la cantidad de bultos.</p>
+                <input value={nombreBulto} onChange={(e) => setNombreBulto(e.target.value)} placeholder="Caja de 12 jeans" aria-label="Nombre del bulto" maxLength={60} className="campo" />
+                <button type="button" className="boton-sec w-full" disabled={guardandoBulto || !nombreBulto.trim()} onClick={guardarLoCargado}>{guardandoBulto ? "Guardando…" : "Guardar bulto"}</button>
+              </div>
+            </details>
+          )}
+          {(avisoBulto.error || avisoBulto.ok) && <p role="status" className={`text-sm ${avisoBulto.error ? "text-error" : "text-ok"}`}>{avisoBulto.error ?? avisoBulto.ok}</p>}
           <div><label className="etiqueta">Notas</label><input value={notas} onChange={(e) => setNotas(e.target.value)} className="campo" /></div>
           <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={actualizarCosto} onChange={(e) => setActualizarCosto(e.target.checked)} className="mt-1" />
             <span>Actualizar el precio de compra{proveedor ? " (del artículo y de este proveedor)" : " de los artículos"}</span></label>

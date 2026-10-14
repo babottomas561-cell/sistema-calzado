@@ -2,7 +2,7 @@ import Link from "next/link";
 import { crearCliente } from "@/lib/supabase/server";
 import { fecha, fechaHora, pesos } from "@/lib/formato";
 import ListaMovil, { FilaMovil } from "@/components/ListaMovil";
-import { Plus } from "lucide-react";
+import { Boxes, Plus } from "lucide-react";
 import { exigir } from "@/lib/exigir";
 
 export default async function Compras() {
@@ -14,7 +14,10 @@ export default async function Compras() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Compras</h1>
-        <Link href="/admin/compras/nueva" className="boton"><Plus size={16} /> Cargar factura de compra</Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/admin/compras/bultos" className="boton-sec"><Boxes size={16} strokeWidth={1.8} /> Bultos</Link>
+          <Link href="/admin/compras/nueva" className="boton"><Plus size={16} /> Cargar factura de compra</Link>
+        </div>
       </div>
       {error && <p className="text-error">{error.message}</p>}
       <ListaMovil vacio={compras?.length === 0 && "Todavía no hay compras."}>

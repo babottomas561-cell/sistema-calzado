@@ -47,3 +47,22 @@ export async function ajustarCredito(_: { error?: string; ok?: string }, f: Form
   revalidatePath("/admin", "layout");
   return { ok: "Crédito ajustado" };
 }
+
+// ── Bultos (plantillas de compra) ──
+export type EstadoBulto = { error?: string; ok?: string };
+
+export async function guardarBulto(nombre: string, items: { variante_id: number; cantidad: number }[], proveedor: number | null): Promise<EstadoBulto> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("guardar_bulto", { p_nombre: nombre, p_items: items, p_proveedor: (proveedor ?? undefined) as number });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/compras", "layout");
+  return { ok: "Bulto guardado" };
+}
+
+export async function quitarBulto(id: number): Promise<EstadoBulto> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("quitar_bulto", { p_id: id });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/compras", "layout");
+  return { ok: "Bulto quitado" };
+}

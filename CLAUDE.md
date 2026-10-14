@@ -470,3 +470,7 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
     `_venta_caja`).
     En Mercado Pago, **cobrar con posnet** (`mercadopago/posnet`) y **cobrar con QR** (`mercadopago/qr`) son interruptores propios: apagados, `point_caja` no los ofrece, `point_cobrar` / `qr_cobrar` no cobran y su
     configuración no aparece en Integraciones → Mercado Pago.
+
+42. **Bultos** (`bultos`, `bulto_items`; `/admin/compras/bultos`, permiso `compras.registrar`): plantillas de compra. Un bulto es una combinación guardada de variantes (artículo + talle + color) con su cantidad, puede mezclar
+    artículos y ser de un proveedor; no lleva costos. En Compras → «Cargar factura de compra», «Agregar un bulto ×N» lo expande a los renglones de siempre y «Guardar lo cargado como bulto» arma uno nuevo desde lo cargado
+    (`guardar_bulto`, `quitar_bulto`). El stock sigue tocándose solo por `registrar_compra`.

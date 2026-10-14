@@ -37,5 +37,5 @@ Pendiente de decidir: qué interruptores son por local y cuáles por sucursal, y
 
 # Otros pendientes anotados
 
-- **Bultos para compras** (14/10/2026): tablas de bultos (packs) de distintos artículos, con sus talles, colores y cantidades, para que una compra por bulto dé de alta el stock sin cargar renglón por renglón. Idea: `bultos` + `bulto_items`; en Compras, «Agregar bulto» expande a renglones que sigue recibiendo `registrar_compra` (el stock solo se toca por esa función).
+- ~~**Bultos para compras**~~ (hecho, regla 42 de `CLAUDE.md`): bultos de distintos artículos; en Compras se agregan ×N y se guardan desde lo cargado.
 - **Datos fiscales por sucursal, etapa 2**: certificado de ARCA y punto de venta por razón social, después de probar ARCA con un certificado real con un solo CUIT.
