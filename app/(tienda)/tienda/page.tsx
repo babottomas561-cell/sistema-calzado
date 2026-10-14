@@ -8,7 +8,7 @@ import FiltrosMovil from "./FiltrosMovil";
 import OrdenSelect from "./OrdenSelect";
 
 type Fila = { variante_id: number; producto_id: number; nombre: string; marca: string | null; categoria: string | null; genero: string | null; escala: string; linea: string | null;
-  imagen_url: string | null; talle: string; talle_orden: number; color: string; color_hex: string | null; precio: number; disponible: number };
+  imagen_url: string | null; talle: string; talle_orden: number; color: string; color_hex: string | null; precio: number; disponible: number; creado_en: string };
 type Filtros = { categoria?: string; linea?: string; genero?: string; talle?: string; escala?: string; color?: string; q?: string; orden?: string; mas?: string };
 
 const POR_PAGINA = 24;
@@ -46,13 +46,13 @@ export default async function Tienda({ searchParams }: { searchParams: Promise<F
     .map((f) => [f.talle, f.talle_orden])).entries()].sort((a, b) => a[1] - b[1]).map(([t]) => t) })).filter((x) => x.talles.length);
 
   // Agrupar por modelo
-  const modelos = new Map<number, Modelo & { genero: string | null; escala: string; linea: string | null; talleSet: Set<string> }>();
+  const modelos = new Map<number, Modelo & { genero: string | null; escala: string; linea: string | null; talleSet: Set<string>; ordenTalle: Map<string, number> }>();
   for (const f of filas) {
     const m = modelos.get(f.producto_id) ?? { id: f.producto_id, nombre: f.nombre, marca: f.marca, categoria: f.categoria, genero: f.genero, escala: f.escala, linea: f.linea, imagen: f.imagen_url,
-      imagen2: null, precio: Number(f.precio), colores: [], disponible: 0, etiqueta: etiquetas.get(f.producto_id) ?? null, talleSet: new Set<string>() };
+      imagen2: null, precio: Number(f.precio), colores: [], disponible: 0, etiqueta: etiquetas.get(f.producto_id) ?? null, creado: f.creado_en, talleSet: new Set<string>(), ordenTalle: new Map<string, number>() };
     m.precio = Math.min(m.precio, Number(f.precio));
     // En la tarjeta solo se muestran los colores y talles que hay para vender
-    if (f.disponible > 0) { if (!m.colores.some((c) => c.nombre === f.color)) m.colores.push({ nombre: f.color, hex: f.color_hex }); m.talleSet.add(f.talle); }
+    if (f.disponible > 0) { if (!m.colores.some((c) => c.nombre === f.color)) m.colores.push({ nombre: f.color, hex: f.color_hex }); m.talleSet.add(f.talle); m.ordenTalle.set(f.talle, f.talle_orden); }
     m.disponible += f.disponible;
     modelos.set(f.producto_id, m);
   }
@@ -66,6 +66,9 @@ export default async function Tienda({ searchParams }: { searchParams: Promise<F
   const orden = filtros.orden === "menor" || filtros.orden === "mayor" ? filtros.orden : "nuevo";
   lista = lista.sort((a, b) => Number(b.disponible > 0) - Number(a.disponible > 0)
     || (orden === "menor" ? a.precio - b.precio : orden === "mayor" ? b.precio - a.precio : (a.id * 37) % 101 - (b.id * 37) % 101));   // mezcla estable: que no queden juntas las prendas de una misma marca
+
+  // Los talles de cada tarjeta, en su orden (el 38 antes que el 40)
+  lista.forEach((m) => { m.talles = [...m.talleSet].sort((a, b) => (m.ordenTalle.get(a) ?? 0) - (m.ordenTalle.get(b) ?? 0)); });
 
   const limite = filtros.mas ? Number(filtros.mas) || POR_PAGINA : POR_PAGINA;
   const visibles = lista.slice(0, limite);

@@ -7,7 +7,7 @@ import { leerContenido, type Filtro, type Seccion, type Tipo } from "@/lib/inici
 import { Accesos, Banner, Cinta, Editorial, Instagram, Local, Pasos, Portada, Promociones, Vidriera, type ModeloInicio } from "./inicio/Secciones";
 
 type Fila = { producto_id: number; nombre: string; marca: string | null; categoria: string | null; genero: string | null; linea: string | null;
-  imagen_url: string | null; color: string; color_hex: string | null; precio: number; disponible: number; creado_en: string };
+  imagen_url: string | null; talle: string; talle_orden: number; color: string; color_hex: string | null; precio: number; disponible: number; creado_en: string };
 
 // Mezcla estable: las mismas fotos en cada visita, pero sin agrupar por marca ni por rubro
 const mezcla = (id: number) => (id * 37) % 101;
@@ -19,7 +19,7 @@ export default async function Landing() {
   const [{ data: secciones }, { data }, { data: promos }, { data: contacto }, { data: vendidos }, { data: publicaciones }, tienda] = await Promise.all([
     supabase.from("inicio_secciones").select("id, tipo, orden, visible, titulo, bajada, boton_texto, boton_enlace, imagen_url, imagen_ruta, contenido")
       .eq("visible", true).order("orden").order("id"),
-    supabase.from("v_catalogo").select("producto_id, nombre, marca, categoria, genero, linea, imagen_url, color, color_hex, precio, disponible, creado_en"),
+    supabase.from("v_catalogo").select("producto_id, nombre, marca, categoria, genero, linea, imagen_url, talle, talle_orden, color, color_hex, precio, disponible, creado_en"),
     supabase.from("v_promos_tienda").select("producto_id, promocion_id, nombre, etiqueta"),
     supabase.from("configuracion_tienda").select("whatsapp, direccion_retiro, horario, instagram").single(),
     supabase.rpc("mas_vendidos_tienda"),
@@ -31,14 +31,18 @@ export default async function Landing() {
 
   // Un modelo por artículo, con los colores que hay para vender
   const modelos = new Map<number, ModeloInicio>();
+  const ordenTalles = new Map<number, Map<string, number>>();
   for (const f of (data ?? []) as Fila[]) {
     const m = modelos.get(f.producto_id) ?? { id: f.producto_id, nombre: f.nombre, marca: f.marca, categoria: f.categoria, genero: f.genero, linea: f.linea,
       imagen: f.imagen_url, imagen2: null, precio: Number(f.precio), colores: [], disponible: 0, etiqueta: etiquetas.get(f.producto_id) ?? null, creado: f.creado_en };
     m.precio = Math.min(m.precio, Number(f.precio));
     if (f.disponible > 0 && !m.colores.some((c) => c.nombre === f.color)) m.colores.push({ nombre: f.color, hex: f.color_hex });
+    if (f.disponible > 0) { const o = ordenTalles.get(f.producto_id) ?? new Map<string, number>(); o.set(f.talle, f.talle_orden); ordenTalles.set(f.producto_id, o); }
     m.disponible += f.disponible;
     modelos.set(f.producto_id, m);
   }
+  // Los talles de cada tarjeta, en su orden
+  modelos.forEach((m) => { const o = ordenTalles.get(m.id); m.talles = o ? [...o.entries()].sort((a, b) => a[1] - b[1]).map(([t]) => t) : []; });
   // En la portada solo lo que tiene foto y se puede comprar
   const hay = [...modelos.values()].filter((m) => m.imagen && m.disponible > 0).sort((a, b) => mezcla(a.id) - mezcla(b.id));
   const marcas = [...new Set(hay.map((m) => m.marca).filter(Boolean))].sort() as string[];

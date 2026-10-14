@@ -58,3 +58,9 @@ export function ultimosDias(n: number): string[] {
 }
 // El día (AAAA-MM-DD, hora de Argentina) de un instante
 export const diaDe = (iso: string) => new Date(iso).toLocaleDateString("en-CA", { timeZone: "America/Argentina/Buenos_Aires" });
+
+// ¿Pasaron menos de N días desde esa fecha? (para el cartelito «Nuevo»)
+export function esReciente(iso: string | null | undefined, dias = 30): boolean {
+  if (!iso) return false;
+  return Date.now() - new Date(iso).getTime() < dias * 864e5;
+}
