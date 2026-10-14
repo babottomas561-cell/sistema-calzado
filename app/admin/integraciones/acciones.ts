@@ -206,17 +206,6 @@ export async function accionDominio(_: Estado, f: FormData): Promise<Estado> {
   return { ok: que === "principal" ? "Listo: la tienda ya usa este dominio" : que === "quitar" ? "Quitado" : "Revisado" };
 }
 
-export async function guardarHosting(_: Estado, f: FormData): Promise<Estado> {
-  const supabase = await crearCliente();
-  const { error } = await supabase.rpc("guardar_conexion_hosting", {
-    p_vercel_token: texto(f, "vercel_token", 200), p_vercel_proyecto: texto(f, "vercel_proyecto", 100), p_vercel_equipo: texto(f, "vercel_equipo", 100),
-    p_supabase_token: texto(f, "supabase_token", 200), p_supabase_ref: texto(f, "supabase_ref", 40),
-  });
-  if (error) return { error: error.message };
-  revalidatePath("/admin/integraciones", "layout");
-  return { ok: "Conexión técnica guardada" };
-}
-
 // La contraseña de aplicación de Google se muestra en grupos de 4 con espacios: se guarda junta
 const limpiarClave = (clave: string | undefined, host: string | undefined) => (clave && modoDe(host) === "gmail" ? limpiarClaveGmail(clave) : clave);
 
@@ -232,7 +221,7 @@ export async function guardarCorreo(_: Estado, f: FormData): Promise<Estado> {
   revalidatePath("/admin/integraciones", "layout");
   const { data, error: errAplicar } = await supabase.rpc("cuentas_aplicar");
   if (errAplicar) return { error: `Se guardó, pero ${errAplicar.message}` };
-  if (!(data as { aplicado: boolean }).aplicado) return { ok: "Guardado. Falta la conexión técnica con Supabase (Integraciones → Dominio → Conexión técnica) para que el correo se aplique." };
+  if (!(data as { aplicado: boolean }).aplicado) return { ok: "Guardado. Falta una configuración que hace quien instaló el sistema (avisale) para que el correo se aplique." };
   return { ok: "Guardado y aplicado: Supabase ya manda los mails por tu servidor de correo" };
 }
 

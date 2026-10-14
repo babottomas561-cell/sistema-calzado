@@ -119,7 +119,7 @@ export default function Cuentas({ config: c, smtp, conexion, base, invitaciones,
           <button className="boton" disabled={cargando}>{cargando ? "Guardando…" : "Guardar"}</button>
           <Aviso e={estado} />
         </div>
-        {!conexion && <p className="text-xs text-texto-2">La confirmación de email y la contraseña también se configuran en Supabase: hace falta la conexión técnica (Integraciones → Dominio) para que se apliquen solas.</p>}
+        {!conexion && <p className="text-xs text-texto-2">La confirmación de email y la contraseña también se configuran en Supabase: hace falta una configuración que hace quien instaló el sistema (avisale) para que se apliquen solas.</p>}
       </form>
 
       <section className="tarjeta space-y-4">

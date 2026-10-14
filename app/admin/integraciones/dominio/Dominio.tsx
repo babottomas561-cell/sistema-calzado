@@ -1,11 +1,11 @@
 "use client";
 // Dominio propio: agregarlo, ver qué registros cargar donde se compró (se revisa solo cada 10 minutos), usarlo como
-// principal y, plegada, la conexión técnica con Vercel y Supabase (la carga una vez quien instaló el sistema).
+// principal (la conexión técnica con Vercel y Supabase no se ve acá: la carga quien instala, con scripts/instalaciones.mjs).
 import { useActionState, useState } from "react";
 import { Check, CircleAlert, CircleCheck, Copy, Globe, RefreshCw } from "lucide-react";
 import { fechaHora } from "@/lib/formato";
 import { nombreCorto } from "@/lib/dns-guias";
-import { accionDominio, agregarDominio, guardarHosting } from "../acciones";
+import { accionDominio, agregarDominio } from "../acciones";
 import DiagnosticoDns from "./DiagnosticoDns";
 
 export type Dom = { id: number; nombre: string; principal: boolean; verificado: boolean; configurado: boolean;
@@ -67,11 +67,10 @@ function Tarjeta({ d }: { d: Dom }) {
 
 export default function Dominio({ estado, dominios, actual }: { estado: EstadoDom; dominios: Dom[]; actual: string }) {
   const [agregado, agregar, agregando] = useActionState(agregarDominio, {});
-  const [hosting, guardar, guardando] = useActionState(guardarHosting, {});
   return (
     <div className="space-y-5 px-5 py-4">
       <p className="text-sm">Dirección actual de la tienda: <b className="font-mono">{actual}</b></p>
-      {!estado.hosting && <p className="flex items-center gap-1.5 rounded-lg bg-amber-50 p-3 text-sm text-alerta"><CircleAlert size={16} /> Falta la conexión técnica (abajo). La carga una sola vez quien instaló el sistema.</p>}
+      {!estado.hosting && <p className="flex items-center gap-1.5 rounded-lg bg-amber-50 p-3 text-sm text-alerta"><CircleAlert size={16} /> Todavía falta una configuración que hace quien instaló el sistema: avisale para poder conectar el dominio.</p>}
 
       <form action={agregar} className="space-y-2">
         <label className="etiqueta" htmlFor="dominio">1. Tu dominio</label>
@@ -87,21 +86,6 @@ export default function Dominio({ estado, dominios, actual }: { estado: EstadoDo
         <ul className="divide-y divide-gray-100">{dominios.map((d) => <Tarjeta key={d.id} d={d} />)}</ul>
         <p className="text-xs text-texto-2">3. Cuando el dominio principal diga «Listo», tocá <b>Usar como principal</b>: la tienda, los mails de ingreso y Mercado Pago pasan a esa dirección. La de Meta (WhatsApp) hay que pegarla a mano en el webhook: está en Integraciones → WhatsApp.</p></div>}
 
-      <details className="rounded-lg border border-borde p-3">
-        <summary className="cursor-pointer text-sm font-semibold">Conexión técnica (la carga una vez quien instaló el sistema)</summary>
-        <form action={guardar} className="mt-3 space-y-2">
-          <p className="text-xs text-texto-2">Claves de acceso a Vercel (donde está publicada la tienda) y a Supabase (la base). Quedan guardadas en la base y nadie las puede volver a leer. Vacío = no se cambia.</p>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <label className="text-xs">Token de Vercel {estado.vercel_token && <span className="text-ok">(cargado {estado.vercel_token})</span>}<input name="vercel_token" type="password" autoComplete="off" className="campo mt-0.5" /></label>
-            <label className="text-xs">Proyecto de Vercel<input name="vercel_proyecto" placeholder={estado.vercel_proyecto ?? "sistema-calzado"} className="campo mt-0.5" /></label>
-            <label className="text-xs">Equipo de Vercel (team_… o slug)<input name="vercel_equipo" placeholder={estado.vercel_equipo ?? ""} className="campo mt-0.5" /></label>
-            <label className="text-xs">Token de Supabase {estado.supabase_token && <span className="text-ok">(cargado {estado.supabase_token})</span>}<input name="supabase_token" type="password" autoComplete="off" className="campo mt-0.5" /></label>
-            <label className="text-xs">Ref del proyecto de Supabase<input name="supabase_ref" placeholder={estado.supabase_ref ?? ""} className="campo mt-0.5" /></label>
-          </div>
-          <Aviso e={hosting} />
-          <button className="boton-sec" disabled={guardando}>{guardando ? "Guardando…" : "Guardar conexión técnica"}</button>
-        </form>
-      </details>
     </div>
   );
 }

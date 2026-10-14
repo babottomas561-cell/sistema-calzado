@@ -48,7 +48,7 @@ export default function Correo({ estado: e }: { estado: EstadoCorreo }) {
       <div className="flex flex-wrap items-center gap-2">
         <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${e.smtp ? "bg-green-50 text-ok" : "bg-amber-50 text-alerta"}`}>{e.smtp ? "Servidor cargado" : "Falta cargar el servidor"}</span>
         {e.aplicado_en && !e.error && <span className="rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-ok">Aplicado en Supabase · {fechaHora(e.aplicado_en)}</span>}
-        {!e.conexion && <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-alerta">Falta la conexión técnica</span>}
+        {!e.conexion && <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-alerta">Falta una configuración del instalador</span>}
       </div>
       {e.error && <p className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-sm text-error"><CircleAlert size={16} className="mt-0.5 shrink-0" /> {e.error}</p>}
 

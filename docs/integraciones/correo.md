@@ -54,8 +54,7 @@ Si llega bien y con el nombre de tu tienda, los clientes también lo van a recib
 
 Para probar los comprobantes: abrí una venta → **Enviar → Mail** y mandátelo a vos.
 
-> Si dice *Falta la conexión técnica*: es la que carga una vez quien instaló el sistema, en
-> **Integraciones → Dominio → Conexión técnica** (token de Supabase y su ref).
+> Si dice *Falta una configuración del instalador*: la carga una vez quien instaló el sistema (no se ve en el panel). Avisale.
 
 ## Cómo funciona por dentro (para quien instala)
 

@@ -28,7 +28,7 @@ export async function guardarCuentas(_: Estado, f: FormData): Promise<Estado> {
   const { data, error: errAplicar } = await supabase.rpc("cuentas_aplicar");
   if (errAplicar) return { error: `Se guardó, pero ${errAplicar.message}` };
   if (!(data as { aplicado: boolean }).aplicado) {
-    return { ok: "Guardado. Falta la conexión técnica con Supabase para que la confirmación de email y las reglas de contraseña también rijan allá (Integraciones → Dominio → Conexión técnica)." };
+    return { ok: "Guardado. Falta una configuración que hace quien instaló el sistema (avisale) para que la confirmación de email y las reglas de contraseña también rijan allá (Integraciones → Dominio → Conexión técnica)." };
   }
   return { ok: "Guardado y aplicado" };
 }

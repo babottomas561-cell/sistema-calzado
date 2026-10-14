@@ -62,16 +62,10 @@ Cuando `mitienda.com.ar` diga **«Listo (con https)»**, tocá **Usar como princ
 **A mano, una sola vez:** en Meta (WhatsApp) cambiá la URL del webhook por la nueva (Integraciones → WhatsApp → punto
 1, botón copiar) y en Mercado Pago → Webhooks, la URL de notificaciones (Integraciones → Mercado Pago).
 
-## Conexión técnica (la hace una vez quien instaló el sistema)
+## Conexión técnica
 
-El dueño no necesita entrar a Vercel ni a Supabase. Quien instaló el sistema carga, una sola vez, en
-**Integraciones → Dominio → Conexión técnica**:
-- **Token de Vercel**: vercel.com → Account Settings → **Tokens** → Create, con alcance limitado al equipo del local.
-  Además: el **nombre del proyecto** y el **equipo** (su id `team_…` o su slug).
-- **Token de Supabase**: supabase.com → Account → **Access Tokens** → Generate. Y el **ref** del proyecto (lo que va
-  antes de `.supabase.co`).
-
-Quedan guardados en la base y nadie los puede volver a leer.
+No hace falta que hagas nada con Vercel ni con Supabase: quien instaló el sistema carga esa conexión una sola vez, y no se ve en el panel.
+Si al conectar el dominio dice que falta una configuración, avisale a quien te instaló el sistema.
 
 ## Si algo falla
 
@@ -82,5 +76,5 @@ Quedan guardados en la base y nadie los puede volver a leer.
 | «Comprobar en internet» dice que hoy el nombre apunta a otra dirección | Hay un registro viejo (de un hosting o de una página «en construcción»): cambialo por el del panel en vez de agregar otro. |
 | El dominio «no responde en internet» | Si es un `.ar`: falta delegarlo en NIC.ar (Mis dominios → Delegar). Si no, revisá que esté activo y vigente. |
 | El certificado (https) no se emite | Con Cloudflare, la nube de los registros A y CNAME tiene que estar en gris (DNS only). |
-| «La conexión con el hosting no anda» | El token de Vercel venció o es de otra cuenta: generá uno nuevo y cargalo en Conexión técnica. |
-| El mail de confirmación lleva a la dirección vieja | Pasa con los mails enviados antes del cambio. Si siguen así, revisá el token de Supabase y volvé a tocar «Usar como principal». |
+| «La conexión con el hosting no anda» | El acceso que cargó quien instaló el sistema venció o es de otra cuenta: avisale para que lo renueve. |
+| El mail de confirmación lleva a la dirección vieja | Pasa con los mails enviados antes del cambio. Si siguen así, avisale a quien instaló el sistema (puede ser el acceso a Supabase) y volvé a tocar «Usar como principal». |

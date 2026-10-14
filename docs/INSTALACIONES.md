@@ -125,3 +125,5 @@ npm run instalaciones -- conexion --slug mi-calzado
 
 Comprueba que los dos tokens sirvan para ese proyecto antes de guardarlos, y no los muestra. Con la conexión cargada, el panel puede conectar el dominio
 (Integraciones → Dominio) y aplicarle a Supabase el correo (Integraciones → Correo → «Guardar y aplicar»).
+
+El dueño **no ve** esta conexión en su panel (se sacó el formulario de Integraciones → Dominio): se carga siempre con `alta` o con `conexion`.
