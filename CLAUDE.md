@@ -474,3 +474,6 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
 42. **Bultos** (`bultos`, `bulto_items`; `/admin/compras/bultos`, permiso `compras.registrar`): plantillas de compra. Un bulto es una combinación guardada de variantes (artículo + talle + color) con su cantidad, puede mezclar
     artículos y ser de un proveedor; no lleva costos. En Compras → «Cargar factura de compra», «Agregar un bulto ×N» lo expande a los renglones de siempre y «Guardar lo cargado como bulto» arma uno nuevo desde lo cargado
     (`guardar_bulto`, `quitar_bulto`). El stock sigue tocándose solo por `registrar_compra`.
+43. **Curvas de compra** (`curvas`, `curva_items`; `/admin/compras/curvas`, permiso `compras.registrar`): la distribución de talles con la que se compra, por escala de talles (`talles.tipo`), opcional por proveedor; no lleva
+    costos. Vale para cualquier artículo de esa escala: en «Cargar factura de compra», cada modelo tiene «Aplicar una curva» (curva, color o todos, ×N) que completa las unidades de cada talle de la curva (`guardar_curva`,
+    `quitar_curva`). Distinta del **bulto**, que es una combinación concreta de artículos (regla 42).

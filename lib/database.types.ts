@@ -765,6 +765,58 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"curva_items": {
+                  Row: {
+                    "cantidad": number,"curva_id": number,"id": number,"talle_id": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cantidad": number,"curva_id": number,"id"?: never,"talle_id": number
+                  }
+                  Update: {
+                    "cantidad"?: number,"curva_id"?: number,"id"?: never,"talle_id"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "curva_items_curva_id_fkey"
+      columns: ["curva_id"]
+isOneToOne: false
+      referencedRelation: "curvas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "curva_items_talle_id_fkey"
+      columns: ["talle_id"]
+isOneToOne: false
+      referencedRelation: "talles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"curvas": {
+                  Row: {
+                    "creado_en": string,"escala": string,"id": number,"nombre": string,"notas": string | null,"proveedor_id": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "creado_en"?: string,"escala": string,"id"?: never,"nombre": string,"notas"?: string | null,"proveedor_id"?: number | null
+                  }
+                  Update: {
+                    "creado_en"?: string,"escala"?: string,"id"?: never,"nombre"?: string,"notas"?: string | null,"proveedor_id"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "curvas_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "proveedores"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "curvas_proveedor_id_fkey"
+      columns: ["proveedor_id"]
+isOneToOne: false
+      referencedRelation: "v_credito_proveedores"
+      referencedColumns: ["proveedor_id"]
+    }
+                  ]
                 },"datos_legales": {
                   Row: {
                     "actualizado_en": string,"actualizado_por": string | null,"condicion_iva": string | null,"cuit": string | null,"defensa_consumidor_url": string,"domicilio_legal": string | null,"email_contacto": string | null,"ingresos_brutos": string | null,"inicio_actividades": string | null,"jurisdiccion": string,"razon_social": string | null,"telefono_contacto": string | null,"unica": boolean
@@ -3715,6 +3767,9 @@ isOneToOne: false
 "guardar_cuenta":
 { Args: { "p_activa": boolean,"p_codigo": string,"p_id": number,"p_imputable": boolean,"p_nombre": string,"p_tipo": string }; Returns: number
                            },
+"guardar_curva":
+{ Args: { "p_escala": string,"p_id"?: number,"p_items": Json,"p_nombre": string,"p_notas"?: string,"p_proveedor"?: number }; Returns: number
+                           },
 "guardar_datos_fiscales":
 { Args: { "p_condicion_iva": string,"p_cuit": string,"p_domicilio": string,"p_ingresos_brutos"?: string,"p_inicio_actividades"?: string,"p_razon_social": string }; Returns: undefined
                            },
@@ -3924,6 +3979,9 @@ isOneToOne: false
 { Args: { "p_caja"?: string,"p_caja_externo"?: string,"p_sucursal": string }; Returns: Json
                            },
 "quitar_bulto":
+{ Args: { "p_id": number }; Returns: undefined
+                           },
+"quitar_curva":
 { Args: { "p_id": number }; Returns: undefined
                            },
 "quitar_del_equipo":

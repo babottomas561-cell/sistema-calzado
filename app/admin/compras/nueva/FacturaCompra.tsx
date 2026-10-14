@@ -7,7 +7,7 @@
 //  4. Si el modelo no existe, se crea ahí mismo y se sigue cargando.
 import { useMemo, useRef, useState, useTransition, useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { Boxes, Camera, CircleAlert, CircleCheck, Eraser, PackagePlus, Plus, Search, Trash2, X } from "lucide-react";
+import { Boxes, Camera, CircleAlert, CircleCheck, Eraser, PackagePlus, Plus, Ruler, Search, Trash2, X } from "lucide-react";
 import EscanerCamara, { type Aviso } from "@/components/EscanerCamara";
 import { claveDeBusqueda, normalizarCodigo, pareceCodigoLeido } from "@/lib/codigos";
 import { diaArgentina, pesos } from "@/lib/formato";
@@ -17,12 +17,53 @@ import { crearProductoRapido } from "../../productos/acciones";
 import { guardarBulto, registrarCompra } from "../acciones";
 
 type Fila = { variante_id: number; producto_id: number; codigo: string; nombre: string; marca: string | null; talle: string; talle_orden: number;
-  color: string; color_hex: string | null; sku: string | null; codigo_barras: string | null; stock: number; precio_compra: number };
+  color: string; color_hex: string | null; sku: string | null; codigo_barras: string | null; stock: number; precio_compra: number; escala?: string | null };
+type CurvaCompra = { id: number; nombre: string; escala: string; proveedor_id: number | null; items: { talle_id: number; cantidad: number }[] };
 type Precio = { producto_id: number; proveedor_id: number; codigo_proveedor: string | null; precio_compra: number };
 // Un modelo cargado en la factura: su costo y los pares por variante
 type Bloque = { producto_id: number; costo: number; costoEditado: boolean; pares: Record<number, number> };
 
-export default function FacturaCompra({ filas, proveedores, precios, maestros, talles, colores, editaPrecio, creditos, bultos = [] }: {
+
+// «Aplicar curva ×N» a un modelo: completa las unidades de cada talle de la curva en los colores elegidos (los demás talles quedan como estaban)
+function AplicarCurva({ modelo, curvas, talles, proveedor, alAplicar }: {
+  modelo: { escala: string | null; variantes: Fila[] }; curvas: CurvaCompra[]; talles: Talle[]; proveedor: number | ""; alAplicar: (pares: Record<number, number>) => void }) {
+  const [curva, setCurva] = useState<number | "">("");
+  const [color, setColor] = useState("");
+  const [n, setN] = useState(1);
+  const [aviso, setAviso] = useState("");
+  const posibles = curvas.filter((c) => (!modelo.escala || c.escala === modelo.escala) && (!proveedor || !c.proveedor_id || c.proveedor_id === proveedor));
+  if (!posibles.length) return null;
+  const colores = [...new Set(modelo.variantes.map((v) => v.color))];
+  const aplicar = () => {
+    const c = posibles.find((x) => x.id === curva);
+    if (!c) return;
+    const pares: Record<number, number> = {};
+    const sinTalle: string[] = [];
+    for (const it of c.items) {
+      const nombre = talles.find((t) => t.id === it.talle_id)?.nombre;
+      const vs = modelo.variantes.filter((v) => v.talle === nombre && (!color || v.color === color));
+      if (!vs.length) { if (nombre) sinTalle.push(nombre); continue; }
+      for (const v of vs) pares[v.variante_id] = it.cantidad * n;
+    }
+    alAplicar(pares);
+    setAviso(sinTalle.length ? `El modelo no tiene los talles ${sinTalle.join(", ")}: no se cargaron.` : "");
+  };
+  return (
+    <div className="flex flex-wrap items-end gap-2 rounded-lg bg-gray-50 p-2.5 text-sm">
+      <div className="min-w-40 flex-1"><label className="etiqueta" htmlFor="curva-sel"><Ruler size={13} className="mr-1 inline" /> Aplicar una curva</label>
+        <select id="curva-sel" value={curva} onChange={(e) => setCurva(e.target.value ? Number(e.target.value) : "")} className="campo py-1.5"><option value="">Elegí una curva…</option>
+          {posibles.map((c) => <option key={c.id} value={c.id}>{c.nombre} ({c.items.reduce((t, i) => t + i.cantidad, 0)} u.)</option>)}</select></div>
+      <div className="min-w-32"><label className="etiqueta" htmlFor="curva-color">Color</label>
+        <select id="curva-color" value={color} onChange={(e) => setColor(e.target.value)} className="campo py-1.5"><option value="">Todos</option>{colores.map((c) => <option key={c}>{c}</option>)}</select></div>
+      <div className="w-20"><label className="etiqueta" htmlFor="curva-n">Curvas</label><input id="curva-n" type="number" min={1} value={n} onChange={(e) => setN(Math.max(1, Math.floor(Number(e.target.value)) || 1))} className="campo py-1.5 tabular-nums" /></div>
+      <button type="button" className="boton-sec" disabled={!curva} onClick={aplicar}>Aplicar</button>
+      {aviso && <p role="status" className="basis-full text-xs text-alerta">{aviso}</p>}
+    </div>
+  );
+}
+
+export default function FacturaCompra({ filas, proveedores, precios, maestros, talles, colores, editaPrecio, creditos, bultos = [], curvas = [] }: {
+  curvas?: CurvaCompra[];   // la distribución de talles con la que se compra (Compras → Curvas)
   bultos?: { id: number; nombre: string; proveedor_id: number | null; items: { variante_id: number; cantidad: number }[] }[];   // plantillas de compra
   filas: Fila[]; proveedores: { id: number; nombre: string }[]; precios: Precio[]; maestros: Maestros; talles: Talle[]; colores: Color[]; editaPrecio: boolean;
   creditos: Record<number, number>;   // crédito a favor con cada proveedor (fallados devueltos)
@@ -44,9 +85,9 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
 
   // Los modelos (una entrada por producto) con sus variantes
   const modelos = useMemo(() => {
-    const m = new Map<number, { id: number; codigo: string; nombre: string; marca: string | null; precio_compra: number; variantes: Fila[] }>();
+    const m = new Map<number, { id: number; codigo: string; nombre: string; marca: string | null; precio_compra: number; escala: string | null; variantes: Fila[] }>();
     for (const f of filas) {
-      const x = m.get(f.producto_id) ?? { id: f.producto_id, codigo: f.codigo, nombre: f.nombre, marca: f.marca, precio_compra: Number(f.precio_compra), variantes: [] };
+      const x = m.get(f.producto_id) ?? { id: f.producto_id, codigo: f.codigo, nombre: f.nombre, marca: f.marca, precio_compra: Number(f.precio_compra), escala: f.escala ?? null, variantes: [] };
       x.variantes.push(f);
       m.set(f.producto_id, x);
     }
@@ -284,6 +325,8 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
                       className="grid h-9 w-9 place-items-center rounded-lg border border-borde text-gray-500 hover:bg-red-50 hover:text-error"><Trash2 size={16} /></button>
                   </div>
                 </div>
+                <AplicarCurva modelo={m} curvas={curvas} talles={talles} proveedor={proveedor}
+                  alAplicar={(pares) => cambiarBloque(b.producto_id, (x) => ({ ...x, pares: { ...x.pares, ...pares } }))} />
                 {pp && b.costo !== Number(pp.precio_compra) && (
                   <p className="text-xs text-alerta">Su lista dice {pesos(pp.precio_compra)}: {b.costo > Number(pp.precio_compra) ? "aumentó" : "bajó"}. Al registrar se actualiza.</p>)}
 

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { crearCliente } from "@/lib/supabase/server";
 import { fecha, fechaHora, pesos } from "@/lib/formato";
 import ListaMovil, { FilaMovil } from "@/components/ListaMovil";
-import { Boxes, Plus } from "lucide-react";
+import { Boxes, Plus, Ruler } from "lucide-react";
 import { exigir } from "@/lib/exigir";
 
 export default async function Compras() {
@@ -15,6 +15,7 @@ export default async function Compras() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Compras</h1>
         <div className="flex flex-wrap gap-2">
+          <Link href="/admin/compras/curvas" className="boton-sec"><Ruler size={16} strokeWidth={1.8} /> Curvas</Link>
           <Link href="/admin/compras/bultos" className="boton-sec"><Boxes size={16} strokeWidth={1.8} /> Bultos</Link>
           <Link href="/admin/compras/nueva" className="boton"><Plus size={16} /> Cargar factura de compra</Link>
         </div>

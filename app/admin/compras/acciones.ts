@@ -66,3 +66,20 @@ export async function quitarBulto(id: number): Promise<EstadoBulto> {
   revalidatePath("/admin/compras", "layout");
   return { ok: "Bulto quitado" };
 }
+
+// ── Curvas de compra (la distribución de talles con la que se compra) ──
+export async function guardarCurva(nombre: string, escala: string, items: { talle_id: number; cantidad: number }[], proveedor: number | null, id: number | null): Promise<EstadoBulto> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("guardar_curva", { p_nombre: nombre, p_escala: escala, p_items: items, p_proveedor: (proveedor ?? undefined) as number, p_id: (id ?? undefined) as number });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/compras", "layout");
+  return { ok: "Curva guardada" };
+}
+
+export async function quitarCurva(id: number): Promise<EstadoBulto> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("quitar_curva", { p_id: id });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/compras", "layout");
+  return { ok: "Curva quitada" };
+}
