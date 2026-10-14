@@ -23,13 +23,15 @@ create function prueba.cobro(p_id text, p_categoria text) returns text language 
       'pricing', jsonb_build_object('billable', true, 'category', p_categoria)))))))))::text $$;
 create function prueba.envios(p_tipo text) returns int language sql stable security definer set search_path = public as $$
   select count(*)::int from whatsapp_envios where tipo = p_tipo $$;
+create function prueba.ultimo_telefono(p_tipo text) returns text language sql stable security definer set search_path = public as $$
+  select telefono from whatsapp_envios where tipo = p_tipo order by id desc limit 1 $$;
 create function prueba.gasto_whatsapp() returns numeric language sql stable security definer set search_path = public as $$
   select coalesce(sum(importe), 0) from gastos where referencia like 'whatsapp:%' $$;
 create function prueba.config(p_bot boolean, p_avisos boolean) returns void language sql security definer set search_path = public as $$
   update configuracion_tienda set wa_bot_activo = p_bot, wa_notificaciones_pedidos = p_avisos, wa_plantilla_estado = 'estado_pedido';
   update clientes set telefono = '381 555-3003' where usuario_id = '22222222-2222-2222-2222-222222222222' $$;
 grant execute on all functions in schema prueba to anon, authenticated;
-select plan(19);
+select plan(20);
 
 set local role authenticated;
 select prueba.como_admin();
@@ -69,6 +71,8 @@ select is(wa_responder(prueba.aviso('5493815553003', 'hola'), prueba.firma(prueb
 select is(wa_responder(prueba.aviso('5493815553003', 'hola'), prueba.firma(prueba.aviso('5493815553003', 'hola')), '5493815553003', 'Hola! ¿Qué buscás?'), true,
   'sí a quien escribió');
 select is(prueba.envios('respuesta'), 1, 'y queda registrada la respuesta');
+select is(prueba.ultimo_telefono('respuesta'), '543815553003',
+  'a Meta le va el celular argentino sin el 9 (con 549 rechaza a los destinatarios de prueba: error 131030)');
 
 -- ── Lo que cobra Meta: una vez por mensaje ──
 select wa_recibir(prueba.cobro('wamid.A', 'utility'), prueba.firma(prueba.cobro('wamid.A', 'utility')));
