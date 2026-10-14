@@ -22,11 +22,12 @@ export default async function PaginaMercadoPago() {
       <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
         {mp && config && <MercadoPago estado={mp as unknown as EstadoMP} modo={config.mp_modo} cuotasMax={config.mp_cuotas_max} webhook={`${sitio()}/api/mercadopago`} />}
       </section>
-      <Encabezado titulo="Mercado Pago Point"
-        texto="Cobrar con tarjeta en el local con el posnet de Mercado Pago: la caja le manda el monto y espera la respuesta." />
-      <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
+      {/* Solo para quien tiene el posnet de Mercado Pago: plegado hasta que se use */}
+      <details className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm" open={!!(point as { terminales?: unknown[] } | null)?.terminales?.length}>
+        <summary className="cursor-pointer px-5 py-3 font-semibold">Tengo un posnet de Mercado Pago (Point)</summary>
+        <p className="px-5 text-sm text-texto-2">Cobrar con tarjeta en el local con el posnet: la caja le manda el monto y espera la respuesta. Si no tenés uno, no hace falta tocar nada.</p>
         {point && <MercadoPagoPoint estado={point as unknown as EstadoPoint} webhook={`${sitio()}/api/mercadopago`} />}
-      </section>
+      </details>
       <Manual nombre="mercadopago" abierto={!(mp as { token?: string | null } | null)?.token} />
     </div>
   );
