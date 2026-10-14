@@ -4124,6 +4124,9 @@ isOneToOne: false
 "wa_responder":
 { Args: { "p_firma": string,"p_para": string,"p_payload": string,"p_texto": string }; Returns: boolean
                            },
+"wa_responder_menu":
+{ Args: { "p_firma": string,"p_interactivo": Json,"p_para": string,"p_payload": string }; Returns: boolean
+                           },
 "wa_verificar_token":
 { Args: { "p_token": string }; Returns: boolean
                            }

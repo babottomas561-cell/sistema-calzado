@@ -8,13 +8,15 @@
 import { after, NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { procesarMensajeConIA } from "@/lib/whatsapp/bot";
+import { respuestasDeMenu } from "@/lib/whatsapp/flujo";
+import { pideMenu } from "@/lib/whatsapp/menu";
 import type { Database } from "@/lib/database.types";
 
 export const maxDuration = 30;
 
 const base = () => createClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
 
-type Recibido = { ok: boolean; mensajes?: { de: string; id: string; texto: string }[]; bot_activo?: boolean; ia_modelo?: string; gemini_api_key?: string | null };
+type Recibido = { ok: boolean; mensajes?: { de: string; id: string; texto: string; opcion?: string }[]; bot_activo?: boolean; ia_modelo?: string; gemini_api_key?: string | null };
 
 // Verificación del webhook (Meta la hace una vez, al configurarlo)
 export async function GET(request: NextRequest) {
@@ -39,12 +41,21 @@ export async function POST(request: NextRequest) {
   if (!r?.ok) return NextResponse.json({ status: "invalid_signature" }, { status: 401 });
 
   if (r.bot_activo && r.mensajes?.length) {
+    const sitio = request.nextUrl.origin;
     // Se contesta después de responderle a Meta (tiene que recibir el 200 rápido)
     after(async () => {
       for (const m of r.mensajes ?? []) {
         try {
+          // Eligió una opción del menú, o saluda / pide el menú: se le contesta con listas y botones (sin gastar IA)
+          if (m.opcion || pideMenu(m.texto)) {
+            for (const msg of await respuestasDeMenu(m.opcion ?? "m:menu", sitio)) {
+              if ("texto" in msg) await supabase.rpc("wa_responder", { p_payload: cuerpo, p_firma: firma, p_para: m.de, p_texto: msg.texto });
+              else await supabase.rpc("wa_responder_menu", { p_payload: cuerpo, p_firma: firma, p_para: m.de, p_interactivo: msg.interactivo as never });
+            }
+            continue;
+          }
           const r2 = await procesarMensajeConIA(m.texto, m.de, r.gemini_api_key ?? null, r.ia_modelo ?? "gemini-2.5-flash");
-          if (r2.texto) await supabase.rpc("wa_responder", { p_payload: cuerpo, p_firma: firma, p_para: m.de, p_texto: r2.texto });
+          if (r2.texto) await supabase.rpc("wa_responder", { p_payload: cuerpo, p_firma: firma, p_para: m.de, p_texto: `${r2.texto}\n\n_Escribí *menú* para ver las opciones._` });
           // Lo que usó de la IA queda registrado (y, con precio cargado, como gasto)
           if (r2.consultas)
             await supabase.rpc("ia_registrar_uso", { p_payload: cuerpo, p_firma: firma, p_tokens_entrada: r2.tokensEntrada, p_tokens_salida: r2.tokensSalida, p_consultas: r2.consultas });

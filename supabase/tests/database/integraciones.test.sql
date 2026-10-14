@@ -17,6 +17,12 @@ create function prueba.aviso(p_de text, p_texto text, p_hace_seg int default 5) 
     jsonb_build_object('value', jsonb_build_object('messages', jsonb_build_array(jsonb_build_object(
       'from', p_de, 'id', 'wamid.' || md5(p_texto), 'type', 'text', 'timestamp', (extract(epoch from now())::bigint - p_hace_seg)::text,
       'text', jsonb_build_object('body', p_texto))))))))) ::text $$;
+-- Lo que manda Meta cuando el cliente toca una fila de la lista o un botón
+create function prueba.eleccion(p_de text, p_tipo text, p_id text, p_titulo text) returns text language sql stable as $$
+  select jsonb_build_object('object', 'whatsapp_business_account', 'entry', jsonb_build_array(jsonb_build_object('changes', jsonb_build_array(
+    jsonb_build_object('value', jsonb_build_object('messages', jsonb_build_array(jsonb_build_object(
+      'from', p_de, 'id', 'wamid.' || md5(p_id), 'type', 'interactive', 'timestamp', (extract(epoch from now())::bigint - 5)::text,
+      'interactive', jsonb_build_object('type', p_tipo, p_tipo, jsonb_build_object('id', p_id, 'title', p_titulo)))))))))) ::text $$;
 create function prueba.cobro(p_id text, p_categoria text) returns text language sql immutable as $$
   select jsonb_build_object('entry', jsonb_build_array(jsonb_build_object('changes', jsonb_build_array(jsonb_build_object('value',
     jsonb_build_object('statuses', jsonb_build_array(jsonb_build_object('id', p_id, 'status', 'delivered',
@@ -31,7 +37,7 @@ create function prueba.config(p_bot boolean, p_avisos boolean) returns void lang
   update configuracion_tienda set wa_bot_activo = p_bot, wa_notificaciones_pedidos = p_avisos, wa_plantilla_estado = 'estado_pedido';
   update clientes set telefono = '381 555-3003' where usuario_id = '22222222-2222-2222-2222-222222222222' $$;
 grant execute on all functions in schema prueba to anon, authenticated;
-select plan(20);
+select plan(26);
 
 set local role authenticated;
 select prueba.como_admin();
@@ -73,6 +79,21 @@ select is(wa_responder(prueba.aviso('5493815553003', 'hola'), prueba.firma(prueb
 select is(prueba.envios('respuesta'), 1, 'y queda registrada la respuesta');
 select is(prueba.ultimo_telefono('respuesta'), '543815553003',
   'a Meta le va el celular argentino sin el 9 (con 549 rechaza a los destinatarios de prueba: error 131030)');
+
+-- ── Menús: el cliente elige tocando ──
+select is(wa_recibir(prueba.eleccion('5493815553003', 'list_reply', 'r:Camisa', 'Camisas'), prueba.firma(prueba.eleccion('5493815553003', 'list_reply', 'r:Camisa', 'Camisas'))) -> 'mensajes' -> 0 ->> 'opcion',
+  'r:Camisa', 'una fila elegida de la lista llega como opción (con su id)');
+select is(wa_recibir(prueba.eleccion('5493815553003', 'button_reply', 'm:menu', 'Menú'), prueba.firma(prueba.eleccion('5493815553003', 'button_reply', 'm:menu', 'Menú'))) -> 'mensajes' -> 0 ->> 'opcion',
+  'm:menu', 'y un botón también');
+select is(wa_responder_menu(prueba.aviso('5493815553003', 'hola'), prueba.firma(prueba.aviso('5493815553003', 'hola')), '5493815553003',
+  '{"type":"button","body":{"text":"¿Qué querés hacer?"},"action":{"buttons":[{"type":"reply","reply":{"id":"m:menu","title":"Menú"}}]}}'::jsonb), true,
+  'se le manda un menú a quien escribió');
+select is(wa_responder_menu(prueba.aviso('5493815553003', 'hola'), prueba.firma(prueba.aviso('5493815553003', 'hola')), '5491100000000',
+  '{"type":"button","body":{"text":"spam"},"action":{}}'::jsonb), false, 'pero no a otro número');
+select is(wa_responder_menu(prueba.aviso('5493815553003', 'hola'), prueba.firma(prueba.aviso('5493815553003', 'hola')), '5493815553003',
+  '{"type":"product","body":{"text":"x"}}'::jsonb), false, 'ni de un tipo que no sea lista o botones');
+select is(wa_responder_menu(prueba.aviso('5493815553003', 'hola'), 'sha256=' || repeat('0', 64), '5493815553003',
+  '{"type":"button","body":{"text":"x"},"action":{}}'::jsonb), false, 'ni con la firma falsa');
 
 -- ── Lo que cobra Meta: una vez por mensaje ──
 select wa_recibir(prueba.cobro('wamid.A', 'utility'), prueba.firma(prueba.cobro('wamid.A', 'utility')));
