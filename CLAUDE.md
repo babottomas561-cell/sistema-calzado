@@ -390,3 +390,13 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
 - No subir `.env.local` (está en `.gitignore`).
 - No guardar una clave (token, secreto, API key) en una tabla con lectura ni en el código: va a `integraciones` (regla 16).
 - No `select *` desde la tienda sobre tablas con costos: la tienda lee `v_catalogo`.
+
+29. **Mails al cliente = plantillas editables** (`/admin/tienda/mails`, `tienda.editar`; `plantillas_mail`): una por situación (confirmar cuenta, cambiar contraseña, cambiar email, invitación,
+    bienvenida, pedido recibido / pagado / confirmado / listo / enviado / entregado / cancelado). Texto plano con `{{variables}}` (las valida la base: `_mail_variables`) y **negrita**;
+    **nunca HTML** (`_mail_texto` escapa todo). `_mail_html` arma el mail con la marca de la tienda. Las de cuenta (`fija`) las manda Supabase y no se apagan: `_correo_plantilla` las lee de la
+    tabla y `cuentas_aplicar()` se las pasa (se aplica al guardar). Las demás salen por **cola** (`mails_cola`, pg_cron cada minuto, `_mails_procesar`, 5 intentos): los triggers
+    (`_mail_aviso_pedido`, `_mail_aviso_pago`, `_mail_bienvenida`) encolan **solo si el correo está conectado**, la plantilla está activa y hay email, y nunca frenan la operación (cada aviso sale
+    una vez por pedido). `_correo_enviar(para, asunto, html, reply_to, adjuntos)` es el único camino de salida: Resend por API desde la base, Gmail/otro SMTP por `/api/correo/enviar`.
+    **El comprobante viaja en PDF**: `/comprobante/<token>/pdf` (`lib/comprobante-pdf.ts`, pdfkit, en `serverExternalPackages`) lo arma de `comprobante_publico`; el mail lo adjunta
+    (solo links del propio sitio). Hay comprobante de **pedido** (`_comprobante_pedido`, tipo `pedido`). El mail de una venta con factura dice «Factura B 0003-…», el CAE y la ley de transparencia.
+

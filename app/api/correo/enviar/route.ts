@@ -51,8 +51,18 @@ export async function POST(pedido: Request) {
       host, port: puerto, secure: puerto === 465, auth: { user: usuario, pass: clave },
       connectionTimeout: 10_000, greetingTimeout: 10_000, socketTimeout: 20_000,
     });
+    // Adjuntos (el comprobante en PDF): se bajan de este mismo sitio, nunca de otro lado
+    const origen = new URL(pedido.url).origin;
+    const adjuntos: { filename: string; content: Buffer; contentType: string }[] = [];
+    for (const a of Array.isArray(d.adjuntos) ? (d.adjuntos as { nombre?: unknown; url?: unknown }[]).slice(0, 3) : []) {
+      const u = texto(a?.url, 500), nombre = texto(a?.nombre, 100);
+      if (!u || !nombre || !u.startsWith(`${origen}/`)) continue;
+      const r = await fetch(u, { signal: AbortSignal.timeout(15_000) });
+      if (!r.ok) return respuesta(false, "No se pudo armar el PDF del comprobante");
+      adjuntos.push({ filename: nombre.replace(/[^A-Za-z0-9._-]/g, "_"), content: Buffer.from(await r.arrayBuffer()), contentType: "application/pdf" });
+    }
     await transporte.sendMail({
-      from: { name: texto(d.desde_nombre, 100) ?? "", address: desde }, to: para, subject: asunto, html,
+      from: { name: texto(d.desde_nombre, 100) ?? "", address: desde }, to: para, subject: asunto, html, attachments: adjuntos,
       ...(email(d.responder_a) ? { replyTo: email(d.responder_a)! } : {}),
     });
     return respuesta(true);

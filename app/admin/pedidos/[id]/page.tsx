@@ -6,13 +6,15 @@ import { CANCELADO_POR, ESTADOS, MOTIVOS_CANCELACION } from "@/lib/estados-pedid
 import Envio from "./Envio";
 import Pago from "./Pago";
 import Acciones from "./Acciones";
+import Avisos, { type EnvioMail } from "./Avisos";
+import { puede } from "@/lib/permisos";
 import Volver from "@/components/Volver";
 import { exigir } from "@/lib/exigir";
 
 const ESTADO_MP: Record<string, string> = { approved: "aprobado", pending: "pendiente", in_process: "en revisión", rejected: "rechazado", refunded: "devuelto", cancelled: "cancelado", charged_back: "contracargo" };
 
 export default async function Pedido({ params }: { params: Promise<{ id: string }> }) {
-  await exigir("pedidos.gestionar");
+  const { permisos } = await exigir("pedidos.gestionar");
   const { id } = await params;
   const supabase = await crearCliente();
   const [{ data: p }, { data: items }, { data: historial }, { data: venta }, { data: hasta }] = await Promise.all([
@@ -27,6 +29,11 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
     supabase.from("envios").select("proveedor, costo_real, seguimiento, notas").eq("pedido_id", Number(id)).maybeSingle(),
     supabase.from("configuracion_tienda").select("direccion_retiro, envio_requiere_pago").single(),
     supabase.from("pedido_pagos").select("id, fecha, monto, referencia").eq("pedido_id", Number(id)).order("id"),
+  ]);
+  const { data: tiendaWa } = await supabase.from("configuracion_tienda").select("wa_notificaciones_pedidos, wa_plantilla_estado").maybeSingle();
+  const [{ data: mailInfo }, { data: mailsPedido }] = await Promise.all([
+    supabase.rpc("comprobante_mail_disponible"),
+    supabase.from("mails_cola").select("id, clave, estado, creado_en, error, para").eq("pedido_id", Number(id)).order("id", { ascending: false }).limit(8),
   ]);
   const { data: pagosOnline } = await supabase.from("pagos_online").select("id, pago_externo, estado, monto, comision, cuotas, medio, creado_en").eq("pedido_id", Number(id)).order("id");
   if (!p) notFound();
@@ -98,6 +105,9 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
           {p.entrega === "envio" && <Envio local={tienda?.direccion_retiro ?? null} d={{ pedido: p.id, comprobante: p.comprobante ?? "", cliente: c.nombre, telefono: c.telefono,
             direccion: p.direccion_envio, zona: (p.zonas_envio as unknown as { nombre: string } | null)?.nombre ?? null, cobrado: Number(p.costo_envio),
             envio: envio ? { ...envio, costo_real: envio.costo_real == null ? null : Number(envio.costo_real) } : null }} />}
+          <Avisos cliente={c.nombre} telefono={c.telefono} email={c.email} estado={p.estado} comprobante={p.comprobante ?? ""} waAuto={!!(tiendaWa?.wa_notificaciones_pedidos && tiendaWa?.wa_plantilla_estado)}
+            mensaje={`Hola ${c.nombre.split(" ")[0]}! Te escribimos por tu pedido ${p.comprobante ?? ""}. `} mailListo={!!(mailInfo as { disponible?: boolean } | null)?.disponible} mailMotivo={(mailInfo as { motivo?: string } | null)?.motivo}
+            puedeConectar={puede(permisos, "equipo.administrar")} envios={(mailsPedido ?? []) as EnvioMail[]} />
           {ESTADOS[p.estado].siguientes.length > 0 && <Acciones key={p.estado} pedido={p.id} siguientes={ESTADOS[p.estado].siguientes} medios={medios ?? []}
             elegido={{ id: p.medio_pago_id, ajuste_pct: Number(p.ajuste_pct) }} subtotal={Number(p.subtotal)} />}
         </div>

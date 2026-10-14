@@ -1147,6 +1147,38 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"mails_cola": {
+                  Row: {
+                    "adjunto_id": number | null,"adjunto_tipo": string | null,"asunto": string,"clave": string,"cliente_id": number | null,"creado_en": string,"enviado_en": string | null,"error": string | null,"estado": string,"html": string,"id": number,"intentos": number,"para": string,"pedido_id": number | null,"proximo_intento": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "adjunto_id"?: number | null,"adjunto_tipo"?: string | null,"asunto": string,"clave": string,"cliente_id"?: number | null,"creado_en"?: string,"enviado_en"?: string | null,"error"?: string | null,"estado"?: string,"html": string,"id"?: never,"intentos"?: number,"para": string,"pedido_id"?: number | null,"proximo_intento"?: string
+                  }
+                  Update: {
+                    "adjunto_id"?: number | null,"adjunto_tipo"?: string | null,"asunto"?: string,"clave"?: string,"cliente_id"?: number | null,"creado_en"?: string,"enviado_en"?: string | null,"error"?: string | null,"estado"?: string,"html"?: string,"id"?: never,"intentos"?: number,"para"?: string,"pedido_id"?: number | null,"proximo_intento"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "mails_cola_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "clientes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mails_cola_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "v_mi_ficha"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mails_cola_pedido_id_fkey"
+      columns: ["pedido_id"]
+isOneToOne: false
+      referencedRelation: "pedidos"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"marcas": {
                   Row: {
                     "codigo": string,"id": number,"nombre": string
@@ -1541,6 +1573,20 @@ isOneToOne: false
                   }
                   Update: {
                     "activa"?: boolean,"alto_codigo_mm"?: number,"alto_mm"?: number,"ancho_mm"?: number,"columnas"?: number,"creado_en"?: string,"filas"?: number,"id"?: never,"margen_izquierdo_mm"?: number,"margen_superior_mm"?: number,"mostrar_codigo"?: boolean,"mostrar_marca"?: boolean,"mostrar_nombre"?: boolean,"mostrar_precio"?: boolean,"mostrar_talle_color"?: boolean,"mostrar_tienda"?: boolean,"nombre"?: string,"orden"?: number,"pagina"?: string | null,"separacion_h_mm"?: number,"separacion_v_mm"?: number,"tamano_precio"?: number,"tamano_texto"?: number,"tipo"?: string,"tipo_codigo"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"plantillas_mail": {
+                  Row: {
+                    "activa": boolean,"actualizado_en": string,"actualizado_por": string | null,"asunto": string,"boton": string | null,"clave": string,"con_pdf": boolean,"cuando": string,"fija": boolean,"grupo": string,"nombre": string,"pie": string | null,"texto": string,"titulo": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activa"?: boolean,"actualizado_en"?: string,"actualizado_por"?: string | null,"asunto": string,"boton"?: string | null,"clave": string,"con_pdf"?: boolean,"cuando": string,"fija"?: boolean,"grupo": string,"nombre": string,"pie"?: string | null,"texto": string,"titulo": string
+                  }
+                  Update: {
+                    "activa"?: boolean,"actualizado_en"?: string,"actualizado_por"?: string | null,"asunto"?: string,"boton"?: string | null,"clave"?: string,"con_pdf"?: boolean,"cuando"?: string,"fija"?: boolean,"grupo"?: string,"nombre"?: string,"pie"?: string | null,"texto"?: string,"titulo"?: string
                   }
                   Relationships: [
                     
@@ -2682,6 +2728,9 @@ isOneToOne: false
 "_comprobante_mail_html":
 { Args: { "p_doc": Json,"p_url": string }; Returns: string
                            },
+"_comprobante_pedido":
+{ Args: { "p_id": number }; Returns: Json
+                           },
 "_comprobante_presupuesto":
 { Args: { "p_id": number }; Returns: Json
                            },
@@ -2698,7 +2747,7 @@ isOneToOne: false
 { Args: { "i": Omit<Database["public"]['Tables']["integraciones"]['Row'], Database["public"]['Tables']["integraciones"]['ComputedFields']> }; Returns: boolean
                            },
 "_correo_enviar":
-{ Args: { "p_asunto": string,"p_html": string,"p_para": string,"p_reply_to"?: string }; Returns: Json
+{ Args: { "p_adjuntos"?: Json,"p_asunto": string,"p_html": string,"p_para": string,"p_reply_to"?: string }; Returns: Json
                            },
 "_correo_plantilla":
 { Args: { "p_color"?: string,"p_logo"?: string,"p_tienda": string,"p_tipo": string }; Returns: Json
@@ -2820,6 +2869,33 @@ isOneToOne: false
                            },
 "_instagram_tarea":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"_mail_asunto":
+{ Args: { "p": string,"p_vars": Json }; Returns: string
+                           },
+"_mail_defecto":
+{ Args: { "p_clave": string }; Returns: Json
+                           },
+"_mail_encolar":
+{ Args: { "p_adjunto_id"?: number,"p_adjunto_tipo"?: string,"p_clave": string,"p_cliente"?: number,"p_para": string,"p_pedido"?: number,"p_url": string,"p_vars": Json }; Returns: undefined
+                           },
+"_mail_html":
+{ Args: { "p_boton": string,"p_color": string,"p_logo": string,"p_pie_html": string,"p_texto_html": string,"p_tienda": string,"p_titulo_html": string,"p_url": string }; Returns: string
+                           },
+"_mail_texto":
+{ Args: { "p": string,"p_vars": Json }; Returns: string
+                           },
+"_mail_validar":
+{ Args: { "p_clave": string,"p_texto": string }; Returns: undefined
+                           },
+"_mail_variables":
+{ Args: { "p_clave": string }; Returns: (string)[]
+                           },
+"_mail_vars_pedido":
+{ Args: { "p_pedido": number }; Returns: Json
+                           },
+"_mails_procesar":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "_modulo_activo":
 { Args: { "p_clave": string }; Returns: boolean
@@ -3161,6 +3237,9 @@ isOneToOne: false
 "guardar_mercadopago":
 { Args: { "p_access_token"?: string,"p_quitar"?: (string)[],"p_sitio_url"?: string,"p_webhook_secret"?: string }; Returns: undefined
                            },
+"guardar_plantilla_mail":
+{ Args: { "p_activa": boolean,"p_asunto": string,"p_boton": string,"p_clave": string,"p_con_pdf"?: boolean,"p_pie": string,"p_texto": string,"p_titulo": string }; Returns: undefined
+                           },
 "ia_probar":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
@@ -3264,6 +3343,9 @@ isOneToOne: false
 "probar_andreani":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"probar_plantilla_mail":
+{ Args: { "p_clave": string }; Returns: Json
+                           },
 "probar_uber":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -3323,6 +3405,9 @@ isOneToOne: false
 "resolver_fallado":
 { Args: { "p_cantidad"?: number,"p_fallado": number,"p_nota"?: string,"p_proveedor"?: number,"p_salida": string }; Returns: number
                            },
+"restaurar_plantilla_mail":
+{ Args: { "p_clave": string }; Returns: undefined
+                           },
 "retirar_hasta":
 { Args: { "p_pedido": number }; Returns: string
                            },
@@ -3362,6 +3447,9 @@ isOneToOne: false
 { Args: { "p_desde": string,"p_hasta": string }; Returns: {
               "cliente": string,"comprobante": string,"fecha": string,"id": number,"medios": string,"total": number
             }[]
+                           },
+"vista_previa_mail":
+{ Args: { "p_asunto": string,"p_boton": string,"p_clave": string,"p_pie": string,"p_texto": string,"p_titulo": string }; Returns: Json
                            },
 "wa_envios_recientes":
 { Args: { "p_limite"?: number }; Returns: {

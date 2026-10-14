@@ -78,3 +78,8 @@ Para probar los comprobantes: abrí una venta → **Enviar → Mail** y mandáte
 En **Equipo → Cuentas e invitaciones** elegís si la confirmación de email es obligatoria (lo recomendado), qué datos
 pide el formulario, las reglas de la contraseña, los dominios de email permitidos o bloqueados y los términos.
 Sin correo conectado y con la confirmación activa, el panel muestra un cartel de advertencia.
+
+## Los textos de los mails
+
+Qué le llega al cliente (confirmar cuenta, bienvenida, pedido recibido, pago recibido con su comprobante en PDF, pedido listo, en camino, entregado o cancelado) se edita en
+**Tienda online → Mails al cliente**: cambiás los textos, apagás los que no quieras, ves cómo queda y te mandás una prueba. Los de pedidos solo salen si el correo está conectado.

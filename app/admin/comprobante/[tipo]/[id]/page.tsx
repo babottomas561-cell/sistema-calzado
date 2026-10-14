@@ -17,6 +17,7 @@ const VOLVER: Record<TipoComprobante, { href: (id: number) => string; texto: str
   venta: { href: (id) => `/admin/ventas/${id}`, texto: "Venta" },
   presupuesto: { href: (id) => `/admin/presupuestos/${id}`, texto: "Presupuesto" },
   devolucion: { href: (id) => `/admin/devoluciones/${id}`, texto: "Devolución" },
+  pedido: { href: (id) => `/admin/pedidos/${id}`, texto: "Pedido" },
 };
 type Contacto = { telefono: string | null; email: string | null } | null;
 
@@ -26,6 +27,7 @@ async function contactoDe(tipo: TipoComprobante, id: number): Promise<Contacto> 
   const campos = "clientes(telefono, email)";
   const { data } = tipo === "venta" ? await supabase.from("ventas").select(campos).eq("id", id).maybeSingle()
     : tipo === "presupuesto" ? await supabase.from("presupuestos").select(campos).eq("id", id).maybeSingle()
+    : tipo === "pedido" ? await supabase.from("pedidos").select(campos).eq("id", id).maybeSingle()
     : await supabase.from("devoluciones").select(campos).eq("id", id).maybeSingle();
   return (data?.clientes as unknown as Contacto) ?? null;
 }

@@ -2,7 +2,7 @@
 // Mandar el comprobante al cliente, a mano: por WhatsApp (se abre con el mensaje y el link ya escritos), por mail (sale desde el sistema
 // por Resend) o copiando el link. Quien lo recibe lo abre en el celular y puede guardarlo como PDF. Abajo queda lo que ya se mandó.
 import { useActionState, useState, useTransition } from "react";
-import { Check, CircleAlert, CircleCheck, Copy, Link2, Mail, MessageCircle, RefreshCw } from "lucide-react";
+import { Check, CircleAlert, CircleCheck, Copy, Link2, Mail, MessageCircle, RefreshCw, FileDown } from "lucide-react";
 import { fechaHora, pesos } from "@/lib/formato";
 import { mensajeWhatsApp, type Comprobante } from "@/lib/comprobante";
 import { paraWhatsApp } from "@/lib/telefono";
@@ -81,6 +81,7 @@ export default function EnviarComprobante({ c, tipo, id, origen, telefono, email
         <div className="flex flex-col gap-2 sm:flex-row">
           <input id="enlace-url" readOnly value={url} onFocus={(e) => e.currentTarget.select()} className={`${campo} font-mono text-xs`} />
           <button type="button" onClick={copiar} className="boton-sec min-h-11 shrink-0">{copiado ? <><Check size={17} strokeWidth={2} /> Copiado</> : <><Copy size={17} strokeWidth={1.8} /> Copiar link</>}</button>
+          <a href={`${url}/pdf`} target="_blank" rel="noopener noreferrer" className="boton-sec min-h-11 shrink-0"><FileDown size={17} strokeWidth={1.8} /> Ver el PDF</a>
         </div>
         {aviso && <p role="status" className="text-xs text-texto-2">{aviso}</p>}
         {!confirmar

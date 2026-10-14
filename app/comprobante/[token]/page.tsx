@@ -5,8 +5,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Comprobante from "@/components/Comprobante";
 import { crearCliente } from "@/lib/supabase/server";
-import { leerComprobante } from "@/lib/comprobante";
-import BotonPDF from "./BotonPDF";
+import { leerComprobante, numeroDe, tituloDe } from "@/lib/comprobante";
+import { Download } from "lucide-react";
 
 // Una sola lectura por visita (cada una cuenta como una vista del link): la página y su título comparten esta
 const leer = cache(async (token: string) => {
@@ -18,7 +18,7 @@ const leer = cache(async (token: string) => {
 // El link lleva el secreto: que no se filtre a otros sitios (el logo) por el «referer» y que ningún buscador lo guarde
 export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
   const c = await leer((await params).token);
-  return { title: c ? `${c.titulo} ${c.numero} · ${c.emisor.nombre}` : "Comprobante", robots: { index: false, follow: false }, referrer: "no-referrer" };
+  return { title: c ? `${tituloDe(c)} ${numeroDe(c)} · ${c.emisor.nombre}` : "Comprobante", robots: { index: false, follow: false }, referrer: "no-referrer" };
 }
 
 export default async function ComprobantePublico({ params }: { params: Promise<{ token: string }> }) {
@@ -29,7 +29,7 @@ export default async function ComprobantePublico({ params }: { params: Promise<{
       <style>{"@page{size:A4;margin:0}"}</style>
       <div className="mx-auto max-w-sm space-y-4 print:hidden">
         <div className="overflow-hidden rounded-2xl border border-borde bg-white shadow-sm"><Comprobante c={c} formato="pantalla" /></div>
-        <BotonPDF />
+        <a href={`/comprobante/${(await params).token}/pdf`} className="boton min-h-12 w-full"><Download size={18} strokeWidth={1.8} /> Descargar el PDF</a>
         <p className="text-center text-xs text-texto-2">Este comprobante es un resumen de tu compra. Guardalo o compartilo cuando quieras.</p>
       </div>
       <div className="hidden print:block"><Comprobante c={c} formato="a4" /></div>

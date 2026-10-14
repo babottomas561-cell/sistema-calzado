@@ -10,7 +10,7 @@ export const FORMATOS: Record<FormatoComprobante, { nombre: string; ancho: numbe
 };
 export const esFormato = (x: unknown): x is FormatoComprobante => x === "ticket80" || x === "ticket58" || x === "a4";
 
-export const TIPOS_COMPROBANTE = ["venta", "presupuesto", "devolucion"] as const;
+export const TIPOS_COMPROBANTE = ["venta", "presupuesto", "devolucion", "pedido"] as const;
 export type TipoComprobante = (typeof TIPOS_COMPROBANTE)[number];
 export const esTipo = (x: unknown): x is TipoComprobante => (TIPOS_COMPROBANTE as readonly unknown[]).includes(x);
 
@@ -93,9 +93,9 @@ export const importeRenglon = (r: Renglon) => (r.precio != null ? r.cantidad * r
 // El texto que se manda por WhatsApp con el link (con *negrita* de WhatsApp)
 export function mensajeWhatsApp(c: Comprobante, url: string, pesos: (n: number) => string): string {
   const nombre = c.cliente?.split(" ")[0];
-  const cosa = c.tipo === "presupuesto" ? "el presupuesto" : c.tipo === "devolucion" ? "el comprobante de tu devolución" : "tu comprobante";
+  const cosa = c.tipo === "presupuesto" ? "el presupuesto" : c.tipo === "devolucion" ? "el comprobante de tu devolución" : c.tipo === "pedido" ? "el comprobante de tu pedido" : esFactura(c) ? `tu factura ${c.fiscal!.letra}` : "tu comprobante";
   return [
-    `¡Hola${nombre ? ` ${nombre}` : ""}! Te paso ${cosa} *${c.numero}* de ${c.emisor.nombre}.`,
+    `¡Hola${nombre ? ` ${nombre}` : ""}! Te paso ${cosa} *${numeroDe(c)}* de ${c.emisor.nombre}.`,
     `${c.tipo === "devolucion" ? "Saldo a favor" : "Total"}: *${pesos(totalDe(c))}*`,
     "", url, "",
     c.tipo === "venta" ? "¡Gracias por tu compra!" : "Cualquier duda, escribinos.",
