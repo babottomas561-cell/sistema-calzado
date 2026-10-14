@@ -56,3 +56,9 @@ npm run instalaciones -- estado     # sitio, migraciones que faltan, versión
   **imprime la `service_role` heredada** sin enmascararla: no lo corras a la vista.)
 - Correr `seed.sql` en una instalación real.
 - Editar a mano la base de un cliente: todo cambio va en una migración (skill `cambiar-base-de-datos`) y se lleva con una versión.
+
+
+## WhatsApp e Instagram del cliente
+
+Cada local usa **su propia app de Meta** (modo desarrollo). Antes del alta, pedile al cliente lo que figura en [docs/ALTA_META.md](../../../docs/ALTA_META.md)
+(Facebook personal, email del negocio, un número sin WhatsApp, una tarjeta, una cuenta de Instagram profesional). Para probar no hace falta nada legal ni verificar el negocio.
