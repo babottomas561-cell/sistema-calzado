@@ -49,11 +49,11 @@ function Opcion({ icono: Icono, valor, activo, abierto, alAlternar }: { icono: L
   );
 }
 
-export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion, exigeOperacion = false, point = null, sinTarjetas = false, requisitoFalta = null, esperaPago = true }: {
+export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion, exigeOperacion = false, point: pointInicial = null, sinTarjetas = false, requisitoFalta = null, esperaPago = true }: {
   esperaPago?: boolean;   // no confirmar la venta mientras un cobro por posnet o QR espera el pago
   requisitoFalta?: string | null;   // algo de la configuración impide vender (Requisitos)
   sinTarjetas?: boolean;   // la regla pide el posnet y no hay uno disponible: Débito y Crédito no se ofrecen
-  point?: { disponible: boolean; modo: string; terminal: string | null; qr?: boolean } | null;   // posnet de Mercado Pago (Point)
+  point?: { disponible: boolean; modo: string; terminal: string | null; qr?: boolean; caja_id?: number } | null;   // posnet de Mercado Pago (Point)
   exigeOperacion?: boolean;   // el dueño pidió el n.º de operación en las transferencias
   facturacion: { modo: "todas" | "elegir"; porDefecto: "fiscal" | "interna"; letra: string; pruebas: boolean; umbral: number } | null;
   filas: FilaStock[]; clientes: Cliente[]; masVendidos: number[]; puedeCrearCliente: boolean; medios: (MedioCobro & { es_saldo?: boolean | null; siempre_factura?: boolean | null; es_cuenta_corriente?: boolean | null })[]; cambiaPrecio: boolean; descuentoMax: number | null;
@@ -62,16 +62,18 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const [items, setItems] = useState<Item[]>([]);
   // Qué medios de Mercado Pago le corresponden a esta persona en este aparato (Integraciones → Mercado Pago → Cobro en la caja)
   const [pendientes, setPendientes] = useState<Record<number, boolean>>({});   // medios con un cobro de Mercado Pago esperando el pago
+  const [pointCaja, setPointCaja] = useState<typeof pointInicial>(null);   // lo que tiene la caja que le toca a este aparato
+  const point = pointCaja ?? pointInicial;
   const [permitidos, setPermitidos] = useState({ posnet: true, qr: true, qr_fijo: true });
   useEffect(() => {
-    if (!point) return;
+    if (!pointInicial) return;
     let clave: string | null = null;
     try { clave = localStorage.getItem("dispositivo_cobro"); } catch { /* sin almacenamiento */ }
     crearClienteNavegador().rpc("cobro_medios", clave ? { p_dispositivo: clave } : {}).then(({ data }) => {
-      const r = data as { posnet?: boolean; qr?: boolean; qr_fijo?: boolean } | null;
-      if (r) setPermitidos({ posnet: r.posnet !== false, qr: r.qr !== false, qr_fijo: r.qr_fijo !== false });
+      const r = data as { posnet?: boolean; qr?: boolean; qr_fijo?: boolean; caja?: typeof pointInicial } | null;
+      if (r) { setPermitidos({ posnet: r.posnet !== false, qr: r.qr !== false, qr_fijo: r.qr_fijo !== false }); if (r.caja) setPointCaja(r.caja); }
     });
-  }, [point]);
+  }, [pointInicial]);
   const [lineas, setLineas] = useState<LineaPago[]>(medios.length ? [{ medio_pago_id: medios[0].id, modo: "monto", valor: 0 }] : []);
   const [multiplo, setMultiplo] = useState<number | null>(null);
   const [recibido, setRecibido] = useState("");
@@ -486,7 +488,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
 
                 {/* Número de cupón / operación (opcional) para los medios que no son efectivo */}
                 {[...new Map(cobro.lineas.filter((l) => l.base > 0 && pideReferencia(l.medio)).map((l) => [l.medio.id, l.medio])).values()].map((m) => (usaPoint && esTarjeta(m)) || esQr(m) ? (
-                  <CobroPoint key={m.id} monto={cobro.lineas.filter((l) => l.medio.id === m.id).reduce((t, l) => t + l.cobra + l.redondeo, 0)} via={esQr(m) ? "qr" : "point"} permiteQr={permitidos.qr} permiteFijo={permitidos.qr_fijo} terminal={point?.terminal ?? null} referencia={referencias[m.id] ?? ""}
+                  <CobroPoint key={m.id} monto={cobro.lineas.filter((l) => l.medio.id === m.id).reduce((t, l) => t + l.cobra + l.redondeo, 0)} via={esQr(m) ? "qr" : "point"} cajaId={point?.caja_id ?? null} permiteQr={permitidos.qr} permiteFijo={permitidos.qr_fijo} terminal={point?.terminal ?? null} referencia={referencias[m.id] ?? ""}
                     onPendiente={(p) => setPendientes((x) => (x[m.id] === p ? x : { ...x, [m.id]: p }))} onAprobado={(orden) => setReferencias((r) => ({ ...r, [m.id]: orden ?? "" }))} />
                 ) : (
                   <div key={m.id} className="space-y-1">

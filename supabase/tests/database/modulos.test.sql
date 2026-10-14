@@ -17,7 +17,7 @@ select plan(15);
 set local role authenticated;
 select prueba.como_admin();
 
-select is((select count(*)::int from modulos where not activo and clave <> 'cuenta-corriente'), 0, 'de fábrica está todo encendido (menos la cuenta corriente, que se enciende a propósito)');
+select is((select count(*)::int from modulos where not activo and clave not in ('cuenta-corriente', 'sucursales')), 0, 'de fábrica está todo encendido (menos cuenta corriente y sucursales, que se encienden a propósito)');
 select throws_like($$ select configurar_modulos(array['ventas']) $$, '%base del sistema%', 'lo fijo no se apaga');
 select throws_like($$ select configurar_modulos(array['no_existe']) $$, '%no existe%', 'una clave inventada se rechaza');
 select throws_like($$ select configurar_modulos(array['tienda']) $$, 'Para apagar «Tienda online» también hay que apagar «%', 'no deja un dependiente encendido');

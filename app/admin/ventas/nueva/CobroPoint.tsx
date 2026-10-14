@@ -10,7 +10,8 @@ import { pesos } from "@/lib/formato";
 type Estado = { estado: string; detalle: string | null; orden: string | null; usado: boolean; qr?: string | null };
 const FINALES: Record<string, string> = { cancelado: "Se canceló el cobro", rechazado: "El posnet rechazó el pago", vencido: "El cobro venció sin que se pagara", error: "No se pudo mandar el cobro", reembolsado: "El cobro fue devuelto" };
 
-export default function CobroPoint({ monto, terminal, referencia, onAprobado, via = "point", permiteQr = true, permiteFijo = true, onPendiente }: {
+export default function CobroPoint({ monto, terminal, referencia, onAprobado, via = "point", permiteQr = true, permiteFijo = true, onPendiente, cajaId = null }: {
+  cajaId?: number | null;   // la caja del sistema que cobra (cada una tiene su QR y su posnet)
   onPendiente?: (pendiente: boolean) => void;   // el cobro está esperando el pago (la caja puede frenar la venta)
   monto: number; terminal: string | null; referencia: string; onAprobado: (orden: string | null) => void; via?: "point" | "qr"; permiteQr?: boolean; permiteFijo?: boolean }) {
   const [supabase] = useState(() => crearClienteNavegador());
@@ -44,8 +45,8 @@ export default function CobroPoint({ monto, terminal, referencia, onAprobado, vi
 
   useEffect(() => {
     if (via !== "qr") return;
-    supabase.rpc("qr_fijo").then(({ data }) => { const r = data as { listo?: boolean; imagen?: string | null; plantilla?: string | null } | null; setHayFijo(!!(r?.listo && (r.imagen || r.plantilla))); });
-  }, [via, supabase]);
+    supabase.rpc("qr_fijo", cajaId ? { p_caja: cajaId } : {}).then(({ data }) => { const r = data as { listo?: boolean; imagen?: string | null; plantilla?: string | null } | null; setHayFijo(!!(r?.listo && (r.imagen || r.plantilla))); });
+  }, [via, supabase, cajaId]);
 
   // El QR se dibuja acá a partir del texto que da Mercado Pago (no sale de la base como imagen)
   useEffect(() => {
@@ -55,7 +56,7 @@ export default function CobroPoint({ monto, terminal, referencia, onAprobado, vi
 
   async function mandar(delMostrador = false) {
     setError(""); setEnviando(true); setFijo(delMostrador); setImagenQr("");
-    const { data, error: e } = via === "qr" ? await supabase.rpc("qr_cobrar", { p_monto: monto, p_modo: delMostrador ? "hybrid" : "dynamic" }) : await supabase.rpc("point_cobrar", { p_monto: monto });
+    const { data, error: e } = via === "qr" ? await supabase.rpc("qr_cobrar", { p_monto: monto, p_modo: delMostrador ? "hybrid" : "dynamic", ...(cajaId ? { p_caja: cajaId } : {}) }) : await supabase.rpc("point_cobrar", { p_monto: monto, ...(cajaId ? { p_caja: cajaId } : {}) });
     setEnviando(false);
     const r = data as { ok: boolean; error?: string; id?: number } | null;
     if (e || !r?.ok || !r.id) { setError(e?.message ?? r?.error ?? "No se pudo mandar el cobro"); return; }

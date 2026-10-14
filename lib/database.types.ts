@@ -257,6 +257,32 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"cajas": {
+                  Row: {
+                    "activa": boolean,"creado_en": string,"id": number,"mp_caja_id": string | null,"mp_externo": string | null,"mp_qr_imagen": string | null,"mp_qr_plantilla": string | null,"nombre": string,"por_defecto": boolean,"sucursal_id": number,"terminal_id": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activa"?: boolean,"creado_en"?: string,"id"?: never,"mp_caja_id"?: string | null,"mp_externo"?: string | null,"mp_qr_imagen"?: string | null,"mp_qr_plantilla"?: string | null,"nombre": string,"por_defecto"?: boolean,"sucursal_id": number,"terminal_id"?: number | null
+                  }
+                  Update: {
+                    "activa"?: boolean,"creado_en"?: string,"id"?: never,"mp_caja_id"?: string | null,"mp_externo"?: string | null,"mp_qr_imagen"?: string | null,"mp_qr_plantilla"?: string | null,"nombre"?: string,"por_defecto"?: boolean,"sucursal_id"?: number,"terminal_id"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "cajas_sucursal_id_fkey"
+      columns: ["sucursal_id"]
+isOneToOne: false
+      referencedRelation: "sucursales"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "cajas_terminal_id_fkey"
+      columns: ["terminal_id"]
+isOneToOne: false
+      referencedRelation: "point_terminales"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"categorias": {
                   Row: {
                     "alicuota_iva": number | null,"codigo": string,"cuenta_costo_id": number | null,"cuenta_venta_id": number | null,"id": number,"linea": string,"nombre": string
@@ -787,17 +813,23 @@ isOneToOne: false
                   ]
                 },"dispositivos": {
                   Row: {
-                    "activo": boolean,"clave": string,"creado_en": string,"id": number,"nombre": string
+                    "activo": boolean,"caja_id": number | null,"clave": string,"creado_en": string,"id": number,"nombre": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "activo"?: boolean,"clave"?: string,"creado_en"?: string,"id"?: never,"nombre": string
+                    "activo"?: boolean,"caja_id"?: number | null,"clave"?: string,"creado_en"?: string,"id"?: never,"nombre": string
                   }
                   Update: {
-                    "activo"?: boolean,"clave"?: string,"creado_en"?: string,"id"?: never,"nombre"?: string
+                    "activo"?: boolean,"caja_id"?: number | null,"clave"?: string,"creado_en"?: string,"id"?: never,"nombre"?: string
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "dispositivos_caja_id_fkey"
+      columns: ["caja_id"]
+isOneToOne: false
+      referencedRelation: "cajas"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"documentos_legales": {
                   Row: {
@@ -1713,17 +1745,23 @@ isOneToOne: false
                   ]
                 },"point_cobros": {
                   Row: {
-                    "actualizado_en": string,"consultado_en": string | null,"creado_en": string,"cuotas": number | null,"detalle": string | null,"estado": string,"id": number,"medio": string | null,"monto": number,"monto_pagado": number | null,"orden_id": string | null,"pago_id": string | null,"qr_data": string | null,"referencia": string,"terminal_id": string | null,"usuario_id": string | null,"venta_id": number | null,"via": string
+                    "actualizado_en": string,"caja_id": number | null,"consultado_en": string | null,"creado_en": string,"cuotas": number | null,"detalle": string | null,"estado": string,"id": number,"medio": string | null,"monto": number,"monto_pagado": number | null,"orden_id": string | null,"pago_id": string | null,"qr_data": string | null,"referencia": string,"terminal_id": string | null,"usuario_id": string | null,"venta_id": number | null,"via": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"consultado_en"?: string | null,"creado_en"?: string,"cuotas"?: number | null,"detalle"?: string | null,"estado"?: string,"id"?: never,"medio"?: string | null,"monto": number,"monto_pagado"?: number | null,"orden_id"?: string | null,"pago_id"?: string | null,"qr_data"?: string | null,"referencia": string,"terminal_id"?: string | null,"usuario_id"?: string | null,"venta_id"?: number | null,"via"?: string
+                    "actualizado_en"?: string,"caja_id"?: number | null,"consultado_en"?: string | null,"creado_en"?: string,"cuotas"?: number | null,"detalle"?: string | null,"estado"?: string,"id"?: never,"medio"?: string | null,"monto": number,"monto_pagado"?: number | null,"orden_id"?: string | null,"pago_id"?: string | null,"qr_data"?: string | null,"referencia": string,"terminal_id"?: string | null,"usuario_id"?: string | null,"venta_id"?: number | null,"via"?: string
                   }
                   Update: {
-                    "actualizado_en"?: string,"consultado_en"?: string | null,"creado_en"?: string,"cuotas"?: number | null,"detalle"?: string | null,"estado"?: string,"id"?: never,"medio"?: string | null,"monto"?: number,"monto_pagado"?: number | null,"orden_id"?: string | null,"pago_id"?: string | null,"qr_data"?: string | null,"referencia"?: string,"terminal_id"?: string | null,"usuario_id"?: string | null,"venta_id"?: number | null,"via"?: string
+                    "actualizado_en"?: string,"caja_id"?: number | null,"consultado_en"?: string | null,"creado_en"?: string,"cuotas"?: number | null,"detalle"?: string | null,"estado"?: string,"id"?: never,"medio"?: string | null,"monto"?: number,"monto_pagado"?: number | null,"orden_id"?: string | null,"pago_id"?: string | null,"qr_data"?: string | null,"referencia"?: string,"terminal_id"?: string | null,"usuario_id"?: string | null,"venta_id"?: number | null,"via"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "point_cobros_caja_id_fkey"
+      columns: ["caja_id"]
+isOneToOne: false
+      referencedRelation: "cajas"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "point_cobros_venta_id_fkey"
       columns: ["venta_id"]
 isOneToOne: false
@@ -2281,6 +2319,32 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "categorias"
       referencedColumns: ["id"]
+    }
+                  ]
+                },"sucursales": {
+                  Row: {
+                    "activa": boolean,"creado_en": string,"deposito_id": number | null,"id": number,"mp_sucursal_id": string | null,"nombre": string,"por_defecto": boolean
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activa"?: boolean,"creado_en"?: string,"deposito_id"?: number | null,"id"?: never,"mp_sucursal_id"?: string | null,"nombre": string,"por_defecto"?: boolean
+                  }
+                  Update: {
+                    "activa"?: boolean,"creado_en"?: string,"deposito_id"?: number | null,"id"?: never,"mp_sucursal_id"?: string | null,"nombre"?: string,"por_defecto"?: boolean
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sucursales_deposito_id_fkey"
+      columns: ["deposito_id"]
+isOneToOne: false
+      referencedRelation: "depositos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sucursales_deposito_id_fkey"
+      columns: ["deposito_id"]
+isOneToOne: false
+      referencedRelation: "v_stock"
+      referencedColumns: ["deposito_id"]
     }
                   ]
                 },"talles": {
@@ -2917,6 +2981,26 @@ isOneToOne: false
 "_avisos_cortos":
 { Args: { "p": (string)[] }; Returns: boolean
                            },
+"_caja_efectiva":
+{ Args: { "p_caja": number }; Returns: {
+              "activa": boolean,
+"creado_en": string,
+"id": number,
+"mp_caja_id": string | null,
+"mp_externo": string | null,
+"mp_qr_imagen": string | null,
+"mp_qr_plantilla": string | null,
+"nombre": string,
+"por_defecto": boolean,
+"sucursal_id": number,
+"terminal_id": number | null
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "cajas"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "_calcular_devolucion":
 { Args: { "p_items": Json,"p_venta": number }; Returns: {
               "bruto": number,"total": number
@@ -3124,6 +3208,9 @@ isOneToOne: false
 "_mover_stock":
 { Args: { "p_cantidad": number,"p_compra"?: number,"p_deposito": number,"p_motivo"?: string,"p_tipo": string,"p_variante": number,"p_venta"?: number }; Returns: undefined
                            },
+"_mp_error_texto":
+{ Args: { "p_cuerpo": Json,"p_status": string }; Returns: string
+                           },
 "_mp_firma_valida":
 { Args: { "p_data_id": string,"p_firma": string,"p_request_id": string }; Returns: boolean
                            },
@@ -3310,6 +3397,15 @@ isOneToOne: false
 "buscar_talle":
 { Args: { "p_escala"?: string,"p_nombre": string }; Returns: number
                            },
+"caja_crear_en_mp":
+{ Args: { "p_caja": number }; Returns: Json
+                           },
+"caja_desvincular_mp":
+{ Args: { "p_caja": number }; Returns: undefined
+                           },
+"caja_vincular_mp":
+{ Args: { "p_caja": number,"p_mp_caja": string,"p_mp_externo": string }; Returns: Json
+                           },
 "cambiar_estado_pedido":
 { Args: { "p_comentario"?: string,"p_estado": string,"p_motivo"?: string,"p_pagos"?: Json,"p_pedido": number }; Returns: number
                            },
@@ -3405,6 +3501,9 @@ isOneToOne: false
 "deshacer_ajuste_precios":
 { Args: { "p_ajuste": number }; Returns: number
                            },
+"dispositivo_asignar_caja":
+{ Args: { "p_caja": number,"p_dispositivo": number }; Returns: undefined
+                           },
 "documentos_pendientes":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -3479,6 +3578,9 @@ isOneToOne: false
 "generar_gastos_fijos":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"guardar_caja":
+{ Args: { "p_activa"?: boolean,"p_id"?: number,"p_nombre": string,"p_sucursal": number,"p_terminal"?: number }; Returns: number
+                           },
 "guardar_conexion_hosting":
 { Args: { "p_supabase_ref"?: string,"p_supabase_token"?: string,"p_vercel_equipo"?: string,"p_vercel_proyecto"?: string,"p_vercel_token"?: string }; Returns: undefined
                            },
@@ -3526,6 +3628,9 @@ isOneToOne: false
                            },
 "guardar_preferencia_cobro":
 { Args: { "p_ambito": string,"p_habilitado": boolean,"p_medio": string,"p_referencia": string }; Returns: undefined
+                           },
+"guardar_sucursal":
+{ Args: { "p_activa"?: boolean,"p_deposito"?: number,"p_id"?: number,"p_nombre": string }; Returns: number
                            },
 "guardar_tarjetas_modo":
 { Args: { "p_modo": string }; Returns: undefined
@@ -3637,13 +3742,13 @@ isOneToOne: false
 { Args: { "p_pedido": number }; Returns: boolean
                            },
 "point_caja":
-{ Args: Record<PropertyKey, never>; Returns: Json
+{ Args: { "p_caja"?: number }; Returns: Json
                            },
 "point_cancelar":
 { Args: { "p_cobro": number }; Returns: Json
                            },
 "point_cobrar":
-{ Args: { "p_monto": number }; Returns: Json
+{ Args: { "p_caja"?: number,"p_monto": number }; Returns: Json
                            },
 "point_estado":
 { Args: { "p_cobro": number }; Returns: Json
@@ -3673,13 +3778,13 @@ isOneToOne: false
 { Args: { "p_usuario": string }; Returns: boolean
                            },
 "qr_cobrar":
-{ Args: { "p_modo"?: string,"p_monto": number }; Returns: Json
+{ Args: { "p_caja"?: number,"p_modo"?: string,"p_monto": number }; Returns: Json
                            },
 "qr_desvincular":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "qr_fijo":
-{ Args: Record<PropertyKey, never>; Returns: Json
+{ Args: { "p_caja"?: number }; Returns: Json
                            },
 "qr_preparar":
 { Args: { "p_calle": string,"p_ciudad": string,"p_numero": string,"p_provincia": string }; Returns: Json
@@ -3763,6 +3868,15 @@ isOneToOne: false
                            },
 "saldo_disponible":
 { Args: { "p_cliente": number }; Returns: number
+                           },
+"sucursal_crear_en_mp":
+{ Args: { "p_calle": string,"p_ciudad": string,"p_numero": string,"p_provincia": string,"p_sucursal": number }; Returns: Json
+                           },
+"sucursal_vincular_mp":
+{ Args: { "p_mp": string,"p_sucursal": number }; Returns: undefined
+                           },
+"sucursales_estado":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "sumas_y_saldos":
 { Args: { "p_hasta": string }; Returns: {

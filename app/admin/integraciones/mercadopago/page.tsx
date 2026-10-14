@@ -27,13 +27,14 @@ export default async function PaginaMercadoPago() {
   // Las preferencias de cobro las maneja quien administra el equipo
   let prefs: DatosPreferencias | null = null;
   if (puede(permisos, "equipo.administrar")) {
-    const [{ data: roles }, { data: personas }, { data: dispositivos }, { data: preferencias }] = await Promise.all([
+    const [{ data: roles }, { data: personas }, { data: dispositivos }, { data: cajas }, { data: preferencias }] = await Promise.all([
       supabase.from("roles").select("id, nombre").eq("activo", true).order("nombre"),
       supabase.from("perfiles").select("id, nombre").eq("rol", "staff").order("nombre"),
-      supabase.from("dispositivos").select("id, clave, nombre").eq("activo", true).order("nombre"),
+      supabase.from("dispositivos").select("id, clave, nombre, caja_id").eq("activo", true).order("nombre"),
+      supabase.from("cajas").select("id, nombre, sucursales(nombre)").eq("activa", true).order("id"),
       supabase.from("preferencias_cobro").select("ambito, referencia, medio, habilitado"),
     ]);
-    prefs = { roles: roles ?? [], personas: personas ?? [], dispositivos: dispositivos ?? [], preferencias: preferencias ?? [] };
+    prefs = { roles: roles ?? [], personas: personas ?? [], dispositivos: dispositivos ?? [], cajas: (cajas ?? []).map((c) => ({ id: c.id, nombre: c.nombre, sucursal: (c.sucursales as { nombre?: string } | null)?.nombre ?? "" })), preferencias: preferencias ?? [] };
   }
   return (
     <div className="max-w-4xl space-y-6">

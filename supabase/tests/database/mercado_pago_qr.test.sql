@@ -46,12 +46,12 @@ select is(point_estado((select max(id) from point_cobros)) ->> 'qr', '0002010102
 select prueba.responder('POST', '/v1/orders/ORDQR1/cancel', 200, '{"status":"canceled"}');
 select is(point_cancelar((select max(id) from point_cobros)) ->> 'ok', 'true', 'se puede cancelar el QR');
 -- Reintento: si la sucursal ya existe (la creó un intento anterior), se reutiliza
-reset role; update integraciones set mp_qr_externo = null, mp_qr_caja = null, mp_qr_sucursal = null; set local role authenticated; select prueba.como_admin();
+reset role; update cajas set mp_externo = null, mp_caja_id = null where por_defecto; update sucursales set mp_sucursal_id = null where por_defecto; set local role authenticated; select prueba.como_admin();
 select prueba.responder('POST', '/users/123456/stores', 400, '{"message":"external id ''SUCURSAL1'' is already assigned to this user 123456"}');
 select prueba.responder('GET', '/users/123456/stores/search%', 200, '{"results":[{"id":"98765"}]}');
 select is(qr_preparar('Mitre', '100', 'Rosario', 'Santa Fe') ->> 'ok', 'true', 'si la sucursal ya existía en Mercado Pago, la reutiliza y sigue con la caja');
 select is((select (estado_qr() ->> 'sucursal')), 'true', 'queda la sucursal que ya existía');
-reset role; update integraciones set mp_qr_externo = null, mp_qr_caja = null; set local role authenticated; select prueba.como_admin();
+reset role; update cajas set mp_externo = null, mp_caja_id = null where por_defecto; set local role authenticated; select prueba.como_admin();
 select is(qr_preparar('Mitre', '100', 'Rosario', 'Santa Fe') ->> 'ok', 'true', 'y si falló la caja, el reintento no vuelve a crear la sucursal');
 
 -- QR fijo (híbrido)
@@ -62,7 +62,7 @@ select prueba.responder('POST', '/v1/orders', 201, '{"id":"ORDQR2","status":"cre
 select is(qr_cobrar(8000, 'hybrid') ->> 'ok', 'true', 'con el QR del mostrador no hace falta el texto del QR');
 select is((select cuerpo -> 'config' -> 'qr' ->> 'mode' from prueba.llamadas where ruta = '/v1/orders' order by id desc limit 1), 'hybrid', 'se pide en modo híbrido');
 -- Elegir una sucursal y una caja que ya existen en la cuenta
-reset role; update integraciones set mp_qr_externo = null, mp_qr_caja = null, mp_qr_sucursal = null; set local role authenticated; select prueba.como_admin();
+reset role; update cajas set mp_externo = null, mp_caja_id = null where por_defecto; update sucursales set mp_sucursal_id = null where por_defecto; set local role authenticated; select prueba.como_admin();
 select prueba.responder('GET', '/users/123456/stores/search%', 200, '{"results":[{"id":"111","name":"Local Centro","external_id":"CENTRO","location":{"address_line":"Mitre 100"}},{"id":"222","name":"Depósito","external_id":"DEP"}]}');
 select prueba.responder('GET', '/pos?store_id=111', 200, '{"results":[{"id":701,"name":"Caja 1","external_id":"C1"},{"id":702,"name":"Caja sin código"}]}');
 select prueba.responder('GET', '/pos?store_id=222', 200, '{"results":[]}');

@@ -30,7 +30,8 @@ grant execute on all functions in schema prueba to anon, authenticated;
 select plan(13);
 
 reset role;
-update integraciones set mp_access_token = 'APP_USR-1234567890-abcdefghij-xyz', mp_webhook_secret = 'secreto', mp_point_token = null, mp_point_secreto = null, mp_qr_externo = 'CAJA1';
+update integraciones set mp_access_token = 'APP_USR-1234567890-abcdefghij-xyz', mp_webhook_secret = 'secreto', mp_point_token = null, mp_point_secreto = null;
+update cajas set mp_externo = 'CAJA1', mp_caja_id = '1' where por_defecto;
 insert into point_terminales (terminal_id, nombre, modo, activa, por_defecto) values ('TERM1', 'Posnet', 'PDV', true, true);
 set local role authenticated; select prueba.como_admin();
 select ajustar_stock((select v.id from variantes v join productos p on p.id = v.producto_id where p.activo order by v.id limit 1), 50, 'Inventario para la prueba');

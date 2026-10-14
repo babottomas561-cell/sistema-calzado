@@ -444,3 +444,11 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
 
     **QR y sucursales existentes:** `qr_sucursales()` lee las sucursales y cajas de la cuenta de Mercado Pago y `qr_usar_sucursal()` usa una (o crea una caja nueva en ella); `qr_preparar()` crea una sucursal nueva.
     **Esperar el pago** (`configuracion_tienda.cobro_espera_pago`, encendido de fábrica; `cobro_espera_pago()`): mientras un cobro por posnet o QR está pendiente la caja no deja confirmar la venta ni suelta el ticket.
+
+37. **Sucursales y cajas** (`sucursales`, `cajas`; módulo `sucursales` APAGADO de fábrica: `/admin/sucursales`): siempre existe una sucursal y una caja «principal» (quien tiene un solo local no ve nada distinto; el cobro con QR de
+    Integraciones → Mercado Pago trabaja sobre la caja principal). Cada sucursal es de un depósito y se vincula con UNA sucursal de Mercado Pago (`mp_sucursal_id`, única); cada caja con UNA caja de Mercado Pago (`mp_caja_id`,
+    `mp_externo` = su `external_id`, lo que pide la orden de QR; única) y con UN posnet (`terminal_id`). Cada dispositivo (`dispositivos.caja_id`) cobra con la caja asignada: `cobro_medios(clave)` devuelve su `caja`
+    (`point_caja(p_caja)`), y `point_cobrar(…, p_caja)`, `qr_cobrar(…, p_caja)` y `qr_fijo(p_caja)` usan SU QR y SU posnet; el cobro anota `caja_id`. Mercado Pago pide `store_id` como TEXTO, un monto mínimo de $ 15 por QR
+    (`_mp_error_texto` explica los rechazos) y el `external_id` de cada caja tiene que ser distinto (`CAJA<id>`). Falta: los datos fiscales (razón social, CUIT, certificado y punto de venta de ARCA) por sucursal.
+38. **Supabase en la nube rechaza un `UPDATE` sin `WHERE`** (la base local no): en la fila única de `integraciones` / `configuracion_tienda` usar siempre `where unica`. `scripts/migraciones.test.mjs` lo controla en las migraciones nuevas.
+    Y una función con parámetros opcionales los declara `default null`: la pantalla omite los vacíos y PostgREST resuelve la función por los nombres que llegan.

@@ -39,6 +39,7 @@ export const GRUPOS: { titulo?: string; items: Item[] }[] = [
   { titulo: "Configuración", items: [
     { href: "/admin/tienda", texto: "Tienda online", icono: Store, permisos: ["tienda.editar"] },
     { href: "/admin/integraciones", texto: "Integraciones", icono: Plug, permisos: ["tienda.editar"] },
+    { href: "/admin/sucursales", texto: "Sucursales y cajas", icono: Store, permisos: ["equipo.administrar", "tienda.editar"] },
     { href: "/admin/tablas", texto: "Tablas", icono: Settings2, permisos: ["tablas.editar", "tablas.catalogo", "tablas.medios_pago", "tablas.depositos"], fijo: true },
     { href: "/admin/impresion", texto: "Impresión", icono: Printer, permisos: ["tablas.editar"] },
     { href: "/admin/equipo", texto: "Equipo", icono: ShieldCheck, permisos: ["equipo.administrar", "equipo.personas", "equipo.roles", "equipo.modulos", "equipo.cuentas"], fijo: true },

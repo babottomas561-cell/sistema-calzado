@@ -4,11 +4,12 @@
 import { useEffect, useState, useTransition } from "react";
 import { Smartphone, Trash2 } from "lucide-react";
 import { guardarPreferenciaCobro, quitarDispositivo, registrarDispositivo } from "./acciones";
+import { asignarCajaDispositivo } from "../sucursales/acciones";
 
 const MEDIOS = [["posnet", "Posnet"], ["qr", "QR en pantalla"], ["qr_fijo", "QR del mostrador"]] as const;
 const CLAVE = "dispositivo_cobro";
 type Fila = { ambito: "rol" | "usuario" | "dispositivo"; ref: string; nombre: string };
-export type DatosPreferencias = { roles: { id: number; nombre: string }[]; personas: { id: string; nombre: string | null }[]; dispositivos: { id: number; clave: string; nombre: string }[];
+export type DatosPreferencias = { roles: { id: number; nombre: string }[]; personas: { id: string; nombre: string | null }[]; dispositivos: { id: number; clave: string; nombre: string; caja_id: number | null }[]; cajas: { id: number; nombre: string; sucursal: string }[];
   preferencias: { ambito: string; referencia: string; medio: string; habilitado: boolean }[] };
 
 function Tabla({ titulo, ayuda, filas, prefs, onQuitar }: { titulo: string; ayuda: string; filas: Fila[]; prefs: DatosPreferencias["preferencias"]; onQuitar?: (ref: string) => void }) {
@@ -79,6 +80,21 @@ export default function PreferenciasCobro({ datos }: { datos: DatosPreferencias 
       <Tabla titulo="Por rol" ayuda="Por ejemplo, que el Vendedor no pueda cobrar con QR." filas={datos.roles.map((r) => ({ ambito: "rol" as const, ref: String(r.id), nombre: r.nombre }))} prefs={datos.preferencias} />
       <Tabla titulo="Por persona" ayuda="Para una excepción de alguien en particular." filas={datos.personas.map((p) => ({ ambito: "usuario" as const, ref: p.id, nombre: p.nombre ?? "Sin nombre" }))} prefs={datos.preferencias} />
       <Tabla titulo="Por dispositivo" ayuda="Cada aparato (la tablet del mostrador, tu celular) se registra una vez, entrando desde ese aparato." filas={datos.dispositivos.map((d) => ({ ambito: "dispositivo" as const, ref: String(d.id), nombre: d.nombre + (d.clave === mio ? " (este aparato)" : "") }))} prefs={datos.preferencias} onQuitar={quitar} />
+      {datos.dispositivos.length > 0 && datos.cajas.length > 1 && (
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">Caja de cada dispositivo</p>
+          <p className="text-xs text-texto-2">Cada aparato cobra con el QR y el posnet de la caja que le asignes. Sin asignar, usa la caja principal.</p>
+          {datos.dispositivos.map((d) => (
+            <div key={d.id} className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="min-w-40 font-medium">{d.nombre}</span>
+              <select aria-label={`Caja de ${d.nombre}`} defaultValue={d.caja_id ?? ""} className="campo h-9 w-auto py-1 text-sm"
+                onChange={(ev) => empezar(async () => { const r = await asignarCajaDispositivo(d.id, ev.target.value ? Number(ev.target.value) : null); setError(r.error ?? ""); })}>
+                <option value="">La principal</option>{datos.cajas.map((c) => <option key={c.id} value={c.id}>{c.sucursal} · {c.nombre}</option>)}
+              </select>
+            </div>
+          ))}
+        </div>
+      )}
       <div className="space-y-2 rounded-lg border border-borde p-3">
         <p className="flex items-center gap-2 text-sm font-semibold"><Smartphone size={16} strokeWidth={1.8} /> {esteAparato ? `Este aparato está registrado como «${esteAparato.nombre}»` : "Registrar este aparato"}</p>
         {!esteAparato && (
