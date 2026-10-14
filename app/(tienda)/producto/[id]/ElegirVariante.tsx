@@ -1,9 +1,10 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useCarrito } from "@/lib/carrito";
 import { pesos, porcentaje } from "@/lib/formato";
 import { ajusteDe, type MedioPago } from "@/lib/medios";
+import { volarAlCarrito } from "@/lib/volar-al-carrito";
 import { Check, ChevronRight, ShoppingBag } from "lucide-react";
 
 type V = { variante_id: number; producto_id: number; nombre: string; talle: string; color: string; color_hex: string | null; precio: number; disponible: number };
@@ -17,6 +18,7 @@ export default function ElegirVariante({ variantes: todas, mejorMedio, imagen }:
   const [elegida, setElegida] = useState<V | null>(null);
   const [agregado, setAgregado] = useState(false);
   const { agregar } = useCarrito();
+  const boton = useRef<HTMLButtonElement>(null);
 
   if (!variantes.length) return (
     <div className="space-y-3">
@@ -28,7 +30,9 @@ export default function ElegirVariante({ variantes: todas, mejorMedio, imagen }:
   const delColor = variantes.filter((v) => v.color === color);
   const precio = elegida?.precio ?? Math.min(...delColor.map((v) => Number(v.precio)));
   const conMedio = mejorMedio ? precio + ajusteDe(precio, mejorMedio.ajuste_pct) : null;
-  const agregarAlCarrito = () => { if (elegida) { agregar({ ...elegida, precio: Number(elegida.precio), imagen_url: imagen ?? null }); setAgregado(true); } };
+  const agregarAlCarrito = () => { if (elegida) { agregar({ ...elegida, precio: Number(elegida.precio), imagen_url: imagen ?? null }); setAgregado(true);
+    // La foto vuela al carrito (si no hay foto a la vista, sale del botón)
+    void volarAlCarrito(document.querySelector("[data-foto-principal]"), imagen ?? null, boton.current); } };
 
   return (
     <div className="space-y-6">
@@ -61,7 +65,7 @@ export default function ElegirVariante({ variantes: todas, mejorMedio, imagen }:
 
       {/* En el celular la compra queda fija abajo, al alcance del pulgar */}
       <div className="fixed inset-x-0 bottom-0 z-10 border-t border-borde bg-white px-4 py-3 lg:static lg:border-0 lg:p-0">
-        <button className="boton w-full" disabled={!elegida} onClick={agregarAlCarrito}>
+        <button ref={boton} className="boton w-full" disabled={!elegida} onClick={agregarAlCarrito}>
           <ShoppingBag size={19} /> {elegida ? `Agregar al carrito · ${pesos(elegida.precio)}` : "Elegí un talle"}</button>
       </div>
       <div role="status" aria-live="polite">

@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useCarrito } from "@/lib/carrito";
 import { numero, pesos, porcentaje } from "@/lib/formato";
 import { ajusteDe, type MedioPago } from "@/lib/medios";
@@ -14,6 +15,7 @@ export type ZonaEnvio = { id: number; nombre: string; descripcion: string | null
 // conSesion: si ya ingresó. Sin cuenta, el pedido no se arma: primero se le pide crearla (o ingresar) y vuelve acá con el carrito intacto.
 export default function Carrito({ pendientes, medios, conSesion, conWhatsApp, mpId, zonas }: { pendientes: { tipo: string; version: number }[]; medios: MedioPago[]; conSesion: boolean; conWhatsApp: boolean; mpId: number | null; zonas: ZonaEnvio[] }) {
   const { items, cargado, total, cambiar, quitar } = useCarrito();
+  const [lista] = useAutoAnimate({ duration: 260 });   // los renglones entran, salen y se acomodan suave (respeta «menos movimiento»)
   const [entrega, setEntrega] = useState("retiro");
   const [zonaId, setZonaId] = useState<number | null>(null);
   const zona = entrega === "envio" ? zonas.find((z) => z.id === zonaId) : undefined;
@@ -48,7 +50,7 @@ export default function Carrito({ pendientes, medios, conSesion, conWhatsApp, mp
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
       <section className="space-y-4">
         <h1 className="text-3xl font-extrabold tracking-[-0.035em]">Tu carrito <span className="text-xl font-semibold text-texto-2">({items.reduce((s, i) => s + i.cantidad, 0)})</span></h1>
-        <ul className="divide-y divide-borde border-y border-borde">
+        <ul ref={lista} className="divide-y divide-borde border-y border-borde">
         {items.map((i) => (
           <li key={i.variante_id} className="flex gap-4 py-5">
             <Link href={`/producto/${i.producto_id}`} className="grid h-28 w-[5.5rem] shrink-0 place-items-center overflow-hidden rounded-sm bg-marca-suave text-gray-300" aria-label={i.nombre}>
