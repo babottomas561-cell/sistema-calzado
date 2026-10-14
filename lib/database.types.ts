@@ -505,14 +505,14 @@ isOneToOne: false
                   ]
                 },"configuracion_tienda": {
                   Row: {
-                    "aviso_enlace": string | null,"avisos": (string)[],"color_marca": string | null,"dias_cambio": number,"dias_retiro": number,"dias_saldo": number,"direccion_retiro": string | null,"envio_requiere_pago": boolean,"horario": string | null,"ia_modelo": string,"ia_plan": string,"icono_ruta": string | null,"icono_url": string | null,"id": number,"instagram": string | null,"logo_oscuro_ruta": string | null,"logo_oscuro_url": string | null,"logo_ruta": string | null,"logo_url": string | null,"mp_cuotas_max": number,"mp_modo": string,"nombre": string,"unica": boolean,"wa_bot_activo": boolean,"wa_idioma_plantilla": string,"wa_notificaciones_pedidos": boolean,"wa_plantilla_estado": string | null,"whatsapp": string | null
+                    "aviso_enlace": string | null,"avisos": (string)[],"color_marca": string | null,"dias_cambio": number,"dias_retiro": number,"cuenta_corriente_clientes": boolean,"listas_precios_activas": boolean,"multisucursal_activa": boolean,"dias_saldo": number,"direccion_retiro": string | null,"envio_requiere_pago": boolean,"horario": string | null,"ia_modelo": string,"ia_plan": string,"icono_ruta": string | null,"icono_url": string | null,"id": number,"instagram": string | null,"logo_oscuro_ruta": string | null,"logo_oscuro_url": string | null,"logo_ruta": string | null,"logo_url": string | null,"mp_cuotas_max": number,"mp_modo": string,"nombre": string,"unica": boolean,"wa_bot_activo": boolean,"wa_idioma_plantilla": string,"wa_notificaciones_pedidos": boolean,"wa_plantilla_estado": string | null,"whatsapp": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"color_marca"?: string | null,"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"envio_requiere_pago"?: boolean,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"icono_ruta"?: string | null,"icono_url"?: string | null,"id"?: never,"instagram"?: string | null,"logo_oscuro_ruta"?: string | null,"logo_oscuro_url"?: string | null,"logo_ruta"?: string | null,"logo_url"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"color_marca"?: string | null,"dias_cambio"?: number,"dias_retiro"?: number,"cuenta_corriente_clientes"?: boolean,"listas_precios_activas"?: boolean,"multisucursal_activa"?: boolean,"dias_saldo"?: number,"direccion_retiro"?: string | null,"envio_requiere_pago"?: boolean,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"icono_ruta"?: string | null,"icono_url"?: string | null,"id"?: never,"instagram"?: string | null,"logo_oscuro_ruta"?: string | null,"logo_oscuro_url"?: string | null,"logo_ruta"?: string | null,"logo_url"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
                   }
                   Update: {
-                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"color_marca"?: string | null,"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"envio_requiere_pago"?: boolean,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"icono_ruta"?: string | null,"icono_url"?: string | null,"id"?: never,"instagram"?: string | null,"logo_oscuro_ruta"?: string | null,"logo_oscuro_url"?: string | null,"logo_ruta"?: string | null,"logo_url"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"color_marca"?: string | null,"dias_cambio"?: number,"dias_retiro"?: number,"cuenta_corriente_clientes"?: boolean,"listas_precios_activas"?: boolean,"multisucursal_activa"?: boolean,"dias_saldo"?: number,"direccion_retiro"?: string | null,"envio_requiere_pago"?: boolean,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"icono_ruta"?: string | null,"icono_url"?: string | null,"id"?: never,"instagram"?: string | null,"logo_oscuro_ruta"?: string | null,"logo_oscuro_url"?: string | null,"logo_ruta"?: string | null,"logo_url"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
                   }
                   Relationships: [
                     {
@@ -635,14 +635,14 @@ isOneToOne: false
                   ]
                 },"depositos": {
                   Row: {
-                    "activo": boolean,"id": number,"nombre": string,"vendible": boolean
+                    "activo": boolean,"id": number,"nombre": string,"sucursal_id": number | null,"vendible": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "activo"?: boolean,"id"?: never,"nombre": string,"vendible"?: boolean
+                    "activo"?: boolean,"id"?: never,"nombre": string,"sucursal_id"?: number | null,"vendible"?: boolean
                   }
                   Update: {
-                    "activo"?: boolean,"id"?: never,"nombre"?: string,"vendible"?: boolean
+                    "activo"?: boolean,"id"?: never,"nombre"?: string,"sucursal_id"?: number | null,"vendible"?: boolean
                   }
                   Relationships: [
                     
@@ -1147,6 +1147,45 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"listas_precios": {
+                  Row: {
+                    "activa": boolean,"ajuste_pct": number,"canal": string,"codigo": string,"creado_en": string,"actualizado_en": string,"es_default_local": boolean,"es_default_web": boolean,"id": number,"nombre": string,"redondeo": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activa"?: boolean,"ajuste_pct"?: number,"canal"?: string,"codigo": string,"creado_en"?: string,"actualizado_en"?: string,"es_default_local"?: boolean,"es_default_web"?: boolean,"id"?: never,"nombre": string,"redondeo"?: string
+                  }
+                  Update: {
+                    "activa"?: boolean,"ajuste_pct"?: number,"canal"?: string,"codigo"?: string,"creado_en"?: string,"actualizado_en"?: string,"es_default_local"?: boolean,"es_default_web"?: boolean,"id"?: never,"nombre"?: string,"redondeo"?: string
+                  }
+                  Relationships: []
+                },"lista_precio_items": {
+                  Row: {
+                    "id": number,"lista_id": number,"precio": number,"producto_id": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "id"?: never,"lista_id": number,"precio": number,"producto_id": number
+                  }
+                  Update: {
+                    "id"?: never,"lista_id"?: number,"precio"?: number,"producto_id"?: number
+                  }
+                  Relationships: [
+                    {
+                      foreignKeyName: "lista_precio_items_lista_id_fkey"
+                      columns: ["lista_id"]
+                      isOneToOne: false
+                      referencedRelation: "listas_precios"
+                      referencedColumns: ["id"]
+                    },
+                    {
+                      foreignKeyName: "lista_precio_items_producto_id_fkey"
+                      columns: ["producto_id"]
+                      isOneToOne: false
+                      referencedRelation: "productos"
+                      referencedColumns: ["id"]
+                    }
+                  ]
                 },"marcas": {
                   Row: {
                     "codigo": string,"id": number,"nombre": string
@@ -1163,14 +1202,14 @@ isOneToOne: false
                   ]
                 },"medios_pago": {
                   Row: {
-                    "activo": boolean,"ajuste_pct": number,"codigo": string,"cuenta_id": number | null,"cuotas": number,"en_mostrador": boolean,"en_tienda": boolean,"es_saldo": boolean,"id": number,"nombre": string,"orden": number,"siempre_factura": boolean,"tipo": string
+                    "activo": boolean,"ajuste_pct": number,"codigo": string,"cuenta_id": number | null,"cuotas": number,"en_mostrador": boolean,"en_tienda": boolean,"es_cuenta_corriente": boolean,"es_saldo": boolean,"id": number,"nombre": string,"orden": number,"siempre_factura": boolean,"tipo": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "activo"?: boolean,"ajuste_pct"?: number,"codigo": string,"cuenta_id"?: number | null,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre": string,"orden"?: number,"siempre_factura"?: boolean,"tipo": string
+                    "activo"?: boolean,"ajuste_pct"?: number,"codigo": string,"cuenta_id"?: number | null,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_cuenta_corriente"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre": string,"orden"?: number,"siempre_factura"?: boolean,"tipo": string
                   }
                   Update: {
-                    "activo"?: boolean,"ajuste_pct"?: number,"codigo"?: string,"cuenta_id"?: number | null,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre"?: string,"orden"?: number,"siempre_factura"?: boolean,"tipo"?: string
+                    "activo"?: boolean,"ajuste_pct"?: number,"codigo"?: string,"cuenta_id"?: number | null,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_cuenta_corriente"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre"?: string,"orden"?: number,"siempre_factura"?: boolean,"tipo"?: string
                   }
                   Relationships: [
                     {
@@ -1181,7 +1220,160 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"menu_usuario": {
+                },"cuentas_corrientes_cliente": {
+  Row: {
+    "cliente_id": number,
+    "debe": number,
+    "detalle": string | null,
+    "fecha": string,
+    "haber": number,
+    "id": number,
+    "recibo_id": number | null,
+    "tipo": string,
+    "usuario_id": string | null,
+    "venta_id": number | null
+  }
+  ComputedFields: never
+  Insert: {
+    "cliente_id": number,
+    "debe"?: number,
+    "detalle"?: string | null,
+    "fecha"?: string,
+    "haber"?: number,
+    "id"?: never,
+    "recibo_id"?: number | null,
+    "tipo": string,
+    "usuario_id"?: string | null,
+    "venta_id"?: number | null
+  }
+  Update: {
+    "cliente_id"?: number,
+    "debe"?: number,
+    "detalle"?: string | null,
+    "fecha"?: string,
+    "haber"?: number,
+    "id"?: never,
+    "recibo_id"?: number | null,
+    "tipo"?: string,
+    "usuario_id"?: string | null,
+    "venta_id"?: number | null
+  }
+  Relationships: [
+    {
+      foreignKeyName: "cuentas_corrientes_cliente_cliente_id_fkey"
+      columns: ["cliente_id"]
+      isOneToOne: false
+      referencedRelation: "clientes"
+      referencedColumns: ["id"]
+    },
+    {
+      foreignKeyName: "cuentas_corrientes_cliente_recibo_id_fkey"
+      columns: ["recibo_id"]
+      isOneToOne: false
+      referencedRelation: "recibos"
+      referencedColumns: ["id"]
+    },
+    {
+      foreignKeyName: "cuentas_corrientes_cliente_venta_id_fkey"
+      columns: ["venta_id"]
+      isOneToOne: false
+      referencedRelation: "ventas"
+      referencedColumns: ["id"]
+    }
+  ]
+},"recibos": {
+  Row: {
+    "anulado_en": string | null,
+    "anulado_motivo": string | null,
+    "cliente_id": number,
+    "comprobante": string,
+    "creado_en": string,
+    "fecha": string,
+    "id": number,
+    "notas": string | null,
+    "numero": number,
+    "punto_venta": number,
+    "total": number,
+    "usuario_id": string | null
+  }
+  ComputedFields: never
+  Insert: {
+    "anulado_en"?: string | null,
+    "anulado_motivo"?: string | null,
+    "cliente_id": number,
+    "comprobante"?: never,
+    "creado_en"?: string,
+    "fecha"?: string,
+    "id"?: never,
+    "notas"?: string | null,
+    "numero"?: number,
+    "punto_venta"?: number,
+    "total": number,
+    "usuario_id"?: string | null
+  }
+  Update: {
+    "anulado_en"?: string | null,
+    "anulado_motivo"?: string | null,
+    "cliente_id"?: number,
+    "comprobante"?: never,
+    "creado_en"?: string,
+    "fecha"?: string,
+    "id"?: never,
+    "notas"?: string | null,
+    "numero"?: number,
+    "punto_venta"?: number,
+    "total"?: number,
+    "usuario_id"?: string | null
+  }
+  Relationships: [
+    {
+      foreignKeyName: "recibos_cliente_id_fkey"
+      columns: ["cliente_id"]
+      isOneToOne: false
+      referencedRelation: "clientes"
+      referencedColumns: ["id"]
+    }
+  ]
+},"recibo_pagos": {
+  Row: {
+    "id": number,
+    "medio_pago_id": number,
+    "monto": number,
+    "recibo_id": number,
+    "referencia": string | null
+  }
+  ComputedFields: never
+  Insert: {
+    "id"?: never,
+    "medio_pago_id": number,
+    "monto": number,
+    "recibo_id": number,
+    "referencia"?: string | null
+  }
+  Update: {
+    "id"?: never,
+    "medio_pago_id"?: number,
+    "monto"?: number,
+    "recibo_id"?: number,
+    "referencia"?: string | null
+  }
+  Relationships: [
+    {
+      foreignKeyName: "recibo_pagos_medio_pago_id_fkey"
+      columns: ["medio_pago_id"]
+      isOneToOne: false
+      referencedRelation: "medios_pago"
+      referencedColumns: ["id"]
+    },
+    {
+      foreignKeyName: "recibo_pagos_recibo_id_fkey"
+      columns: ["recibo_id"]
+      isOneToOne: false
+      referencedRelation: "recibos"
+      referencedColumns: ["id"]
+    }
+  ]
+},"menu_usuario": {
                   Row: {
                     "favoritos": (string)[],"ocultos": (string)[],"usuario_id": string
                   }
@@ -1479,14 +1671,14 @@ isOneToOne: false
                   ]
                 },"perfiles": {
                   Row: {
-                    "id": string,"nombre": string | null,"rol": string,"rol_id": number | null,"terminos_aceptados_en": string | null
+                    "id": string,"nombre": string | null,"rol": string,"rol_id": number | null,"sucursal_id": number | null,"punto_venta_id": number | null,"terminos_aceptados_en": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "id": string,"nombre"?: string | null,"rol"?: string,"rol_id"?: number | null,"terminos_aceptados_en"?: string | null
+                    "id": string,"nombre"?: string | null,"rol"?: string,"rol_id"?: number | null,"sucursal_id"?: number | null,"punto_venta_id"?: number | null,"terminos_aceptados_en"?: string | null
                   }
                   Update: {
-                    "id"?: string,"nombre"?: string | null,"rol"?: string,"rol_id"?: number | null,"terminos_aceptados_en"?: string | null
+                    "id"?: string,"nombre"?: string | null,"rol"?: string,"rol_id"?: number | null,"sucursal_id"?: number | null,"punto_venta_id"?: number | null,"terminos_aceptados_en"?: string | null
                   }
                   Relationships: [
                     {
@@ -1883,6 +2075,46 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"puntos_venta": {
+                  Row: {
+                    "activo": boolean,"id": number,"nombre": string,"numero": number,"sucursal_id": number,"tipo": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activo"?: boolean,"id"?: never,"nombre": string,"numero": number,"sucursal_id": number,"tipo"?: string
+                  }
+                  Update: {
+                    "activo"?: boolean,"id"?: never,"nombre"?: string,"numero"?: number,"sucursal_id"?: number,"tipo"?: string
+                  }
+                  Relationships: [
+                    {
+                      foreignKeyName: "puntos_venta_sucursal_id_fkey"
+                      columns: ["sucursal_id"]
+                      isOneToOne: false
+                      referencedRelation: "sucursales"
+                      referencedColumns: ["id"]
+                    }
+                  ]
+                },"sucursales": {
+                  Row: {
+                    "activa": boolean,"actualizado_en": string,"codigo": string,"creado_en": string,"deposito_id": number | null,"direccion": string | null,"es_casa_central": boolean,"id": number,"nombre": string,"telefono": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activa"?: boolean,"actualizado_en"?: string,"codigo": string,"creado_en"?: string,"deposito_id"?: number | null,"direccion"?: string | null,"es_casa_central"?: boolean,"id"?: never,"nombre": string,"telefono"?: string | null
+                  }
+                  Update: {
+                    "activa"?: boolean,"actualizado_en"?: string,"codigo"?: string,"creado_en"?: string,"deposito_id"?: number | null,"direccion"?: string | null,"es_casa_central"?: boolean,"id"?: never,"nombre"?: string,"telefono"?: string | null
+                  }
+                  Relationships: [
+                    {
+                      foreignKeyName: "sucursales_deposito_id_fkey"
+                      columns: ["deposito_id"]
+                      isOneToOne: false
+                      referencedRelation: "depositos"
+                      referencedColumns: ["id"]
+                    }
+                  ]
                 },"proveedores": {
                   Row: {
                     "codigo": number,"creado_en": string,"cuenta_id": number | null,"documento": string | null,"email": string | null,"id": number,"nombre": string,"notas": string | null,"telefono": string | null
@@ -2179,14 +2411,14 @@ isOneToOne: false
                   ]
                 },"ventas": {
                   Row: {
-                    "ajuste_medio_pago": number,"anulada_en": string | null,"anulada_por": string | null,"canal": string,"cliente_id": number | null,"comentario_anulacion": string | null,"comprobante": string | null,"deposito_id": number,"descuento": number,"descuento_promociones": number,"fecha": string,"id": number,"motivo_anulacion": string | null,"notas": string | null,"numero": number | null,"pedido_id": number | null,"punto_venta": number,"subtotal": number,"total": number,"usuario_id": string | null,"vendedor_id": string | null
+                    "ajuste_medio_pago": number,"anulada_en": string | null,"anulada_por": string | null,"canal": string,"cliente_id": number | null,"comentario_anulacion": string | null,"comprobante": string | null,"deposito_id": number,"descuento": number,"descuento_promociones": number,"fecha": string,"id": number,"lista_precio_id": number | null,"motivo_anulacion": string | null,"notas": string | null,"numero": number | null,"pedido_id": number | null,"punto_venta": number,"subtotal": number,"sucursal_id": number | null,"total": number,"usuario_id": string | null,"vendedor_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "ajuste_medio_pago"?: number,"anulada_en"?: string | null,"anulada_por"?: string | null,"canal"?: string,"cliente_id"?: number | null,"comentario_anulacion"?: string | null,"comprobante"?: never,"deposito_id": number,"descuento"?: number,"descuento_promociones"?: number,"fecha"?: string,"id"?: never,"motivo_anulacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal": number,"total": number,"usuario_id"?: string | null,"vendedor_id"?: string | null
+                    "ajuste_medio_pago"?: number,"anulada_en"?: string | null,"anulada_por"?: string | null,"canal"?: string,"cliente_id"?: number | null,"comentario_anulacion"?: string | null,"comprobante"?: never,"deposito_id": number,"descuento"?: number,"descuento_promociones"?: number,"fecha"?: string,"id"?: never,"lista_precio_id"?: number | null,"motivo_anulacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal": number,"sucursal_id"?: number | null,"total": number,"usuario_id"?: string | null,"vendedor_id"?: string | null
                   }
                   Update: {
-                    "ajuste_medio_pago"?: number,"anulada_en"?: string | null,"anulada_por"?: string | null,"canal"?: string,"cliente_id"?: number | null,"comentario_anulacion"?: string | null,"comprobante"?: never,"deposito_id"?: number,"descuento"?: number,"descuento_promociones"?: number,"fecha"?: string,"id"?: never,"motivo_anulacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal"?: number,"total"?: number,"usuario_id"?: string | null,"vendedor_id"?: string | null
+                    "ajuste_medio_pago"?: number,"anulada_en"?: string | null,"anulada_por"?: string | null,"canal"?: string,"cliente_id"?: number | null,"comentario_anulacion"?: string | null,"comprobante"?: never,"deposito_id"?: number,"descuento"?: number,"descuento_promociones"?: number,"fecha"?: string,"id"?: never,"lista_precio_id"?: number | null,"motivo_anulacion"?: string | null,"notas"?: string | null,"numero"?: number | null,"pedido_id"?: number | null,"punto_venta"?: number,"subtotal"?: number,"sucursal_id"?: number | null,"total"?: number,"usuario_id"?: string | null,"vendedor_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -2308,7 +2540,16 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"v_creditos": {
+                },"v_cuenta_corriente_saldos": {
+  Row: {
+    "cliente_id": number | null,
+    "nombre": string | null,
+    "saldo_deudor": number | null,
+    "total_debe": number | null,
+    "total_haber": number | null
+  }
+  Relationships: []
+},"v_creditos": {
                   Row: {
                     "cliente_id": number | null,"devolucion": string | null,"devolucion_id": number | null,"fecha": string | null,"id": number | null,"monto": number | null,"restante": number | null,"vence": string | null
                   }
@@ -2605,6 +2846,26 @@ isOneToOne: false
                 }
           }
           Functions: {
+            "alternar_multisucursal": {
+              Args: { "p_activa": boolean }
+              Returns: undefined
+            },
+            "transferir_stock": {
+              Args: { "p_cantidad": number; "p_destino": number; "p_motivo"?: string | null; "p_origen": number; "p_variante": number }
+              Returns: undefined
+            },
+            "alternar_listas_precios": {
+              Args: { "p_activa": boolean }
+              Returns: undefined
+            },
+            "anular_recibo": {
+              Args: { "p_motivo"?: string | null; "p_recibo": number }
+              Returns: undefined
+            },
+            "registrar_recibo": {
+              Args: { "p_cliente": number; "p_notas"?: string | null; "p_pagos": Json }
+              Returns: number
+            },
             "_alicuota_de":
 { Args: { "p_variante": number }; Returns: number
                            },
@@ -2983,6 +3244,9 @@ isOneToOne: false
 "asignar_rol":
 { Args: { "p_email": string,"p_rol": number }; Returns: string
                            },
+"asignar_sucursal_usuario":
+{ Args: { "p_usuario_id": string; "p_sucursal_id"?: number | null; "p_punto_venta_id"?: number | null }; Returns: undefined
+                           },
 "autorizar_descuento":
 { Args: { "p_monto": number,"p_pin": string }; Returns: Json
                            },
@@ -3086,7 +3350,8 @@ isOneToOne: false
                            },
 "equipo":
 { Args: Record<PropertyKey, never>; Returns: {
-              "desde": string,"email": string,"nombre": string,"rol": string,"rol_id": number,"usuario_id": string
+              "desde": string,"email": string,"nombre": string,"rol": string,"rol_id": number,"usuario_id": string,
+              "sucursal_id": number | null,"sucursal": string | null,"punto_venta_id": number | null,"punto_venta": string | null
             }[]
                            },
 "es_staff":

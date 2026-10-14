@@ -10,7 +10,7 @@ export const FORMATOS: Record<FormatoComprobante, { nombre: string; ancho: numbe
 };
 export const esFormato = (x: unknown): x is FormatoComprobante => x === "ticket80" || x === "ticket58" || x === "a4";
 
-export const TIPOS_COMPROBANTE = ["venta", "presupuesto", "devolucion"] as const;
+export const TIPOS_COMPROBANTE = ["venta", "presupuesto", "devolucion", "recibo"] as const;
 export type TipoComprobante = (typeof TIPOS_COMPROBANTE)[number];
 export const esTipo = (x: unknown): x is TipoComprobante => (TIPOS_COMPROBANTE as readonly unknown[]).includes(x);
 
@@ -24,7 +24,7 @@ export const MODOS_IMPRESION: Record<ModoImpresion, { nombre: string; detalle: s
   manual: { nombre: "Manual", detalle: "No se ofrece nada al vender: se imprime o se manda después, desde la venta." },
 };
 // Cada comprobante puede tener su formato (Impresión → Comprobantes); lo que no se configura sale como el general
-export const CLAVES_COMPROBANTE = ["factura", "nota_credito", "interno", "presupuesto", "devolucion"] as const;
+export const CLAVES_COMPROBANTE = ["factura", "nota_credito", "interno", "presupuesto", "devolucion", "recibo"] as const;
 export type ClaveComprobante = (typeof CLAVES_COMPROBANTE)[number];
 export const NOMBRE_CLAVE: Record<ClaveComprobante, { nombre: string; detalle: string }> = {
   factura: { nombre: "Factura", detalle: "La factura de ARCA (A, B o C), con CAE y QR." },
@@ -32,6 +32,7 @@ export const NOMBRE_CLAVE: Record<ClaveComprobante, { nombre: string; detalle: s
   interno: { nombre: "Comprobante interno", detalle: "Una venta sin factura («No válido como factura»)." },
   presupuesto: { nombre: "Presupuesto", detalle: "Lo que se le pasa al cliente antes de comprar." },
   devolucion: { nombre: "Devolución", detalle: "La constancia del saldo a favor de una venta sin factura." },
+  recibo: { nombre: "Recibo de cobro", detalle: "Constancia oficial de cobro de cuenta corriente." },
 };
 export type LetraComprobante = "chica" | "normal" | "grande";
 export const LETRAS: Record<LetraComprobante, { nombre: string; escala: number }> = { chica: { nombre: "Chica", escala: 0.88 }, normal: { nombre: "Normal", escala: 1 }, grande: { nombre: "Grande", escala: 1.15 } };

@@ -1,7 +1,7 @@
 // Pruebas de las partes puras del script de instalaciones. Se corren con `npm run test:unidades`.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { armarSqlAlta, etiquetaDelDia, fichaNueva, generarClave, migracionesAtrasadas, sqlLiteral, ultimaEtiqueta, validarSlug } from "./lib/instalaciones.mjs";
+import { armarSqlAlta, armarSqlConexion, etiquetaDelDia, fichaNueva, generarClave, migracionesAtrasadas, sqlLiteral, ultimaEtiqueta, validarSlug } from "./lib/instalaciones.mjs";
 
 test("el slug se valida", () => {
   assert.equal(validarSlug("mi-local"), null);
@@ -57,4 +57,11 @@ test("la ficha de una instalación no lleva secretos", () => {
 test("qué migraciones le faltan a una instalación", () => {
   assert.deepEqual(migracionesAtrasadas(["1", "2"], ["1", "2", "3", "4"]), ["3", "4"]);
   assert.deepEqual(migracionesAtrasadas(["1", "2", "3"], ["1", "2", "3"]), []);
+});
+
+test("la conexión técnica se arma con los tokens entre comillas y sin tocar nada más", () => {
+  const sql = armarSqlConexion({ vercelToken: "vt'x", vercelProyecto: "mi-calzado", vercelEquipo: "demotuc", supabaseToken: "sbp_123", supabaseRef: "abc" });
+  assert.match(sql, /update public\.integraciones set vercel_token = 'vt''x'/);
+  assert.match(sql, /supabase_ref = 'abc', actualizado_en = now\(\) where unica;/);
+  assert.doesNotMatch(sql, /delete|drop|truncate/i);
 });

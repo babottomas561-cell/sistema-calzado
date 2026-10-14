@@ -57,3 +57,15 @@ export async function borrarRol(id: number): Promise<Estado> {
   revalidatePath("/admin/equipo");
   return { ok: "Rol borrado" };
 }
+
+export async function asignarSucursalUsuario(usuarioId: string, sucursalId: number | null, puntoVentaId: number | null): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("asignar_sucursal_usuario", {
+    p_usuario_id: usuarioId,
+    p_sucursal_id: sucursalId,
+    p_punto_venta_id: puntoVentaId,
+  });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/equipo");
+  return { ok: "Sucursal asignada" };
+}

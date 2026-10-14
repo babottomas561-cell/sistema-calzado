@@ -111,3 +111,17 @@ Cómo se reduce:
 | «La base no se activó a tiempo» | Supabase a veces tarda: mirá el proyecto en supabase.com y, cuando esté activo, completá a mano desde el paso de migraciones. |
 | «Falló al aplicar las migraciones» | Corré `npx supabase db push --dry-run` en una copia del código de esa versión para ver cuál falla. |
 | Vercel no deja crear más proyectos | El plan Hobby tiene tope y es de uso personal: hace falta Pro. |
+
+
+## Cargar la conexión técnica en una instalación que ya existe
+
+El alta la carga sola. Para el piloto (que se hizo antes) o si hay que cambiar un token:
+
+```bash
+read -s SUPABASE_ACCESS_TOKEN; export SUPABASE_ACCESS_TOKEN    # supabase.com → Account → Access Tokens
+read -s VERCEL_TOKEN; export VERCEL_TOKEN                      # vercel.com → Account Settings → Tokens (con alcance al equipo)
+npm run instalaciones -- conexion --slug mi-calzado
+```
+
+Comprueba que los dos tokens sirvan para ese proyecto antes de guardarlos, y no los muestra. Con la conexión cargada, el panel puede conectar el dominio
+(Integraciones → Dominio) y aplicarle a Supabase el correo (Integraciones → Correo → «Guardar y aplicar»).

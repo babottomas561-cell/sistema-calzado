@@ -16,7 +16,7 @@ import { createInterface } from "node:readline/promises";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import {
-  armarSqlAlta, emailValido, etiquetaDelDia, fichaNueva, generarClave, migracionesAtrasadas, ultimaEtiqueta, validarSlug,
+  armarSqlAlta, armarSqlConexion, emailValido, etiquetaDelDia, fichaNueva, generarClave, migracionesAtrasadas, ultimaEtiqueta, validarSlug,
 } from "./lib/instalaciones.mjs";
 
 const RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -136,6 +136,9 @@ const AYUDA = `Instalaciones (un cliente = una base de Supabase + un sitio de Ve
   npm run instalaciones -- alta --slug mi-local --nombre "Mi Local" --email dueno@correo.com [--nombre-dueno "Nombre"]
         [--version vX] [--region sa-east-1] [--size micro] [--sin-conexion-tecnica] [--dry-run] [--yes]
       Crea la base, aplica las migraciones, publica el sitio y deja al dueño como Administrador.
+  npm run instalaciones -- conexion --slug mi-local [--dry-run]
+      Carga (o renueva) en esa instalación la conexión técnica: los tokens de Vercel y Supabase que usa el panel para el dominio y el correo.
+      Comprueba que los tokens sirvan antes de guardarlos y no los muestra.
   npm run instalaciones -- actualizar --slug mi-local [--version vX] [--dry-run] [--yes]
       Aplica las migraciones de esa versión y publica su código (sirve también para volver a una versión anterior).
 
@@ -356,8 +359,45 @@ async function actualizar() {
   }
 }
 
+// Carga la conexión técnica en una instalación que ya existe (el piloto, o si se cambió un token). Los tokens se comprueban antes de guardarlos.
+async function conexion() {
+  const f = fichaDe(a.slug);
+  if (!f) salir(`No hay una instalación «${a.slug ?? ""}». Las que hay: ${fichas().map((x) => x.slug).join(", ") || "ninguna"}`);
+  if (f.estado !== "activa") salir(`«${f.slug}» está en estado «${f.estado}».`);
+  exigirTokens();
+  const equipo = f.vercel.equipo ?? equipoVercel();
+  out(`Conexión técnica de «${f.slug}» (Supabase ${f.supabase.ref} · Vercel ${f.vercel.proyecto} en ${equipo})`);
+
+  paso(1, "Comprobar que los tokens sirven");
+  if (SIMULACRO) out("   [simulacro] GET api.supabase.com/v1/projects/<ref> y api.vercel.com/v9/projects/<proyecto>");
+  else {
+    const s = await fetch(`https://api.supabase.com/v1/projects/${f.supabase.ref}`, { headers: { Authorization: `Bearer ${process.env.SUPABASE_ACCESS_TOKEN}` } });
+    if (!s.ok) salir(`El token de Supabase no sirve para ese proyecto (${s.status}). Se crea en supabase.com → Account → Access Tokens.`);
+    const v = await fetch(`https://api.vercel.com/v9/projects/${f.vercel.proyecto}?${equipo.startsWith("team_") ? "teamId" : "slug"}=${equipo}`, { headers: { Authorization: `Bearer ${process.env.VERCEL_TOKEN}` } });
+    if (!v.ok) salir(`El token de Vercel no sirve para ese proyecto (${v.status}). Se crea en vercel.com → Account Settings → Tokens, con alcance al equipo «${equipo}».`);
+    out("   Los dos tokens funcionan.");
+  }
+
+  paso(2, "Guardarlos en la base de la instalación");
+  const carpeta = mkdtempSync(join(tmpdir(), `con-${f.slug}-`));
+  try {
+    const sql = armarSqlConexion({ vercelToken: process.env.VERCEL_TOKEN, vercelProyecto: f.vercel.proyecto, vercelEquipo: equipo, supabaseToken: process.env.SUPABASE_ACCESS_TOKEN, supabaseRef: f.supabase.ref });
+    if (SIMULACRO) out("   [simulacro] se ejecutaría el UPDATE de integraciones (los tokens no se muestran)");
+    else {
+      const archivo = join(carpeta, "conexion.sql");
+      writeFileSync(archivo, sql); chmodSync(archivo, 0o600);
+      supabase(["link", "--project-ref", f.supabase.ref, "--workdir", carpeta], { lectura: true });   // solo escribe la carpeta temporal
+      supabase(["db", "query", "--workdir", carpeta, "--linked", "--file", archivo]);
+    }
+    if (SIMULACRO) out("\n✔ Simulacro terminado: no se cambió nada. Sin --dry-run, lo hace de verdad.");
+    else out("\n✔ Listo: en el panel, Integraciones → Dominio ya no dice «Falta la conexión técnica». Después, en Integraciones → Correo tocá «Guardar y aplicar».");
+  } finally {
+    rmSync(carpeta, { recursive: true, force: true });
+  }
+}
+
 // ── Entrada ───────────────────────────────────────────────────────────
-const comandos = { lista, estado, etiquetar, alta, actualizar, ayuda: () => out(AYUDA) };
+const comandos = { lista, estado, etiquetar, alta, actualizar, conexion, ayuda: () => out(AYUDA) };
 const comando = positionals[0] ?? "ayuda";
 if (!comandos[comando]) salir(`No conozco el comando «${comando}».\n\n${AYUDA}`);
 try { await comandos[comando](); } catch (e) { salir(e instanceof Error ? e.message : String(e)); }

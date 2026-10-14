@@ -52,18 +52,21 @@ function Encabezado({ titulo, detalle, children }: { titulo: string; detalle: st
 const Codigo = ({ children }: { children: React.ReactNode }) =>
   <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-600">{children}</span>;
 
+import ParametroCuentaCorriente from "./ParametroCuentaCorriente";
+
 export default async function Tablas({ searchParams }: { searchParams: Promise<{ t?: string }> }) {
   await exigir("tablas.editar", "tablas.catalogo", "tablas.medios_pago", "tablas.depositos");
   const { t } = await searchParams;
   const actual: Clave = PESTANAS.some((p) => p.clave === t) ? (t as Clave) : "rubros";
   const supabase = await crearCliente();
-  const [rubros, subrubros, marcas, colores, talles, medios] = await Promise.all([
+  const [rubros, subrubros, marcas, colores, talles, medios, { data: tienda }] = await Promise.all([
     supabase.from("categorias").select("id, codigo, nombre, linea, productos(count)").order("nombre"),
     supabase.from("subcategorias").select("id, codigo, nombre, categoria_id, productos(count)").order("nombre"),
     supabase.from("marcas").select("id, codigo, nombre, productos(count)").order("nombre"),
     supabase.from("colores").select("id, codigo, nombre, hex, variantes(count)").order("nombre"),
     supabase.from("talles").select("id, nombre, orden, tipo, variantes(count)").order("orden"),
     supabase.from("medios_pago").select("id, codigo, nombre, tipo, ajuste_pct, cuotas, en_mostrador, en_tienda, siempre_factura, activo, orden, pagos(count)").eq("es_saldo", false).order("orden"),   // «Saldo a favor» es automático
+    supabase.from("configuracion_tienda").select("cuenta_corriente_clientes").single(),
   ]);
   const cantidades: Record<Clave, number> = { rubros: rubros.data?.length ?? 0, marcas: marcas.data?.length ?? 0,
     colores: colores.data?.length ?? 0, talles: talles.data?.length ?? 0, medios: medios.data?.length ?? 0 };
@@ -199,6 +202,9 @@ export default async function Tablas({ searchParams }: { searchParams: Promise<{
           <Encabezado titulo="Medios de pago" detalle="El descuento o recargo se aplica sobre la parte que se paga con ese medio. Cambiarlo no toca ventas ya hechas.">
             <Editor tabla="medios_pago" titulo="Nuevo medio de pago" nuevo="Nuevo medio"><CamposMedio /></Editor>
           </Encabezado>
+          <div className="p-4 border-b border-borde">
+            <ParametroCuentaCorriente activaInicial={!!tienda?.cuenta_corriente_clientes} />
+          </div>
           <div className="overflow-x-auto">
             <table className="tabla">
               <thead><tr><th>Medio</th><th>Tipo</th><th>Descuento / recargo</th><th>Se ofrece en</th><th className="w-12" /></tr></thead>

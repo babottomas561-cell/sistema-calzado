@@ -37,3 +37,62 @@ export async function deshacer(id: number): Promise<{ error?: string; ok?: strin
   revalidatePath("/admin/precios"); revalidatePath("/admin/productos"); revalidatePath("/");
   return { ok: data ? `Listo: ${data === 1 ? "1 artículo volvió" : `${data} artículos volvieron`} a su precio anterior` : "No había nada para volver: esos precios ya se habían cambiado después" };
 }
+
+export type ListaPrecioFila = {
+  id: number;
+  codigo: string;
+  nombre: string;
+  canal: string;
+  ajuste_pct: number;
+  redondeo: string;
+  activa: boolean;
+  es_default_local: boolean;
+  es_default_web: boolean;
+};
+
+export async function actualizarListaPrecio(
+  id: number,
+  datos: { nombre?: string; ajuste_pct?: number; redondeo?: string; activa?: boolean }
+): Promise<{ ok?: boolean; error?: string }> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.from("listas_precios").update({
+    nombre: datos.nombre,
+    ajuste_pct: datos.ajuste_pct,
+    redondeo: datos.redondeo,
+    activa: datos.activa,
+    actualizado_en: new Date().toISOString(),
+  }).eq("id", id);
+
+  if (error) return { error: error.message };
+  revalidatePath("/admin/precios");
+  revalidatePath("/admin/ventas/nueva");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function guardarPrecioExcepcion(
+  listaId: number,
+  productoId: number,
+  precio: number | null
+): Promise<{ ok?: boolean; error?: string }> {
+  const supabase = await crearCliente();
+  if (precio === null || precio === undefined || precio < 0) {
+    const { error } = await supabase.from("lista_precio_items").delete()
+      .eq("lista_id", listaId)
+      .eq("producto_id", productoId);
+    if (error) return { error: error.message };
+  } else {
+    const { error } = await supabase.from("lista_precio_items").upsert({
+      lista_id: listaId,
+      producto_id: productoId,
+      precio: precio,
+    }, { onConflict: "lista_id,producto_id" });
+    if (error) return { error: error.message };
+  }
+
+  revalidatePath("/admin/precios");
+  revalidatePath("/admin/ventas/nueva");
+  revalidatePath("/");
+  return { ok: true };
+}
+

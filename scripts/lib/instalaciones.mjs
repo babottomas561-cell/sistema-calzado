@@ -96,3 +96,14 @@ export function migracionesAtrasadas(aplicadas, delRepo) {
   const tiene = new Set(aplicadas);
   return delRepo.filter((v) => !tiene.has(v));
 }
+
+// La «conexión técnica» de una instalación que ya existe: los tokens de Vercel y de Supabase que usa el panel (Integraciones → Dominio y Correo).
+// Van a `integraciones`, que nadie lee desde la app (regla 16). El alta la carga sola; esto sirve para el piloto o si hubo que cambiar un token.
+export function armarSqlConexion({ vercelToken, vercelProyecto, vercelEquipo, supabaseToken, supabaseRef }) {
+  const L = sqlLiteral;
+  return [
+    "-- Conexión técnica (lo genera scripts/instalaciones.mjs)",
+    `update public.integraciones set vercel_token = ${L(vercelToken)}, vercel_proyecto = ${L(vercelProyecto)}, vercel_equipo = ${vercelEquipo ? L(vercelEquipo) : "null"},`,
+    `  supabase_token = ${L(supabaseToken)}, supabase_ref = ${L(supabaseRef)}, actualizado_en = now() where unica;`,
+  ].join("\n");
+}

@@ -1,5 +1,5 @@
 // Catálogo del menú del panel (lo usan el menú y la pantalla de módulos).
-import { BadgePercent, BookText, Boxes, ChartBar, FileText, House, MessageCircleMore, Package, PackagePlus, PackageSearch, PackageX, Plug, Printer, Receipt, Scale, ScanBarcode, Settings2, ShieldCheck, ShoppingBag, Store, Tags, Truck, Undo2, Users, Wallet, type LucideIcon } from "lucide-react";
+import { BadgePercent, BookText, Boxes, ChartBar, FileText, House, MessageCircleMore, Package, PackagePlus, PackageSearch, PackageX, Plug, Printer, Receipt, Scale, ScanBarcode, Settings2, ShieldCheck, ShoppingBag, Store, Tags, Truck, Undo2, Users, Wallet, Warehouse, type LucideIcon } from "lucide-react";
 import type { Permiso } from "@/lib/permisos";
 
 // El menú del panel. Cada ítem aparece si la persona tiene alguno de sus permisos (la base controla igual lo que puede hacer),
@@ -36,6 +36,7 @@ export const GRUPOS: { titulo?: string; items: Item[] }[] = [
     { href: "/admin/proveedores", texto: "Proveedores", icono: Truck, permisos: ["proveedores.gestionar", "compras.registrar"] },
   ] },
   { titulo: "Configuración", items: [
+    { href: "/admin/sucursales", texto: "Sucursales", icono: Warehouse, permisos: ["tablas.editar", "tablas.depositos"] },
     { href: "/admin/tienda", texto: "Tienda online", icono: Store, permisos: ["tienda.editar"] },
     { href: "/admin/integraciones", texto: "Integraciones", icono: Plug, permisos: ["tienda.editar"] },
     { href: "/admin/tablas", texto: "Tablas", icono: Settings2, permisos: ["tablas.editar", "tablas.catalogo", "tablas.medios_pago", "tablas.depositos"], fijo: true },
