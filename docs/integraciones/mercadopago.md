@@ -63,13 +63,12 @@ Sirve para que la caja le mande el monto al posnet de Mercado Pago y espere que 
 2. Eventos: tildá **Order (Mercado Pago)** (el posnet) y **Pagos (legacy)** (la tienda online).
 3. Guardá y copiá la **clave secreta** que aparece.
 
-Después, en **Integraciones → Mercado Pago**: cargá el Access Token de producción y la clave secreta arriba (valen para la tienda y para el posnet). En el bloque **Mercado Pago Point**:
+Después, en **Integraciones → Mercado Pago**: cargá el Access Token de producción y la clave secreta arriba (valen para la tienda, el QR y el posnet: no hay que configurar Point por separado). En el bloque **Tengo un posnet de Mercado Pago (Point)**:
 
 1. **Buscar mis posnets**: aparecen los vinculados a tu cuenta.
 2. **Usar este** en el de la caja: el sistema lo pasa a *modo punto de venta* y hay que **reiniciar el posnet** una vez.
 3. Elegí la regla de tarjetas: **Libre** (la tarjeta se anota a mano como siempre; el posnet es opcional) o **Solo con el posnet** (no se confirma una venta con tarjeta si no pasó por el posnet).
 
-Si Point usa otra aplicación distinta de la tienda, cargá sus credenciales en el mismo bloque.
 
 **En la caja:** al elegir Débito o Crédito aparece «Cobrar $… en el posnet». El cliente paga en el posnet y la caja lo muestra solo. Si cambia el total después de cobrar, ese cobro no sirve y hay que devolverlo desde Mercado Pago.
 

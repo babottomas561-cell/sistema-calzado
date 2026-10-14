@@ -1,9 +1,9 @@
 "use client";
 // Mercado Pago Point en Integraciones: las credenciales de la app presencial, los posnets de la cuenta y la regla de tarjetas de la caja.
 import { useActionState, useState, useTransition } from "react";
-import { CircleAlert, CircleCheck, Check, Copy, Search, Smartphone } from "lucide-react";
-import { fechaHora, pesos } from "@/lib/formato";
-import { buscarPosnets, guardarPoint, guardarReglaTarjetas, probarPoint, usarPosnet } from "./acciones";
+import { CircleAlert, CircleCheck, Search, Smartphone } from "lucide-react";
+import { pesos } from "@/lib/formato";
+import { buscarPosnets, guardarReglaTarjetas, usarPosnet } from "./acciones";
 
 export type EstadoPoint = {
   token: string | null; secreto: string | null; compartido?: boolean; tarjetas_modo: string;
@@ -16,25 +16,6 @@ function Aviso({ estado }: { estado: { error?: string; ok?: string } }) {
   if (estado.error) return <p className="text-sm text-error" role="alert">{estado.error}</p>;
   if (estado.ok) return <p className="flex items-center gap-1.5 text-sm text-ok"><CircleCheck size={15} /> {estado.ok}</p>;
   return null;
-}
-
-function Copiar({ texto }: { texto: string }) {
-  const [listo, setListo] = useState(false);
-  return <button type="button" onClick={() => { navigator.clipboard.writeText(texto); setListo(true); setTimeout(() => setListo(false), 1500); }}
-    className="boton-sec shrink-0 px-2.5 py-1.5" aria-label="Copiar">{listo ? <Check size={15} /> : <Copy size={15} strokeWidth={1.8} />}</button>;
-}
-
-function Clave({ nombre, etiqueta, cargada, ayuda, quitar }: { nombre: string; etiqueta: string; cargada: string | null; ayuda: string; quitar: string }) {
-  return (
-    <div>
-      <label className="etiqueta flex items-center justify-between gap-2" htmlFor={nombre}>{etiqueta}
-        {cargada ? <span className="inline-flex items-center gap-1 text-xs font-normal text-ok"><CircleCheck size={13} /> Cargada {cargada}</span>
-          : <span className="text-xs font-normal text-alerta">Sin cargar</span>}</label>
-      <input id={nombre} name={nombre} type="password" autoComplete="off" placeholder={cargada ? "Dejalo vacío para no cambiarla" : ""} className="campo" />
-      <p className="mt-0.5 text-[11px] text-texto-2">{ayuda}</p>
-      {cargada && <label className="mt-1 inline-flex items-center gap-1.5 text-xs text-texto-2"><input type="checkbox" name="quitar" value={quitar} /> Quitarla</label>}
-    </div>
-  );
 }
 
 function Posnet({ t }: { t: EstadoPoint["terminales"][number] }) {
@@ -54,50 +35,27 @@ function Posnet({ t }: { t: EstadoPoint["terminales"][number] }) {
   );
 }
 
-export default function MercadoPagoPoint({ estado, webhook }: { estado: EstadoPoint; webhook: string }) {
-  const [guardado, guardar, guardando] = useActionState(guardarPoint, {});
+export default function MercadoPagoPoint({ estado }: { estado: EstadoPoint }) {
   const [regla, guardarRegla, guardandoRegla] = useActionState(guardarReglaTarjetas, {});
-  const [prueba, setPrueba] = useState<{ error?: string; ok?: string }>({});
   const [busqueda, setBusqueda] = useState<{ error?: string; ok?: string }>({});
-  const [probando, probar] = useTransition();
   const [buscando, buscar] = useTransition();
-  const c = estado.cuenta;
   const hayPosnet = estado.terminales.some((t) => t.por_defecto);
+  const conectado = !!estado.token && !!estado.secreto;
   return (
     <div className="space-y-5 px-5 py-4">
-      {c?.ok ? (
-        <p className="flex items-center gap-1.5 rounded-lg bg-green-50 p-3 text-sm font-semibold text-ok"><CircleCheck size={16} /> Conectado a la cuenta {c.usuario}{c.nombre ? ` (${c.nombre})` : ""} · probado {fechaHora(c.fecha)}</p>
-      ) : c ? (
-        <p className="flex items-center gap-1.5 rounded-lg bg-red-50 p-3 text-sm text-error"><CircleAlert size={16} /> No conecta: {c.error}</p>
-      ) : <p className="flex items-center gap-1.5 rounded-lg bg-amber-50 p-3 text-sm text-alerta"><CircleAlert size={16} /> Point: falta configurar</p>}
-
-      <form action={guardar} className="space-y-3">
-        <p className="text-sm text-texto-2">{estado.compartido ? "Point usa la misma aplicación que la tienda online: no hace falta cargar nada acá." : "Si Point usa otra aplicación que la tienda online, cargá acá sus credenciales. Si es la misma, dejalo vacío."}</p>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Clave nombre="point_token" etiqueta="Access Token" cargada={estado.token} quitar="point_token"
-            ayuda="Tus integraciones → la aplicación presencial → Credenciales de producción. Empieza con APP_USR-." />
-          <Clave nombre="point_secreto" etiqueta="Clave secreta de las notificaciones" cargada={estado.secreto} quitar="point_secreto"
-            ayuda="Misma aplicación → Webhooks → Configurar notificaciones → «Clave secreta» (aparece al guardar la URL)." />
-        </div>
-        <div><span className="etiqueta">URL para las notificaciones (Webhooks: eventos «Order (Mercado Pago)» y «Pagos»)</span>
-          <div className="flex gap-2"><input readOnly value={webhook} className="campo font-mono text-xs" aria-label="URL de notificaciones de Point" /><Copiar texto={webhook} /></div></div>
-        <Aviso estado={guardado} />
-        <div className="flex flex-wrap items-center gap-2">
-          <button className="boton" disabled={guardando}>{guardando ? "Guardando…" : "Guardar Point"}</button>
-          <button type="button" className="boton-sec" disabled={probando || !estado.token} onClick={() => probar(async () => setPrueba(await probarPoint()))}>{probando ? "Probando…" : "Probar conexión"}</button>
-          <Aviso estado={prueba} />
-        </div>
-      </form>
+      {conectado
+        ? <p className="flex items-center gap-1.5 rounded-lg bg-green-50 p-3 text-sm text-ok"><CircleCheck size={16} /> Usa la misma conexión de Mercado Pago de arriba: no hay nada más que cargar.</p>
+        : <p className="flex items-center gap-1.5 rounded-lg bg-amber-50 p-3 text-sm text-alerta"><CircleAlert size={16} /> Primero cargá el Access Token y la clave secreta de Mercado Pago, arriba.</p>}
 
       <div className="space-y-3 rounded-lg border border-borde p-3">
         <p className="flex items-center gap-2 text-sm font-semibold"><Smartphone size={16} strokeWidth={1.8} /> Posnet de la caja</p>
         <div className="flex flex-wrap items-center gap-2">
-          <button type="button" className="boton-sec" disabled={buscando || !estado.token} onClick={() => buscar(async () => setBusqueda(await buscarPosnets()))}>
+          <button type="button" className="boton-sec" disabled={buscando || !conectado} onClick={() => buscar(async () => setBusqueda(await buscarPosnets()))}>
             <Search size={15} strokeWidth={1.8} /> {buscando ? "Buscando…" : "Buscar mis posnets"}</button>
           <Aviso estado={busqueda} />
         </div>
         {estado.terminales.map((t) => <Posnet key={t.id} t={t} />)}
-        {!estado.terminales.length && <p className="text-sm text-texto-2">Cuando cargues el token, tocá «Buscar mis posnets».</p>}
+        {!estado.terminales.length && <p className="text-sm text-texto-2">Tocá «Buscar mis posnets» para ver los de tu cuenta.</p>}
       </div>
 
       <form action={guardarRegla} className="space-y-3 rounded-lg border border-borde p-3">

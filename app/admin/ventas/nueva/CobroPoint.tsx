@@ -18,6 +18,8 @@ export default function CobroPoint({ monto, terminal, referencia, onAprobado, vi
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [imagenQr, setImagenQr] = useState("");
+  const [hayFijo, setHayFijo] = useState(false);       // el QR impreso del mostrador (modo híbrido)
+  const [fijo, setFijo] = useState(false);             // este cobro se hizo con el QR del mostrador
   const aprobado = estado?.estado === "aprobado";
   // Si cambia el monto después de aprobar, ese cobro ya no sirve para esta venta
   const desfasado = aprobado && Math.abs(montoCobro - monto) > 0.009;
@@ -34,15 +36,20 @@ export default function CobroPoint({ monto, terminal, referencia, onAprobado, vi
     return () => clearTimeout(t);
   }, [cobro, estado, supabase, onAprobado]);
 
+  useEffect(() => {
+    if (via !== "qr") return;
+    supabase.rpc("qr_fijo").then(({ data }) => { const r = data as { listo?: boolean; imagen?: string | null; plantilla?: string | null } | null; setHayFijo(!!(r?.listo && (r.imagen || r.plantilla))); });
+  }, [via, supabase]);
+
   // El QR se dibuja acá a partir del texto que da Mercado Pago (no sale de la base como imagen)
   useEffect(() => {
     if (via !== "qr" || !estado?.qr) return;
     QRCode.toDataURL(estado.qr, { width: 360, margin: 1 }).then(setImagenQr, () => setError("No se pudo dibujar el QR"));
   }, [via, estado?.qr]);
 
-  async function mandar() {
-    setError(""); setEnviando(true);
-    const { data, error: e } = await supabase.rpc(via === "qr" ? "qr_cobrar" : "point_cobrar", { p_monto: monto });
+  async function mandar(delMostrador = false) {
+    setError(""); setEnviando(true); setFijo(delMostrador); setImagenQr("");
+    const { data, error: e } = via === "qr" ? await supabase.rpc("qr_cobrar", { p_monto: monto, p_modo: delMostrador ? "hybrid" : "dynamic" }) : await supabase.rpc("point_cobrar", { p_monto: monto });
     setEnviando(false);
     const r = data as { ok: boolean; error?: string; id?: number } | null;
     if (e || !r?.ok || !r.id) { setError(e?.message ?? r?.error ?? "No se pudo mandar el cobro"); return; }
@@ -72,16 +79,17 @@ export default function CobroPoint({ monto, terminal, referencia, onAprobado, vi
       {esperando ? (
         <div className="flex flex-wrap items-center gap-3">
           <div className="space-y-2">
-            <p className="flex items-center gap-2 text-sm font-semibold"><Loader2 size={16} className="animate-spin" /> {via === "qr" ? "Esperando que el cliente escanee y pague…" : "Esperando al cliente en el posnet…"} {pesos(montoCobro)}</p>
-            {via === "qr" && imagenQr && (
+            <p className="flex items-center gap-2 text-sm font-semibold"><Loader2 size={16} className="animate-spin" /> {via === "qr" ? (fijo ? "Esperando que el cliente escanee el QR del mostrador y pague…" : "Esperando que el cliente escanee y pague…") : "Esperando al cliente en el posnet…"} {pesos(montoCobro)}</p>
+            {via === "qr" && !fijo && imagenQr && (
               <img src={imagenQr} alt={`QR para pagar ${pesos(montoCobro)}`} width={280} height={280} className="mx-auto rounded-lg border border-borde bg-white p-2" />)}
           </div>
           <button type="button" onClick={cancelar} className="boton-sec h-9 px-3 text-sm"><X size={14} /> Cancelar cobro</button>
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-3">
-          <button type="button" onClick={desfasado || estado ? otraVez : mandar} disabled={enviando || monto <= 0} className="boton h-10">
+          <button type="button" onClick={desfasado || estado ? otraVez : () => mandar(false)} disabled={enviando || monto <= 0} className="boton h-10">
             {via === "qr" ? <QrCode size={16} strokeWidth={1.8} /> : <Smartphone size={16} strokeWidth={1.8} />} {enviando ? (via === "qr" ? "Generando…" : "Mandando…") : estado && !desfasado ? "Cobrar de nuevo" : via === "qr" ? `Cobrar ${pesos(monto)} con QR` : `Cobrar ${pesos(monto)} en el posnet`}</button>
+          {via === "qr" && hayFijo && !estado && <button type="button" onClick={() => mandar(true)} disabled={enviando || monto <= 0} className="boton-sec h-10">Con el QR del mostrador</button>}
           {via === "point" && terminal && <span className="text-xs text-texto-2">{terminal}</span>}
         </div>
       )}

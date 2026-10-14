@@ -20,7 +20,7 @@ create function prueba.responder(p_metodo text, p_ruta text, p_status int, p_cue
 create function prueba.como_admin() returns void language sql as $$ select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}', true) $$;
 create function prueba.como_vendedora() returns void language sql as $$ select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}', true) $$;
 grant execute on all functions in schema prueba to anon, authenticated;
-select plan(12);
+select plan(16);
 
 reset role;
 update integraciones set mp_access_token = 'APP_USR-1234567890-abcdefghij-xyz', mp_webhook_secret = 'secreto';
@@ -44,5 +44,12 @@ select is((select cuerpo -> 'config' -> 'qr' ->> 'mode' from prueba.llamadas whe
 select is(point_estado((select max(id) from point_cobros)) ->> 'qr', '00020101021243650016com.mercadolibre', 'la caja recibe el texto del QR para dibujarlo');
 select prueba.responder('POST', '/v1/orders/ORDQR1/cancel', 200, '{"status":"canceled"}');
 select is(point_cancelar((select max(id) from point_cobros)) ->> 'ok', 'true', 'se puede cancelar el QR');
+-- QR fijo (híbrido)
+select prueba.responder('GET', '/pos/555', 200, '{"id":555,"qr_response":{"image":"https://mp/qr.png","template_document":"https://mp/qr.pdf"}}');
+select is(qr_fijo() ->> 'imagen', 'https://mp/qr.png', 'trae el QR fijo de la caja para imprimir');
+select is(qr_fijo() ->> 'plantilla', 'https://mp/qr.pdf', 'y su documento listo para imprimir');
+select prueba.responder('POST', '/v1/orders', 201, '{"id":"ORDQR2","status":"created"}');
+select is(qr_cobrar(8000, 'hybrid') ->> 'ok', 'true', 'con el QR del mostrador no hace falta el texto del QR');
+select is((select cuerpo -> 'config' -> 'qr' ->> 'mode' from prueba.llamadas where ruta = '/v1/orders' order by id desc limit 1), 'hybrid', 'se pide en modo híbrido');
 select * from finish();
 rollback;
