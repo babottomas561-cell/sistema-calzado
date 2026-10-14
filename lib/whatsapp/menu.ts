@@ -23,15 +23,18 @@ const botones = (cuerpo: string, opciones: { id: string; title: string }[]): Int
   action: { buttons: opciones.slice(0, 3).map((o) => ({ type: "reply", reply: { id: o.id, title: recorta(o.title, 20) } })) },
 });
 
-export const OPCIONES_PRINCIPALES: Fila[] = [
-  { id: "m:cat", title: "Ver el catálogo", description: "Calzado, ropa y accesorios con precios" },
-  { id: "m:pedido", title: "Consultar un pedido", description: "Fijate en qué estado está" },
-  { id: "m:info", title: "Horarios y pagos", description: "Dónde estamos, cuándo abrimos y cómo pagar" },
-  { id: "m:humano", title: "Hablar con una persona", description: "Te contesta alguien del local" },
-];
+export const POR_PAGINA = 8;   // modelos por página (más «Ver más» y «Otros rubros» hacen las 10 filas que admite Meta)
 
-export const menuPrincipal = (tienda: string): Interactivo =>
-  lista(`¡Hola! Soy el asistente de ${tienda}. ¿Qué querés hacer? Elegí una opción tocando el botón, o escribime tu consulta.`, "Ver opciones", OPCIONES_PRINCIPALES, "¿Qué necesitás?");
+// Las opciones que se ofrecen: «Novedades» y «Promociones» solo si hay algo para mostrar
+export const menuPrincipal = (tienda: string, hay: { promos?: boolean; novedades?: boolean } = {}): Interactivo =>
+  lista(`¡Hola! Soy el asistente de ${tienda}. ¿Qué querés hacer? Elegí una opción tocando el botón, o escribime tu consulta.`, "Ver opciones", [
+    { id: "m:cat", title: "Ver el catálogo", description: "Calzado, ropa y accesorios con precios" },
+    ...(hay.novedades ? [{ id: "m:nuevo", title: "Novedades", description: "Lo último que llegó al local" }] : []),
+    ...(hay.promos ? [{ id: "m:promo", title: "Promociones", description: "Ofertas y descuentos vigentes" }] : []),
+    { id: "m:pedido", title: "Consultar un pedido", description: "Fijate en qué estado está" },
+    { id: "m:info", title: "Horarios y pagos", description: "Dónde estamos, cuándo abrimos y cómo pagar" },
+    { id: "m:humano", title: "Hablar con una persona", description: "Te contesta alguien del local" },
+  ], "¿Qué necesitás?");
 
 export const botonesLineas = (lineas: string[]): Interactivo =>
   botones("¿Qué estás buscando?", [...lineas.map((l) => ({ id: `l:${l}`, title: l })), ...(lineas.length < 3 ? [{ id: "m:menu", title: "Volver al menú" }] : [])]);
@@ -40,9 +43,24 @@ export const listaRubros = (linea: string, rubros: { nombre: string; modelos: nu
   lista(`Esto es lo que tenemos en ${linea.toLowerCase()}. Elegí un rubro para ver los modelos.`, "Elegir rubro",
     [...rubros.slice(0, 9).map((r) => ({ id: `r:${r.nombre}`, title: r.nombre, description: `${r.modelos} modelo${r.modelos === 1 ? "" : "s"} con stock` })), { id: "m:cat", title: "← Volver" }], linea);
 
-export const listaModelos = (rubro: string, modelos: { id: number; nombre: string; marca: string | null; precio: string }[], hayMas: boolean): Interactivo =>
-  lista(`${rubro}: elegí un modelo para ver talles, colores y disponibilidad.${hayMas ? " (Te muestro algunos; escribime si buscás uno puntual)." : ""}`, "Ver modelos",
-    [...modelos.slice(0, 9).map((m) => ({ id: `p:${m.id}`, title: m.nombre, description: `${m.precio}${m.marca ? ` · ${m.marca}` : ""}` })), { id: "m:cat", title: "← Otros rubros" }], rubro);
+type ModeloFila = { id: number; nombre: string; marca: string | null; precio: string; extra?: string | null };
+const filaModelo = (m: ModeloFila): Fila => ({ id: `p:${m.id}`, title: m.nombre, description: `${m.extra ? `${m.extra} · ` : ""}${m.precio}${m.marca ? ` · ${m.marca}` : ""}` });
+
+/** Modelos de un rubro, de a POR_PAGINA: la última fila de la página es «Ver más» (id `r:Rubro|<página>`) y siempre se puede volver. */
+export const listaModelos = (rubro: string, todos: ModeloFila[], pagina = 0): Interactivo => {
+  const desde = pagina * POR_PAGINA, quedan = todos.length - desde - POR_PAGINA;
+  const filas = todos.slice(desde, desde + POR_PAGINA).map(filaModelo);
+  const cuerpo = `${rubro}: ${todos.length} modelo${todos.length === 1 ? "" : "s"} con stock. Elegí uno para ver talles, colores y disponibilidad.`;
+  return lista(cuerpo, "Ver modelos", [
+    ...filas,
+    ...(quedan > 0 ? [{ id: `r:${rubro}|${pagina + 1}`, title: "Ver más modelos", description: `Quedan ${quedan} más` }] : []),
+    { id: "m:cat", title: "← Otros rubros" },
+  ], rubro);
+};
+
+/** Una lista corta de modelos (novedades, promociones): hasta 9 y la vuelta al menú. */
+export const listaDeModelos = (cuerpo: string, boton: string, modelos: ModeloFila[], seccion: string): Interactivo =>
+  lista(cuerpo, boton, [...modelos.slice(0, 9).map(filaModelo), { id: "m:menu", title: "← Menú principal" }], seccion);
 
 export const botonesDespuesDelModelo = (rubro: string | null): Interactivo =>
   botones("¿Qué más querés hacer?", [...(rubro ? [{ id: `r:${rubro}`, title: `Más ${rubro.toLowerCase()}` }] : []), { id: "m:menu", title: "Menú principal" }, { id: "m:humano", title: "Hablar con alguien" }]);

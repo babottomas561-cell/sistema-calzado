@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { botonesDespuesDelModelo, botonesLineas, listaModelos, listaRubros, menuPrincipal, pideMenu, recorta } from "./menu.ts";
+import { botonesDespuesDelModelo, botonesLineas, listaDeModelos, listaModelos, listaRubros, menuPrincipal, pideMenu, POR_PAGINA, recorta } from "./menu.ts";
 
 type Lista = { action: { button: string; sections: { rows: { id: string; title: string; description?: string }[] }[] }; body: { text: string } };
 
@@ -24,9 +24,13 @@ test("las listas largas se recortan a 10 filas y los títulos a 24 caracteres", 
   assert.ok(filas.every((f) => f.title.length <= 24));
   assert.equal(filas.at(-1)?.id, "m:cat");
   const modelos = Array.from({ length: 30 }, (_, i) => ({ id: i + 1, nombre: `Modelo ${i + 1}`, marca: "Zara", precio: "$ 119.990" }));
-  const fm = (listaModelos("Camisa", modelos, true) as unknown as Lista).action.sections[0].rows;
-  assert.equal(fm.length, 10);
+  const fm = (listaModelos("Camisa", modelos) as unknown as Lista).action.sections[0].rows;
+  assert.equal(fm.length, 10, "8 modelos + «Ver más» + «Otros rubros»");
   assert.equal(fm[0].id, "p:1");
+  assert.equal(fm[POR_PAGINA].id, "r:Camisa|1", "«Ver más» lleva a la página siguiente");
+  const f3 = (listaModelos("Camisa", modelos, 3) as unknown as Lista).action.sections[0].rows;
+  assert.equal(f3[0].id, "p:25");
+  assert.deepEqual(f3.map((f) => f.id), ["p:25", "p:26", "p:27", "p:28", "p:29", "p:30", "m:cat"], "la última página no ofrece «Ver más»");
 });
 
 test("los botones son 3 como máximo, con título de hasta 20", () => {
@@ -39,4 +43,17 @@ test("los botones son 3 como máximo, con título de hasta 20", () => {
 test("recorta no deja texto de más", () => {
   assert.equal(recorta("corto", 10), "corto");
   assert.ok(recorta("x".repeat(40), 24).length <= 24);
+});
+
+test("el menú principal ofrece Novedades y Promociones solo si hay", () => {
+  const ids = (m: unknown) => (m as Lista).action.sections[0].rows.map((f) => f.id);
+  assert.deepEqual(ids(menuPrincipal("X")), ["m:cat", "m:pedido", "m:info", "m:humano"]);
+  assert.deepEqual(ids(menuPrincipal("X", { novedades: true, promos: true })), ["m:cat", "m:nuevo", "m:promo", "m:pedido", "m:info", "m:humano"]);
+});
+
+test("una lista de novedades o promos con etiqueta cumple los límites", () => {
+  const m = listaDeModelos("c", "Ver", Array.from({ length: 15 }, (_, i) => ({ id: i, nombre: "Camisa Regular Fit Estructura Oxford", marca: "Zara", precio: "$ 119.990", extra: "2x1 en toda la tienda" })), "Promociones") as unknown as Lista;
+  const filas = m.action.sections[0].rows;
+  assert.equal(filas.length, 10);
+  assert.ok(filas.every((f) => f.title.length <= 24 && (f.description ?? "").length <= 72));
 });

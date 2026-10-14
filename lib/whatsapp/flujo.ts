@@ -3,7 +3,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { pesos } from "@/lib/formato";
 import type { Database } from "@/lib/database.types";
-import { botonesDespuesDelModelo, botonesLineas, botonesMenu, listaModelos, listaRubros, menuPrincipal, type Mensaje } from "./menu";
+import { botonesDespuesDelModelo, botonesLineas, botonesMenu, listaDeModelos, listaModelos, listaRubros, menuPrincipal, POR_PAGINA, type Mensaje } from "./menu";
 
 const base = () => createClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
 const ORDEN_LINEAS = ["Calzado", "Ropa", "Accesorios"];
@@ -11,6 +11,35 @@ const ORDEN_LINEAS = ["Calzado", "Ropa", "Accesorios"];
 async function nombreTienda() {
   const { data } = await base().from("configuracion_tienda").select("nombre").single();
   return data?.nombre ?? "nuestro local";
+}
+
+type ModeloLista = { id: number; nombre: string; marca: string | null; precio: string; extra?: string | null };
+const aModelos = (filas: { producto_id: number | null; nombre: string | null; marca: string | null; precio: number | null }[], extras?: Map<number, string>): ModeloLista[] => {
+  const unicos = new Map<number, ModeloLista>();
+  for (const f of filas) if (f.producto_id && !unicos.has(f.producto_id)) unicos.set(f.producto_id, { id: f.producto_id, nombre: f.nombre ?? "", marca: f.marca, precio: f.precio ? pesos(Number(f.precio)) : "Consultar", extra: extras?.get(f.producto_id) ?? null });
+  return [...unicos.values()];
+};
+
+/** Lo último que se cargó (con stock), el más nuevo primero. */
+async function novedades(): Promise<ModeloLista[]> {
+  const { data } = await base().from("v_catalogo").select("producto_id, nombre, marca, precio, creado_en").gt("disponible", 0).order("creado_en", { ascending: false }).limit(200);
+  return aModelos(data ?? []).slice(0, 9);
+}
+
+/** Productos con una promoción vigente y stock, con su etiqueta («2x1», «20% OFF»…). */
+async function conPromocion(): Promise<ModeloLista[]> {
+  const supabase = base();
+  const { data: promos } = await supabase.from("v_promos_tienda").select("producto_id, etiqueta").limit(200);
+  const ids = [...new Set((promos ?? []).map((p) => p.producto_id).filter((x): x is number => !!x))];
+  if (!ids.length) return [];
+  const etiquetas = new Map((promos ?? []).filter((p) => p.producto_id && p.etiqueta).map((p) => [p.producto_id as number, p.etiqueta as string]));
+  const { data } = await supabase.from("v_catalogo").select("producto_id, nombre, marca, precio").in("producto_id", ids).gt("disponible", 0).limit(500);
+  return aModelos(data ?? [], etiquetas).slice(0, 9);
+}
+
+async function menuDeInicio() {
+  const [nombre, nuevos, promos] = await Promise.all([nombreTienda(), novedades(), conPromocion()]);
+  return menuPrincipal(nombre, { novedades: nuevos.length > 0, promos: promos.length > 0 });
 }
 
 async function datosDelLocal(): Promise<string> {
@@ -48,10 +77,8 @@ async function rubrosDeLinea(linea: string) {
 }
 
 async function modelosDeRubro(rubro: string) {
-  const { data } = await base().from("v_catalogo").select("producto_id, nombre, marca, precio").eq("categoria", rubro).gt("disponible", 0).limit(1000);
-  const unicos = new Map<number, { id: number; nombre: string; marca: string | null; precio: string }>();
-  for (const f of data ?? []) if (f.producto_id && !unicos.has(f.producto_id)) unicos.set(f.producto_id, { id: f.producto_id, nombre: f.nombre ?? "", marca: f.marca, precio: f.precio ? pesos(Number(f.precio)) : "Consultar" });
-  return [...unicos.values()];
+  const { data } = await base().from("v_catalogo").select("producto_id, nombre, marca, precio").eq("categoria", rubro).gt("disponible", 0).order("nombre").limit(1000);
+  return aModelos(data ?? []);
 }
 
 async function detalleDeModelo(id: number, sitio: string): Promise<{ texto: string; rubro: string | null } | null> {
@@ -77,16 +104,27 @@ export async function respuestasDeMenu(opcion: string, sitio: string): Promise<M
 
   if (tipo === "m" && valor === "cat") {
     const lineas = await lineasConStock();
-    return lineas.length ? [{ interactivo: botonesLineas(lineas) }] : [{ texto: "Por ahora no tenemos productos publicados con stock. ¡Volvé a consultarnos pronto!" }, { interactivo: menuPrincipal(await nombreTienda()) }];
+    return lineas.length ? [{ interactivo: botonesLineas(lineas) }] : [{ texto: "Por ahora no tenemos productos publicados con stock. ¡Volvé a consultarnos pronto!" }, { interactivo: await menuDeInicio() }];
   }
   if (tipo === "l") {
     const rubros = await rubrosDeLinea(valor);
     return rubros.length ? [{ interactivo: listaRubros(valor, rubros) }] : [{ texto: `No tenemos ${valor.toLowerCase()} con stock en este momento.` }, { interactivo: botonesMenu("¿Querés ver otra cosa?") }];
   }
   if (tipo === "r") {
-    const modelos = await modelosDeRubro(valor);
-    return modelos.length ? [{ interactivo: listaModelos(valor, modelos, modelos.length > 9) }] : [{ texto: `No tenemos ${valor.toLowerCase()} con stock en este momento.` }, { interactivo: botonesMenu("¿Querés ver otra cosa?") }];
+    const [rubro, pag] = valor.split("|");   // «Camisa» o «Camisa|1» (segunda página)
+    const modelos = await modelosDeRubro(rubro);
+    const pagina = Math.min(Math.max(Number(pag) || 0, 0), Math.max(Math.ceil(modelos.length / POR_PAGINA) - 1, 0));
+    return modelos.length ? [{ interactivo: listaModelos(rubro, modelos, pagina) }] : [{ texto: `No tenemos ${rubro.toLowerCase()} con stock en este momento.` }, { interactivo: botonesMenu("¿Querés ver otra cosa?") }];
   }
+  if (tipo === "m" && valor === "nuevo") {
+    const lista = await novedades();
+    return lista.length ? [{ interactivo: listaDeModelos("Esto es lo último que llegó. Elegí uno para ver talles y colores.", "Ver novedades", lista, "Novedades") }] : [{ interactivo: botonesMenu("Por ahora no hay novedades para mostrar.") }];
+  }
+  if (tipo === "m" && valor === "promo") {
+    const lista = await conPromocion();
+    return lista.length ? [{ interactivo: listaDeModelos("Estas son las promociones vigentes. Elegí un modelo para ver talles y colores.", "Ver promociones", lista, "Promociones") }] : [{ interactivo: botonesMenu("Por ahora no hay promociones vigentes.") }];
+  }
+  if (tipo === "m" && valor === "nosoporta") return [{ texto: "Por ahora no puedo ver audios, fotos ni archivos. 🙈 Escribime tu consulta o elegí una opción:" }, { interactivo: await menuDeInicio() }];
   if (tipo === "p") {
     const d = Number(valor) ? await detalleDeModelo(Number(valor), sitio) : null;
     return d ? [{ texto: d.texto }, { interactivo: botonesDespuesDelModelo(d.rubro) }] : [{ texto: "Ese modelo se quedó sin stock. ¡Mirá el resto de las opciones!" }, { interactivo: botonesMenu("¿Seguimos?") }];
@@ -94,5 +132,5 @@ export async function respuestasDeMenu(opcion: string, sitio: string): Promise<M
   if (tipo === "m" && valor === "info") return [{ texto: await datosDelLocal() }, { interactivo: botonesMenu("¿Te ayudo con algo más?") }];
   if (tipo === "m" && valor === "pedido") return [{ texto: "Escribime el *número de tu pedido* (por ejemplo, 0001-00000015) y te cuento en qué estado está. Tiene que ser el pedido hecho con este mismo número de WhatsApp." }];
   if (tipo === "m" && valor === "humano") return [{ texto: "Listo, ya le avisamos al equipo. En cuanto puedan, te responden por acá. 🙌" }, { interactivo: botonesMenu("Mientras tanto, podés seguir mirando:") }];
-  return [{ interactivo: menuPrincipal(await nombreTienda()) }];   // «m:menu» y cualquier opción vieja o desconocida
+  return [{ interactivo: await menuDeInicio() }];   // «m:menu» y cualquier opción vieja o desconocida
 }

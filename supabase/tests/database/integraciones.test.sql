@@ -37,7 +37,7 @@ create function prueba.config(p_bot boolean, p_avisos boolean) returns void lang
   update configuracion_tienda set wa_bot_activo = p_bot, wa_notificaciones_pedidos = p_avisos, wa_plantilla_estado = 'estado_pedido';
   update clientes set telefono = '381 555-3003' where usuario_id = '22222222-2222-2222-2222-222222222222' $$;
 grant execute on all functions in schema prueba to anon, authenticated;
-select plan(26);
+select plan(27);
 
 set local role authenticated;
 select prueba.como_admin();
@@ -94,6 +94,9 @@ select is(wa_responder_menu(prueba.aviso('5493815553003', 'hola'), prueba.firma(
   '{"type":"product","body":{"text":"x"}}'::jsonb), false, 'ni de un tipo que no sea lista o botones');
 select is(wa_responder_menu(prueba.aviso('5493815553003', 'hola'), 'sha256=' || repeat('0', 64), '5493815553003',
   '{"type":"button","body":{"text":"x"},"action":{}}'::jsonb), false, 'ni con la firma falsa');
+
+select is(wa_recibir(replace(prueba.aviso('5493815553003', 'x'), '"type": "text"', '"type": "audio"'), prueba.firma(replace(prueba.aviso('5493815553003', 'x'), '"type": "text"', '"type": "audio"'))) -> 'mensajes' -> 0 ->> 'opcion',
+  'm:nosoporta', 'un audio o una foto no se ignora: el bot le avisa al cliente y le ofrece el menú');
 
 -- ── Lo que cobra Meta: una vez por mensaje ──
 select wa_recibir(prueba.cobro('wamid.A', 'utility'), prueba.firma(prueba.cobro('wamid.A', 'utility')));
