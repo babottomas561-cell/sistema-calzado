@@ -22,12 +22,16 @@ export default async function NuevaVenta() {
     supabase.from("configuracion_tienda").select("transferencia_comprobante").maybeSingle(),
     supabase.rpc("point_caja"),   // posnet de Mercado Pago, si está vinculado
   ]);
+  // Con la regla «solo con el posnet» y sin posnet disponible, Débito y Crédito no se ofrecen (la base igual lo frena)
+  const pt = point as { disponible: boolean; modo: string } | null;
+  const sinTarjetas = pt?.modo === "vinculado" && !pt.disponible;
+  const mediosCaja = (medios ?? []).filter((m) => !(sinTarjetas && (m.tipo === "Débito" || m.tipo === "Crédito")));
   const f = fiscal as { activa: boolean; modo: "todas" | "elegir"; serie_por_defecto: "fiscal" | "interna"; letra: string | null; puede: boolean; sin_factura: boolean; ambiente: string; umbral: number } | null;
   // Saldo a favor de cada cliente (para cobrar con «Saldo a favor»)
   const saldo = new Map((saldos ?? []).map((s) => [s.cliente_id, Number(s.disponible)]));
   // El selector trabaja con "stock" = lo disponible (descontando lo reservado en pedidos)
   const stock = filas.map((f) => ({ ...f, stock: f.disponible ?? 0 }));
-  return <PuntoDeVenta point={point as { disponible: boolean; modo: string; terminal: string | null; qr?: boolean } | null} exigeOperacion={(confPagos?.transferencia_comprobante ?? "no") !== "no"} filas={stock as never} clientes={(clientes ?? []).map((c) => ({ ...c, saldo: saldo.get(c.id) ?? 0 }))} medios={medios ?? []}
+  return <PuntoDeVenta point={point as { disponible: boolean; modo: string; terminal: string | null; qr?: boolean } | null} exigeOperacion={(confPagos?.transferencia_comprobante ?? "no") !== "no"} filas={stock as never} clientes={(clientes ?? []).map((c) => ({ ...c, saldo: saldo.get(c.id) ?? 0 }))} medios={mediosCaja} sinTarjetas={sinTarjetas}
     cambiaPrecio={permisos.includes("ventas.cambiar_precio")} descuentoMax={descuentoMax} masVendidos={(vendidos ?? []).map((v) => v.producto_id)} puedeCrearCliente={puede(permisos, "clientes.editar")}
     facturacion={f?.activa && f.puede && f.letra ? { modo: f.sin_factura ? f.modo : "todas", porDefecto: f.serie_por_defecto, letra: f.letra, pruebas: f.ambiente === "homologacion", umbral: Number(f.umbral) } : null}
     impresion={{ configurada: !!impresion?.comprobante_configurado, modo: mia?.[0]?.modo ?? "opcional", puedeConfigurar: puede(permisos, "tablas.editar") }} />;

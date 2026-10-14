@@ -48,7 +48,8 @@ function Opcion({ icono: Icono, valor, activo, abierto, alAlternar }: { icono: L
   );
 }
 
-export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion, exigeOperacion = false, point = null }: {
+export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion, exigeOperacion = false, point = null, sinTarjetas = false }: {
+  sinTarjetas?: boolean;   // la regla pide el posnet y no hay uno disponible: Débito y Crédito no se ofrecen
   point?: { disponible: boolean; modo: string; terminal: string | null; qr?: boolean } | null;   // posnet de Mercado Pago (Point)
   exigeOperacion?: boolean;   // el dueño pidió el n.º de operación en las transferencias
   facturacion: { modo: "todas" | "elegir"; porDefecto: "fiscal" | "interna"; letra: string; pruebas: boolean; umbral: number } | null;
@@ -380,6 +381,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                     ? <button type="button" onClick={() => setLineas((ls) => [ls[0]])} className="shrink-0 whitespace-nowrap text-sm font-medium text-marca">Un solo medio</button>
                     : <button type="button" onClick={dividir} className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-sm font-medium text-marca"><SplitSquareHorizontal size={15} strokeWidth={1.8} /> Dividir el pago</button>)}
                 </div>
+                {sinTarjetas && <p className="flex items-start gap-1.5 rounded-lg bg-amber-50 p-3 text-sm text-alerta"><CircleAlert size={15} className="mt-0.5 shrink-0" /> Hoy no se puede cobrar con tarjeta: la regla pide el posnet de Mercado Pago y no hay uno disponible. Revisalo en Integraciones → Mercado Pago.</p>}
 
                 {!dividido ? (
                   <div className="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label="Medio de pago">

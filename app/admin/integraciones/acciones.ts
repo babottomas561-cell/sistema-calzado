@@ -167,6 +167,14 @@ export async function prepararQr(_: Estado, f: FormData): Promise<Estado> {
   return r.ok ? { ok: "Listo: ya se puede cobrar con QR desde la caja" } : { error: r.error ?? "No se pudo preparar el QR" };
 }
 
+export async function confirmarWebhookMp(): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("mp_webhook_confirmar");
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  return { ok: "Anotado" };
+}
+
 export async function guardarReglaTarjetas(_: Estado, f: FormData): Promise<Estado> {
   const modo = String(f.get("tarjetas_modo")) === "vinculado" ? "vinculado" : "libre";
   const supabase = await crearCliente();

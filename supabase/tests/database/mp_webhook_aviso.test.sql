@@ -1,0 +1,22 @@
+-- El aviso de «cambió la dirección del webhook de Mercado Pago».
+begin;
+create extension if not exists pgtap with schema extensions;
+create schema prueba;
+grant usage on schema prueba to anon, authenticated;
+create function prueba.como_admin() returns void language sql as $$ select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}', true) $$;
+create function prueba.como_vendedora() returns void language sql as $$ select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}', true) $$;
+grant execute on all functions in schema prueba to anon, authenticated;
+select plan(6);
+update integraciones set sitio_url = 'https://tienda.vercel.app', mp_webhook_url = null;
+set local role authenticated; select prueba.como_vendedora();
+select throws_ok($$ select mp_webhook_confirmar() $$, 'No tenés permiso para configurar las conexiones', 'la vendedora no lo confirma');
+select prueba.como_admin();
+select is(estado_webhook_mp() ->> 'desactualizada', 'false', 'sin confirmar nada, no hay aviso');
+select lives_ok($$ select mp_webhook_confirmar() $$, 'el administrador confirma que cargó la dirección');
+select is(estado_webhook_mp() ->> 'cargada', 'https://tienda.vercel.app/api/mercadopago', 'queda la dirección cargada');
+reset role; update integraciones set sitio_url = 'https://mitienda.com.ar';
+set local role authenticated; select prueba.como_admin();
+select is(estado_webhook_mp() ->> 'desactualizada', 'true', 'si el sitio cambia de dirección, avisa');
+select is(estado_webhook_mp() ->> 'actual', 'https://mitienda.com.ar/api/mercadopago', 'y dice cuál es la nueva');
+select * from finish();
+rollback;
