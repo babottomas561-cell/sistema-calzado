@@ -53,7 +53,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   esperaPago?: boolean;   // no confirmar la venta mientras un cobro por posnet o QR espera el pago
   requisitoFalta?: string | null;   // algo de la configuración impide vender (Requisitos)
   sinTarjetas?: boolean;   // la regla pide el posnet y no hay uno disponible: Débito y Crédito no se ofrecen
-  point?: { disponible: boolean; modo: string; terminal: string | null; qr?: boolean; caja_id?: number } | null;   // posnet de Mercado Pago (Point)
+  point?: { disponible: boolean; modo: string; terminal: string | null; qr?: boolean; caja_id?: number; qr_minimo?: number } | null;   // posnet de Mercado Pago (Point)
   exigeOperacion?: boolean;   // el dueño pidió el n.º de operación en las transferencias
   facturacion: { modo: "todas" | "elegir"; porDefecto: "fiscal" | "interna"; letra: string; pruebas: boolean; umbral: number } | null;
   filas: FilaStock[]; clientes: Cliente[]; masVendidos: number[]; puedeCrearCliente: boolean; medios: (MedioCobro & { es_saldo?: boolean | null; siempre_factura?: boolean | null; es_cuenta_corriente?: boolean | null })[]; cambiaPrecio: boolean; descuentoMax: number | null;
@@ -488,7 +488,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
 
                 {/* Número de cupón / operación (opcional) para los medios que no son efectivo */}
                 {[...new Map(cobro.lineas.filter((l) => l.base > 0 && pideReferencia(l.medio)).map((l) => [l.medio.id, l.medio])).values()].map((m) => (usaPoint && esTarjeta(m)) || esQr(m) ? (
-                  <CobroPoint key={m.id} monto={cobro.lineas.filter((l) => l.medio.id === m.id).reduce((t, l) => t + l.cobra + l.redondeo, 0)} via={esQr(m) ? "qr" : "point"} cajaId={point?.caja_id ?? null} permiteQr={permitidos.qr} permiteFijo={permitidos.qr_fijo} terminal={point?.terminal ?? null} referencia={referencias[m.id] ?? ""}
+                  <CobroPoint key={m.id} monto={cobro.lineas.filter((l) => l.medio.id === m.id).reduce((t, l) => t + l.cobra + l.redondeo, 0)} via={esQr(m) ? "qr" : "point"} cajaId={point?.caja_id ?? null} qrMinimo={Number(point?.qr_minimo ?? 0)} permiteQr={permitidos.qr} permiteFijo={permitidos.qr_fijo} terminal={point?.terminal ?? null} referencia={referencias[m.id] ?? ""}
                     onPendiente={(p) => setPendientes((x) => (x[m.id] === p ? x : { ...x, [m.id]: p }))} onAprobado={(orden) => setReferencias((r) => ({ ...r, [m.id]: orden ?? "" }))} />
                 ) : (
                   <div key={m.id} className="space-y-1">

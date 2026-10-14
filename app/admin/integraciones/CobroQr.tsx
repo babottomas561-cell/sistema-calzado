@@ -2,14 +2,16 @@
 // Cobro con QR: usar una sucursal y una caja que ya existen en Mercado Pago, o crear una nueva (con la dirección del local), y la regla de «esperar el pago».
 import { useActionState, useState, useTransition } from "react";
 import { CircleCheck, QrCode, Search } from "lucide-react";
-import { buscarSucursalesQr, desvincularQr, guardarEsperaPago, prepararQr, usarSucursalQr, type SucursalMp } from "./acciones";
+import { buscarSucursalesQr, desvincularQr, guardarEsperaPago, guardarQrMinimo, prepararQr, usarSucursalQr, type SucursalMp } from "./acciones";
+import { leerMonto } from "@/lib/formato";
 
 // Los nombres como los acepta Mercado Pago (la Ciudad de Buenos Aires es «Capital Federal»)
 const PROVINCIAS = ["Capital Federal", "Buenos Aires", "Catamarca", "Chaco", "Chubut", "Córdoba", "Corrientes", "Entre Ríos", "Formosa", "Jujuy", "La Pampa", "La Rioja", "Mendoza", "Misiones", "Neuquén", "Río Negro", "Salta", "San Juan", "San Luis", "Santa Cruz", "Santa Fe", "Santiago del Estero", "Tierra del Fuego", "Tucumán"];
 type Aviso = { error?: string; ok?: string };
 const Mensaje = ({ a }: { a: Aviso }) => a.error ? <p className="text-sm text-error" role="alert">{a.error}</p> : a.ok ? <p className="flex items-center gap-1.5 text-sm text-ok"><CircleCheck size={15} /> {a.ok}</p> : null;
 
-export default function CobroQr({ listo, hayToken, fijo, cajaExterna, espera }: {
+export default function CobroQr({ listo, hayToken, fijo, cajaExterna, espera, minimo }: {
+  minimo: number;   // el menor cobro que acepta Mercado Pago por QR
   listo: boolean; hayToken: boolean; fijo?: { imagen?: string | null; plantilla?: string | null } | null; cajaExterna?: string | null; espera: boolean }) {
   const [crear, accionCrear, creando] = useActionState(prepararQr, {});
   const [busca, buscar] = useTransition();
@@ -18,6 +20,7 @@ export default function CobroQr({ listo, hayToken, fijo, cajaExterna, espera }: 
   const [aviso, setAviso] = useState<Aviso>({});
   const [guardando, guardar] = useTransition();
   const [esperaAhora, setEspera] = useState(espera);
+  const [min, setMin] = useState(String(minimo));
 
   const encontrar = () => buscar(async () => { const r = await buscarSucursalesQr(); setAviso(r.error ? { error: r.error } : {}); setSucursales(r.sucursales ?? null); });
   const usar = () => guardar(async () => { const [s, c, e] = elegida.split("|"); setAviso(await usarSucursalQr(s, c ?? "", e ?? "")); });
@@ -85,6 +88,12 @@ export default function CobroQr({ listo, hayToken, fijo, cajaExterna, espera }: 
           </details>
         </div>
       )}
+
+      <div className="flex flex-wrap items-end gap-2">
+        <div><label className="etiqueta" htmlFor="qr-minimo">Monto mínimo por QR</label><input id="qr-minimo" value={min} onChange={(e) => setMin(e.target.value)} inputMode="decimal" className="campo w-32 tabular-nums" autoComplete="off" /></div>
+        <button type="button" className="boton-sec" disabled={guardando} onClick={() => guardar(async () => { const v = leerMonto(min); setAviso(v === null || Number.isNaN(v) ? { error: "Poné un monto" } : await guardarQrMinimo(v)); })}>Guardar</button>
+        <p className="basis-full text-xs text-texto-2">Mercado Pago rechaza los cobros por QR muy chicos (en tu cuenta, menos de $ 15). La caja no deja intentarlos. Si Mercado Pago informa un mínimo mayor, el sistema lo aprende solo.</p>
+      </div>
 
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" checked={esperaAhora} onChange={(e) => { const v = e.target.checked; setEspera(v); guardar(async () => { setAviso(await guardarEsperaPago(v)); }); }} className="mt-1" />

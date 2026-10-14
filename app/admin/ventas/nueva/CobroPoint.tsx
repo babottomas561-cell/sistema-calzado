@@ -10,7 +10,8 @@ import { pesos } from "@/lib/formato";
 type Estado = { estado: string; detalle: string | null; orden: string | null; usado: boolean; qr?: string | null };
 const FINALES: Record<string, string> = { cancelado: "Se canceló el cobro", rechazado: "El posnet rechazó el pago", vencido: "El cobro venció sin que se pagara", error: "No se pudo mandar el cobro", reembolsado: "El cobro fue devuelto" };
 
-export default function CobroPoint({ monto, terminal, referencia, onAprobado, via = "point", permiteQr = true, permiteFijo = true, onPendiente, cajaId = null }: {
+export default function CobroPoint({ monto, terminal, referencia, onAprobado, via = "point", permiteQr = true, permiteFijo = true, onPendiente, cajaId = null, qrMinimo = 0 }: {
+  qrMinimo?: number;   // el menor cobro que acepta Mercado Pago por QR
   cajaId?: number | null;   // la caja del sistema que cobra (cada una tiene su QR y su posnet)
   onPendiente?: (pendiente: boolean) => void;   // el cobro está esperando el pago (la caja puede frenar la venta)
   monto: number; terminal: string | null; referencia: string; onAprobado: (orden: string | null) => void; via?: "point" | "qr"; permiteQr?: boolean; permiteFijo?: boolean }) {
@@ -23,6 +24,7 @@ export default function CobroPoint({ monto, terminal, referencia, onAprobado, vi
   const [imagenQr, setImagenQr] = useState("");
   const [hayFijo, setHayFijo] = useState(false);       // el QR impreso del mostrador (modo híbrido)
   const [fijo, setFijo] = useState(false);             // este cobro se hizo con el QR del mostrador
+  const chico = via === "qr" && monto > 0 && monto < qrMinimo;   // Mercado Pago lo rechazaría
   const aprobado = estado?.estado === "aprobado";
   const avisar = useRef(onPendiente);
   useEffect(() => { avisar.current = onPendiente; });
@@ -94,12 +96,13 @@ export default function CobroPoint({ monto, terminal, referencia, onAprobado, vi
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-3">
-          <button type="button" onClick={desfasado || estado ? otraVez : () => mandar(via === "qr" && !permiteQr)} disabled={enviando || monto <= 0} className="boton h-10">
+          <button type="button" onClick={desfasado || estado ? otraVez : () => mandar(via === "qr" && !permiteQr)} disabled={enviando || monto <= 0 || chico} className="boton h-10">
             {via === "qr" ? <QrCode size={16} strokeWidth={1.8} /> : <Smartphone size={16} strokeWidth={1.8} />} {enviando ? (via === "qr" ? "Generando…" : "Mandando…") : estado && !desfasado ? "Cobrar de nuevo" : via === "qr" ? (permiteQr ? `Cobrar ${pesos(monto)} con QR` : `Cobrar ${pesos(monto)} con el QR del mostrador`) : `Cobrar ${pesos(monto)} en el posnet`}</button>
-          {via === "qr" && permiteQr && permiteFijo && hayFijo && !estado && <button type="button" onClick={() => mandar(true)} disabled={enviando || monto <= 0} className="boton-sec h-10">Con el QR del mostrador</button>}
+          {via === "qr" && permiteQr && permiteFijo && hayFijo && !estado && <button type="button" onClick={() => mandar(true)} disabled={enviando || monto <= 0 || chico} className="boton-sec h-10">Con el QR del mostrador</button>}
           {via === "point" && terminal && <span className="text-xs text-texto-2">{terminal}</span>}
         </div>
       )}
+      {chico && !estado && <p className="text-sm text-alerta">Mercado Pago no acepta cobros por QR menores a {pesos(qrMinimo)}. Elegí otro medio de pago para este importe.</p>}
       {estado && FINALES[estado.estado] && <p className="text-sm text-error" role="alert">{FINALES[estado.estado]}{estado.detalle ? ` (${estado.detalle})` : ""}</p>}
       {error && <p className="text-sm text-error" role="alert">{error}</p>}
     </div>

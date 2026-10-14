@@ -22,7 +22,7 @@ export default async function PaginaMercadoPago() {
     supabase.rpc("estado_webhook_mp"),
     supabase.rpc("qr_fijo"),
     supabase.rpc("cobro_espera_pago"),
-    supabase.from("configuracion_tienda").select("mp_modo, mp_cuotas_max").single(),
+    supabase.from("configuracion_tienda").select("mp_modo, mp_cuotas_max, qr_monto_minimo").single(),
   ]);
   // Las preferencias de cobro las maneja quien administra el equipo
   let prefs: DatosPreferencias | null = null;
@@ -46,7 +46,7 @@ export default async function PaginaMercadoPago() {
         {mp && config && <MercadoPago estado={mp as unknown as EstadoMP} modo={config.mp_modo} cuotasMax={config.mp_cuotas_max} webhook={`${sitio()}/api/mercadopago`} />}
       </section>
       <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
-        <CobroQr listo={!!(qr as { listo?: boolean } | null)?.listo} hayToken={!!(mp as { token?: string | null } | null)?.token} fijo={fijo as { imagen?: string | null; plantilla?: string | null } | null} cajaExterna={(qr as { caja_externa?: string | null } | null)?.caja_externa ?? null} espera={espera !== false} />
+        <CobroQr listo={!!(qr as { listo?: boolean } | null)?.listo} hayToken={!!(mp as { token?: string | null } | null)?.token} fijo={fijo as { imagen?: string | null; plantilla?: string | null } | null} cajaExterna={(qr as { caja_externa?: string | null } | null)?.caja_externa ?? null} espera={espera !== false} minimo={Number(config?.qr_monto_minimo ?? 15)} />
       </section>
       {prefs && <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm"><PreferenciasCobro datos={prefs} /></section>}
       {/* Solo para quien tiene el posnet de Mercado Pago: plegado hasta que se use */}

@@ -181,6 +181,14 @@ export async function desvincularQr(): Promise<Estado> {
   return { ok: "Desvinculado" };
 }
 
+export async function guardarQrMinimo(monto: number): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("guardar_qr_minimo", { p_monto: monto });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout"); revalidatePath("/admin/ventas/nueva");
+  return { ok: "Guardado" };
+}
+
 export async function guardarEsperaPago(activa: boolean): Promise<Estado> {
   const supabase = await crearCliente();
   const { error } = await supabase.rpc("guardar_espera_pago", { p_activa: activa });
