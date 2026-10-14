@@ -793,14 +793,14 @@ isOneToOne: false
                   ]
                 },"curvas": {
                   Row: {
-                    "creado_en": string,"escala": string,"id": number,"nombre": string,"notas": string | null,"proveedor_id": number | null
+                    "creado_en": string,"escala": string,"id": number,"nombre": string,"notas": string | null,"proveedor_id": number | null,"ultimo_uso": string | null,"usos": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "creado_en"?: string,"escala": string,"id"?: never,"nombre": string,"notas"?: string | null,"proveedor_id"?: number | null
+                    "creado_en"?: string,"escala": string,"id"?: never,"nombre": string,"notas"?: string | null,"proveedor_id"?: number | null,"ultimo_uso"?: string | null,"usos"?: number
                   }
                   Update: {
-                    "creado_en"?: string,"escala"?: string,"id"?: never,"nombre"?: string,"notas"?: string | null,"proveedor_id"?: number | null
+                    "creado_en"?: string,"escala"?: string,"id"?: never,"nombre"?: string,"notas"?: string | null,"proveedor_id"?: number | null,"ultimo_uso"?: string | null,"usos"?: number
                   }
                   Relationships: [
                     {
@@ -4083,6 +4083,9 @@ isOneToOne: false
                            },
 "tiene_permiso":
 { Args: { "p_permiso": string }; Returns: boolean
+                           },
+"usar_curva":
+{ Args: { "p_id": number }; Returns: undefined
                            },
 "validar_registro":
 { Args: { "p_email": string,"p_meta": Json }; Returns: string

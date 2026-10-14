@@ -14,11 +14,24 @@ import { diaArgentina, pesos } from "@/lib/formato";
 import CamposProducto, { type Maestros } from "../../productos/CamposProducto";
 import ElegirTallesColores, { type Color, type Talle } from "../../productos/ElegirTallesColores";
 import { crearProductoRapido } from "../../productos/acciones";
-import { guardarBulto, registrarCompra } from "../acciones";
+import { guardarBulto, registrarCompra, usarCurva } from "../acciones";
 
 type Fila = { variante_id: number; producto_id: number; codigo: string; nombre: string; marca: string | null; talle: string; talle_orden: number;
   color: string; color_hex: string | null; sku: string | null; codigo_barras: string | null; stock: number; precio_compra: number; escala?: string | null };
-type CurvaCompra = { id: number; nombre: string; escala: string; proveedor_id: number | null; items: { talle_id: number; cantidad: number }[] };
+type CurvaCompra = { id: number; nombre: string; escala: string; proveedor_id: number | null; usos?: number; items: { talle_id: number; cantidad: number }[] };
+
+// Las unidades de cada variante de un modelo al aplicarle una curva ×N (a un color o a todos); los talles que el modelo no tiene se avisan
+function paresDeCurva(modelo: { variantes: Fila[] }, curva: CurvaCompra, talles: Talle[], color: string, n: number) {
+  const pares: Record<number, number> = {};
+  const sinTalle: string[] = [];
+  for (const it of curva.items) {
+    const nombre = talles.find((t) => t.id === it.talle_id)?.nombre;
+    const vs = modelo.variantes.filter((v) => v.talle === nombre && (!color || v.color === color));
+    if (!vs.length) { if (nombre) sinTalle.push(nombre); continue; }
+    for (const v of vs) pares[v.variante_id] = it.cantidad * n;
+  }
+  return { pares, sinTalle };
+}
 type Precio = { producto_id: number; proveedor_id: number; codigo_proveedor: string | null; precio_compra: number };
 // Un modelo cargado en la factura: su costo y los pares por variante
 type Bloque = { producto_id: number; costo: number; costoEditado: boolean; pares: Record<number, number> };
@@ -27,32 +40,29 @@ type Bloque = { producto_id: number; costo: number; costoEditado: boolean; pares
 // «Aplicar curva ×N» a un modelo: completa las unidades de cada talle de la curva en los colores elegidos (los demás talles quedan como estaban)
 function AplicarCurva({ modelo, curvas, talles, proveedor, alAplicar }: {
   modelo: { escala: string | null; variantes: Fila[] }; curvas: CurvaCompra[]; talles: Talle[]; proveedor: number | ""; alAplicar: (pares: Record<number, number>) => void }) {
-  const [curva, setCurva] = useState<number | "">("");
+  // Las más usadas primero; la primera queda elegida de entrada
+  const posibles = curvas.filter((c) => (!modelo.escala || c.escala === modelo.escala) && (!proveedor || !c.proveedor_id || c.proveedor_id === proveedor))
+    .sort((a, b) => Number(!!proveedor && b.proveedor_id === proveedor) - Number(!!proveedor && a.proveedor_id === proveedor) || (b.usos ?? 0) - (a.usos ?? 0));
+  const [elegida, setElegida] = useState<number | "">("");
+  const curva = elegida !== "" && posibles.some((c) => c.id === elegida) ? elegida : (posibles[0]?.id ?? "");
   const [color, setColor] = useState("");
   const [n, setN] = useState(1);
   const [aviso, setAviso] = useState("");
-  const posibles = curvas.filter((c) => (!modelo.escala || c.escala === modelo.escala) && (!proveedor || !c.proveedor_id || c.proveedor_id === proveedor));
   if (!posibles.length) return null;
   const colores = [...new Set(modelo.variantes.map((v) => v.color))];
   const aplicar = () => {
     const c = posibles.find((x) => x.id === curva);
     if (!c) return;
-    const pares: Record<number, number> = {};
-    const sinTalle: string[] = [];
-    for (const it of c.items) {
-      const nombre = talles.find((t) => t.id === it.talle_id)?.nombre;
-      const vs = modelo.variantes.filter((v) => v.talle === nombre && (!color || v.color === color));
-      if (!vs.length) { if (nombre) sinTalle.push(nombre); continue; }
-      for (const v of vs) pares[v.variante_id] = it.cantidad * n;
-    }
+    const { pares, sinTalle } = paresDeCurva(modelo, c, talles, color, n);
     alAplicar(pares);
+    void usarCurva(c.id);
     setAviso(sinTalle.length ? `El modelo no tiene los talles ${sinTalle.join(", ")}: no se cargaron.` : "");
   };
   return (
     <div className="flex flex-wrap items-end gap-2 rounded-lg bg-gray-50 p-2.5 text-sm">
       <div className="min-w-40 flex-1"><label className="etiqueta" htmlFor="curva-sel"><Ruler size={13} className="mr-1 inline" /> Aplicar una curva</label>
-        <select id="curva-sel" value={curva} onChange={(e) => setCurva(e.target.value ? Number(e.target.value) : "")} className="campo py-1.5"><option value="">Elegí una curva…</option>
-          {posibles.map((c) => <option key={c.id} value={c.id}>{c.nombre} ({c.items.reduce((t, i) => t + i.cantidad, 0)} u.)</option>)}</select></div>
+        <select id="curva-sel" value={curva} onChange={(e) => setElegida(e.target.value ? Number(e.target.value) : "")} className="campo py-1.5">
+          {posibles.map((c, i) => <option key={c.id} value={c.id}>{c.nombre} ({c.items.reduce((t, it) => t + it.cantidad, 0)} u.){i === 0 && (c.usos ?? 0) > 0 ? " · la más usada" : ""}</option>)}</select></div>
       <div className="min-w-32"><label className="etiqueta" htmlFor="curva-color">Color</label>
         <select id="curva-color" value={color} onChange={(e) => setColor(e.target.value)} className="campo py-1.5"><option value="">Todos</option>{colores.map((c) => <option key={c}>{c}</option>)}</select></div>
       <div className="w-20"><label className="etiqueta" htmlFor="curva-n">Curvas</label><input id="curva-n" type="number" min={1} value={n} onChange={(e) => setN(Math.max(1, Math.floor(Number(e.target.value)) || 1))} className="campo py-1.5 tabular-nums" /></div>
@@ -119,6 +129,23 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
     setBloques((bs) => bs.map((b) => (b.producto_id === productoId ? cambio(b) : b)));
   const ponerPares = (productoId: number, varianteId: number, n: number) =>
     cambiarBloque(productoId, (b) => ({ ...b, pares: { ...b.pares, [varianteId]: Math.max(0, Math.floor(n) || 0) } }));
+
+  // Una curva a todos los modelos cargados de su escala
+  const [curvaTodos, setCurvaTodos] = useState<number | "">("");
+  const [cantidadTodos, setCantidadTodos] = useState(1);
+  const [avisoTodos, setAvisoTodos] = useState("");
+  const curvasUsadas = [...curvas].sort((a, b) => (b.usos ?? 0) - (a.usos ?? 0));
+  const aplicarATodos = () => {
+    const c = curvas.find((x) => x.id === (curvaTodos || curvasUsadas[0]?.id));
+    if (!c) return;
+    setBloques((bs) => bs.map((b) => {
+      const m = modelos.get(b.producto_id);
+      if (!m || (m.escala && m.escala !== c.escala)) return b;
+      return { ...b, pares: { ...b.pares, ...paresDeCurva(m, c, talles, "", cantidadTodos).pares } };
+    }));
+    void usarCurva(c.id);
+    setAvisoTodos(`${c.nombre} ×${cantidadTodos} aplicada a los modelos de escala ${c.escala}`);
+  };
 
   // Bultos: una curva guardada que se agrega «×N» y se expande a los renglones de siempre (el stock lo suma registrar_compra)
   const [bultoElegido, setBultoElegido] = useState<number | "">("");
@@ -302,6 +329,16 @@ export default function FacturaCompra({ filas, proveedores, precios, maestros, t
           {/* 3. Un bloque por modelo, con su curva */}
           {bloques.length === 0 && !creando && (
             <div className="rounded-xl border border-dashed border-borde p-8 text-center text-sm text-texto-2">Todavía no cargaste ningún modelo.</div>
+          )}
+          {bloques.length > 1 && curvas.length > 0 && (
+            <div className="tarjeta flex flex-wrap items-end gap-2">
+              <div className="min-w-48 flex-1"><label className="etiqueta" htmlFor="curva-todos"><Ruler size={14} className="mr-1 inline" /> Aplicar una curva a todos los modelos</label>
+                <select id="curva-todos" value={curvaTodos || curvasUsadas[0]?.id} onChange={(e) => setCurvaTodos(Number(e.target.value))} className="campo">
+                  {curvasUsadas.map((c) => <option key={c.id} value={c.id}>{c.nombre} · {c.escala}</option>)}</select></div>
+              <div className="w-24"><label className="etiqueta" htmlFor="curva-todos-n">Curvas</label><input id="curva-todos-n" type="number" min={1} value={cantidadTodos} onChange={(e) => setCantidadTodos(Math.max(1, Math.floor(Number(e.target.value)) || 1))} className="campo tabular-nums" /></div>
+              <button type="button" className="boton-sec" onClick={aplicarATodos}>Aplicar a todos</button>
+              {avisoTodos && <p role="status" className="basis-full text-xs text-ok">{avisoTodos}</p>}
+            </div>
           )}
           {bloques.map((b) => {
             const m = modelos.get(b.producto_id);

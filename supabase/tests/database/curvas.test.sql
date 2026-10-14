@@ -9,7 +9,7 @@ create function prueba.talle(p_nombre text, p_escala text) returns bigint langua
 create table prueba.ids (nombre text primary key, id bigint);
 grant all on prueba.ids to anon, authenticated;
 grant execute on all functions in schema prueba to anon, authenticated;
-select plan(11);
+select plan(15);
 
 set local role authenticated; select prueba.como_cliente();
 select throws_ok($$ select guardar_curva('Calzado', 'Adulto', '[]') $$, 'No tenés permiso para armar curvas', 'un cliente no arma curvas');
@@ -25,6 +25,11 @@ select is((select sum(cantidad)::int from curva_items where curva_id = (select i
 select throws_like($$ select guardar_curva('calzado 39 al 41', 'Adulto', jsonb_build_array(jsonb_build_object('talle_id', prueba.talle('40', 'Adulto'), 'cantidad', 1))) $$, 'Ya hay una curva con ese nombre', 'el nombre no se repite');
 select lives_ok(format($$ select guardar_curva('Calzado 39 al 41', 'Adulto', jsonb_build_array(jsonb_build_object('talle_id', %s, 'cantidad', 3)), %s) $$, prueba.talle('40', 'Adulto'), (select id from prueba.ids where nombre = 'c')), 'se reemplaza lo que lleva');
 select is((select count(*)::int from curva_items where curva_id = (select id from prueba.ids where nombre = 'c')), 1, 'y queda solo lo nuevo');
+-- Se recuerda cuánto se usa cada curva
+select is((select usos from curvas where id = (select id from prueba.ids where nombre = 'c')), 0, 'una curva nueva no tiene usos');
+select lives_ok(format($$ select usar_curva(%s) $$, (select id from prueba.ids where nombre = 'c')), 'usar una curva se anota');
+select is((select usos from curvas where id = (select id from prueba.ids where nombre = 'c')), 1, 'suma un uso');
+select is((select ultimo_uso is not null from curvas where id = (select id from prueba.ids where nombre = 'c')), true, 'y cuándo fue');
 select lives_ok(format($$ select quitar_curva(%s) $$, (select id from prueba.ids where nombre = 'c')), 'se quita la curva');
 select is((select count(*)::int from curva_items), 0, 'y sus renglones con ella');
 select * from finish();

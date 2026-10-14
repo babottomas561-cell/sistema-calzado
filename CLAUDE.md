@@ -480,3 +480,4 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
 44. **Primeros pasos** (`primeros_pasos()`; bloque del Inicio, `app/admin/PrimerosPasos.tsx`): la guía de alta. La base arma la lista de lo que falta para dejar el local listo (qué usa, logo, datos legales, productos, stock inicial,
     impresión, equipo) y **suma un paso por cada integración encendida en Parametrización y sin configurar** (así la parametrización lleva a la configuración). Cada paso dice si quien mira lo puede hacer (`puede`); el bloque muestra
     solo esos, con su avance, y desaparece cuando están los obligatorios (los opcionales no molestan). Un paso nuevo = un caso más en `primeros_pasos()` (migración nueva) y su prueba en `primeros_pasos.test.sql`.
+    Las curvas recuerdan cuánto se usan (`curvas.usos`, `usar_curva()`): el selector propone primero la más usada (y la del proveedor elegido) y hay «Aplicar una curva a todos los modelos» (los de su escala).

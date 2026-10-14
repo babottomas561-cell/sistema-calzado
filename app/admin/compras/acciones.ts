@@ -83,3 +83,9 @@ export async function quitarCurva(id: number): Promise<EstadoBulto> {
   revalidatePath("/admin/compras", "layout");
   return { ok: "Curva quitada" };
 }
+
+// Se recuerda cuánto se usa cada curva (para proponer primero la más usada)
+export async function usarCurva(id: number): Promise<void> {
+  const supabase = await crearCliente();
+  await supabase.rpc("usar_curva", { p_id: id });
+}

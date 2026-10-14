@@ -19,7 +19,7 @@ export default async function NuevaCompra() {
     supabase.from("v_credito_proveedores").select("proveedor_id, saldo").gt("saldo", 0),
     supabase.from("bultos").select("id, nombre, proveedor_id").order("nombre"),
     supabase.from("bulto_items").select("bulto_id, variante_id, cantidad"),
-    supabase.from("curvas").select("id, nombre, escala, proveedor_id").order("nombre"),
+    supabase.from("curvas").select("id, nombre, escala, proveedor_id, usos").order("usos", { ascending: false }).order("nombre"),
     supabase.from("curva_items").select("curva_id, talle_id, cantidad"),
   ]);
   const curvasConItems = (curvas ?? []).map((c) => ({ ...c, items: (curvaItems ?? []).filter((i) => i.curva_id === c.id).map((i) => ({ talle_id: i.talle_id, cantidad: i.cantidad })) }));
