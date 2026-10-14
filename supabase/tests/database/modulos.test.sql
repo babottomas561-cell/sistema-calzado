@@ -17,7 +17,7 @@ select plan(18);
 set local role authenticated;
 select prueba.como_admin();
 
-select is((select count(*)::int from modulos where not activo and clave not in ('cuenta-corriente', 'sucursales', 'precios/listas') and clave not like 'integraciones/%'), 0, 'de fábrica está todo encendido (menos lo que se enciende a propósito: cuenta corriente, sucursales, listas de precios e integraciones)');
+select is((select count(*)::int from modulos where not activo and clave not in ('cuenta-corriente', 'sucursales', 'precios/listas') and clave not like 'integraciones/%' and clave not like 'mercadopago/%'), 0, 'de fábrica está todo encendido (menos lo que se enciende a propósito: cuenta corriente, sucursales, listas de precios, integraciones y los cobros con posnet y QR)');
 select is((select count(*)::int from modulos where not activo and clave like 'integraciones/%'), 8, 'las integraciones que no se usan arrancan apagadas (un local nuevo empieza con lo mínimo)');
 select is((select activo from modulos where clave = 'precios/listas'), false, 'las listas de precios también');
 select is(_modulo_activo('integraciones/whatsapp'), false, 'la base dice que WhatsApp está apagado');

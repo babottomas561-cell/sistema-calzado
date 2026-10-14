@@ -28,6 +28,7 @@ create function prueba.orden(p_orden text, p_status text, p_monto text) returns 
       'payment_method', jsonb_build_object('id', 'visa', 'type', 'credit_card', 'installments', 1))))) ) $$;
 grant execute on all functions in schema prueba to anon, authenticated;
 select plan(17);
+update modulos set activo = true where clave like 'mercadopago/%';   -- parten de «posnet y QR habilitados» (Parametrización)
 
 reset role;
 update integraciones set mp_access_token = 'APP_USR-1234567890-abcdefghij-xyz', mp_webhook_secret = 'secreto', mp_point_token = null, mp_point_secreto = null;

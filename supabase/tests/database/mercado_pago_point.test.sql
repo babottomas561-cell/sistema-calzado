@@ -30,6 +30,7 @@ create function prueba.orden(p_orden text, p_status text, p_detalle text) return
       'payment_method', jsonb_build_object('id', 'visa', 'type', 'credit_card', 'installments', 1))))) ) $$;
 grant execute on all functions in schema prueba to anon, authenticated;
 select plan(31);
+update modulos set activo = true where clave like 'mercadopago/%';   -- parten de «posnet y QR habilitados» (Parametrización)
 
 -- ── Credenciales ──
 set local role authenticated; select prueba.como_vendedora();

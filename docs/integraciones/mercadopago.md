@@ -55,6 +55,8 @@ de prueba de Mercado Pago. Cuando todo ande, cambiá al Access Token de producci
 
 ## Cobrar en el local con el posnet (Point)
 
+> **Primero, en Parametrización:** encendé «Cobrar con posnet (Point)». Apagado, la caja no lo ofrece y este bloque no aparece.
+
 Sirve para que la caja le mande el monto al posnet de Mercado Pago y espere que el cliente pase la tarjeta, sin tipear nada a mano.
 
 **Una sola aplicación alcanza.** En la misma aplicación de Mercado Pago (Tus integraciones → tu aplicación → **Webhooks**, pestaña **Modo productivo**):
@@ -75,6 +77,8 @@ Después, en **Integraciones → Mercado Pago**: cargá el Access Token de produ
 ---
 
 ## Cobrar con QR (desde la caja o el celular)
+
+> **Primero, en Parametrización:** encendé «Cobrar con QR». Apagado, la caja no lo ofrece y este bloque no aparece.
 
 No necesita posnet: la caja muestra en pantalla un QR con el monto exacto de la venta y el cliente paga escaneándolo con Mercado Pago u otra billetera.
 

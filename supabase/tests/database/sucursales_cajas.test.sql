@@ -23,6 +23,7 @@ create function prueba.suc(p_nombre text) returns bigint language sql stable sec
 create function prueba.caja(p_nombre text) returns bigint language sql stable security definer set search_path = public as $$ select id from cajas where nombre = p_nombre $$;
 grant execute on all functions in schema prueba to anon, authenticated;
 select plan(31);
+update modulos set activo = true where clave like 'mercadopago/%';   -- parten de «posnet y QR habilitados» (Parametrización)
 
 -- La principal siempre existe
 select is((select nombre from sucursales where por_defecto), 'Principal', 'siempre hay una sucursal principal');

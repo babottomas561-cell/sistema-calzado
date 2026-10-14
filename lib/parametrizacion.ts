@@ -35,6 +35,8 @@ export const GRUPOS_PARAMETROS: GrupoParametros[] = [
   { titulo: "Integraciones", parametros: [
     { clave: "integraciones", descripcion: "Servicios de afuera. Encendé solo los que usás: cada uno trae su configuración y su manual.", configurar: "/admin/integraciones" },
     { clave: "integraciones/mercadopago", descripcion: "Cobrar con Mercado Pago: online, con QR y con el posnet.", configurar: "/admin/integraciones/mercadopago" },
+    { clave: "mercadopago/posnet", descripcion: "¿Cobran las tarjetas con el posnet de Mercado Pago (Point)? La caja le manda el monto y espera la respuesta.", configurar: "/admin/integraciones/mercadopago" },
+    { clave: "mercadopago/qr", descripcion: "¿Cobran con QR (en pantalla o con el QR fijo del mostrador)? Necesita una sucursal y una caja de Mercado Pago.", configurar: "/admin/integraciones/mercadopago" },
     { clave: "integraciones/whatsapp", descripcion: "Bot y avisos de pedidos por WhatsApp.", configurar: "/admin/integraciones/whatsapp" },
     { clave: "integraciones/ia", descripcion: "Inteligencia artificial (Gemini) para que el bot conteste con datos del local.", configurar: "/admin/integraciones/ia" },
     { clave: "integraciones/instagram", descripcion: "Mostrar las últimas publicaciones de Instagram en la portada.", configurar: "/admin/integraciones/instagram" },

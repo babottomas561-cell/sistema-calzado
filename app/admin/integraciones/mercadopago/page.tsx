@@ -1,5 +1,6 @@
 // Mercado Pago: las claves, de quién es la cuenta conectada, los avisos de pago y cómo cobra la tienda.
 import { crearCliente } from "@/lib/supabase/server";
+import Link from "next/link";
 import { exigir } from "@/lib/exigir";
 import { puede } from "@/lib/permisos";
 import Encabezado from "../Encabezado";
@@ -15,6 +16,9 @@ import Requisitos from "@/components/Requisitos";
 export default async function PaginaMercadoPago() {
   const { permisos } = await exigir("tienda.editar");
   const supabase = await crearCliente();
+  const { data: apagadosDatos } = await supabase.from("modulos").select("clave").eq("activo", false).like("clave", "mercadopago/%");
+  const posnetOn = !(apagadosDatos ?? []).some((m) => m.clave === "mercadopago/posnet");
+  const qrOn = !(apagadosDatos ?? []).some((m) => m.clave === "mercadopago/qr");
   const [{ data: mp }, { data: point }, { data: qr }, { data: webhook }, { data: fijo }, { data: espera }, { data: config }] = await Promise.all([
     supabase.rpc("estado_mercadopago"),
     supabase.rpc("estado_point"),
@@ -45,16 +49,16 @@ export default async function PaginaMercadoPago() {
         {webhook && <AvisoWebhook actual={(webhook as { actual: string }).actual} cargada={(webhook as { cargada: string | null }).cargada} desactualizada={(webhook as { desactualizada: boolean }).desactualizada} />}
         {mp && config && <MercadoPago estado={mp as unknown as EstadoMP} modo={config.mp_modo} cuotasMax={config.mp_cuotas_max} webhook={`${sitio()}/api/mercadopago`} />}
       </section>
-      <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
+      {!posnetOn && !qrOn && <p className="rounded-lg bg-gray-50 p-3 text-sm text-texto-2">El cobro con posnet y con QR en el local se habilita en <Link href="/admin/parametrizacion" className="font-semibold text-marca">Parametrización</Link>.</p>}
+      {qrOn && <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
         <CobroQr listo={!!(qr as { listo?: boolean } | null)?.listo} hayToken={!!(mp as { token?: string | null } | null)?.token} fijo={fijo as { imagen?: string | null; plantilla?: string | null } | null} cajaExterna={(qr as { caja_externa?: string | null } | null)?.caja_externa ?? null} espera={espera !== false} minimo={Number(config?.qr_monto_minimo ?? 15)} />
-      </section>
-      {prefs && <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm"><PreferenciasCobro datos={prefs} /></section>}
-      {/* Solo para quien tiene el posnet de Mercado Pago: plegado hasta que se use */}
-      <details className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm" open={!!(point as { terminales?: unknown[] } | null)?.terminales?.length}>
+      </section>}
+      {prefs && (posnetOn || qrOn) && <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm"><PreferenciasCobro datos={prefs} /></section>}
+      {posnetOn && <details className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm" open={!!(point as { terminales?: unknown[] } | null)?.terminales?.length}>
         <summary className="cursor-pointer px-5 py-3 font-semibold">Tengo un posnet de Mercado Pago (Point)</summary>
         <p className="px-5 text-sm text-texto-2">Cobrar con tarjeta en el local con el posnet: la caja le manda el monto y espera la respuesta. Si no tenés uno, no hace falta tocar nada.</p>
         {point && <MercadoPagoPoint estado={point as unknown as EstadoPoint} />}
-      </details>
+      </details>}
       <Manual nombre="mercadopago" abierto={!(mp as { token?: string | null } | null)?.token} />
     </div>
   );

@@ -20,7 +20,8 @@ create function prueba.responder(p_metodo text, p_ruta text, p_status int, p_cue
 create function prueba.como_admin() returns void language sql as $$ select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}', true) $$;
 create function prueba.como_vendedora() returns void language sql as $$ select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}', true) $$;
 grant execute on all functions in schema prueba to anon, authenticated;
-select plan(32);
+select plan(36);
+update modulos set activo = true where clave like 'mercadopago/%';   -- parten de «posnet y QR habilitados» (Parametrización)
 
 reset role;
 update integraciones set mp_access_token = 'APP_USR-1234567890-abcdefghij-xyz', mp_webhook_secret = 'secreto';
@@ -81,5 +82,11 @@ select lives_ok($$ select qr_desvincular() $$, 'se puede dejar de usar para eleg
 select is(cobro_espera_pago(), true, 'de fábrica, la caja espera el pago antes de confirmar la venta');
 select lives_ok($$ select guardar_espera_pago(false) $$, 'el administrador lo puede apagar');
 select is(cobro_espera_pago(), false, 'y queda apagado');
+-- Parametrización: apagados, no se ofrecen ni se cobran
+reset role; update modulos set activo = false where clave in ('mercadopago/posnet', 'mercadopago/qr'); set local role authenticated; select prueba.como_admin();
+select is(point_caja() ->> 'qr', 'false', 'con el QR apagado en Parametrización, la caja no lo ofrece');
+select is(point_caja() ->> 'disponible', 'false', 'ni el posnet');
+select is(qr_cobrar(100) ->> 'error', 'El cobro con QR no está habilitado (Parametrización → Mercado Pago)', 'y la base no cobra con QR');
+select is(point_cobrar(100) ->> 'error', 'El cobro con posnet no está habilitado (Parametrización → Mercado Pago)', 'ni con posnet');
 select * from finish();
 rollback;

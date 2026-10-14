@@ -468,3 +468,5 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
     entrada en `lib/configuracion.ts`. Las pruebas de la base que apagan módulos parten de «todo encendido».
 41. **Caja de cada persona**: `perfiles.caja_id` (Equipo → Personas). La caja con la que se cobra se resuelve de lo más específico a lo general: el dispositivo registrado y asignado → la persona → la caja principal (`cobro_medios`,
     `_venta_caja`).
+    En Mercado Pago, **cobrar con posnet** (`mercadopago/posnet`) y **cobrar con QR** (`mercadopago/qr`) son interruptores propios: apagados, `point_caja` no los ofrece, `point_cobrar` / `qr_cobrar` no cobran y su
+    configuración no aparece en Integraciones → Mercado Pago.
