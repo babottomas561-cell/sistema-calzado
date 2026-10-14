@@ -325,3 +325,28 @@ export async function diagnosticarDominio(id: number): Promise<{ error?: string;
   const registros = (Array.isArray(d.registros) ? d.registros : []) as Registro[];
   return { diagnostico: await diagnosticar(d.nombre, registros) };
 }
+
+// ── Preferencias de cobro (qué medios de Mercado Pago ofrece la caja) ───
+export async function guardarPreferenciaCobro(ambito: string, referencia: string, medio: string, valor: "" | "si" | "no"): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("guardar_preferencia_cobro", { p_ambito: ambito, p_referencia: referencia, p_medio: medio, p_habilitado: valor === "" ? (null as unknown as boolean) : valor === "si" });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  return { ok: "Guardado" };
+}
+
+export async function registrarDispositivo(nombre: string): Promise<Estado & { clave?: string }> {
+  const supabase = await crearCliente();
+  const { data, error } = await supabase.rpc("registrar_dispositivo", { p_nombre: nombre });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  return { ok: "Dispositivo registrado", clave: String(data) };
+}
+
+export async function quitarDispositivo(id: number): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("quitar_dispositivo", { p_id: id });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/integraciones", "layout");
+  return { ok: "Quitado" };
+}

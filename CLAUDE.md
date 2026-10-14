@@ -415,3 +415,7 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
 
     **QR dinámico** (`qr_preparar`, `qr_cobrar`; la caja y la sucursal se crean una vez en Mercado Pago, `integraciones.mp_qr_*`): mismo circuito que el posnet (`point_cobros.via = 'qr'`, `point_estado`, webhook `order`);
     la caja dibuja el QR con `qr_data` (`CobroPoint`, librería `qrcode`); el **QR fijo** del mostrador (modo `hybrid`, `qr_fijo()`) se imprime una vez y la caja le carga cada monto. Se ofrece para los medios de tipo Billetera o con «mercado pago»/«qr» en el nombre.
+
+32. **Preferencias de cobro** (`dispositivos`, `preferencias_cobro`; Integraciones → Mercado Pago → «Cobro en la caja», `equipo.administrar`): qué medios de Mercado Pago ofrece la caja (`posnet`, `qr`, `qr_fijo`)
+    según el rol, la persona y el **dispositivo** (se registra una vez; el navegador guarda su `clave` en `localStorage`, y `cobro_medios(clave)` da lo que corresponde). Gana lo más específico (dispositivo > persona > rol; sin
+    nada dicho, todo habilitado). Es comodidad de la pantalla: no reemplaza el permiso de cobrar ni la regla de tarjetas, que controla la base. El mismo mecanismo sirve para sumar otros medios después.

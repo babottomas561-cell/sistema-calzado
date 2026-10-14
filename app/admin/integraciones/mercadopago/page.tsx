@@ -1,16 +1,18 @@
 // Mercado Pago: las claves, de quién es la cuenta conectada, los avisos de pago y cómo cobra la tienda.
 import { crearCliente } from "@/lib/supabase/server";
 import { exigir } from "@/lib/exigir";
+import { puede } from "@/lib/permisos";
 import Encabezado from "../Encabezado";
 import Manual from "../Manual";
 import MercadoPago, { type EstadoMP } from "../MercadoPago";
 import AvisoWebhook from "../AvisoWebhook";
+import PreferenciasCobro, { type DatosPreferencias } from "../PreferenciasCobro";
 import CobroQr from "../CobroQr";
 import MercadoPagoPoint, { type EstadoPoint } from "../MercadoPagoPoint";
 import { sitio } from "../sitio";
 
 export default async function PaginaMercadoPago() {
-  await exigir("tienda.editar");
+  const { permisos } = await exigir("tienda.editar");
   const supabase = await crearCliente();
   const [{ data: mp }, { data: point }, { data: qr }, { data: webhook }, { data: fijo }, { data: config }] = await Promise.all([
     supabase.rpc("estado_mercadopago"),
@@ -20,6 +22,17 @@ export default async function PaginaMercadoPago() {
     supabase.rpc("qr_fijo"),
     supabase.from("configuracion_tienda").select("mp_modo, mp_cuotas_max").single(),
   ]);
+  // Las preferencias de cobro las maneja quien administra el equipo
+  let prefs: DatosPreferencias | null = null;
+  if (puede(permisos, "equipo.administrar")) {
+    const [{ data: roles }, { data: personas }, { data: dispositivos }, { data: preferencias }] = await Promise.all([
+      supabase.from("roles").select("id, nombre").eq("activo", true).order("nombre"),
+      supabase.from("perfiles").select("id, nombre").eq("rol", "staff").order("nombre"),
+      supabase.from("dispositivos").select("id, clave, nombre").eq("activo", true).order("nombre"),
+      supabase.from("preferencias_cobro").select("ambito, referencia, medio, habilitado"),
+    ]);
+    prefs = { roles: roles ?? [], personas: personas ?? [], dispositivos: dispositivos ?? [], preferencias: preferencias ?? [] };
+  }
   return (
     <div className="max-w-4xl space-y-6">
       <Encabezado titulo="Mercado Pago"
@@ -31,6 +44,7 @@ export default async function PaginaMercadoPago() {
       <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm">
         <CobroQr listo={!!(qr as { listo?: boolean } | null)?.listo} hayToken={!!(mp as { token?: string | null } | null)?.token} fijo={fijo as { imagen?: string | null; plantilla?: string | null } | null} />
       </section>
+      {prefs && <section className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm"><PreferenciasCobro datos={prefs} /></section>}
       {/* Solo para quien tiene el posnet de Mercado Pago: plegado hasta que se use */}
       <details className="overflow-hidden rounded-xl border border-borde bg-white shadow-sm" open={!!(point as { terminales?: unknown[] } | null)?.terminales?.length}>
         <summary className="cursor-pointer px-5 py-3 font-semibold">Tengo un posnet de Mercado Pago (Point)</summary>

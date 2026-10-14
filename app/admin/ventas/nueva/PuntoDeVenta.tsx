@@ -14,6 +14,7 @@ import SelectorVariantes, { type FilaStock } from "@/components/SelectorVariante
 import DatosFiscales from "@/components/DatosFiscales";
 import CambioRapido from "./CambioRapido";
 import CobroPoint from "./CobroPoint";
+import { crearClienteNavegador } from "@/lib/supabase/navegador";
 import { cuitValido, letraPara } from "@/lib/fiscal";
 import { pesos, porcentaje } from "@/lib/formato";
 import { billetesSugeridos, calcularCobro, opcionesRedondeo, pagosParaLaBase, REPARTOS, totalCon, vuelto, type LineaPago, type MedioCobro } from "@/lib/cobro";
@@ -57,6 +58,17 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   impresion: { configurada: boolean; modo: string; puedeConfigurar: boolean };
 }) {
   const [items, setItems] = useState<Item[]>([]);
+  // Qué medios de Mercado Pago le corresponden a esta persona en este aparato (Integraciones → Mercado Pago → Cobro en la caja)
+  const [permitidos, setPermitidos] = useState({ posnet: true, qr: true, qr_fijo: true });
+  useEffect(() => {
+    if (!point) return;
+    let clave: string | null = null;
+    try { clave = localStorage.getItem("dispositivo_cobro"); } catch { /* sin almacenamiento */ }
+    crearClienteNavegador().rpc("cobro_medios", clave ? { p_dispositivo: clave } : {}).then(({ data }) => {
+      const r = data as { posnet?: boolean; qr?: boolean; qr_fijo?: boolean } | null;
+      if (r) setPermitidos({ posnet: r.posnet !== false, qr: r.qr !== false, qr_fijo: r.qr_fijo !== false });
+    });
+  }, [point]);
   const [lineas, setLineas] = useState<LineaPago[]>(medios.length ? [{ medio_pago_id: medios[0].id, modo: "monto", valor: 0 }] : []);
   const [multiplo, setMultiplo] = useState<number | null>(null);
   const [recibido, setRecibido] = useState("");
@@ -88,7 +100,8 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const letra = facturacion ? letraPara(facturacion.letra, cliente) : "";
   const formulario = useRef<HTMLFormElement>(null);
   // «Saldo a favor» solo aparece si el cliente elegido tiene saldo (o si ya se eligió)
-  const mediosVisibles = medios.filter((m) => !m.es_saldo || (cliente?.saldo ?? 0) > 0 || lineas.some((l) => l.medio_pago_id === m.id));
+  const tarjetasFueraParaMi = point?.modo === "vinculado" && !permitidos.posnet;   // la regla pide el posnet y a esta persona/aparato no se le ofrece
+  const mediosVisibles = medios.filter((m) => (!m.es_saldo || (cliente?.saldo ?? 0) > 0 || lineas.some((l) => l.medio_pago_id === m.id)) && !(tarjetasFueraParaMi && (m.tipo === "Débito" || m.tipo === "Crédito")));
 
   const agregar = (f: FilaStock) => setItems((prev) => {
     const ya = prev.find((i) => i.variante_id === f.variante_id);
@@ -132,8 +145,8 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
 
   // Con el posnet vinculado: cada tarjeta se cobra por el posnet y su referencia (la orden) queda en el pago
   const esTarjeta = (m: MedioCobro) => m.tipo === "Débito" || m.tipo === "Crédito";
-  const usaPoint = !!point?.disponible;
-  const esQr = (m: MedioCobro) => !!point?.qr && (m.tipo === "Billetera" || /mercado ?pago|qr/i.test(m.nombre));
+  const usaPoint = !!point?.disponible && permitidos.posnet;
+  const esQr = (m: MedioCobro) => !!point?.qr && (permitidos.qr || permitidos.qr_fijo) && (m.tipo === "Billetera" || /mercado ?pago|qr/i.test(m.nombre));
   const tarjetaSinPosnet = point?.modo === "vinculado" ? cobro.lineas.find((l) => l.base > 0 && esTarjeta(l.medio) && !(referencias[l.medio.id] ?? "").trim()) : undefined;
 
   // Un medio «siempre con factura» (Tablas → Medios de pago) en el cobro: va con factura, sin opción (la base también lo hace cumplir)
@@ -381,7 +394,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                     ? <button type="button" onClick={() => setLineas((ls) => [ls[0]])} className="shrink-0 whitespace-nowrap text-sm font-medium text-marca">Un solo medio</button>
                     : <button type="button" onClick={dividir} className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-sm font-medium text-marca"><SplitSquareHorizontal size={15} strokeWidth={1.8} /> Dividir el pago</button>)}
                 </div>
-                {sinTarjetas && <p className="flex items-start gap-1.5 rounded-lg bg-amber-50 p-3 text-sm text-alerta"><CircleAlert size={15} className="mt-0.5 shrink-0" /> Hoy no se puede cobrar con tarjeta: la regla pide el posnet de Mercado Pago y no hay uno disponible. Revisalo en Integraciones → Mercado Pago.</p>}
+                {(sinTarjetas || tarjetasFueraParaMi) && <p className="flex items-start gap-1.5 rounded-lg bg-amber-50 p-3 text-sm text-alerta"><CircleAlert size={15} className="mt-0.5 shrink-0" /> Hoy no se puede cobrar con tarjeta: la regla pide el posnet de Mercado Pago y no hay uno disponible. Revisalo en Integraciones → Mercado Pago.</p>}
 
                 {!dividido ? (
                   <div className="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label="Medio de pago">
@@ -448,7 +461,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
 
                 {/* Número de cupón / operación (opcional) para los medios que no son efectivo */}
                 {[...new Map(cobro.lineas.filter((l) => l.base > 0 && pideReferencia(l.medio)).map((l) => [l.medio.id, l.medio])).values()].map((m) => (usaPoint && esTarjeta(m)) || esQr(m) ? (
-                  <CobroPoint key={m.id} monto={cobro.lineas.filter((l) => l.medio.id === m.id).reduce((t, l) => t + l.cobra + l.redondeo, 0)} via={esQr(m) ? "qr" : "point"} terminal={point?.terminal ?? null} referencia={referencias[m.id] ?? ""}
+                  <CobroPoint key={m.id} monto={cobro.lineas.filter((l) => l.medio.id === m.id).reduce((t, l) => t + l.cobra + l.redondeo, 0)} via={esQr(m) ? "qr" : "point"} permiteQr={permitidos.qr} permiteFijo={permitidos.qr_fijo} terminal={point?.terminal ?? null} referencia={referencias[m.id] ?? ""}
                     onAprobado={(orden) => setReferencias((r) => ({ ...r, [m.id]: orden ?? "" }))} />
                 ) : (
                   <div key={m.id} className="space-y-1">

@@ -4,6 +4,9 @@ import { useActionState } from "react";
 import { CircleCheck, QrCode } from "lucide-react";
 import { prepararQr } from "./acciones";
 
+// Los nombres como los acepta Mercado Pago (la Ciudad de Buenos Aires es «Capital Federal»)
+const PROVINCIAS = ["Capital Federal", "Buenos Aires", "Catamarca", "Chaco", "Chubut", "Córdoba", "Corrientes", "Entre Ríos", "Formosa", "Jujuy", "La Pampa", "La Rioja", "Mendoza", "Misiones", "Neuquén", "Río Negro", "Salta", "San Juan", "San Luis", "Santa Cruz", "Santa Fe", "Santiago del Estero", "Tierra del Fuego", "Tucumán"];
+
 export default function CobroQr({ listo, hayToken, fijo }: { listo: boolean; hayToken: boolean; fijo?: { imagen?: string | null; plantilla?: string | null } | null }) {
   const [estado, accion, cargando] = useActionState(prepararQr, {});
   return (
@@ -29,8 +32,12 @@ export default function CobroQr({ listo, hayToken, fijo }: { listo: boolean; hay
           <div className="grid gap-3 sm:grid-cols-4">
             <div className="sm:col-span-2"><label className="etiqueta" htmlFor="calle">Calle</label><input id="calle" name="calle" className="campo" autoComplete="off" /></div>
             <div><label className="etiqueta" htmlFor="numero">Número</label><input id="numero" name="numero" className="campo" inputMode="numeric" autoComplete="off" /></div>
-            <div><label className="etiqueta" htmlFor="ciudad">Ciudad</label><input id="ciudad" name="ciudad" className="campo" autoComplete="off" /></div>
-            <div className="sm:col-span-2"><label className="etiqueta" htmlFor="provincia">Provincia</label><input id="provincia" name="provincia" className="campo" autoComplete="off" /></div>
+            <div><label className="etiqueta" htmlFor="ciudad">Ciudad o localidad</label><input id="ciudad" name="ciudad" className="campo" autoComplete="off" placeholder="Rosario" /></div>
+            <div className="sm:col-span-2"><label className="etiqueta" htmlFor="provincia">Provincia</label>
+              <select id="provincia" name="provincia" className="campo" defaultValue="">
+                <option value="" disabled>Elegí la provincia</option>
+                {PROVINCIAS.map((p) => <option key={p}>{p}</option>)}
+              </select></div>
           </div>
           {estado.error && <p className="text-sm text-error" role="alert">{estado.error}</p>}
           {estado.ok && <p className="flex items-center gap-1.5 text-sm text-ok"><CircleCheck size={15} /> {estado.ok}</p>}

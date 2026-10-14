@@ -723,6 +723,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"dispositivos": {
+                  Row: {
+                    "activo": boolean,"clave": string,"creado_en": string,"id": number,"nombre": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activo"?: boolean,"clave"?: string,"creado_en"?: string,"id"?: never,"nombre": string
+                  }
+                  Update: {
+                    "activo"?: boolean,"clave"?: string,"creado_en"?: string,"id"?: never,"nombre"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"documentos_legales": {
                   Row: {
                     "contenido": string,"id": number,"publicado_en": string,"publicado_por": string | null,"tipo": string,"version": number
@@ -1627,6 +1641,20 @@ isOneToOne: false
                   }
                   Update: {
                     "activa"?: boolean,"id"?: never,"modo"?: string | null,"nombre"?: string,"por_defecto"?: boolean,"pos_id"?: string | null,"store_id"?: string | null,"terminal_id"?: string,"visto_en"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"preferencias_cobro": {
+                  Row: {
+                    "ambito": string,"habilitado": boolean,"id": number,"medio": string,"referencia": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "ambito": string,"habilitado": boolean,"id"?: never,"medio": string,"referencia": string
+                  }
+                  Update: {
+                    "ambito"?: string,"habilitado"?: boolean,"id"?: never,"medio"?: string,"referencia"?: string
                   }
                   Relationships: [
                     
@@ -3138,6 +3166,9 @@ isOneToOne: false
 "cancelar_mi_pedido":
 { Args: { "p_comentario"?: string,"p_motivo"?: string,"p_pedido": number }; Returns: undefined
                            },
+"cobro_medios":
+{ Args: { "p_dispositivo"?: string }; Returns: Json
+                           },
 "comprobante_de":
 { Args: { "p_con_enlace"?: boolean,"p_id": number,"p_tipo": string }; Returns: Json
                            },
@@ -3313,6 +3344,9 @@ isOneToOne: false
 "guardar_plantilla_mail":
 { Args: { "p_activa": boolean,"p_asunto": string,"p_boton": string,"p_clave": string,"p_con_pdf"?: boolean,"p_pie": string,"p_texto": string,"p_titulo": string }; Returns: undefined
                            },
+"guardar_preferencia_cobro":
+{ Args: { "p_ambito": string,"p_habilitado": boolean,"p_medio": string,"p_referencia": string }; Returns: undefined
+                           },
 "guardar_tarjetas_modo":
 { Args: { "p_modo": string }; Returns: undefined
                            },
@@ -3470,6 +3504,9 @@ isOneToOne: false
 "quitar_del_equipo":
 { Args: { "p_usuario": string }; Returns: undefined
                            },
+"quitar_dispositivo":
+{ Args: { "p_id": number }; Returns: undefined
+                           },
 "quitar_pago_pendiente":
 { Args: { "p_pago": number }; Returns: undefined
                            },
@@ -3490,6 +3527,9 @@ isOneToOne: false
                            },
 "registrar_devolucion":
 { Args: { "p_cliente"?: number,"p_comentario"?: string,"p_items": Json,"p_motivo": string,"p_venta": number }; Returns: number
+                           },
+"registrar_dispositivo":
+{ Args: { "p_nombre": string }; Returns: string
                            },
 "registrar_envio":
 { Args: { "p_costo_real"?: number,"p_notas"?: string,"p_pedido": number,"p_proveedor": string,"p_seguimiento"?: string }; Returns: undefined

@@ -10,7 +10,7 @@ import { pesos } from "@/lib/formato";
 type Estado = { estado: string; detalle: string | null; orden: string | null; usado: boolean; qr?: string | null };
 const FINALES: Record<string, string> = { cancelado: "Se canceló el cobro", rechazado: "El posnet rechazó el pago", vencido: "El cobro venció sin que se pagara", error: "No se pudo mandar el cobro", reembolsado: "El cobro fue devuelto" };
 
-export default function CobroPoint({ monto, terminal, referencia, onAprobado, via = "point" }: { monto: number; terminal: string | null; referencia: string; onAprobado: (orden: string | null) => void; via?: "point" | "qr" }) {
+export default function CobroPoint({ monto, terminal, referencia, onAprobado, via = "point", permiteQr = true, permiteFijo = true }: { monto: number; terminal: string | null; referencia: string; onAprobado: (orden: string | null) => void; via?: "point" | "qr"; permiteQr?: boolean; permiteFijo?: boolean }) {
   const [supabase] = useState(() => crearClienteNavegador());
   const [cobro, setCobro] = useState<number | null>(null);
   const [montoCobro, setMontoCobro] = useState(0);
@@ -87,9 +87,9 @@ export default function CobroPoint({ monto, terminal, referencia, onAprobado, vi
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-3">
-          <button type="button" onClick={desfasado || estado ? otraVez : () => mandar(false)} disabled={enviando || monto <= 0} className="boton h-10">
-            {via === "qr" ? <QrCode size={16} strokeWidth={1.8} /> : <Smartphone size={16} strokeWidth={1.8} />} {enviando ? (via === "qr" ? "Generando…" : "Mandando…") : estado && !desfasado ? "Cobrar de nuevo" : via === "qr" ? `Cobrar ${pesos(monto)} con QR` : `Cobrar ${pesos(monto)} en el posnet`}</button>
-          {via === "qr" && hayFijo && !estado && <button type="button" onClick={() => mandar(true)} disabled={enviando || monto <= 0} className="boton-sec h-10">Con el QR del mostrador</button>}
+          <button type="button" onClick={desfasado || estado ? otraVez : () => mandar(via === "qr" && !permiteQr)} disabled={enviando || monto <= 0} className="boton h-10">
+            {via === "qr" ? <QrCode size={16} strokeWidth={1.8} /> : <Smartphone size={16} strokeWidth={1.8} />} {enviando ? (via === "qr" ? "Generando…" : "Mandando…") : estado && !desfasado ? "Cobrar de nuevo" : via === "qr" ? (permiteQr ? `Cobrar ${pesos(monto)} con QR` : `Cobrar ${pesos(monto)} con el QR del mostrador`) : `Cobrar ${pesos(monto)} en el posnet`}</button>
+          {via === "qr" && permiteQr && permiteFijo && hayFijo && !estado && <button type="button" onClick={() => mandar(true)} disabled={enviando || monto <= 0} className="boton-sec h-10">Con el QR del mostrador</button>}
           {via === "point" && terminal && <span className="text-xs text-texto-2">{terminal}</span>}
         </div>
       )}
