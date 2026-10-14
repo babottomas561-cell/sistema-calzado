@@ -3,6 +3,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { pesos } from "@/lib/formato";
+import { terminosDeBusqueda } from "./busqueda";
 import type { Database } from "@/lib/database.types";
 
 function getSupabaseClient() {
@@ -16,24 +17,29 @@ function getSupabaseClient() {
 
 async function toolConsultarCatalogo(busqueda?: string, categoria?: string, marca?: string) {
   const supabase = getSupabaseClient();
-  let query = supabase
-    .from("v_catalogo")
-    .select("producto_id, nombre, categoria, marca, precio, escala")
-    .gt("disponible", 0);
+  const terminos = terminosDeBusqueda(busqueda, categoria, marca);
 
-  if (busqueda) {
-    query = query.ilike("nombre", `%${busqueda}%`);
-  }
-  if (categoria) {
-    query = query.ilike("categoria", `%${categoria}%`);
-  }
-  if (marca) {
-    query = query.ilike("marca", `%${marca}%`);
+  // Sin nada concreto («¿qué tenés?»): un resumen por rubro, no seis zapatillas
+  if (terminos.length === 0) {
+    const { data } = await supabase.from("v_catalogo").select("producto_id, categoria, linea").gt("disponible", 0).limit(2000);
+    const porRubro = new Map<string, Set<number>>();
+    for (const f of data ?? []) {
+      if (!f.categoria || !f.producto_id) continue;
+      (porRubro.get(f.categoria) ?? porRubro.set(f.categoria, new Set()).get(f.categoria)!).add(f.producto_id);
+    }
+    return {
+      mensaje: "Resumen de lo que hay en stock por rubro. Ofrecele al cliente que elija uno para ver modelos y precios.",
+      rubros: [...porRubro.entries()].map(([rubro, ids]) => `${rubro}: ${ids.size} modelo${ids.size === 1 ? "" : "s"}`),
+    };
   }
 
-  const { data, error } = await query.limit(20);
+  // Cada palabra tiene que aparecer en el nombre, el rubro o la marca
+  let query = supabase.from("v_catalogo").select("producto_id, nombre, categoria, marca, precio, escala").gt("disponible", 0);
+  for (const t of terminos) query = query.or(`nombre.ilike.%${t}%,categoria.ilike.%${t}%,marca.ilike.%${t}%`);
+
+  const { data, error } = await query.limit(500);
   if (error || !data || data.length === 0) {
-    return { mensaje: "No se encontraron modelos con esos criterios con stock en el catálogo." };
+    return { mensaje: "No se encontraron modelos con esos criterios con stock en el catálogo. Podés ofrecerle ver otro rubro." };
   }
 
   // Agrupamos por producto_id para no repetir por cada variante en v_catalogo
@@ -50,18 +56,22 @@ async function toolConsultarCatalogo(busqueda?: string, categoria?: string, marc
     }
   }
 
+  const todos = Array.from(unicos.values());
   return {
-    productos: Array.from(unicos.values()).slice(0, 6),
+    totalModelos: todos.length,
+    productos: todos.slice(0, 8),
+    ...(todos.length > 8 ? { nota: `Hay ${todos.length} modelos; se muestran 8. Preguntale si busca algo más puntual (marca, talle, color).` } : {}),
   };
 }
 
 async function toolConsultarStockYDisponibilidad(nombreModelo: string, talle?: string) {
   const supabase = getSupabaseClient();
-  const { data: variantes, error } = await supabase
+  let variantesQ = supabase
     .from("v_catalogo")
     .select("producto_id, nombre, talle, color, disponible, precio")
-    .ilike("nombre", `%${nombreModelo}%`)
     .gt("disponible", 0);
+  for (const t of terminosDeBusqueda(nombreModelo)) variantesQ = variantesQ.or(`nombre.ilike.%${t}%,categoria.ilike.%${t}%,marca.ilike.%${t}%`);
+  const { data: variantes, error } = await variantesQ.limit(300);
 
   if (error || !variantes || variantes.length === 0) {
     return { mensaje: `No encontré disponibilidad ni stock para "${nombreModelo}". Puede que esté agotado o no exista ese modelo.` };
@@ -213,7 +223,8 @@ Reglas clave:
 2. Si un cliente pregunta por un modelo, consultá catálogo o stock. Si no hay el talle que pide, mencioná qué talles SÍ tenemos disponibles.
 3. Si pregunta por el estado de su pedido, pedile el número o comprobante si no lo dio, y consultalo con la herramienta.
 4. Mantené respuestas breves y directas aptas para WhatsApp (máximo 3 párrafos cortos, podés usar emojis con moderación).
-5. Si no sabés algo o el cliente pide hablar con un humano o coordinar algo especial, decile amablemente que el equipo del local le va a responder a la brevedad.`;
+5. Si el cliente pregunta en general qué hay o qué vendemos, llamá consultarCatalogo SIN filtros: te devuelve los rubros con stock. Nunca digas que no hay un tipo de prenda sin haberlo buscado; buscá en singular («camisa», «campera»).
+6. Si no sabés algo o el cliente pide hablar con un humano o coordinar algo especial, decile amablemente que el equipo del local le va a responder a la brevedad.`;
 
 // Lo que contesta el bot y cuánto usó de la IA (para registrarlo como gasto)
 export type RespuestaBot = { texto: string; tokensEntrada: number; tokensSalida: number; consultas: number };
