@@ -15,7 +15,7 @@ export default async function NuevaVenta() {
     // De a páginas: con muchos modelos se pasa de las 1000 filas por consulta
     leerTodo((a, b) => supabase.from("v_stock").select("variante_id, producto_id, nombre, marca, categoria, talle, talle_orden, color, color_hex, sku, codigo_barras, disponible, precio_venta, precio_compra, imagen_url").order("variante_id").range(a, b)),
     supabase.from("clientes").select("id, nombre, telefono, documento, condicion_iva, tipo_documento").order("nombre"),
-    supabase.from("medios_pago").select("id, nombre, tipo, ajuste_pct, cuotas, es_saldo, siempre_factura").eq("activo", true).eq("en_mostrador", true).order("orden"),
+    supabase.from("medios_pago").select("id, nombre, tipo, ajuste_pct, cuotas, es_saldo, siempre_factura, es_cuenta_corriente").eq("activo", true).eq("en_mostrador", true).order("orden"),
     supabase.from("v_saldo_clientes").select("cliente_id, disponible"),
     supabase.from("configuracion_impresion").select("comprobante_configurado").maybeSingle(),
     supabase.rpc("impresion_de"),

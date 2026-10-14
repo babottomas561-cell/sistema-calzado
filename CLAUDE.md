@@ -424,3 +424,10 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
     `bloquea` (rojo: impide hacerlo hoy) o aviso (ámbar), la `ruta` donde se arregla y `puede` (si quien mira tiene el permiso para arreglarlo; si no, «pedíselo a quien administra»). Los carteles están en la caja
     (lo que frena detiene «confirmar» con el motivo), Tienda, Mercado Pago, Correo y ARCA, y el resumen en Configuración. Es información para la pantalla: lo que frena de verdad una operación lo controla la
     función de la base de esa operación. Un requisito nuevo = un caso más en `requisitos()` (migración nueva, no se edita la vieja) y su prueba en `supabase/tests/database/requisitos.test.sql`.
+
+34. **Cuenta corriente** (módulo `cuenta-corriente`, APAGADO de fábrica: Equipo → Módulos; `/admin/cuenta-corriente`; `cc_movimientos`, `clientes.cc_habilitada` y `cc_tope`, medio de pago `es_cuenta_corriente`): un cliente habilitado
+    compra «a cuenta» y paga después. El medio «Cuenta corriente» está activo solo con el módulo encendido (un trigger lo sigue). La base frena la venta sin cliente, a un cliente no habilitado o que pasaría su tope
+    (`_cc_vender`, con el cliente bloqueado `for update`: dos ventas a la vez no pasan el tope). El libro `cc_movimientos` es la fuente del saldo (+ debe, − pagó), no se edita ni se borra: se corrige con `cc_ajustar` (nota
+    obligatoria). `cc_cobrar` registra el cobro (n.º de recibo = id del movimiento, `/admin/cuenta-corriente/recibo/<id>`) y, con contabilidad iniciada, su asiento (`recibo`: medio → Deudores por ventas). Anular una venta a cuenta
+    descuenta su deuda (`_cc_anular`). Permisos `cc.ver`, `cc.cobrar`, `cc.habilitar` (el Encargado los trae). La clave de un módulo es su ruta (`/admin/<clave>`; se admite el guion). Una devolución de una venta a cuenta deja
+    saldo a favor y no toca la deuda; el interés por mora no existe todavía.

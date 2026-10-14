@@ -55,7 +55,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   point?: { disponible: boolean; modo: string; terminal: string | null; qr?: boolean } | null;   // posnet de Mercado Pago (Point)
   exigeOperacion?: boolean;   // el dueño pidió el n.º de operación en las transferencias
   facturacion: { modo: "todas" | "elegir"; porDefecto: "fiscal" | "interna"; letra: string; pruebas: boolean; umbral: number } | null;
-  filas: FilaStock[]; clientes: Cliente[]; masVendidos: number[]; puedeCrearCliente: boolean; medios: (MedioCobro & { es_saldo?: boolean | null; siempre_factura?: boolean | null })[]; cambiaPrecio: boolean; descuentoMax: number | null;
+  filas: FilaStock[]; clientes: Cliente[]; masVendidos: number[]; puedeCrearCliente: boolean; medios: (MedioCobro & { es_saldo?: boolean | null; siempre_factura?: boolean | null; es_cuenta_corriente?: boolean | null })[]; cambiaPrecio: boolean; descuentoMax: number | null;
   impresion: { configurada: boolean; modo: string; puedeConfigurar: boolean };
 }) {
   const [items, setItems] = useState<Item[]>([]);
@@ -102,6 +102,19 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const formulario = useRef<HTMLFormElement>(null);
   // «Saldo a favor» solo aparece si el cliente elegido tiene saldo (o si ya se eligió)
   const tarjetasFueraParaMi = point?.modo === "vinculado" && !permitidos.posnet;   // la regla pide el posnet y a esta persona/aparato no se le ofrece
+  // Cuenta corriente: si se cobra a cuenta, se consulta cuánto puede deber el cliente elegido (la base lo vuelve a controlar al confirmar)
+  const [cc, setCc] = useState<{ cliente: number; habilitada: boolean; saldo: number; disponible: number } | null>(null);
+  const clienteCc = cliente?.id ?? null;
+  const usaCc = lineas.some((l) => medios.find((m) => m.id === l.medio_pago_id)?.es_cuenta_corriente);
+  useEffect(() => {
+    if (!usaCc || !clienteCc) return;
+    let vigente = true;
+    crearClienteNavegador().rpc("cc_estado", { p_cliente: clienteCc }).then(({ data }) => {
+      const r = data as { habilitada: boolean; saldo: number; disponible: number } | null;
+      if (vigente && r) setCc({ cliente: clienteCc, habilitada: r.habilitada, saldo: Number(r.saldo), disponible: Number(r.disponible) });
+    });
+    return () => { vigente = false; };
+  }, [usaCc, clienteCc]);
   const mediosVisibles = medios.filter((m) => (!m.es_saldo || (cliente?.saldo ?? 0) > 0 || lineas.some((l) => l.medio_pago_id === m.id)) && !(tarjetasFueraParaMi && (m.tipo === "Débito" || m.tipo === "Crédito")));
 
   const agregar = (f: FilaStock) => setItems((prev) => {
@@ -142,6 +155,8 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const opciones = cobro.iEfectivo >= 0 ? opcionesRedondeo(sinRedondeo.lineas[cobro.iEfectivo].cobra) : [];
   const dividido = lineas.length > 1;
   const usaSaldo = cobro.lineas.some((l) => medios.find((m) => m.id === l.medio_pago_id)?.es_saldo);
+  const lineaCc = cobro.lineas.find((l) => l.base > 0 && medios.find((m) => m.id === l.medio_pago_id)?.es_cuenta_corriente);
+  const estadoCc = cc && cc.cliente === cliente?.id ? cc : null;
   const montoRecibido = Number(recibido.replace(/\./g, "").replace(",", ".")) || 0;
 
   // Con el posnet vinculado: cada tarjeta se cobra por el posnet y su referencia (la orden) queda en el pago
@@ -163,6 +178,9 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
     : descuento > conPromos ? "El descuento es mayor que el total"
     : cobro.excedido ? "Las partes del pago suman más que el total"
     : usaSaldo && !cliente ? "Para cobrar con saldo a favor, elegí el cliente"
+    : lineaCc && !cliente ? "Para vender a cuenta corriente, elegí el cliente"
+    : lineaCc && estadoCc && !estadoCc.habilitada ? `${cliente?.nombre} no tiene la cuenta corriente habilitada`
+    : lineaCc && estadoCc && lineaCc.cobra + lineaCc.redondeo > estadoCc.disponible + 0.005 ? `Pasa el tope de ${cliente?.nombre}: le quedan ${pesos(estadoCc.disponible)} para comprar a cuenta`
     : !lineas.length ? "No hay medios de pago para el mostrador (se cargan en Tablas)"
     // Desde el umbral de la norma, ARCA pide identificar al consumidor final: se avisa antes de cobrar (si no, la factura sale rechazada)
     : tarjetaSinPosnet ? `Cobrá la tarjeta (${tarjetaSinPosnet.medio.nombre}) con el posnet antes de confirmar`
@@ -183,7 +201,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   }, [facturacion?.modo]);
 
   // Con tarjeta, transferencia o billetera se puede anotar el número de cupón / operación (opcional; la base lo guarda en el pago)
-  const pideReferencia = (m: MedioCobro & { es_saldo?: boolean | null }) => !m.es_saldo && !!m.tipo && m.tipo !== "Efectivo";
+  const pideReferencia = (m: MedioCobro & { es_saldo?: boolean | null; es_cuenta_corriente?: boolean | null }) => !m.es_saldo && !m.es_cuenta_corriente && !!m.tipo && m.tipo !== "Efectivo";
   const textoReferencia = (m: MedioCobro) => (m.tipo === "Transferencia" ? "N.º de operación" : m.tipo === "Billetera" ? "N.º de operación" : "N.º de cupón");
   const pagosConReferencia = pagosParaLaBase(cobro.lineas).map((p) => {
     const r = (referencias[p.medio_pago_id] ?? "").trim();
@@ -396,6 +414,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                     ? <button type="button" onClick={() => setLineas((ls) => [ls[0]])} className="shrink-0 whitespace-nowrap text-sm font-medium text-marca">Un solo medio</button>
                     : <button type="button" onClick={dividir} className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-sm font-medium text-marca"><SplitSquareHorizontal size={15} strokeWidth={1.8} /> Dividir el pago</button>)}
                 </div>
+                {lineaCc && estadoCc?.habilitada && <p className="rounded-lg bg-gray-50 p-3 text-sm text-texto-2">Cuenta corriente de {cliente?.nombre}: debe {pesos(estadoCc.saldo)} y le quedan {pesos(estadoCc.disponible)} para comprar a cuenta.</p>}
                 {(sinTarjetas || tarjetasFueraParaMi) && <p className="flex items-start gap-1.5 rounded-lg bg-amber-50 p-3 text-sm text-alerta"><CircleAlert size={15} className="mt-0.5 shrink-0" /> Hoy no se puede cobrar con tarjeta: la regla pide el posnet de Mercado Pago y no hay uno disponible. Revisalo en Integraciones → Mercado Pago.</p>}
 
                 {!dividido ? (

@@ -1,5 +1,5 @@
 // Catálogo del menú del panel (lo usan el menú y la pantalla de módulos).
-import { BadgePercent, BookText, Boxes, ChartBar, FileText, House, MessageCircleMore, Package, PackagePlus, PackageSearch, PackageX, Plug, Printer, Receipt, Scale, ScanBarcode, Settings2, ShieldCheck, ShoppingBag, Store, Tags, Truck, Undo2, Users, Wallet, type LucideIcon } from "lucide-react";
+import { BadgePercent, HandCoins, BookText, Boxes, ChartBar, FileText, House, MessageCircleMore, Package, PackagePlus, PackageSearch, PackageX, Plug, Printer, Receipt, Scale, ScanBarcode, Settings2, ShieldCheck, ShoppingBag, Store, Tags, Truck, Undo2, Users, Wallet, type LucideIcon } from "lucide-react";
 import type { Permiso } from "@/lib/permisos";
 
 // El menú del panel. Cada ítem aparece si la persona tiene alguno de sus permisos (la base controla igual lo que puede hacer),
@@ -32,6 +32,7 @@ export const GRUPOS: { titulo?: string; items: Item[] }[] = [
   ] },
   { titulo: "Contactos", items: [
     { href: "/admin/clientes", texto: "Clientes", icono: Users, permisos: ["clientes.ver"], fijo: true },
+    { href: "/admin/cuenta-corriente", texto: "Cuenta corriente", icono: HandCoins, permisos: ["cc.ver", "cc.cobrar", "cc.habilitar"] },
     { href: "/admin/seguimientos", texto: "Seguimientos", icono: MessageCircleMore, permisos: ["clientes.ver"] },
     { href: "/admin/proveedores", texto: "Proveedores", icono: Truck, permisos: ["proveedores.gestionar", "compras.registrar"] },
   ] },

@@ -283,16 +283,60 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"clientes": {
+                },"cc_movimientos": {
                   Row: {
-                    "acepta_promos": boolean,"codigo": number,"condicion_iva": string,"creado_en": string,"direccion": string | null,"documento": string | null,"domicilio_fiscal": string | null,"email": string | null,"email_facturas": string | null,"etiquetas": (string)[],"fecha_nacimiento": string | null,"id": number,"localidad": string | null,"localidad_fiscal": string | null,"nombre": string,"notas": string | null,"origen": string | null,"provincia": string | null,"razon_social": string | null,"telefono": string | null,"tipo_documento": string,"usuario_id": string | null
+                    "cliente_id": number,"creado_en": string,"id": number,"medio_pago_id": number | null,"monto": number,"nota": string | null,"referencia": string | null,"tipo": string,"usuario_id": string | null,"venta_id": number | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "acepta_promos"?: boolean,"codigo"?: number,"condicion_iva"?: string,"creado_en"?: string,"direccion"?: string | null,"documento"?: string | null,"domicilio_fiscal"?: string | null,"email"?: string | null,"email_facturas"?: string | null,"etiquetas"?: (string)[],"fecha_nacimiento"?: string | null,"id"?: never,"localidad"?: string | null,"localidad_fiscal"?: string | null,"nombre": string,"notas"?: string | null,"origen"?: string | null,"provincia"?: string | null,"razon_social"?: string | null,"telefono"?: string | null,"tipo_documento"?: string,"usuario_id"?: string | null
+                    "cliente_id": number,"creado_en"?: string,"id"?: never,"medio_pago_id"?: number | null,"monto": number,"nota"?: string | null,"referencia"?: string | null,"tipo": string,"usuario_id"?: string | null,"venta_id"?: number | null
                   }
                   Update: {
-                    "acepta_promos"?: boolean,"codigo"?: number,"condicion_iva"?: string,"creado_en"?: string,"direccion"?: string | null,"documento"?: string | null,"domicilio_fiscal"?: string | null,"email"?: string | null,"email_facturas"?: string | null,"etiquetas"?: (string)[],"fecha_nacimiento"?: string | null,"id"?: never,"localidad"?: string | null,"localidad_fiscal"?: string | null,"nombre"?: string,"notas"?: string | null,"origen"?: string | null,"provincia"?: string | null,"razon_social"?: string | null,"telefono"?: string | null,"tipo_documento"?: string,"usuario_id"?: string | null
+                    "cliente_id"?: number,"creado_en"?: string,"id"?: never,"medio_pago_id"?: number | null,"monto"?: number,"nota"?: string | null,"referencia"?: string | null,"tipo"?: string,"usuario_id"?: string | null,"venta_id"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "cc_movimientos_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "clientes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "cc_movimientos_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "v_cc_saldos"
+      referencedColumns: ["cliente_id"]
+    },{
+      foreignKeyName: "cc_movimientos_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "v_mi_ficha"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "cc_movimientos_medio_pago_id_fkey"
+      columns: ["medio_pago_id"]
+isOneToOne: false
+      referencedRelation: "medios_pago"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "cc_movimientos_venta_id_fkey"
+      columns: ["venta_id"]
+isOneToOne: false
+      referencedRelation: "ventas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"clientes": {
+                  Row: {
+                    "acepta_promos": boolean,"cc_habilitada": boolean,"cc_tope": number,"codigo": number,"condicion_iva": string,"creado_en": string,"direccion": string | null,"documento": string | null,"domicilio_fiscal": string | null,"email": string | null,"email_facturas": string | null,"etiquetas": (string)[],"fecha_nacimiento": string | null,"id": number,"localidad": string | null,"localidad_fiscal": string | null,"nombre": string,"notas": string | null,"origen": string | null,"provincia": string | null,"razon_social": string | null,"telefono": string | null,"tipo_documento": string,"usuario_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "acepta_promos"?: boolean,"cc_habilitada"?: boolean,"cc_tope"?: number,"codigo"?: number,"condicion_iva"?: string,"creado_en"?: string,"direccion"?: string | null,"documento"?: string | null,"domicilio_fiscal"?: string | null,"email"?: string | null,"email_facturas"?: string | null,"etiquetas"?: (string)[],"fecha_nacimiento"?: string | null,"id"?: never,"localidad"?: string | null,"localidad_fiscal"?: string | null,"nombre": string,"notas"?: string | null,"origen"?: string | null,"provincia"?: string | null,"razon_social"?: string | null,"telefono"?: string | null,"tipo_documento"?: string,"usuario_id"?: string | null
+                  }
+                  Update: {
+                    "acepta_promos"?: boolean,"cc_habilitada"?: boolean,"cc_tope"?: number,"codigo"?: number,"condicion_iva"?: string,"creado_en"?: string,"direccion"?: string | null,"documento"?: string | null,"domicilio_fiscal"?: string | null,"email"?: string | null,"email_facturas"?: string | null,"etiquetas"?: (string)[],"fecha_nacimiento"?: string | null,"id"?: never,"localidad"?: string | null,"localidad_fiscal"?: string | null,"nombre"?: string,"notas"?: string | null,"origen"?: string | null,"provincia"?: string | null,"razon_social"?: string | null,"telefono"?: string | null,"tipo_documento"?: string,"usuario_id"?: string | null
                   }
                   Relationships: [
                     
@@ -701,6 +745,12 @@ isOneToOne: false
       foreignKeyName: "devoluciones_cliente_id_fkey"
       columns: ["cliente_id"]
 isOneToOne: false
+      referencedRelation: "v_cc_saldos"
+      referencedColumns: ["cliente_id"]
+    },{
+      foreignKeyName: "devoluciones_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
       referencedRelation: "v_mi_ficha"
       referencedColumns: ["id"]
     },{
@@ -823,6 +873,12 @@ isOneToOne: true
 isOneToOne: false
       referencedRelation: "clientes"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "facturas_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "v_cc_saldos"
+      referencedColumns: ["cliente_id"]
     },{
       foreignKeyName: "facturas_cliente_id_fkey"
       columns: ["cliente_id"]
@@ -1131,6 +1187,12 @@ isOneToOne: false
       foreignKeyName: "interacciones_cliente_id_fkey"
       columns: ["cliente_id"]
 isOneToOne: false
+      referencedRelation: "v_cc_saldos"
+      referencedColumns: ["cliente_id"]
+    },{
+      foreignKeyName: "interacciones_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
       referencedRelation: "v_mi_ficha"
       referencedColumns: ["id"]
     },{
@@ -1183,6 +1245,12 @@ isOneToOne: false
       foreignKeyName: "mails_cola_cliente_id_fkey"
       columns: ["cliente_id"]
 isOneToOne: false
+      referencedRelation: "v_cc_saldos"
+      referencedColumns: ["cliente_id"]
+    },{
+      foreignKeyName: "mails_cola_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
       referencedRelation: "v_mi_ficha"
       referencedColumns: ["id"]
     },{
@@ -1209,14 +1277,14 @@ isOneToOne: false
                   ]
                 },"medios_pago": {
                   Row: {
-                    "activo": boolean,"ajuste_pct": number,"codigo": string,"cuenta_id": number | null,"cuotas": number,"en_mostrador": boolean,"en_tienda": boolean,"es_saldo": boolean,"id": number,"nombre": string,"orden": number,"siempre_factura": boolean,"tipo": string
+                    "activo": boolean,"ajuste_pct": number,"codigo": string,"cuenta_id": number | null,"cuotas": number,"en_mostrador": boolean,"en_tienda": boolean,"es_cuenta_corriente": boolean,"es_saldo": boolean,"id": number,"nombre": string,"orden": number,"siempre_factura": boolean,"tipo": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "activo"?: boolean,"ajuste_pct"?: number,"codigo": string,"cuenta_id"?: number | null,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre": string,"orden"?: number,"siempre_factura"?: boolean,"tipo": string
+                    "activo"?: boolean,"ajuste_pct"?: number,"codigo": string,"cuenta_id"?: number | null,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_cuenta_corriente"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre": string,"orden"?: number,"siempre_factura"?: boolean,"tipo": string
                   }
                   Update: {
-                    "activo"?: boolean,"ajuste_pct"?: number,"codigo"?: string,"cuenta_id"?: number | null,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre"?: string,"orden"?: number,"siempre_factura"?: boolean,"tipo"?: string
+                    "activo"?: boolean,"ajuste_pct"?: number,"codigo"?: string,"cuenta_id"?: number | null,"cuotas"?: number,"en_mostrador"?: boolean,"en_tienda"?: boolean,"es_cuenta_corriente"?: boolean,"es_saldo"?: boolean,"id"?: never,"nombre"?: string,"orden"?: number,"siempre_factura"?: boolean,"tipo"?: string
                   }
                   Relationships: [
                     {
@@ -1501,6 +1569,12 @@ isOneToOne: false
       foreignKeyName: "pedidos_cliente_id_fkey"
       columns: ["cliente_id"]
 isOneToOne: false
+      referencedRelation: "v_cc_saldos"
+      referencedColumns: ["cliente_id"]
+    },{
+      foreignKeyName: "pedidos_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
       referencedRelation: "v_mi_ficha"
       referencedColumns: ["id"]
     },{
@@ -1721,6 +1795,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "clientes"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "presupuestos_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "v_cc_saldos"
+      referencedColumns: ["cliente_id"]
     },{
       foreignKeyName: "presupuestos_cliente_id_fkey"
       columns: ["cliente_id"]
@@ -2067,6 +2147,12 @@ isOneToOne: false
       foreignKeyName: "saldos_cliente_cliente_id_fkey"
       columns: ["cliente_id"]
 isOneToOne: false
+      referencedRelation: "v_cc_saldos"
+      referencedColumns: ["cliente_id"]
+    },{
+      foreignKeyName: "saldos_cliente_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
       referencedRelation: "v_mi_ficha"
       referencedColumns: ["id"]
     },{
@@ -2319,6 +2405,12 @@ isOneToOne: false
       foreignKeyName: "ventas_cliente_id_fkey"
       columns: ["cliente_id"]
 isOneToOne: false
+      referencedRelation: "v_cc_saldos"
+      referencedColumns: ["cliente_id"]
+    },{
+      foreignKeyName: "ventas_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
       referencedRelation: "v_mi_ficha"
       referencedColumns: ["id"]
     },{
@@ -2414,6 +2506,14 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"v_cc_saldos": {
+                  Row: {
+                    "cc_habilitada": boolean | null,"cc_tope": number | null,"cliente_id": number | null,"nombre": string | null,"saldo": number | null,"ultimo_movimiento": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
                 },"v_credito_proveedores": {
                   Row: {
                     "a_favor": number | null,"nombre": string | null,"proveedor_id": number | null,"saldo": number | null,"ultimo": string | null,"usado": number | null
@@ -2434,6 +2534,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "clientes"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "saldos_cliente_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "v_cc_saldos"
+      referencedColumns: ["cliente_id"]
     },{
       foreignKeyName: "saldos_cliente_cliente_id_fkey"
       columns: ["cliente_id"]
@@ -2654,6 +2760,12 @@ isOneToOne: false
       foreignKeyName: "saldos_cliente_cliente_id_fkey"
       columns: ["cliente_id"]
 isOneToOne: false
+      referencedRelation: "v_cc_saldos"
+      referencedColumns: ["cliente_id"]
+    },{
+      foreignKeyName: "saldos_cliente_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
       referencedRelation: "v_mi_ficha"
       referencedColumns: ["id"]
     }
@@ -2708,6 +2820,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "clientes"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ventas_cliente_id_fkey"
+      columns: ["cliente_id"]
+isOneToOne: false
+      referencedRelation: "v_cc_saldos"
+      referencedColumns: ["cliente_id"]
     },{
       foreignKeyName: "ventas_cliente_id_fkey"
       columns: ["cliente_id"]
@@ -2777,6 +2895,9 @@ isOneToOne: false
                            },
 "_cancelar_pedido":
 { Args: { "p_comentario": string,"p_motivo": string,"p_pedido": number,"p_por": string }; Returns: undefined
+                           },
+"_cc_saldo":
+{ Args: { "p_cliente": number }; Returns: number
                            },
 "_codigo_corto":
 { Args: { "p_largo"?: number,"p_nombre": string,"p_prefijo"?: string,"p_tabla": string }; Returns: string
@@ -3165,6 +3286,18 @@ isOneToOne: false
                            },
 "cancelar_mi_pedido":
 { Args: { "p_comentario"?: string,"p_motivo"?: string,"p_pedido": number }; Returns: undefined
+                           },
+"cc_ajustar":
+{ Args: { "p_cliente": number,"p_monto": number,"p_nota": string }; Returns: number
+                           },
+"cc_cobrar":
+{ Args: { "p_cliente": number,"p_medio": number,"p_monto": number,"p_nota"?: string,"p_referencia"?: string }; Returns: number
+                           },
+"cc_estado":
+{ Args: { "p_cliente": number }; Returns: Json
+                           },
+"cc_habilitar":
+{ Args: { "p_cliente": number,"p_habilitada": boolean,"p_tope": number }; Returns: undefined
                            },
 "cobro_medios":
 { Args: { "p_dispositivo"?: string }; Returns: Json
