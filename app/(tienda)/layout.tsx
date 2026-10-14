@@ -10,6 +10,7 @@ import { datosLegales, datosTienda } from "@/lib/tienda";
 import Avisos from "./marco/Avisos";
 import Cabecera from "./marco/Cabecera";
 import WhatsAppFlotante from "./marco/WhatsAppFlotante";
+import Cursor from "@/components/tienda/Cursor";
 import SuavizarScroll from "@/components/tienda/SuavizarScroll";
 
 const fuente = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-tienda", display: "swap" });
@@ -27,6 +28,7 @@ export default async function LayoutTienda({ children }: { children: React.React
   return (
     <div className={`${fuente.variable} ${serif.variable} tienda min-h-screen`}>
       <SuavizarScroll />
+      <Cursor />
       {/* Avisos del local (se editan en el panel → Tienda online); si hay varios, rotan */}
       <Avisos avisos={tienda.avisos ?? []} enlace={tienda.aviso_enlace} />
       <Cabecera sobreCampana={sobreCampana} marcaGigante={portada?.marca_gigante !== false}>

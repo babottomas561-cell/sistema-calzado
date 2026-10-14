@@ -169,3 +169,7 @@ main:has(.pantalla-completa) { max-width: none; }
   .esqueleto { background: linear-gradient(100deg, var(--color-marca-suave) 40%, #fff 50%, var(--color-marca-suave) 60%) 100% 0 / 200% 100%; animation: brillo 1.4s linear infinite; }
 }
 .esqueleto { background-color: var(--color-marca-suave); }
+/* Tarjeta que se inclina: la vuelta a plano es suave; el brillo sigue al mouse (--bx, --by) */
+.tienda .inclinar { transition: transform .35s cubic-bezier(.22, 1, .36, 1); transform-style: preserve-3d; position: relative; }
+.tienda .inclinar .brillo-tarjeta { opacity: 0; transition: opacity .3s; background: radial-gradient(circle at var(--bx, 50%) var(--by, 50%), rgb(255 255 255 / .28), transparent 55%); }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) { .tienda .inclinar:hover .brillo-tarjeta { opacity: 1; } }

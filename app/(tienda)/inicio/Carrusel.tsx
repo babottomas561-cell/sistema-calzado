@@ -21,14 +21,24 @@ export default function Carrusel({ children, etiqueta, oscuro = false }: { child
     return () => { el.removeEventListener("scroll", medir); window.removeEventListener("resize", medir); };
   }, []);
 
+  // Con el mouse también se arrastra (el dedo ya lo hace solo). Mientras se arrastra se apaga el «snap» y después se acomoda.
+  const arrastre = useRef({ activo: false, x: 0, scroll: 0, movido: false });
+  const [arrastrando, setArrastrando] = useState(false);
+  const soltar = () => { if (!arrastre.current.activo) return; arrastre.current.activo = false; setArrastrando(false); };
+
   // Avanza casi una pantalla, así siempre queda a la vista una tarjeta de la tanda anterior
   const mover = (dir: 1 | -1) => fila.current?.scrollBy({ left: dir * fila.current.clientWidth * 0.85, behavior: "smooth" });
   const flecha = `grid h-12 w-12 place-items-center rounded-full border transition disabled:opacity-25 ${oscuro ? "border-white/40 hover:bg-white hover:text-marca" : "border-marca hover:bg-marca hover:text-white"}`;
 
   return (
     <div className="space-y-5">
-      <div ref={fila} role="region" aria-label={etiqueta} tabIndex={0}
-        className="tira sangrado flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-4 sm:gap-5 sm:px-6 lg:px-[max(1.5rem,calc(50vw-40rem+1.5rem))] [&>*]:snap-start [&>*]:scroll-ml-4 sm:[&>*]:scroll-ml-6 lg:[&>*]:scroll-ml-[max(1.5rem,calc(50vw-40rem+1.5rem))]">
+      <div ref={fila} role="region" aria-label={etiqueta} tabIndex={0} data-cursor={arrastrando ? undefined : "Arrastrá"}
+        onPointerDown={(e) => { if (e.pointerType === "mouse" && e.button === 0 && fila.current) { arrastre.current = { activo: true, x: e.clientX, scroll: fila.current.scrollLeft, movido: false }; } }}
+        onPointerMove={(e) => { const a = arrastre.current; if (!a.activo || !fila.current) return; const d = e.clientX - a.x; if (Math.abs(d) > 5 && !a.movido) { a.movido = true; setArrastrando(true); } if (a.movido) fila.current.scrollLeft = a.scroll - d; }}
+        onPointerUp={soltar} onPointerLeave={soltar} onPointerCancel={soltar}
+        onClickCapture={(e) => { if (arrastre.current.movido) { e.preventDefault(); e.stopPropagation(); arrastre.current.movido = false; } }}
+        onDragStart={(e) => e.preventDefault()}
+        className={`tira sangrado flex ${arrastrando ? "cursor-grabbing select-none" : "snap-x snap-mandatory scroll-smooth"} gap-3 overflow-x-auto px-4 sm:gap-5 sm:px-6 lg:px-[max(1.5rem,calc(50vw-40rem+1.5rem))] [&>*]:snap-start [&>*]:scroll-ml-4 sm:[&>*]:scroll-ml-6 lg:[&>*]:scroll-ml-[max(1.5rem,calc(50vw-40rem+1.5rem))]`}>
         {children}
       </div>
       <div className="flex items-center gap-5">

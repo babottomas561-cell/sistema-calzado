@@ -2,6 +2,7 @@
 // precio y colores disponibles. Sobre la foto: la promoción o «Nuevo»; en la compu, al pasar el mouse, los talles que hay.
 import Link from "next/link";
 import { Shirt } from "lucide-react";
+import Inclinar from "@/components/tienda/Inclinar";
 import { esReciente, pesos } from "@/lib/formato";
 
 export type Modelo = {
@@ -20,8 +21,8 @@ export default function TarjetaProducto({ m, prioridad = false }: { m: Modelo; p
   const talles = m.talles ?? [];
   const zoom = "transition-[opacity,transform] duration-700 ease-out motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-[1.04]";
   return (
-    <Link href={`/producto/${m.id}`} className="aparece group block" aria-label={`${m.nombre}, ${pesos(m.precio)}${agotado ? ", sin stock" : quedan ? `, quedan ${quedan}` : ""}`}>
-      <div className="relative aspect-[3/4] overflow-hidden rounded-sm bg-marca-suave">
+    <Link href={`/producto/${m.id}`} data-cursor="Ver" className="aparece group block" aria-label={`${m.nombre}, ${pesos(m.precio)}${agotado ? ", sin stock" : quedan ? `, quedan ${quedan}` : ""}`}>
+      <Inclinar className="aspect-[3/4] overflow-hidden rounded-sm bg-marca-suave">
         {m.imagen
           ? <img src={m.imagen} alt="" loading={prioridad ? "eager" : "lazy"} decoding="async"
               className={`absolute inset-0 h-full w-full object-cover object-top ${zoom} ${agotado ? "opacity-50" : ""} ${m.imagen2 ? "group-hover:opacity-0" : ""}`} />
@@ -36,7 +37,7 @@ export default function TarjetaProducto({ m, prioridad = false }: { m: Modelo; p
             <span className="mr-1.5 text-texto-2">Talles</span>{talles.slice(0, 9).join("  ·  ")}{talles.length > 9 ? "  ·  …" : ""}
           </span>
         )}
-      </div>
+      </Inclinar>
       <div className="mt-3 space-y-1">
         <p className="truncate text-[0.78rem] font-semibold text-texto-2">{m.marca ?? m.categoria}</p>
         <p className="line-clamp-2 text-[0.95rem] font-semibold leading-snug group-hover:underline group-hover:underline-offset-4">{m.nombre}</p>

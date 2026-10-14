@@ -4,7 +4,7 @@
 import { crearCliente } from "@/lib/supabase/server";
 import { datosTienda } from "@/lib/tienda";
 import { leerContenido, type Filtro, type Seccion, type Tipo } from "@/lib/inicio";
-import { Accesos, Banner, Cinta, Editorial, Instagram, Local, Pasos, Portada, Promociones, Vidriera, type ModeloInicio } from "./inicio/Secciones";
+import { Accesos, Banner, Beneficios, Cinta, Editorial, Instagram, Local, Pasos, Portada, Promociones, Vidriera, type Beneficio, type ModeloInicio } from "./inicio/Secciones";
 
 type Fila = { producto_id: number; nombre: string; marca: string | null; categoria: string | null; genero: string | null; linea: string | null;
   imagen_url: string | null; talle: string; talle_orden: number; color: string; color_hex: string | null; precio: number; disponible: number; creado_en: string };
@@ -16,16 +16,19 @@ const cumple = (m: ModeloInicio, f: Filtro) => (!f.genero || m.genero === f.gene
 
 export default async function Landing() {
   const supabase = await crearCliente();
-  const [{ data: secciones }, { data }, { data: promos }, { data: contacto }, { data: vendidos }, { data: publicaciones }, tienda] = await Promise.all([
+  const [{ data: secciones }, { data }, { data: promos }, { data: contacto }, { data: vendidos }, { data: publicaciones }, tienda, { data: medios }, { count: zonas }, { data: pagos }] = await Promise.all([
     supabase.from("inicio_secciones").select("id, tipo, orden, visible, titulo, bajada, boton_texto, boton_enlace, imagen_url, imagen_ruta, contenido")
       .eq("visible", true).order("orden").order("id"),
     supabase.from("v_catalogo").select("producto_id, nombre, marca, categoria, genero, linea, imagen_url, talle, talle_orden, color, color_hex, precio, disponible, creado_en"),
     supabase.from("v_promos_tienda").select("producto_id, promocion_id, nombre, etiqueta"),
-    supabase.from("configuracion_tienda").select("whatsapp, direccion_retiro, horario, instagram").single(),
+    supabase.from("configuracion_tienda").select("whatsapp, direccion_retiro, horario, instagram, dias_cambio").single(),
     supabase.rpc("mas_vendidos_tienda"),
     // Las últimas publicaciones de Instagram que el local no ocultó (la base las copia sola; sin conexión no hay ninguna)
     supabase.from("instagram_posts").select("id, tipo, imagen_url, permalink, descripcion").order("publicado_en", { ascending: false }).limit(12),
     datosTienda(),
+    supabase.from("medios_pago").select("nombre, ajuste_pct").eq("activo", true).eq("en_tienda", true),
+    supabase.from("zonas_envio").select("id", { count: "exact", head: true }).eq("activo", true),
+    supabase.rpc("tienda_pagos"),
   ]);
   const etiquetas = new Map((promos ?? []).map((p) => [p.producto_id, p.etiqueta]));
 
@@ -60,6 +63,17 @@ export default async function Landing() {
   const lista = (secciones ?? []).map((s) => ({ ...s, tipo: s.tipo as Tipo, contenido: leerContenido(s.tipo as Tipo, s.contenido) })) as Seccion[];
   const promosUnicas = [...new Map((promos ?? []).map((p) => [p.promocion_id, p.nombre])).values()].filter(Boolean) as string[];
 
+  // Beneficios de comprar acá: salen de la configuración del local (máximo cuatro)
+  const mejorDescuento = [...(medios ?? [])].filter((m) => Number(m.ajuste_pct) < 0).sort((a, b) => Number(a.ajuste_pct) - Number(b.ajuste_pct))[0];
+  const mp = pagos as { mp_modo?: string; mp_cuotas_max?: number } | null;
+  const beneficios: Beneficio[] = [
+    ...(contacto?.direccion_retiro ? [{ icono: "retiro" as const, titulo: "Retirá sin costo", texto: "Reservá online y pasá por el local" }] : []),
+    ...(zonas ? [{ icono: "envio" as const, titulo: "Envíos a domicilio", texto: "Elegí tu zona al hacer el pedido" }] : []),
+    ...(mejorDescuento ? [{ icono: "pago" as const, titulo: `${Math.abs(Number(mejorDescuento.ajuste_pct)).toLocaleString("es-AR")} % off`, texto: `Pagando con ${mejorDescuento.nombre.toLowerCase()}` }] : []),
+    ...(mp?.mp_modo && mp.mp_modo !== "no" && (mp.mp_cuotas_max ?? 1) > 1 ? [{ icono: "cuotas" as const, titulo: `Hasta ${mp.mp_cuotas_max} cuotas`, texto: "Con tarjeta, por Mercado Pago" }] : []),
+    ...((contacto?.dias_cambio ?? 0) > 0 ? [{ icono: "cambios" as const, titulo: `Cambios por ${contacto?.dias_cambio} días`, texto: "Con el ticket, en el local" }] : []),
+  ].slice(0, 4);
+
   const bloques = lista.map((s) => {
     switch (s.tipo) {
       case "portada": return <Portada key={s.id} s={s as Seccion<"portada">} fotos={hay.slice(0, 18)} tienda={tienda.nombre} />;
@@ -86,6 +100,10 @@ export default async function Landing() {
       case "local": return <Local key={s.id} s={s as Seccion<"local">} contacto={contacto} tienda={tienda.nombre} />;
     }
   });
+
+  // La franja de beneficios va justo después de la portada (y de la cinta, si la hay)
+  const iPortada = lista.findIndex((s) => s.tipo === "portada");
+  if (iPortada >= 0 && beneficios.length) bloques.splice(iPortada + (lista[iPortada + 1]?.tipo === "cinta" ? 2 : 1), 0, <Beneficios key="beneficios" items={beneficios} />);
 
   return <div className="space-y-24 md:space-y-36">{bloques}</div>;
 }
