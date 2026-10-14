@@ -6,7 +6,9 @@ import { CreditCard, Layers, Monitor, Palette, Plus, Ruler, Store, Tag, FileChec
 import { crearCliente } from "@/lib/supabase/server";
 import { porcentaje } from "@/lib/formato";
 import Editor from "./Editor";
+import ConfirmacionPagos from "./ConfirmacionPagos";
 import { exigir } from "@/lib/exigir";
+import { puede } from "@/lib/permisos";
 import { ESCALAS, LINEAS, TITULO_ESCALA } from "@/lib/escalas";
 
 const PESTANAS = [
@@ -53,10 +55,11 @@ const Codigo = ({ children }: { children: React.ReactNode }) =>
   <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-600">{children}</span>;
 
 export default async function Tablas({ searchParams }: { searchParams: Promise<{ t?: string }> }) {
-  await exigir("tablas.editar", "tablas.catalogo", "tablas.medios_pago", "tablas.depositos");
+  const { permisos } = await exigir("tablas.editar", "tablas.catalogo", "tablas.medios_pago", "tablas.depositos");
   const { t } = await searchParams;
   const actual: Clave = PESTANAS.some((p) => p.clave === t) ? (t as Clave) : "rubros";
   const supabase = await crearCliente();
+  const confPagos = await supabase.from("configuracion_tienda").select("transferencia_comprobante").maybeSingle();
   const [rubros, subrubros, marcas, colores, talles, medios] = await Promise.all([
     supabase.from("categorias").select("id, codigo, nombre, linea, productos(count)").order("nombre"),
     supabase.from("subcategorias").select("id, codigo, nombre, categoria_id, productos(count)").order("nombre"),
@@ -196,6 +199,7 @@ export default async function Tablas({ searchParams }: { searchParams: Promise<{
 
 
         {actual === "medios" && <>
+          <ConfirmacionPagos inicial={(confPagos.data?.transferencia_comprobante ?? "no") as "no" | "referencia" | "adjunto"} puedeEditar={puede(permisos, "tablas.medios_pago", "tablas.editar")} />
           <Encabezado titulo="Medios de pago" detalle="El descuento o recargo se aplica sobre la parte que se paga con ese medio. Cambiarlo no toca ventas ya hechas.">
             <Editor tabla="medios_pago" titulo="Nuevo medio de pago" nuevo="Nuevo medio"><CamposMedio /></Editor>
           </Encabezado>

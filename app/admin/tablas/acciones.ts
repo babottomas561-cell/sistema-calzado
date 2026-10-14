@@ -61,3 +61,12 @@ export async function guardarMaestro(_: Estado, f: FormData): Promise<Estado> {
   return { ok: f.get("_accion") === "borrar" ? "Borrado" : "Guardado" };
 }
 
+
+// Cómo se verifica una transferencia (nada, el n.º de operación o el comprobante adjunto). La base lo valida.
+export async function guardarConfirmacionPagos(valor: string): Promise<{ error?: string; ok?: string }> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("guardar_confirmacion_pagos", { p_transferencia: valor });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/tablas"); revalidatePath("/admin/ventas/nueva");
+  return { ok: "Guardado" };
+}

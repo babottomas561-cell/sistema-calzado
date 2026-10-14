@@ -23,7 +23,7 @@ select plan(17);
 
 -- ── Los roles ──
 select results_eq($$ select permisos, descuento_max_pct from roles where nombre = 'Vendedor' $$,
-  $$ values ('{clientes.editar,clientes.ver,facturas.emitir,pedidos.gestionar,stock.ver,ventas.registrar,ventas.sin_factura}'::text[], 10.00::numeric(5,2)) $$,
+  $$ values ('{clientes.editar,clientes.ver,facturas.emitir,pagos.confirmar,pedidos.gestionar,stock.ver,ventas.registrar,ventas.sin_factura}'::text[], 10.00::numeric(5,2)) $$,
   'Vendedor: vende (con o sin factura), pedidos, clientes y stock; hasta 10 % de descuento');
 select is((select count(*)::int from roles where nombre = 'Cajero'), 0, 'ya no hay «Cajero»');
 select is((select activo from roles where nombre = 'Depósito'), false, '«Depósito» queda desactivado');

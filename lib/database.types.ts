@@ -505,14 +505,14 @@ isOneToOne: false
                   ]
                 },"configuracion_tienda": {
                   Row: {
-                    "aviso_enlace": string | null,"avisos": (string)[],"color_marca": string | null,"dias_cambio": number,"dias_retiro": number,"dias_saldo": number,"direccion_retiro": string | null,"envio_requiere_pago": boolean,"horario": string | null,"ia_modelo": string,"ia_plan": string,"icono_ruta": string | null,"icono_url": string | null,"id": number,"instagram": string | null,"logo_oscuro_ruta": string | null,"logo_oscuro_url": string | null,"logo_ruta": string | null,"logo_url": string | null,"mp_cuotas_max": number,"mp_modo": string,"nombre": string,"unica": boolean,"wa_bot_activo": boolean,"wa_idioma_plantilla": string,"wa_notificaciones_pedidos": boolean,"wa_plantilla_estado": string | null,"whatsapp": string | null
+                    "aviso_enlace": string | null,"avisos": (string)[],"color_marca": string | null,"dias_cambio": number,"dias_retiro": number,"dias_saldo": number,"direccion_retiro": string | null,"envio_requiere_pago": boolean,"horario": string | null,"ia_modelo": string,"ia_plan": string,"icono_ruta": string | null,"icono_url": string | null,"id": number,"instagram": string | null,"logo_oscuro_ruta": string | null,"logo_oscuro_url": string | null,"logo_ruta": string | null,"logo_url": string | null,"mp_cuotas_max": number,"mp_modo": string,"nombre": string,"transferencia_comprobante": string,"unica": boolean,"wa_bot_activo": boolean,"wa_idioma_plantilla": string,"wa_notificaciones_pedidos": boolean,"wa_plantilla_estado": string | null,"whatsapp": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"color_marca"?: string | null,"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"envio_requiere_pago"?: boolean,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"icono_ruta"?: string | null,"icono_url"?: string | null,"id"?: never,"instagram"?: string | null,"logo_oscuro_ruta"?: string | null,"logo_oscuro_url"?: string | null,"logo_ruta"?: string | null,"logo_url"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"color_marca"?: string | null,"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"envio_requiere_pago"?: boolean,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"icono_ruta"?: string | null,"icono_url"?: string | null,"id"?: never,"instagram"?: string | null,"logo_oscuro_ruta"?: string | null,"logo_oscuro_url"?: string | null,"logo_ruta"?: string | null,"logo_url"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"transferencia_comprobante"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
                   }
                   Update: {
-                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"color_marca"?: string | null,"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"envio_requiere_pago"?: boolean,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"icono_ruta"?: string | null,"icono_url"?: string | null,"id"?: never,"instagram"?: string | null,"logo_oscuro_ruta"?: string | null,"logo_oscuro_url"?: string | null,"logo_ruta"?: string | null,"logo_url"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
+                    "aviso_enlace"?: string | null,"avisos"?: (string)[],"color_marca"?: string | null,"dias_cambio"?: number,"dias_retiro"?: number,"dias_saldo"?: number,"direccion_retiro"?: string | null,"envio_requiere_pago"?: boolean,"horario"?: string | null,"ia_modelo"?: string,"ia_plan"?: string,"icono_ruta"?: string | null,"icono_url"?: string | null,"id"?: never,"instagram"?: string | null,"logo_oscuro_ruta"?: string | null,"logo_oscuro_url"?: string | null,"logo_ruta"?: string | null,"logo_url"?: string | null,"mp_cuotas_max"?: number,"mp_modo"?: string,"nombre"?: string,"transferencia_comprobante"?: string,"unica"?: boolean,"wa_bot_activo"?: boolean,"wa_idioma_plantilla"?: string,"wa_notificaciones_pedidos"?: boolean,"wa_plantilla_estado"?: string | null,"whatsapp"?: string | null
                   }
                   Relationships: [
                     {
@@ -1435,17 +1435,23 @@ isOneToOne: false
                   ]
                 },"pedido_pagos": {
                   Row: {
-                    "fecha": string,"id": number,"monto": number,"pedido_id": number,"referencia": string | null,"usuario_id": string | null
+                    "comprobante_path": string | null,"confirmado_en": string | null,"confirmado_por": string | null,"fecha": string,"id": number,"medio_pago_id": number | null,"monto": number,"pedido_id": number,"referencia": string | null,"usuario_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "fecha"?: string,"id"?: never,"monto": number,"pedido_id": number,"referencia"?: string | null,"usuario_id"?: string | null
+                    "comprobante_path"?: string | null,"confirmado_en"?: string | null,"confirmado_por"?: string | null,"fecha"?: string,"id"?: never,"medio_pago_id"?: number | null,"monto": number,"pedido_id": number,"referencia"?: string | null,"usuario_id"?: string | null
                   }
                   Update: {
-                    "fecha"?: string,"id"?: never,"monto"?: number,"pedido_id"?: number,"referencia"?: string | null,"usuario_id"?: string | null
+                    "comprobante_path"?: string | null,"confirmado_en"?: string | null,"confirmado_por"?: string | null,"fecha"?: string,"id"?: never,"medio_pago_id"?: number | null,"monto"?: number,"pedido_id"?: number,"referencia"?: string | null,"usuario_id"?: string | null
                   }
                   Relationships: [
                     {
+      foreignKeyName: "pedido_pagos_medio_pago_id_fkey"
+      columns: ["medio_pago_id"]
+isOneToOne: false
+      referencedRelation: "medios_pago"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "pedido_pagos_pedido_id_fkey"
       columns: ["pedido_id"]
 isOneToOne: false
@@ -3095,6 +3101,9 @@ isOneToOne: false
 "configurar_modulos":
 { Args: { "p_desactivados": (string)[] }; Returns: undefined
                            },
+"confirmar_pago_pedido":
+{ Args: { "p_pago": number }; Returns: undefined
+                           },
 "consultar_pedido_whatsapp":
 { Args: { "p_comprobante": string,"p_telefono": string }; Returns: {
               "comprobante": string,"entrega": string,"estado": string,"total": number
@@ -3212,6 +3221,9 @@ isOneToOne: false
                            },
 "guardar_configuracion_fiscal":
 { Args: { "p_alicuota": number,"p_iva_contenido_en_c": string,"p_umbral": number }; Returns: undefined
+                           },
+"guardar_confirmacion_pagos":
+{ Args: { "p_transferencia": string }; Returns: undefined
                            },
 "guardar_correo":
 { Args: { "p_clave"?: string,"p_email"?: string,"p_host"?: string,"p_nombre"?: string,"p_puerto"?: number,"p_sitio_url"?: string,"p_usuario"?: string }; Returns: undefined
@@ -3358,6 +3370,9 @@ isOneToOne: false
 "quitar_del_equipo":
 { Args: { "p_usuario": string }; Returns: undefined
                            },
+"quitar_pago_pendiente":
+{ Args: { "p_pago": number }; Returns: undefined
+                           },
 "registrar_arrepentimiento":
 { Args: { "p_comprobante"?: string,"p_detalle"?: string,"p_email": string,"p_nombre": string,"p_telefono"?: string }; Returns: string
                            },
@@ -3383,7 +3398,7 @@ isOneToOne: false
 { Args: { "p_canal": string,"p_destino"?: string,"p_id": number,"p_tipo": string }; Returns: undefined
                            },
 "registrar_pago_pedido":
-{ Args: { "p_monto": number,"p_pedido": number,"p_referencia"?: string }; Returns: undefined
+{ Args: { "p_comprobante"?: string,"p_confirma"?: boolean,"p_medio"?: number,"p_monto": number,"p_pedido": number,"p_referencia"?: string }; Returns: Json
                            },
 "registrar_venta":
 { Args: { "p_canal"?: string,"p_cliente"?: number,"p_deposito"?: number,"p_descuento"?: number,"p_items": Json,"p_notas"?: string,"p_pagos"?: Json }; Returns: number

@@ -24,11 +24,12 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
     supabase.from("ventas").select("id, comprobante").eq("pedido_id", Number(id)).maybeSingle(),
     supabase.rpc("retirar_hasta", { p_pedido: Number(id) }),
   ]);
-  const { data: medios } = await supabase.from("medios_pago").select("id, nombre, ajuste_pct, cuotas").eq("activo", true).order("orden");
+  const { data: medios } = await supabase.from("medios_pago").select("id, nombre, ajuste_pct, cuotas, tipo, es_saldo").eq("activo", true).order("orden");
+  const medioTipos = new Map((medios ?? []).map((x) => [x.id, x.tipo as string]));
   const [{ data: envio }, { data: tienda }, { data: pagosManuales }] = await Promise.all([
     supabase.from("envios").select("proveedor, costo_real, seguimiento, notas").eq("pedido_id", Number(id)).maybeSingle(),
-    supabase.from("configuracion_tienda").select("direccion_retiro, envio_requiere_pago").single(),
-    supabase.from("pedido_pagos").select("id, fecha, monto, referencia").eq("pedido_id", Number(id)).order("id"),
+    supabase.from("configuracion_tienda").select("direccion_retiro, envio_requiere_pago, transferencia_comprobante").single(),
+    supabase.from("pedido_pagos").select("id, fecha, monto, referencia, confirmado_en, comprobante_path, medios_pago(nombre, tipo)").eq("pedido_id", Number(id)).order("id"),
   ]);
   const { data: tiendaWa } = await supabase.from("configuracion_tienda").select("wa_notificaciones_pedidos, wa_plantilla_estado").maybeSingle();
   const [{ data: mailInfo }, { data: mailsPedido }] = await Promise.all([
@@ -101,7 +102,10 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
             </div>
           </section>
           <Pago pedido={p.id} aPagar={Number(p.total) + Number(p.costo_envio)} pagadoOnline={p.pagado_online} abierto={!["entregado", "cancelado"].includes(p.estado)}
-            exigeParaEnviar={p.entrega === "envio" && !!tienda?.envio_requiere_pago} pagos={(pagosManuales ?? []).map((x) => ({ ...x, monto: Number(x.monto) }))} />
+            exigeParaEnviar={p.entrega === "envio" && !!tienda?.envio_requiere_pago} medios={(medios ?? []).filter((x) => !x.es_saldo).map((x) => ({ id: x.id, nombre: x.nombre, tipo: (medioTipos.get(x.id) ?? "Otro") }))}
+            medioPedido={p.medio_pago_id} exigencia={(tienda?.transferencia_comprobante ?? "no") as "no" | "referencia" | "adjunto"} puedeConfirmar={puede(permisos, "pagos.confirmar")}
+            pagos={(pagosManuales ?? []).map((x) => { const mp = x.medios_pago as unknown as { nombre: string; tipo: string } | null; return ({ id: x.id, fecha: x.fecha, monto: Number(x.monto), referencia: x.referencia,
+              medio: mp?.nombre ?? null, tipo: mp?.tipo ?? null, confirmado: !!x.confirmado_en, comprobante: x.comprobante_path }); })} />
           {p.entrega === "envio" && <Envio local={tienda?.direccion_retiro ?? null} d={{ pedido: p.id, comprobante: p.comprobante ?? "", cliente: c.nombre, telefono: c.telefono,
             direccion: p.direccion_envio, zona: (p.zonas_envio as unknown as { nombre: string } | null)?.nombre ?? null, cobrado: Number(p.costo_envio),
             envio: envio ? { ...envio, costo_real: envio.costo_real == null ? null : Number(envio.costo_real) } : null }} />}

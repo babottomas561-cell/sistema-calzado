@@ -47,7 +47,8 @@ function Opcion({ icono: Icono, valor, activo, abierto, alAlternar }: { icono: L
   );
 }
 
-export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion }: {
+export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion, exigeOperacion = false }: {
+  exigeOperacion?: boolean;   // el dueño pidió el n.º de operación en las transferencias
   facturacion: { modo: "todas" | "elegir"; porDefecto: "fiscal" | "interna"; letra: string; pruebas: boolean; umbral: number } | null;
   filas: FilaStock[]; clientes: Cliente[]; masVendidos: number[]; puedeCrearCliente: boolean; medios: (MedioCobro & { es_saldo?: boolean | null; siempre_factura?: boolean | null })[]; cambiaPrecio: boolean; descuentoMax: number | null;
   impresion: { configurada: boolean; modo: string; puedeConfigurar: boolean };
@@ -129,6 +130,8 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   // Un medio «siempre con factura» (Tablas → Medios de pago) en el cobro: va con factura, sin opción (la base también lo hace cumplir)
   const medioObliga = facturacion ? medios.find((m) => m.siempre_factura && cobro.lineas.some((l) => l.medio_pago_id === m.id)) ?? null : null;
   const facturar = elegido || !!medioObliga;
+  // Una transferencia sin n.º de operación, si el dueño lo exige (la base también lo frena)
+  const faltaOperacion = exigeOperacion ? cobro.lineas.find((l) => l.base > 0 && l.medio.tipo === "Transferencia" && !(referencias[l.medio.id] ?? "").trim()) : undefined;
   const sinDni = facturar && !!facturacion && cobro.total >= facturacion.umbral && !(/^\d{7,8}$/.test((cliente?.documento ?? "").replace(/\D/g, "")) || cuitValido(cliente?.documento));
   // Por qué no se puede confirmar (se dice, no solo se apaga el botón)
   const falta = !items.length ? "Agregá al menos un producto"
@@ -138,6 +141,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
     : usaSaldo && !cliente ? "Para cobrar con saldo a favor, elegí el cliente"
     : !lineas.length ? "No hay medios de pago para el mostrador (se cargan en Tablas)"
     // Desde el umbral de la norma, ARCA pide identificar al consumidor final: se avisa antes de cobrar (si no, la factura sale rechazada)
+    : faltaOperacion ? `Anotá el n.º de operación de la transferencia (${faltaOperacion.medio.nombre}): la tienda lo pide`
     : sinDni ? `Para facturar ${pesos(facturacion!.umbral)} o más, ARCA pide el DNI: elegí el cliente (con su DNI cargado) o cobrá sin factura` : null;
 
   // Atajos para la compu de la caja: F2 va al buscador, F9 confirma la venta
@@ -434,7 +438,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                 {/* Número de cupón / operación (opcional) para los medios que no son efectivo */}
                 {[...new Map(cobro.lineas.filter((l) => l.base > 0 && pideReferencia(l.medio)).map((l) => [l.medio.id, l.medio])).values()].map((m) => (
                   <div key={m.id} className="space-y-1">
-                    <label htmlFor={`ref-${m.id}`} className="flex items-center gap-1.5 text-xs font-semibold text-texto-2"><CreditCard size={14} strokeWidth={1.8} /> {textoReferencia(m)} · {m.nombre} <span className="font-normal">(opcional)</span></label>
+                    <label htmlFor={`ref-${m.id}`} className="flex items-center gap-1.5 text-xs font-semibold text-texto-2"><CreditCard size={14} strokeWidth={1.8} /> {textoReferencia(m)} · {m.nombre} <span className="font-normal">{exigeOperacion && m.tipo === "Transferencia" ? "(obligatorio)" : "(opcional)"}</span></label>
                     <input id={`ref-${m.id}`} value={referencias[m.id] ?? ""} onChange={(e) => setReferencias((r) => ({ ...r, [m.id]: e.target.value }))} maxLength={40} inputMode="text" autoComplete="off" placeholder="Para encontrar el cobro después" className="campo" />
                   </div>
                 ))}

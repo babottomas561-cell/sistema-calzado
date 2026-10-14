@@ -400,3 +400,9 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
     **El comprobante viaja en PDF**: `/comprobante/<token>/pdf` (`lib/comprobante-pdf.ts`, pdfkit, en `serverExternalPackages`) lo arma de `comprobante_publico`; el mail lo adjunta
     (solo links del propio sitio). Hay comprobante de **pedido** (`_comprobante_pedido`, tipo `pedido`). El mail de una venta con factura dice «Factura B 0003-…», el CAE y la ley de transparencia.
 
+30. **Confirmación de pagos** (`pedido_pagos`: `medio_pago_id`, `confirmado_en/por`, `comprobante_path`; Tablas → Medios de pago): un pago a mano de un pedido nace **pendiente** si es efectivo (lo confirma quien tiene
+    `pagos.confirmar`, `confirmar_pago_pedido`; con ese permiso y la casilla, nace confirmado) y cuenta como pagado solo **confirmado** (`pedido_pagado`). La transferencia pide lo que decida el dueño
+    (`configuracion_tienda.transferencia_comprobante`: `no` / `referencia` / `adjunto`; el archivo va al bucket privado `comprobantes-pago`, `pedido-<id>/<uuid>.<ext>`); con la constancia pedida nace confirmada.
+    Lo que paga el cliente por Mercado Pago se verifica solo. No se entrega un pedido con un pago sin confirmar. En la caja, la transferencia pide el n.º de operación si hay exigencia (se controla al cierre de
+    la operación: `_pago_pide_referencia`, deferido). El aviso «pago recibido» sale al confirmar.
+

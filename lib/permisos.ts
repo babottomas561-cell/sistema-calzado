@@ -9,7 +9,7 @@ export type Permiso =
   | "ventas.anular" | "devoluciones.fuera_de_plazo" | "informes.ventas" | "informes.stock" | "tablas.editar" | "equipo.administrar" | "promociones.gestionar" | "tienda.editar" | "gastos.gestionar"
   | "contabilidad.ver" | "contabilidad.configurar" | "bitacora.ver" | "ventas.autorizar"
   | "costos.ver_precio_compra" | "costos.ver_ganancia" | "costos.ver_valor_stock" | "tablas.catalogo" | "tablas.medios_pago" | "tablas.depositos"
-  | "equipo.personas" | "equipo.roles" | "equipo.modulos" | "equipo.cuentas" | "facturas.emitir" | "facturas.ver" | "ventas.sin_factura";
+  | "equipo.personas" | "equipo.roles" | "equipo.modulos" | "equipo.cuentas" | "facturas.emitir" | "facturas.ver" | "ventas.sin_factura" | "pagos.confirmar";
 
 export const puede = (permisos: readonly string[], ...algunos: Permiso[]) => algunos.some((p) => permisos.includes(p));
 

@@ -39,17 +39,36 @@ export async function registrarEnvio(_: Estado, f: FormData): Promise<Estado> {
   return { ok: "Envío anotado" };
 }
 
-// Un pago recibido a mano (transferencia, efectivo en el local…): constancia para poder enviarlo
+// Un pago recibido a mano (efectivo, transferencia…). La base decide si queda confirmado (efectivo: lo confirma un cajero; transferencia: según lo que exija el dueño).
 export async function registrarPago(_: Estado, f: FormData): Promise<Estado> {
   const monto = leerMonto(String(f.get("monto") ?? ""));
   if (!(monto && monto > 0)) return { error: "Poné el monto que pagó" };
+  const medio = Number(f.get("medio_pago_id")) || undefined;
   const supabase = await crearCliente();
-  const { error } = await supabase.rpc("registrar_pago_pedido", {
+  const { data, error } = await supabase.rpc("registrar_pago_pedido", {
     p_pedido: Number(f.get("pedido_id")), p_monto: monto, p_referencia: String(f.get("referencia") ?? "").trim() || undefined,
+    p_medio: medio, p_comprobante: String(f.get("comprobante") ?? "").trim() || undefined, p_confirma: f.get("confirma") === "on",
   });
   if (error) return { error: error.message };
   revalidatePath("/admin/pedidos", "layout");
-  return { ok: "Pago registrado" };
+  const r = data as { confirmado?: boolean } | null;
+  return { ok: r?.confirmado ? "Pago registrado y confirmado" : "Pago anotado: falta que un cajero confirme que lo recibió" };
+}
+
+// Confirmar que el dinero llegó (el cajero) o sacar un pago pendiente anotado por error
+export async function confirmarPago(pago: number): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("confirmar_pago_pedido", { p_pago: pago });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/pedidos", "layout");
+  return { ok: "Confirmado" };
+}
+export async function quitarPagoPendiente(pago: number): Promise<Estado> {
+  const supabase = await crearCliente();
+  const { error } = await supabase.rpc("quitar_pago_pendiente", { p_pago: pago });
+  if (error) return { error: error.message };
+  revalidatePath("/admin/pedidos", "layout");
+  return { ok: "Quitado" };
 }
 
 // Avance de un toque desde la lista (confirmar, marcar armado). Entregar (cobra) y cancelar (pide motivo) se hacen adentro del pedido.

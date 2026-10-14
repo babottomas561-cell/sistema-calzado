@@ -93,7 +93,7 @@ update clientes set email = 'maria@correo.com' where id = 2;
 
 -- ── Pago recibido: con el PDF ──
 update pedidos set estado = 'pendiente', pagado_online = false, motivo_cancelacion = null, cancelado_por = null where id = 1;
-insert into pedido_pagos (pedido_id, monto, referencia) values (1, 87400, 'Transferencia');
+insert into pedido_pagos (pedido_id, monto, referencia, confirmado_en) values (1, 87400, 'Transferencia', now());
 set constraints all immediate; set constraints all deferred;
 select is(prueba.cola('pedido_pagado'), 1::bigint, 'un pago anotado a mano encola el aviso de pago');
 select is((prueba.fila('pedido_pagado')).adjunto_tipo, 'pedido', 'con el comprobante del pedido para adjuntar');
