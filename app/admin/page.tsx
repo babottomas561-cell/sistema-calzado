@@ -7,6 +7,7 @@ import { FilaMovil } from "@/components/ListaMovil";
 import { leerTodo } from "@/lib/informes";
 import { diaArgentina, diaDe, fechaHora, inicioDe, numero, pesos, ultimosDias } from "@/lib/formato";
 import AccesosRapidos from "./AccesosRapidos";
+import PrimerosPasos from "./PrimerosPasos";
 import { accionActiva } from "@/lib/parametrizacion";
 import VentasPorDia, { type DiaVentas } from "./VentasPorDia";
 import { ACCIONES, leerRequisitos, ListaRequisitos, type Accion, type Requisito } from "@/components/Requisitos";
@@ -93,6 +94,8 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
       </div>
 
       <AccesosRapidos permisos={permisos} apagados={apagados} />
+
+      <PrimerosPasos />
 
       {modulo_apagado && <p className="flex items-center gap-2 rounded-lg border border-borde bg-white px-4 py-2.5 text-sm text-texto-2"><Lock size={16} /> Esa parte del sistema no está activa en este local. Un administrador la puede activar en Parametrización.</p>}
       {sin_permiso && <p className="flex items-center gap-2 rounded-lg border border-borde bg-white px-4 py-2.5 text-sm text-texto-2"><Lock size={16} /> Esa pantalla no está habilitada para tu rol. Si la necesitás, pedíselo a un administrador.</p>}

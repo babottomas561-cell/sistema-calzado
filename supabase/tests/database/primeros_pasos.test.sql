@@ -1,0 +1,30 @@
+-- Primeros pasos: qué falta para dejar el local listo; lo encendido en Parametrización y sin configurar suma un paso; cada paso dice si quien mira lo puede hacer.
+begin;
+create extension if not exists pgtap with schema extensions;
+create schema prueba;
+grant usage on schema prueba to anon, authenticated;
+create function prueba.como_admin() returns void language sql as $$ select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}', true) $$;
+create function prueba.como_vendedor() returns void language sql as $$ select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}', true) $$;
+create function prueba.como_cliente() returns void language sql as $$ select set_config('request.jwt.claims', '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}', true) $$;
+create function prueba.paso(p_clave text, p_campo text) returns text language sql as $$ select x ->> p_campo from jsonb_array_elements(primeros_pasos()) x where x ->> 'clave' = p_clave $$;
+grant execute on all functions in schema prueba to anon, authenticated;
+select plan(10);
+
+set local role authenticated; select prueba.como_cliente();
+select is(primeros_pasos(), null, 'un cliente no ve los pasos');
+select prueba.como_admin();
+select is(prueba.paso('parametrizacion', 'listo'), 'false', 'al principio, nadie eligió qué usa el local');
+select is(prueba.paso('productos', 'listo'), 'true', 'con productos cargados, ese paso está hecho');
+select is(prueba.paso('equipo', 'opcional'), 'true', 'sumar al equipo es opcional');
+select is(prueba.paso('mercadopago', 'clave'), null, 'una integración apagada no suma pasos');
+reset role; update modulos set activo = true where clave in ('integraciones/mercadopago'); set local role authenticated; select prueba.como_admin();
+select is(prueba.paso('mercadopago', 'listo'), 'false', 'encendida y sin conectar, suma el paso «Conectá Mercado Pago»');
+select is(prueba.paso('mercadopago', 'ruta'), '/admin/integraciones/mercadopago', 'que lleva a su configuración');
+reset role; update integraciones set mp_access_token = 'APP_USR-1234567890-abcdefghij-xyz'; set local role authenticated; select prueba.como_admin();
+select is(prueba.paso('mercadopago', 'clave'), null, 'ya conectada, el paso desaparece');
+reset role; update modulos set cambiado_en = now() where clave = 'devoluciones'; set local role authenticated; select prueba.como_admin();
+select is(prueba.paso('parametrizacion', 'listo'), 'true', 'al guardar la parametrización, ese paso queda hecho');
+select prueba.como_vendedor();
+select is(prueba.paso('parametrizacion', 'puede'), 'false', 'el vendedor ve el paso pero no lo puede hacer');
+select * from finish();
+rollback;

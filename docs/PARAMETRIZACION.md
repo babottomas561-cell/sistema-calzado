@@ -21,7 +21,7 @@ Ejemplo: se enciende WhatsApp en Parametrización → recién entonces aparece, 
 
 `/admin/parametrizacion` agrupa todos los interruptores (módulos, listas de precios e integraciones); Configuración e Integraciones solo muestran lo encendido; el `proxy.ts` corta lo apagado; los carteles de «qué falta» lo respetan. Ver la regla 40 de `CLAUDE.md`.
 
-Falta (etapa 2): los sí/no que todavía viven dentro de cada pantalla (modo de Mercado Pago online, regla de tarjetas, «esperar el pago», bot y avisos de WhatsApp…) y la guía del alta para un local nuevo.
+Etapa 2 hecha: cobrar con posnet y con QR como interruptores propios (regla 40) y la guía de alta «Primeros pasos» (regla 44). Lo que queda dentro de cada pantalla (modo de Mercado Pago online, regla de tarjetas, «esperar el pago», bot y avisos de WhatsApp) es **configuración** del «cómo» y se queda ahí.
 
 ## Cómo encararlo (el plan original)
 

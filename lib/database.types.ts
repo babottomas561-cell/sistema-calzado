@@ -3945,6 +3945,9 @@ isOneToOne: false
 "precio_de":
 { Args: { "p_variante": number }; Returns: number
                            },
+"primeros_pasos":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "probar_andreani":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },

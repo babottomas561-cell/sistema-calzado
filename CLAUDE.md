@@ -477,3 +477,6 @@ sin anular, solo sus ventas) y `cliente@demo.local` (cliente), contraseña `demo
 43. **Curvas de compra** (`curvas`, `curva_items`; `/admin/compras/curvas`, permiso `compras.registrar`): la distribución de talles con la que se compra, por escala de talles (`talles.tipo`), opcional por proveedor; no lleva
     costos. Vale para cualquier artículo de esa escala: en «Cargar factura de compra», cada modelo tiene «Aplicar una curva» (curva, color o todos, ×N) que completa las unidades de cada talle de la curva (`guardar_curva`,
     `quitar_curva`). Distinta del **bulto**, que es una combinación concreta de artículos (regla 42).
+44. **Primeros pasos** (`primeros_pasos()`; bloque del Inicio, `app/admin/PrimerosPasos.tsx`): la guía de alta. La base arma la lista de lo que falta para dejar el local listo (qué usa, logo, datos legales, productos, stock inicial,
+    impresión, equipo) y **suma un paso por cada integración encendida en Parametrización y sin configurar** (así la parametrización lleva a la configuración). Cada paso dice si quien mira lo puede hacer (`puede`); el bloque muestra
+    solo esos, con su avance, y desaparece cuando están los obligatorios (los opcionales no molestan). Un paso nuevo = un caso más en `primeros_pasos()` (migración nueva) y su prueba en `primeros_pasos.test.sql`.
