@@ -28,10 +28,10 @@ async function datosDelLocal(): Promise<string> {
   });
   return [
     `*${t?.nombre ?? "Nuestro local"}*`,
-    `📍 ${t?.direccion_retiro ?? "Consultá la dirección por acá"}`,
-    `🕒 ${t?.horario ?? "Consultá los horarios por acá"}`,
+    t?.direccion_retiro ? `📍 ${t.direccion_retiro}` : "",
+    t?.horario ? `🕒 ${t.horario}` : "",
     pagos.length ? `\n*Medios de pago*\n${pagos.join("\n")}` : "",
-  ].filter(Boolean).join("\n");
+  ].filter(Boolean).join("\n") + (t?.direccion_retiro || t?.horario ? "" : "\n\nLa dirección y los horarios te los pasamos por acá: escribinos o pedí hablar con una persona.");
 }
 
 async function lineasConStock(): Promise<string[]> {

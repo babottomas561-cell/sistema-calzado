@@ -37,7 +37,13 @@ async function toolConsultarCatalogo(busqueda?: string, categoria?: string, marc
   let query = supabase.from("v_catalogo").select("producto_id, nombre, categoria, marca, precio, escala").gt("disponible", 0);
   for (const t of terminos) query = query.or(`nombre.ilike.%${t}%,categoria.ilike.%${t}%,marca.ilike.%${t}%`);
 
-  const { data, error } = await query.limit(500);
+  let { data, error } = await query.limit(500);
+  // Si todas las palabras juntas no dan nada, se prueba con la principal (la primera): «campera negra» → «campera»
+  if (!error && (!data || data.length === 0) && terminos.length > 1) {
+    const t = terminos[0];
+    ({ data, error } = await supabase.from("v_catalogo").select("producto_id, nombre, categoria, marca, precio, escala").gt("disponible", 0)
+      .or(`nombre.ilike.%${t}%,categoria.ilike.%${t}%,marca.ilike.%${t}%`).limit(500));
+  }
   if (error || !data || data.length === 0) {
     return { mensaje: "No se encontraron modelos con esos criterios con stock en el catálogo. Podés ofrecerle ver otro rubro." };
   }
@@ -170,7 +176,7 @@ const GEMINI_TOOLS = [
     functionDeclarations: [
       {
         name: "consultarCatalogo",
-        description: "Busca productos y modelos en el catálogo disponible.",
+        description: "Busca productos y modelos en el catálogo disponible. Pasá solo el tipo de prenda, marca o modelo (ej. 'jean', 'campera Nike'); NO incluyas talle ni color en la búsqueda: eso se consulta después con consultarStockYDisponibilidad.",
         parameters: {
           type: "OBJECT",
           properties: {

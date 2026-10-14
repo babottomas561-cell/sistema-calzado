@@ -14,3 +14,8 @@ test("sin tildes ni signos, y sin repetir", () => {
 test("sin nada concreto no hay términos", () => {
   assert.deepEqual(terminosDeBusqueda(undefined, "", " "), []);
 });
+test("el talle, el número y las palabras de relleno no se buscan como prenda", () => {
+  assert.deepEqual(terminosDeBusqueda("jeans en talle 42"), ["jean"]);
+  assert.deepEqual(terminosDeBusqueda("tienen camperas negras?"), ["campera", "negra"]);
+  assert.deepEqual(terminosDeBusqueda("quiero el talle 40"), []);
+});
