@@ -15,7 +15,6 @@ export async function registrarVenta(_: Estado, f: FormData): Promise<Estado> {
   const { data: id, error } = await supabase.rpc("registrar_venta", {
     p_items: venta.items, p_pagos: venta.pagos, p_cliente: venta.cliente_id || undefined,
     p_descuento: Number(venta.descuento) || 0, p_canal: venta.canal, p_notas: venta.notas || undefined,
-    p_lista_precio: venta.lista_precio_id ? Number(venta.lista_precio_id) : undefined,
   });
   if (error) return { error: error.message };
   revalidatePath("/", "layout");
@@ -38,9 +37,9 @@ export async function registrarVenta(_: Estado, f: FormData): Promise<Estado> {
 
 // Promociones del mostrador para lo que se está por vender (las mismas que va a aplicar registrar_venta)
 export type CotizacionMostrador = { renglones: { variante_id: number; descuento_promo: number; promocion: string | null; acumula: boolean; total: number }[]; descuento_promociones: number };
-export async function cotizarMostrador(items: { variante_id: number; cantidad: number; precio_unitario: number }[], listaId?: number | null): Promise<CotizacionMostrador | null> {
+export async function cotizarMostrador(items: { variante_id: number; cantidad: number; precio_unitario: number }[]): Promise<CotizacionMostrador | null> {
   const supabase = await crearCliente();
-  const { data, error } = await supabase.rpc("cotizar", { p_items: items, p_canal: "mostrador", p_lista: listaId || undefined });
+  const { data, error } = await supabase.rpc("cotizar", { p_items: items, p_canal: "mostrador" });
   return error || !data ? null : (data as unknown as CotizacionMostrador);
 }
 

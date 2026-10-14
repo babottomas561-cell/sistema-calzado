@@ -9,7 +9,7 @@ import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeftRight, BadgePercent, Banknote, ChevronDown, CircleAlert, CreditCard, Gift, KeyRound, Minus, Plus, Printer, ScanBarcode, ShieldCheck, ShoppingBag, Smartphone,
-  SplitSquareHorizontal, Store, Tags, Trash2, User, UserPlus, Wallet, X, FileCheck2, ReceiptText, type LucideIcon } from "lucide-react";
+  SplitSquareHorizontal, Trash2, User, UserPlus, Wallet, X, FileCheck2, ReceiptText, type LucideIcon } from "lucide-react";
 import SelectorVariantes, { type FilaStock } from "@/components/SelectorVariantes";
 import DatosFiscales from "@/components/DatosFiscales";
 import CambioRapido from "./CambioRapido";
@@ -18,23 +18,13 @@ import { pesos, porcentaje } from "@/lib/formato";
 import { billetesSugeridos, calcularCobro, opcionesRedondeo, pagosParaLaBase, REPARTOS, totalCon, vuelto, type LineaPago, type MedioCobro } from "@/lib/cobro";
 import { autorizarDescuento, cotizarMostrador, crearClienteRapido, registrarVenta, type CotizacionMostrador } from "../acciones";
 
-export type ListaPrecioPOS = {
-  id: number;
-  codigo: string;
-  nombre: string;
-  canal: string;
-  ajuste_pct: number;
-  redondeo: string;
-  es_default_local: boolean;
-};
-
 type Item = FilaStock & { cantidad: number; precio: number };
-type Cliente = { id: number; nombre: string; telefono: string | null; saldo: number; saldoDeudor?: number; documento?: string | null; condicion_iva?: string | null; tipo_documento?: string | null };
+type Cliente = { id: number; nombre: string; telefono: string | null; saldo: number; documento?: string | null; condicion_iva?: string | null; tipo_documento?: string | null };
 const CANALES = ["Local", "Instagram", "WhatsApp", "Web"];
 
 // Un ícono por tipo de medio de pago (el tipo se elige en Tablas → Medios de pago)
-const ICONO_MEDIO: Record<string, LucideIcon> = { Efectivo: Banknote, Transferencia: ArrowLeftRight, "Débito": CreditCard, "Crédito": CreditCard, Billetera: Smartphone, "Cuenta corriente": ReceiptText };
-const iconoMedio = (m: MedioCobro & { es_saldo?: boolean | null; es_cuenta_corriente?: boolean | null }): LucideIcon => (m.es_saldo ? Gift : m.es_cuenta_corriente ? ReceiptText : ICONO_MEDIO[m.tipo ?? ""] ?? Wallet);
+const ICONO_MEDIO: Record<string, LucideIcon> = { Efectivo: Banknote, Transferencia: ArrowLeftRight, "Débito": CreditCard, "Crédito": CreditCard, Billetera: Smartphone };
+const iconoMedio = (m: MedioCobro & { es_saldo?: boolean | null }): LucideIcon => (m.es_saldo ? Gift : ICONO_MEDIO[m.tipo ?? ""] ?? Wallet);
 
 // Los tres pasos de la caja, con su número (es una secuencia de verdad: primero se arma, después se cobra)
 function Paso({ n, titulo, listo, children }: { n: number; titulo: string; listo?: boolean; children?: React.ReactNode }) {
@@ -57,18 +47,11 @@ function Opcion({ icono: Icono, valor, activo, abierto, alAlternar }: { icono: L
   );
 }
 
-export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion, listasPrecios, excepcionesPrecios, sucursalActual }: {
+export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, cambiaPrecio, descuentoMax, impresion, masVendidos, puedeCrearCliente, facturacion }: {
   facturacion: { modo: "todas" | "elegir"; porDefecto: "fiscal" | "interna"; letra: string; pruebas: boolean; umbral: number } | null;
-  filas: FilaStock[]; clientes: Cliente[]; masVendidos: number[]; puedeCrearCliente: boolean; medios: (MedioCobro & { es_saldo?: boolean | null; es_cuenta_corriente?: boolean | null; siempre_factura?: boolean | null })[]; cambiaPrecio: boolean; descuentoMax: number | null;
+  filas: FilaStock[]; clientes: Cliente[]; masVendidos: number[]; puedeCrearCliente: boolean; medios: (MedioCobro & { es_saldo?: boolean | null; siempre_factura?: boolean | null })[]; cambiaPrecio: boolean; descuentoMax: number | null;
   impresion: { configurada: boolean; modo: string; puedeConfigurar: boolean };
-  listasPrecios?: ListaPrecioPOS[];
-  excepcionesPrecios?: { lista_id: number; producto_id: number; precio: number }[];
-  sucursalActual?: { id: number; nombre: string; puntoVenta?: string } | null;
 }) {
-  const listaDefault = listasPrecios?.find((l) => l.es_default_local) ?? listasPrecios?.[0] ?? null;
-  const [listaSeleccionadaId, setListaSeleccionadaId] = useState<number | null>(listaDefault?.id ?? null);
-  const listaActual = listasPrecios?.find((l) => l.id === listaSeleccionadaId) ?? null;
-
   const [items, setItems] = useState<Item[]>([]);
   const [lineas, setLineas] = useState<LineaPago[]>(medios.length ? [{ medio_pago_id: medios[0].id, modo: "monto", valor: 0 }] : []);
   const [multiplo, setMultiplo] = useState<number | null>(null);
@@ -90,7 +73,7 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState("");
   const [validandoPin, setValidandoPin] = useState(false);
-  const [abierto, setAbierto] = useState<"cliente" | "descuento" | "canal" | "lista" | null>(null);
+  const [abierto, setAbierto] = useState<"cliente" | "descuento" | "canal" | null>(null);
   const [panel, setPanel] = useState(false);
   const [cambio, setCambio] = useState<string | null>(null);   // el panel de cambio o devolución (con lo que se escaneó)   // en el celular: el cobro a pantalla completa
   const [estado, accion, cargando] = useActionState(registrarVenta, {});
@@ -103,36 +86,10 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   // «Saldo a favor» solo aparece si el cliente elegido tiene saldo (o si ya se eligió)
   const mediosVisibles = medios.filter((m) => !m.es_saldo || (cliente?.saldo ?? 0) > 0 || lineas.some((l) => l.medio_pago_id === m.id));
 
-  const obtenerPrecioVariante = (fila: FilaStock, lista: ListaPrecioPOS | null) => {
-    const precioBase = Number(fila.precio_venta ?? 0);
-    if (!lista) return precioBase;
-    const exc = excepcionesPrecios?.find((e) => e.lista_id === lista.id && e.producto_id === fila.producto_id);
-    if (exc !== undefined) return Number(exc.precio);
-    const conAjuste = precioBase * (1 + Number(lista.ajuste_pct) / 100);
-    switch (lista.redondeo) {
-      case "10": return Math.round(conAjuste / 10) * 10;
-      case "50": return Math.round(conAjuste / 50) * 50;
-      case "100": return Math.round(conAjuste / 100) * 100;
-      case "1000": return Math.round(conAjuste / 1000) * 1000;
-      case "999": return conAjuste < 1000 ? Math.round(conAjuste / 10) * 10 : Math.floor(conAjuste / 1000) * 1000 + 999;
-      default: return Math.round(conAjuste * 100) / 100;
-    }
-  };
-
-  const cambiarLista = (nuevaId: number) => {
-    setListaSeleccionadaId(nuevaId);
-    const lNueva = listasPrecios?.find((l) => l.id === nuevaId) ?? null;
-    setItems((prev) => prev.map((item) => ({
-      ...item,
-      precio: obtenerPrecioVariante(item, lNueva),
-    })));
-    setAbierto(null);
-  };
-
   const agregar = (f: FilaStock) => setItems((prev) => {
     const ya = prev.find((i) => i.variante_id === f.variante_id);
     if (ya) return prev.map((i) => i.variante_id === f.variante_id ? { ...i, cantidad: Math.min(i.cantidad + 1, f.stock) } : i);
-    return [...prev, { ...f, cantidad: 1, precio: obtenerPrecioVariante(f, listaActual) }];
+    return [...prev, { ...f, cantidad: 1, precio: Number(f.precio_venta) }];
   });
   const cambiar = (id: number, campo: "cantidad" | "precio", valor: number) => setItems((prev) => prev.map((i) => i.variante_id === id ? { ...i, [campo]: valor } : i));
   const quitar = (id: number) => setItems((prev) => prev.filter((i) => i.variante_id !== id));
@@ -141,17 +98,11 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
 
   // Promociones: las calcula la base (las mismas que va a aplicar registrar_venta)
   const [ultima, setCot] = useState<CotizacionMostrador | null>(null);
-  const clave = JSON.stringify(items.map((i) => [i.variante_id, i.cantidad, i.precio])) + `_${listaSeleccionadaId}`;
+  const clave = JSON.stringify(items.map((i) => [i.variante_id, i.cantidad, i.precio]));
   useEffect(() => {
     if (!items.length) return;
     let vigente = true;
-    const t = setTimeout(async () => {
-      const r = await cotizarMostrador(
-        items.map((i) => ({ variante_id: i.variante_id, cantidad: i.cantidad, precio_unitario: i.precio })),
-        listaActual?.id
-      );
-      if (vigente) setCot(r);
-    }, 200);
+    const t = setTimeout(async () => { const r = await cotizarMostrador(items.map((i) => ({ variante_id: i.variante_id, cantidad: i.cantidad, precio_unitario: i.precio }))); if (vigente) setCot(r); }, 200);
     return () => { vigente = false; clearTimeout(t); };
   }, [clave]); // eslint-disable-line react-hooks/exhaustive-deps
   const cot = items.length ? ultima : null;
@@ -212,18 +163,9 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
   const venta = JSON.stringify({
     items: items.map((i) => ({ variante_id: i.variante_id, cantidad: i.cantidad, precio_unitario: i.precio })),
     pagos: pagosConReferencia, canal, cliente_id: cliente?.id ?? null, descuento,
-    lista_precio_id: listaActual?.id ?? null,
-    sucursal_id: sucursalActual?.id ?? null,
   });
 
-  const elegirMedio = (i: number, id: number) => {
-    const medio = medios.find((m) => m.id === id);
-    if (medio?.es_cuenta_corriente && !clienteId) {
-      setAbierto("cliente");
-    }
-    setLineas((ls) => ls.map((l, j) => (j === i ? { ...l, medio_pago_id: id } : l)));
-    setRecibido("");
-  };
+  const elegirMedio = (i: number, id: number) => { setLineas((ls) => ls.map((l, j) => (j === i ? { ...l, medio_pago_id: id } : l))); setRecibido(""); };
   const dividir = () => {
     const otro = medios.find((m) => m.id !== lineas[0]?.medio_pago_id && !m.es_saldo) ?? medios[0];
     setLineas((ls) => [ls[0], { medio_pago_id: otro.id, modo: "pct", valor: 50 }]);
@@ -339,32 +281,12 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                   <Opcion icono={User} activo={!!cliente} abierto={abierto === "cliente"} alAlternar={() => setAbierto(abierto === "cliente" ? null : "cliente")} valor={cliente ? cliente.nombre : "Cliente"} />
                   <Opcion icono={BadgePercent} activo={descuento > 0} abierto={abierto === "descuento"} alAlternar={() => setAbierto(abierto === "descuento" ? null : "descuento")} valor={descuento > 0 ? `Descuento −${pesos(descuento)}` : "Descuento"} />
                   <Opcion icono={ShoppingBag} activo={canal !== "Local"} abierto={abierto === "canal"} alAlternar={() => setAbierto(abierto === "canal" ? null : "canal")} valor={canal === "Local" ? "En el local" : `Por ${canal}`} />
-                  {listasPrecios && listasPrecios.length > 0 && (
-                    <Opcion
-                      icono={Tags}
-                      activo={listaActual?.id !== listaDefault?.id}
-                      abierto={abierto === "lista"}
-                      alAlternar={() => setAbierto(abierto === "lista" ? null : "lista")}
-                      valor={listaActual ? listaActual.nombre : "Lista"}
-                    />
-                  )}
-                  {sucursalActual && (
-                    <span className="inline-flex h-9 items-center gap-1.5 rounded-full border border-borde bg-gray-50 px-3 text-xs font-medium text-gray-700 shadow-2xs" title={`Sucursal: ${sucursalActual.nombre}`}>
-                      <Store size={14} className="text-marca shrink-0" />
-                      <span className="truncate">{sucursalActual.nombre}</span>
-                      {sucursalActual.puntoVenta && <span className="text-[11px] text-texto-2">· {sucursalActual.puntoVenta}</span>}
-                    </span>
-                  )}
                 </div>
                 {abierto === "cliente" && <div>
                   {cliente ? (
                     <div className="flex items-center justify-between gap-2 rounded-lg bg-marca-suave px-3 py-2 text-sm">
-                      <span>
-                        <b>{cliente.nombre}</b>
-                        {cliente.saldo > 0 && <span className="block text-xs font-semibold text-ok">Tiene {pesos(cliente.saldo)} de saldo a favor: cobralo con «Saldo a favor».</span>}
-                        {(cliente.saldoDeudor ?? 0) > 0 && <span className="block text-xs font-semibold text-alerta">Deuda en cuenta corriente: {pesos(cliente.saldoDeudor!)}.</span>}
-                        {facturacion && <span className="block text-xs text-texto-2">Le sale Factura <b>{letra}</b>{letra !== "A" && facturacion.letra === "B" ? <> · <Link href={`/admin/clientes/${cliente.id}?editar=datos`} target="_blank" className="font-semibold text-marca underline">¿Es inscripto? Cargá su CUIT</Link></> : null}</span>}
-                      </span>
+                      <span><b>{cliente.nombre}</b>{cliente.saldo > 0 && <span className="block text-xs font-semibold text-ok">Tiene {pesos(cliente.saldo)} de saldo a favor: cobralo con «Saldo a favor».</span>}
+                        {facturacion && <span className="block text-xs text-texto-2">Le sale Factura <b>{letra}</b>{letra !== "A" && facturacion.letra === "B" ? <> · <Link href={`/admin/clientes/${cliente.id}?editar=datos`} target="_blank" className="font-semibold text-marca underline">¿Es inscripto? Cargá su CUIT</Link></> : null}</span>}</span>
                       <button type="button" onClick={() => setClienteId(null)} className="text-xs font-semibold text-marca underline">Quitar</button>
                     </div>
                   ) : (
@@ -372,15 +294,8 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                       <input value={buscaCliente} onChange={(e) => setBuscaCliente(e.target.value)} placeholder="Buscar por nombre o teléfono" className="campo" aria-label="Buscar cliente" />
                       <ul className="max-h-48 overflow-y-auto">
                         {clientesFiltrados.map((c) => (
-                          <li key={c.id}>
-                            <button type="button" onClick={() => { setClienteId(c.id); setBuscaCliente(""); setAbierto(null); }} className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-gray-50">
-                              <span>{c.nombre}{c.telefono && <span className="text-texto-2"> · {c.telefono}</span>}</span>
-                              <span className="flex items-center gap-1.5">
-                                {c.saldo > 0 && <span className="text-xs font-semibold text-ok">saldo {pesos(c.saldo)}</span>}
-                                {(c.saldoDeudor ?? 0) > 0 && <span className="text-xs font-semibold text-alerta">debe {pesos(c.saldoDeudor!)}</span>}
-                              </span>
-                            </button>
-                          </li>
+                          <li key={c.id}><button type="button" onClick={() => { setClienteId(c.id); setBuscaCliente(""); setAbierto(null); }} className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-gray-50">
+                            <span>{c.nombre}{c.telefono && <span className="text-texto-2"> · {c.telefono}</span>}</span>{c.saldo > 0 && <span className="text-xs font-semibold text-ok">saldo {pesos(c.saldo)}</span>}</button></li>
                         ))}
                         {clientesFiltrados.length === 0 && <li className="px-2 py-2 text-sm text-texto-2">No hay clientes con «{buscaCliente}».</li>}
                       </ul>
@@ -440,27 +355,6 @@ export default function PuntoDeVenta({ filas, clientes: clientesBase, medios, ca
                 {abierto === "canal" && <div>
                   <div className="flex flex-wrap gap-1.5">
                     {CANALES.map((c) => <button key={c} type="button" onClick={() => { setCanal(c); setAbierto(null); }} className={`h-9 rounded-full border px-3 text-sm font-medium ${canal === c ? "border-marca bg-marca text-white" : "border-borde bg-white hover:bg-gray-50"}`}>{c}</button>)}
-                  </div>
-                </div>}
-                {abierto === "lista" && listasPrecios && <div>
-                  <div className="space-y-1.5">
-                    <p className="text-xs text-texto-2">Elegí la lista de precios a aplicar en esta venta:</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {listasPrecios.map((l) => (
-                        <button
-                          key={l.id}
-                          type="button"
-                          onClick={() => cambiarLista(l.id)}
-                          className={`h-9 rounded-full border px-3 text-sm font-medium transition ${
-                            listaActual?.id === l.id
-                              ? "border-marca bg-marca text-white"
-                              : "border-borde bg-white text-gray-700 hover:bg-gray-50"
-                          }`}
-                        >
-                          {l.nombre} {l.ajuste_pct !== 0 ? `(${l.ajuste_pct > 0 ? "+" : ""}${l.ajuste_pct}%)` : ""}
-                        </button>
-                      ))}
-                    </div>
                   </div>
                 </div>}
               </div>
