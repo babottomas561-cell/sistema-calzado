@@ -43,6 +43,9 @@ next-env.d.ts
 # la plantilla de variables sí va al repo
 !.env.example
 
+# fichas de instalaciones: tienen datos de cada cliente y el repo es público, así que quedan solo en esta compu
+/instalaciones/*.json
+
 # supabase cli (estado local)
 supabase/.temp
 supabase/.branches

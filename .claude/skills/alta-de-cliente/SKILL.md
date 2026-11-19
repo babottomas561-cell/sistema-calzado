@@ -30,7 +30,7 @@ npm run instalaciones -- alta --slug SLUG --nombre "Nombre del local" --email du
 
 - `etiquetar` exige árbol limpio y que lo local esté subido (`origin/main`): una versión es un punto exacto del código.
 - El alta imprime **una sola vez** la clave del dueño: pasásela al usuario en el chat y no la guardes en archivos ni en la memoria.
-- Después del alta: commitear `instalaciones/SLUG.json` y recorrer el checklist del manual (correo, legales, identidad, dominio…).
+- Después del alta: la ficha `instalaciones/SLUG.json` queda solo en la compu (NO se commitea: el repo es público y está en el `.gitignore`); recorrer el checklist del manual (correo, legales, identidad, dominio…).
 - Si se corta, la ficha queda como `en_alta` con lo ya creado: revisá Supabase y Vercel antes de repetir, no crees un segundo proyecto.
 
 ## Actualizar o volver atrás

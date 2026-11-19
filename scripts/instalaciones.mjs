@@ -313,7 +313,7 @@ async function alta() {
     out("    1. Equipo → Cuentas e invitaciones, y Integraciones → Correo: conectar Resend (sin esto los clientes no reciben el mail de confirmación).");
     out("    2. Tienda online → Legales: datos del comercio y publicar términos y privacidad (con revisión de un abogado).");
     out("    3. Integraciones → Dominio: el dominio propio, cuando lo tengan.");
-    out(`    4. Commitear la ficha: git add instalaciones/${slug}.json`);
+    out(`    4. Guardar copia de la ficha instalaciones/${slug}.json (no se sube al repo: es público)`);
   } catch (e) {
     out(`\n✖ El alta se cortó. Lo que ya quedó creado figura en instalaciones/${slug}.json (estado «en_alta»): revisalo en Supabase y Vercel antes de repetir.`);
     throw e;
@@ -353,7 +353,7 @@ async function actualizar() {
 
     guardarFicha({ ...f, version, migracion: migraciones.at(-1), actualizada: new Date().toISOString().slice(0, 10) });
     if (SIMULACRO) out("\n✔ Simulacro terminado: no se cambió nada. Sin --dry-run, lo hace de verdad.");
-    else out(`\n✔ «${f.slug}» quedó en ${version}. Commiteá instalaciones/${f.slug}.json.`);
+    else out(`\n✔ «${f.slug}» quedó en ${version}. La ficha instalaciones/${f.slug}.json se actualizó (solo en esta compu).`);
   } finally {
     rmSync(carpeta, { recursive: true, force: true });
   }

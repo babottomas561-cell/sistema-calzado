@@ -18,7 +18,7 @@ edita desde su panel.
 | **Versión** | Una etiqueta de Git: `v2026.10.13` (o `-2` si hay más de una el mismo día). Es un punto exacto del código y de las migraciones. |
 | **Piloto** | La instalación que usa `main`: cada push se publica solo. Sirve para probar antes de tocar a los clientes. |
 | **Cliente** | Una instalación «manual»: solo cambia cuando vos la actualizás a una versión. Puede quedar atrás un tiempo. |
-| **Ficha** | `instalaciones/<slug>.json`: qué versión tiene, su proyecto de Supabase y de Vercel. **Sin secretos.** |
+| **Ficha** | `instalaciones/<slug>.json`: qué versión tiene, su proyecto de Supabase y de Vercel. **Sin secretos.** No se sube al repo (es público): queda solo en tu compu. |
 
 ## Lo que necesitás (una vez)
 
@@ -65,7 +65,7 @@ read -s VERCEL_TOKEN; export VERCEL_TOKEN
    clave que se muestra **una sola vez**) → guarda la ficha.
    Con `--sin-conexion-tecnica` no carga tus tokens en la base del cliente (ver «Seguridad»).
 4. **Entregale al dueño** la dirección, su email y la clave. Que la cambie en el panel (*Cambiar contraseña*, abajo del menú).
-5. **Commiteá la ficha**: `git add instalaciones/mi-local.json`.
+5. **Guardá la ficha**: queda en `instalaciones/mi-local.json`, solo en tu compu (está en el `.gitignore` porque el repo es público). Hacele copia de respaldo.
 6. **Checklist del cliente** (cada uno desde su panel, sin tocar Vercel ni Supabase):
 
    - [ ] Integraciones → **Correo**: conectar Resend (sin esto los clientes de la tienda no reciben el mail de confirmación).
